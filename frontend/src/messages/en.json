@@ -1,0 +1,8 @@
+{
+  "home": {
+    "title": "Welcome to the Demo!",
+    "welcomeMessage": "This is a multilingual Next.js site using next-intl.",
+    "aboutLink": "Learn About Us",
+    "contactLink": "Contact Us"
+  }
+}

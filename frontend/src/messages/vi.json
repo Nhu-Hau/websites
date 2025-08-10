@@ -1,0 +1,8 @@
+{
+  "home": {
+    "title": "Chào mừng đến với bản demo!",
+    "welcomeMessage": "Đây là trang Next.js hỗ trợ đa ngôn ngữ với next-intl.",
+    "aboutLink": "Giới thiệu",
+    "contactLink": "Liên hệ"
+  }
+}

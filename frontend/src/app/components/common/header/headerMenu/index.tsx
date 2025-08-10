@@ -26,19 +26,19 @@ const HeaderMenu: React.FC<HeaderMenuProps> = ({
   return (
     <div
       ref={sidebarRef}
-      className={`absolute md:static top-16 left-0 w-full md:w-auto bg-white md:bg-transparent
-        overflow-hidden transition-all duration-500 ease-in-out p-5 md:p-0 
+      className={`absolute lg:static top-16 left-0 w-full lg:w-auto bg-white lg:bg-transparent
+        overflow-hidden transition-all duration-500 ease-in-out p-5 lg:p-0 
         ${
           isMenuOpen
             ? "opacity-100 translate-y-0 pointer-events-auto max-h-[300px] min-h-[300px] dark:bg-gray-400"
             : "opacity-0 -translate-y-4 pointer-events-none max-h-0"
         }
-        md:opacity-100 md:pointer-events-auto md:translate-y-0 md:max-h-full`}
+        lg:opacity-100 lg:pointer-events-auto lg:translate-y-0 lg:max-h-full`}
     >
-      <div className="flex flex-col items-center md:flex-row gap-5 transition-all duration-500 ease-in-out w-full py-0 md:py-0.5 lg:py-0">
+      <div className="flex flex-col items-center lg:flex-row gap-5 transition-all duration-500 ease-in-out w-full">
         {/* Search input - only for mobile view */}
         <div
-          className={`relative w-full rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 z-50 transition-all duration-500 ease-in-out opacity-100 translate-y-0 md:hidden`}
+          className={`relative w-full rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 z-50 transition-all duration-500 ease-in-out opacity-100 translate-y-0 lg:hidden`}
         >
           <div className="relative">
             <input
@@ -57,7 +57,7 @@ const HeaderMenu: React.FC<HeaderMenuProps> = ({
         {/* Nav + Auth */}
         <div
           className={`
-            flex flex-col items-start md:items-center md:flex-row gap-4 md:gap-3 lg:gap-12 xl:gap-14 2xl:gap-20 w-full
+            flex flex-col items-start lg:items-center lg:flex-row gap-4 lg:gap-3 xl:gap-10 2xl:gap-20 w-full
             transition-all duration-500 ease-in-out
             ${
               isMenuOpen
@@ -68,7 +68,7 @@ const HeaderMenu: React.FC<HeaderMenuProps> = ({
           `}
         >
           <NavMenu />
-          <LanguageSelector className="block md:hidden p-0"/>
+          <LanguageSelector className="block lg:hidden p-0" />
           <AuthMenu
             handleAuth={handleAuth}
             searchRef={searchRef}

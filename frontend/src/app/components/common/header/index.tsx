@@ -88,18 +88,18 @@ const Header = () => {
       <header
         className={`fixed top-0 left-0 w-full z-40 shadow-xl transition-all duration-500 ease-in-out
     bg-white dark:bg-gray-600 text-black dark:text-white
-    ${isMenuMobileOpen ? "h-[360px] md:h-16" : "h-16"}
+    ${isMenuMobileOpen ? "h-[360px] lg:h-16" : "h-16"}
     flex items-start justify-between px-4 py-3 rounded-bl-[50px] rounded-br-[50px]
     sm:px-6 md:px-8 lg:px-16 2xl:px-20 overflow-hidden
   `}
       >
-        <div className="flex items-center justify-between w-full md:w-auto">
+        <div className="flex items-center justify-between w-full lg:w-auto">
           {/* Logo + Title */}
           <Logo />
 
           {/* Hamburger Button */}
           <div
-            className="md:hidden z-50"
+            className="lg:hidden z-50"
             onClick={(e) => toggleMenu(e)}
             aria-label="Toggle menu"
             ref={menuButtonRef}

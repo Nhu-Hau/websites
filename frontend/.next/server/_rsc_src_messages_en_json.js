@@ -1,0 +1,25 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+exports.id = "_rsc_src_messages_en_json";
+exports.ids = ["_rsc_src_messages_en_json"];
+exports.modules = {
+
+/***/ "(rsc)/./src/messages/en.json":
+/*!******************************!*\
+  !*** ./src/messages/en.json ***!
+  \******************************/
+/***/ ((module) => {
+
+module.exports = /*#__PURE__*/JSON.parse('{"banner":{"title1":"TOEIC Online Practice","title2":"Realistic Mock Tests","descriptionLine1":"Practice with TOEIC tests that simulate the real exam format.","descriptionLine2":"Instant scoring and detailed explanations for every question.","buttonText":"Start Testing"},"benefits":{"title":"Why Practice TOEIC With Us?","subtitle":"Boost your Listening & Reading skills with realistic tests, smart tools, and effective methods – helping you confidently face the TOEIC exam.","items":[{"title":"Real TOEIC Exam Experience","description":"Take tests that mimic the real TOEIC format, difficulty, and timing. Our smart system updates regularly so you can tackle any challenge confidently."},{"title":"Instant, Accurate Scoring","description":"Get your scores immediately after each test with our advanced grading system on TOEIC standards. Know your current level and adjust your study plan effectively."},{"title":"Clear, Detailed Answer Explanations","description":"Each question comes with clear explanations and useful tips so you not only understand the correct answer but also master grammar, vocabulary, and test strategies."},{"title":"Interactive Progress Dashboard","description":"Track your daily progress with vivid charts, manage test history and scores. Identify your strengths and weaknesses to focus on improvement and reach your target score."}]},"about":{"missionLabel":"Our Mission","missionTitle":"Smarter TOEIC Learning","missionDescription":"We created this platform to help English learners prepare for the TOEIC exam more effectively. Whether you are a student, a working professional, or job seeker, our goal is to provide tools to help you prepare faster, smarter, and with more enthusiasm.","coreValuesLabel":"Core Values","coreValuesTitle":"What We Pursue","coreValuesSubtitle":"Everything we build revolves around our commitment to helping TOEIC learners succeed — with focus, flexibility, and practical effectiveness.","values":[{"title":"Goal-Oriented","description":"We consistently strive to help learners improve their TOEIC scores through effective and flexible practice methods."},{"title":"Learner-Centered","description":"The platform is designed specifically for busy individuals, helping you prepare for the TOEIC conveniently and effectively."},{"title":"Smart & Practical","description":"We focus on realistic exams, instant feedback, and progress tracking to help improve your learning performance."},{"title":"Global Vision","description":"We aim to support learners worldwide in achieving their English certification goals."}]},"footer":{"aboutTitle":"About TOEIC PREP","aboutDescription":"TOEIC PREP is a trusted TOEIC Listening & Reading preparation platform, offering realistic mock exams, fast grading, and detailed explanations to help you improve faster.","supportTitle":"Support","supportLinks":[{"href":"#terms","label":"Terms of Use"},{"href":"#privacy","label":"Privacy Policy"},{"href":"#payment","label":"Payment Support"}],"contactTitle":"Contact","phone":"Phone: 0833 115 510 – 0878 845 757","email":"Email: support@toeicprephub.com","copyright":"© {year} TOEIC PREP. All rights reserved."}}');
+
+/***/ })
+
+};
+;

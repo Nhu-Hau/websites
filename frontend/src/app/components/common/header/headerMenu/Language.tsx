@@ -75,16 +75,16 @@ const LanguageSelector: React.FC<LanguageSelectorProp> = ({ className }) => {
       className="fixed top-48 md:top-16 right-0 w-44 rounded-lg shadow-lg z-50 border border-gray-200 bg-white text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
     >
       <button
-        onClick={() => switchLocale("en")}
-        className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 hover:rounded-md"
-      >
-        <Flag code="gb" style={{ width: 20 }} /> English
-      </button>
-      <button
         onClick={() => switchLocale("vi")}
         className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 hover:rounded-md"
       >
         <Flag code="vn" style={{ width: 20 }} /> Tiếng Việt
+      </button>
+      <button
+        onClick={() => switchLocale("en")}
+        className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 hover:rounded-md"
+      >
+        <Flag code="gb" style={{ width: 20 }} /> English
       </button>
     </div>
   );

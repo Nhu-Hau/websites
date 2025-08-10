@@ -28,11 +28,11 @@ const AuthMenu: React.FC<AuthMenuProps> = ({
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="flex items-center gap-3 sm:gap-4 md:gap-2 lg:gap-3 2xl:gap-5 w-full md:w-auto">
+    <div className="flex items-center gap-3 sm:gap-4 lg:gap-3 2xl:gap-5 w-full lg:w-auto">
       {/* Search button */}
       <button
         aria-label="Search"
-        className="relative md:block hidden"
+        className="relative lg:block hidden"
         ref={searchRef}
         onClick={() => {
           setIsSearchOpen((prev) => {
@@ -64,8 +64,8 @@ const AuthMenu: React.FC<AuthMenuProps> = ({
         )}
 
       <AuthButtons handleAuth={handleAuth} />
-      <ThemeToggle className="hidden md:block"/>
-      <LanguageSelector className="hidden md:block"/>
+      <ThemeToggle className="hidden lg:block"/>
+      <LanguageSelector className="hidden lg:block"/>
     </div>
   );
 };

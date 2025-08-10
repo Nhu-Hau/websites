@@ -43,7 +43,7 @@ const Search: React.FC<SearchProps> = ({
       <div className="relative">
         <input
           type="text"
-          placeholder="Search ..."
+          placeholder="Tìm kiếm ..."
           ref={inputRef}
           onMouseDown={(e) => e.stopPropagation()}
           className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-tealCustom/80 dark:focus:ring-gray-500/80 focus:border-tealCusto dark:bg-gray-700 dark:text-white text-xs sm:text-sm dark:focus:border-gray-400"

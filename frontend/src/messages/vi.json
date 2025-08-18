@@ -1,9 +1,9 @@
 {
   "banner": {
-    "title1": "Luyện TOEIC online",
+    "title1": "Luyện TOEIC Online",
     "title2": "Thi thử trực tuyến",
-    "descriptionLine1": "Luyện tập với các đề TOEIC mô phỏng đúng định dạng.",
-    "descriptionLine2": "Chấm điểm ngay lập tức và giải thích chi tiết từng câu hỏi.",
+    "descriptionLine1": "Luyện tập các đề TOEIC mô phỏng.",
+    "descriptionLine2": "Chấm điểm và giải thích chi tiết từng câu hỏi.",
     "buttonText": "Bắt đầu làm bài"
   },
   "benefits": {
@@ -57,18 +57,59 @@
     ]
   },
   "footer": {
-    "aboutTitle": "Giới thiệu TOEIC PREP",
-    "aboutDescription": "TOEIC PREP là nền tảng luyện thi TOEIC Nghe & Đọc uy tín, cung cấp các bài thi mô phỏng sát thực tế, hệ thống chấm điểm nhanh và giải thích chi tiết giúp bạn tiến bộ nhanh hơn.",
-    "supportTitle": "Hỗ trợ",
-    "supportLinks": [
-      { "href": "#terms", "label": "Điều khoản sử dụng" },
-      { "href": "#privacy", "label": "Chính sách bảo mật" },
-      { "href": "#payment", "label": "Hỗ trợ thanh toán" }
-    ],
-    "contactTitle": "Liên hệ",
-    "phone": "Điện thoại: 0833 115 510 – 0878 845 757",
-    "email": "Email: support@toeicprephub.com",
-    "copyright": "© {year} TOEIC PREP. Bảo lưu mọi quyền."
+    "brandDescription": "Luyện thi TOEIC trực tuyến. Mô phỏng bài thi thật. Phân tích lỗi sai. Theo dõi tiến độ bằng biểu đồ.",
+    "resources": "Tài nguyên",
+    "practice": "Luyện đề",
+    "vocabulary": "Từ vựng",
+    "forum": "Diễn đàn",
+    "support": "Hỗ trợ",
+    "helpCenter": "Trung tâm trợ giúp",
+    "contact": "Liên hệ",
+    "faq": "FAQ",
+    "language": "Ngôn ngữ",
+    "vietnamese": "Tiếng Việt",
+    "english": "English",
+    "terms": "Điều khoản",
+    "privacy": "Chính sách bảo mật",
+    "rights": "Bản quyền {year} ToeicPrep. Giữ toàn quyền."
+  },
+    "nav": {
+    "practiceLR": "Luyện L&R",
+    "parts": {
+      "part1": "Phần 1: Mô tả tranh",
+      "part2": "Phần 2: Hỏi - đáp",
+      "part3": "Phần 3: Đoạn hội thoại",
+      "part4": "Phần 4: Bài nói ngắn",
+      "part5": "Phần 5: Hoàn thành câu",
+      "part6": "Phần 6: Hoàn thành đoạn văn",
+      "part7": "Phần 7: Đọc hiểu"
+    },
+    "mockTests": "Đề thi thử",
+    "forum": "Diễn đàn"
+  },
+  "UserMenu": {
+    "login": "Đăng nhập",
+    "register": "Đăng ký"
+  },
+    "LanguageSwitcher": {
+    "vietnamese": "Tiếng Việt",
+    "english": "English"
+  },
+  "Search": {
+    "placeholder": "Tìm kiếm..."
+  },
+  "chat": {
+    "title": "Trợ lý AI",
+    "subtitle": "Sẵn sàng hỗ trợ bạn",
+    "empty": "Hãy bắt đầu cuộc trò chuyện với trợ lý AI",
+    "ai": "AI",
+    "placeholder": "Nhập tin nhắn...",
+    "send": "Gửi",
+    "sending": "Đang gửi",
+    "openChat": "Mở chat",
+    "closeChat": "Đóng chat",
+    "close": "Đóng",
+    "demoReply": "Đây là phản hồi demo từ AI."
   }
 }
   

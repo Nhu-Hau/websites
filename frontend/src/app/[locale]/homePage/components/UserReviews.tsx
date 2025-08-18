@@ -40,7 +40,7 @@ export default function UserReviews() {
   return (
     <section className="py-16 2xl:py-24 bg-gray-50 dark:bg-gray-800">
       <div className="container mx-auto px-4 2xl:px-10">
-        <h2 className="text-3xl 2xl:text-5xl font-bold text-center mb-12 text-gray-900 dark:text-white leading-snug 2xl:leading-tight">
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white leading-snug 2xl:leading-tight">
           Người dùng nói gì về TOEIC PREP
         </h2>
 

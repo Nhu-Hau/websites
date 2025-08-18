@@ -1,6 +1,0 @@
-// i18n/navigation.ts
-import { createNavigation } from 'next-intl/navigation';
-import { routing } from "./src/routing"
-
-export const { Link, redirect, usePathname, useRouter, getPathname } =
-  createNavigation(routing);

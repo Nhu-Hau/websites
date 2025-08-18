@@ -1,87 +1,169 @@
 "use client";
 
-import React from "react";
+import { Github, Twitter, Youtube, Instagram, Globe } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-const Footer = () => {
-  const t = useTranslations("footer");
+export default function Footer() {
   const year = new Date().getFullYear();
-
-  // Lấy thủ công từng item trong mảng supportLinks
-  const supportLinks = [
-    {
-      href: t("supportLinks.0.href"),
-      label: t("supportLinks.0.label"),
-    },
-    {
-      href: t("supportLinks.1.href"),
-      label: t("supportLinks.1.label"),
-    },
-    {
-      href: t("supportLinks.2.href"),
-      label: t("supportLinks.2.label"),
-    },
-  ];
+  const t = useTranslations("footer");
 
   return (
-    <footer
-      itemScope
-      itemType="https://schema.org/WPFooter"
-      className="bg-gray-800 dark:bg-gray-800 text-gray-100 dark:text-gray-100 py-12 z-40"
-    >
-      <div className="max-w-screen-xl 2xl:max-w-screen-2xl mx-auto px-4 2xl:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 2xl:gap-16 mb-12">
-          {/* About */}
-          <div>
-            <h5 className="text-lg md:text-xl 2xl:text-2xl font-bold mb-4">
-              {t("aboutTitle")}
-            </h5>
-            <p className="text-sm md:text-base 2xl:text-lg leading-relaxed text-justify 2xl:leading-loose">
-              {t("aboutDescription")}
+    <footer className="border-t border-neutral-200 bg-white text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        {/* Top grid */}
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
+          {/* Brand */}
+          <div className="col-span-3 md:col-span-3 lg:col-span-2">
+            <Link href="/homePage">
+              <div className="text-xl xl:text-2xl font-semibold text-zinc-900 dark:text-zinc-100 -tracking-tighter">
+                Toeic
+                <span className="text-sky-700">Prep</span>
+              </div>
+            </Link>
+            <p className="mt-4 max-w-sm text-sm text-neutral-600 dark:text-neutral-400">
+              {t("brandDescription")}
             </p>
+            <div className="mt-4 flex items-center gap-3">
+              <a
+                href="/"
+                className="text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Twitter size={18} />
+              </a>
+              <a
+                href="/"
+                className="text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Github size={18} />
+              </a>
+              <a
+                href="/"
+                className="text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Youtube size={18} />
+              </a>
+              <a
+                href="/"
+                className="text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Instagram size={18} />
+              </a>
+            </div>
           </div>
 
-          {/* Support */}
-          <div className="md:mx-auto">
-            <h4 className="text-lg md:text-xl 2xl:text-2xl font-bold mb-4">
-              {t("supportTitle")}
-            </h4>
-            <ul className="space-y-2 text-sm md:text-base 2xl:text-lg">
-              {supportLinks.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    rel="nofollow"
-                    className="hover:text-blue-600 dark:hover:text-blue-300 transition-colors duration-200"
-                    aria-label={item.label}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
+          {/* Links */}
+          <div>
+            <h3 className="text-sm font-semibold">{t("resources")}</h3>
+            <ul className="mt-3 space-y-2 text-sm">
+              <li>
+                <Link
+                  href="/practice"
+                  className="hover:text-indigo-500 dark:hover:text-indigo-400"
+                >
+                  {t("practice")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/vocabulary"
+                  className="hover:text-indigo-500 dark:hover:text-indigo-400"
+                >
+                  {t("vocabulary")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/forum"
+                  className="hover:text-indigo-500 dark:hover:text-indigo-400"
+                >
+                  {t("forum")}
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
-            <h5 className="text-lg md:text-xl 2xl:text-2xl font-bold mb-4">
-              {t("contactTitle")}
-            </h5>
-            <ul className="space-y-2 text-sm md:text-base 2xl:text-lg">
-              <li>{t("phone")}</li>
-              <li>{t("email")}</li>
+            <h3 className="text-sm font-semibold">{t("support")}</h3>
+            <ul className="mt-3 space-y-2 text-sm">
+              <li>
+                <Link
+                  href="/help-center"
+                  className="hover:text-indigo-500 dark:hover:text-indigo-400"
+                >
+                  {t("helpCenter")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="hover:text-indigo-500 dark:hover:text-indigo-400"
+                >
+                  {t("contact")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/faq"
+                  className="hover:text-indigo-500 dark:hover:text-indigo-400"
+                >
+                  {t("faq")}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold">{t("language")}</h3>
+            <ul className="mt-3 space-y-2 text-sm">
+              <li>
+                <Link
+                  href="/vi"
+                  className="inline-flex items-center gap-1 hover:text-indigo-500 dark:hover:text-indigo-400"
+                >
+                  <Globe size={14} /> {t("vietnamese")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/en"
+                  className="inline-flex items-center gap-1 hover:text-indigo-500 dark:hover:text-indigo-400"
+                >
+                  <Globe size={14} /> {t("english")}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
 
-        {/* Footer bottom */}
-        <div className="border-t border-gray-300 dark:border-gray-600 pt-6 text-center text-sm 2xl:text-base text-gray-400 dark:text-gray-400">
-          {t("copyright", { year })}
+        {/* Bottom */}
+        <div className="mt-10 border-t border-neutral-200 pt-6 text-sm text-neutral-500 dark:border-neutral-800 dark:text-neutral-400 sm:flex sm:items-center sm:justify-between">
+          <p>{t("rights", { year })}</p>
+          <div className="mt-4 sm:mt-0">
+            <Link
+              href="/terms"
+              className="hover:text-indigo-500 dark:hover:text-indigo-400"
+            >
+              {t("terms")}
+            </Link>{" "}
+            ·{" "}
+            <Link
+              href="/privacy"
+              className="hover:text-indigo-500 dark:hover:text-indigo-400"
+            >
+              {t("privacy")}
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

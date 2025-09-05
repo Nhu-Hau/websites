@@ -117,4 +117,28 @@ router.get("/sessions", requireAuth, async (req, res, next) => {
   }
 });
 
+// DELETE /api/chat/clear/:sessionId - Xóa tất cả messages trong session
+router.delete("/clear/:sessionId", requireAuth, async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    const userId = req.auth?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const result = await ChatMessage.deleteMany({
+      userId,
+      sessionId,
+    });
+
+    res.json({
+      message: "Chat cleared successfully",
+      deletedCount: result.deletedCount,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

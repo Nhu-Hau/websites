@@ -18,6 +18,8 @@ type Msg = {
   content: string;
   at?: number;
   createdAt?: string;
+  /** hiển thị bong bóng chờ */
+  pending?: boolean;
 };
 
 function uid() {
@@ -28,12 +30,24 @@ function uid() {
 function MessageContent({
   content,
   role,
+  pending,
 }: {
   content: string;
   role: "user" | "assistant";
+  pending?: boolean;
 }) {
   if (role === "user") {
     return <div className="whitespace-pre-wrap">{content}</div>;
+  }
+
+  // Assistant
+  if (pending) {
+    return (
+      <div className="flex items-center gap-2 text-sm opacity-80">
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        <span>Đang trả lời…</span>
+      </div>
+    );
   }
 
   return (
@@ -42,7 +56,6 @@ function MessageContent({
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight]}
         components={{
-          // Custom styling cho các elements
           h1: ({ children }) => (
             <h1 className="text-lg font-bold mb-2">{children}</h1>
           ),
@@ -118,9 +131,19 @@ export default function ChatBox() {
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
-  const [sessionId] = useState(
-    () => `session_${Date.now()}_${Math.random().toString(36).slice(2)}`
-  );
+  const [sessionId, setSessionId] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("chatSessionId");
+      if (stored) return stored;
+    }
+    const newSessionId = `session_${Date.now()}_${Math.random()
+      .toString(36)
+      .slice(2)}`;
+    if (typeof window !== "undefined") {
+      localStorage.setItem("chatSessionId", newSessionId);
+    }
+    return newSessionId;
+  });
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -128,15 +151,17 @@ export default function ChatBox() {
 
   useClickOutside(wrapperRef, () => setOpen(false));
 
-  // Load chat history when component mounts
+  // Load chat history when component mounts / session changes
   const loadChatHistory = useCallback(async () => {
     try {
+      if (!user) return;
       const response = await fetch(`/api/chat/history/${sessionId}`, {
         credentials: "include",
       });
       const data = await response.json();
+
       if (data?.data) {
-        const formattedMessages = data.data.map(
+        const formattedMessages: Msg[] = data.data.map(
           (msg: {
             _id: string;
             role: string;
@@ -144,17 +169,19 @@ export default function ChatBox() {
             createdAt: string;
           }) => ({
             id: msg._id,
-            role: msg.role,
+            role: msg.role as "user" | "assistant",
             content: msg.content,
             at: new Date(msg.createdAt).getTime(),
           })
         );
         setMessages(formattedMessages);
+      } else {
+        setMessages([]);
       }
     } catch (err) {
       console.error("Failed to load chat history:", err);
     }
-  }, [sessionId]);
+  }, [sessionId, user]);
 
   useEffect(() => {
     if (user && open) {
@@ -162,19 +189,42 @@ export default function ChatBox() {
     }
   }, [user, open, loadChatHistory]);
 
-  // Auto-scroll
+  // Auto-scroll when messages change/open toggles
   useEffect(() => {
     const el = listRef.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
   }, [messages, open]);
 
+  // --- SEND with optimistic UI (user msg + pending assistant bubble) ---
   const send = async () => {
     const text = input.trim();
     if (!text || sending || !user) return;
 
     setError(null);
+
+    // 🔹 XÓA NGAY nội dung trong ô nhập & giữ focus
+    setInput("");
+    textareaRef.current?.focus();
+
     setSending(true);
+
+    // 1) Push user msg + pending assistant bubble (optimistic UI)
+    const tempUserId = uid();
+    const tempAssistantId = uid();
+    const now = Date.now();
+
+    setMessages((prev) => [
+      ...prev,
+      { id: tempUserId, role: "user", content: text, at: now },
+      {
+        id: tempAssistantId,
+        role: "assistant",
+        content: "",
+        at: now,
+        pending: true,
+      },
+    ]);
 
     try {
       const { ok, json } = await postJson("/api/chat/send", {
@@ -182,52 +232,48 @@ export default function ChatBox() {
         sessionId,
       });
 
-      if (ok && json?.data) {
-        const { userMessage, assistantMessage } = json.data;
-
-        // Add both messages to the chat
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: userMessage._id,
-            role: userMessage.role,
-            content: userMessage.content,
-            at: new Date(userMessage.createdAt).getTime(),
-          },
-          {
-            id: assistantMessage._id,
-            role: assistantMessage.role,
-            content: assistantMessage.content,
-            at: new Date(assistantMessage.createdAt).getTime(),
-          },
-        ]);
-      } else {
+      if (!ok || !json?.data)
         throw new Error(json?.message || "Failed to send message");
-      }
+
+      const { userMessage, assistantMessage } = json.data;
+
+      // 2) Thay bubble tạm bằng dữ liệu thật từ server
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id === tempUserId) {
+            return {
+              id: userMessage._id,
+              role: userMessage.role,
+              content: userMessage.content,
+              at: new Date(userMessage.createdAt).getTime(),
+            };
+          }
+          if (m.id === tempAssistantId) {
+            return {
+              id: assistantMessage._id,
+              role: assistantMessage.role,
+              content: assistantMessage.content,
+              at: new Date(assistantMessage.createdAt).getTime(),
+            };
+          }
+          return m;
+        })
+      );
     } catch (err: unknown) {
       console.error("Failed to send message:", err);
       setError((err as Error).message || "Có lỗi xảy ra khi gửi tin nhắn");
 
-      // Fallback: add user message and demo response
-      const userMsg: Msg = {
-        id: uid(),
-        role: "user",
-        content: text,
-        at: Date.now(),
-      };
-      setMessages((prev) => [...prev, userMsg]);
-
-      const assistantMsg: Msg = {
-        id: uid(),
-        role: "assistant",
-        content: t("demoReply"),
-        at: Date.now(),
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
+      // Chuyển bubble pending thành trả lời demo
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === tempAssistantId
+            ? { ...m, pending: false, content: t("demoReply") }
+            : m
+        )
+      );
     } finally {
-      setInput("");
+      // ❌ ĐỪNG gọi setInput("") ở đây nữa để tránh chớp nháy
       setSending(false);
-      textareaRef.current?.focus();
     }
   };
 
@@ -238,9 +284,26 @@ export default function ChatBox() {
     }
   };
 
-  const clearChat = () => {
-    setMessages([]);
-    setError(null);
+  // Xóa hội thoại + tạo session mới (thay cho nút "+")
+  const clearChat = async () => {
+    if (!user) return;
+    try {
+      await fetch(`/api/chat/clear/${sessionId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Failed to clear chat on server:", err);
+    } finally {
+      setMessages([]);
+      setError(null);
+      const newSessionId = `session_${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2)}`;
+      localStorage.setItem("chatSessionId", newSessionId);
+      setSessionId(newSessionId);
+      // không reload trang — giữ UI mượt
+    }
   };
 
   return (
@@ -293,10 +356,16 @@ export default function ChatBox() {
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {t("subtitle")}
                 </p>
+                {process.env.NODE_ENV === "development" && (
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                    Session: {sessionId.slice(-8)}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="flex items-center gap-1">
+              {/* Đã bỏ nút "+" tạo chat mới */}
               {messages.length > 0 && (
                 <button
                   onClick={clearChat}
@@ -304,7 +373,7 @@ export default function ChatBox() {
                     focus:outline-none focus:ring-2 focus:ring-blue-400
                     dark:text-gray-400 dark:hover:bg-zinc-800 dark:hover:text-gray-200"
                   aria-label="Clear chat"
-                  title="Clear chat"
+                  title="Clear chat (tạo phiên mới)"
                 >
                   <FiTrash2 className="h-5 w-5" />
                 </button>
@@ -359,7 +428,11 @@ export default function ChatBox() {
                         <span>{t("ai")}</span>
                       </div>
                     )}
-                    <MessageContent content={m.content} role={m.role} />
+                    <MessageContent
+                      content={m.content}
+                      role={m.role}
+                      pending={m.pending}
+                    />
                     <div
                       className={`mt-1 text-[10px] ${
                         m.role === "user"

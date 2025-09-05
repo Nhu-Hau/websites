@@ -32,11 +32,11 @@
     "missionLabel": "Sứ mệnh của chúng tôi",
     "missionTitle": "Cách học TOEIC thông minh hơn",
     "missionDescription": "Chúng tôi tạo ra nền tảng này để giúp người học tiếng Anh luyện thi TOEIC hiệu quả hơn. Dù bạn là sinh viên, người đi làm hay đang tìm việc, mục tiêu của chúng tôi là cung cấp công cụ giúp bạn chuẩn bị thi nhanh hơn, thông minh hơn và đầy hứng khởi.",
-    
+
     "coreValuesLabel": "Giá trị cốt lõi",
     "coreValuesTitle": "Điều chúng tôi theo đuổi",
     "coreValuesSubtitle": "Mọi thứ chúng tôi xây dựng đều xoay quanh cam kết giúp người học TOEIC thành công – với sự tập trung, linh hoạt và hiệu quả thực tiễn.",
-    
+
     "values": [
       {
         "title": "Định hướng mục tiêu",
@@ -73,31 +73,31 @@
     "privacy": "Chính sách bảo mật",
     "rights": "Bản quyền {year} ToeicPrep. Giữ toàn quyền."
   },
-    "nav": {
-  "practiceLR": {
-    "title": "Luyện L&R",
-    "parts": {
-      "part1": "Phần 1: Mô tả tranh",
-      "part2": "Phần 2: Hỏi - đáp",
-      "part3": "Phần 3: Đoạn hội thoại",
-      "part4": "Phần 4: Bài nói ngắn",
-      "part5": "Phần 5: Hoàn thành câu",
-      "part6": "Phần 6: Hoàn thành đoạn văn",
-      "part7": "Phần 7: Đọc hiểu"
-    }
+  "nav": {
+    "practiceLR": {
+      "title": "Luyện L&R",
+      "parts": {
+        "part1": "Phần 1: Mô tả tranh",
+        "part2": "Phần 2: Hỏi - đáp",
+        "part3": "Phần 3: Đoạn hội thoại",
+        "part4": "Phần 4: Bài nói ngắn",
+        "part5": "Phần 5: Hoàn thành câu",
+        "part6": "Phần 6: Hoàn thành đoạn văn",
+        "part7": "Phần 7: Đọc hiểu"
+      }
+    },
+    "mockTests": {
+      "title": "Đề thi thử",
+      "practiceTests": "Luyện đề",
+      "realTest": "Thi thử"
+    },
+    "forum": "Diễn đàn"
   },
-  "mockTests": {
-    "title": "Đề thi thử",
-    "practiceTests": "Luyện đề",
-    "realTest": "Thi thử"
-  },
-  "forum": "Diễn đàn"
-},
   "UserMenu": {
     "login": "Đăng nhập",
     "register": "Đăng ký"
   },
-    "LanguageSwitcher": {
+  "LanguageSwitcher": {
     "vietnamese": "Tiếng Việt",
     "english": "English"
   },
@@ -105,9 +105,9 @@
     "placeholder": "Tìm kiếm..."
   },
   "chat": {
-    "title": "Trợ lý AI",
+    "title": "Trợ lý AI TOEIC",
     "subtitle": "Sẵn sàng hỗ trợ bạn",
-    "empty": "Hãy bắt đầu cuộc trò chuyện với trợ lý AI",
+    "empty": "Hãy bắt đầu cuộc trò chuyện với trợ lý AI TOEIC",
     "ai": "AI",
     "placeholder": "Nhập tin nhắn...",
     "send": "Gửi",
@@ -115,7 +115,10 @@
     "openChat": "Mở chat",
     "closeChat": "Đóng chat",
     "close": "Đóng",
-    "demoReply": "Đây là phản hồi demo từ AI."
+    "demoReply": "Xin chào! Tôi là trợ lý AI chuyên về TOEIC. Tôi có thể giúp bạn luyện thi, giải thích ngữ pháp, từ vựng và chiến lược làm bài. Bạn muốn hỏi gì?",
+    "loginRequired": "Vui lòng đăng nhập để sử dụng chat",
+    "clearChat": "Xóa cuộc trò chuyện",
+    "error": "Có lỗi xảy ra khi gửi tin nhắn"
   },
   "ForgotPassword": {
     "title": "Quên mật khẩu",
@@ -178,4 +181,3 @@
     "errorConfirmMismatch": "Mật khẩu xác nhận không khớp."
   }
 }
-  

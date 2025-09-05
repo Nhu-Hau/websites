@@ -1,11 +1,11 @@
 {
-"banner": {
-  "title1": "Practice TOEIC Online",
-  "title2": "Take Mock Tests",
-  "descriptionLine1": "Practice with simulated TOEIC exams.",
-  "descriptionLine2": "Instant scoring with detailed explanations.",
-  "buttonText": "Start Now"
-},
+  "banner": {
+    "title1": "Practice TOEIC Online",
+    "title2": "Take Mock Tests",
+    "descriptionLine1": "Practice with simulated TOEIC exams.",
+    "descriptionLine2": "Instant scoring with detailed explanations.",
+    "buttonText": "Start Now"
+  },
   "benefits": {
     "title": "Why Practice TOEIC With Us?",
     "subtitle": "Boost your Listening & Reading skills with realistic tests, smart tools, and effective methods – helping you confidently face the TOEIC exam.",
@@ -32,11 +32,11 @@
     "missionLabel": "Our Mission",
     "missionTitle": "Smarter TOEIC Learning",
     "missionDescription": "We created this platform to help English learners prepare for the TOEIC exam more effectively. Whether you are a student, a working professional, or job seeker, our goal is to provide tools to help you prepare faster, smarter, and with more enthusiasm.",
-    
+
     "coreValuesLabel": "Core Values",
     "coreValuesTitle": "What We Pursue",
     "coreValuesSubtitle": "Everything we build revolves around our commitment to helping TOEIC learners succeed — with focus, flexibility, and practical effectiveness.",
-    
+
     "values": [
       {
         "title": "Goal-Oriented",
@@ -74,25 +74,25 @@
     "rights": "© {year} ToeicPrep. All rights reserved."
   },
   "nav": {
-  "practiceLR": {
-    "title": "Practice L&R",
-    "parts": {
-      "part1": "Part 1: Photographs",
-      "part2": "Part 2: Question-Response",
-      "part3": "Part 3: Conversations",
-      "part4": "Part 4: Short Talks",
-      "part5": "Part 5: Incomplete Sentences",
-      "part6": "Part 6: Text Completion",
-      "part7": "Part 7: Reading Comprehension"
-    }
+    "practiceLR": {
+      "title": "Practice L&R",
+      "parts": {
+        "part1": "Part 1: Photographs",
+        "part2": "Part 2: Question-Response",
+        "part3": "Part 3: Conversations",
+        "part4": "Part 4: Short Talks",
+        "part5": "Part 5: Incomplete Sentences",
+        "part6": "Part 6: Text Completion",
+        "part7": "Part 7: Reading Comprehension"
+      }
+    },
+    "mockTests": {
+      "title": "Tests",
+      "practiceTests": "Practice Mode",
+      "realTest": "Test Mode"
+    },
+    "forum": "Forum"
   },
-  "mockTests": {
-    "title": "Tests",
-    "practiceTests": "Practice Mode",
-    "realTest": "Test Mode"
-  },
-  "forum": "Forum"
-},
   "UserMenu": {
     "login": "Login",
     "register": "Sign Up"
@@ -105,9 +105,9 @@
     "placeholder": "Search..."
   },
   "chat": {
-    "title": "AI Assistant",
+    "title": "TOEIC AI Assistant",
     "subtitle": "Ready to help you",
-    "empty": "Start a conversation with the AI assistant",
+    "empty": "Start a conversation with the TOEIC AI assistant",
     "ai": "AI",
     "placeholder": "Type a message...",
     "send": "Send",
@@ -115,7 +115,10 @@
     "openChat": "Open chat",
     "closeChat": "Close chat",
     "close": "Close",
-    "demoReply": "This is a demo reply from AI."
+    "demoReply": "Hello! I'm an AI assistant specialized in TOEIC. I can help you with test preparation, grammar explanations, vocabulary, and test strategies. What would you like to know?",
+    "loginRequired": "Please login to use chat",
+    "clearChat": "Clear conversation",
+    "error": "An error occurred while sending message"
   },
   "ForgotPassword": {
     "title": "Forgot password",

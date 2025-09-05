@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 
 import testsRouter from "./routes/tests.routes";
 import authRoutes from "./routes/auth.routes";
+import chatRoutes from "./routes/chat.routes";
 import { connectMongo } from "./lib/mongoose";
 import passport, { initPassport } from "./lib/passport";
 
@@ -21,8 +22,8 @@ app.use(express.json({ limit: "2mb" }));
 // ✅ CORS: CHỈ 1 LẦN, trước routes
 app.use(
   cors({
-    origin: FRONTEND_ORIGIN,              // KHÔNG để true / "*"
-    credentials: true,                    // để cookie đi kèm
+    origin: FRONTEND_ORIGIN, // KHÔNG để true / "*"
+    credentials: true, // để cookie đi kèm
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -36,6 +37,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 
 app.use("/api/tests", testsRouter);
 app.use("/api/auth", authRoutes);
+app.use("/api/chat", chatRoutes);
 
 // ✅ Error handler cuối
 app.use((err: any, _req: any, res: any, _next: any) => {

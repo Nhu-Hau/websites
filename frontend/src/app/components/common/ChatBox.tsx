@@ -3,8 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { FiMessageSquare, FiX, FiSend } from "react-icons/fi";
 import { SiOpenai } from "react-icons/si";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useTranslations } from "next-intl";
 import useClickOutside from "@/hooks/useClickOutside";
+import { apiClient } from "@/lib/api";
 
 type Msg = {
   id: string;
@@ -23,6 +26,7 @@ export default function ChatBox() {
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -35,6 +39,47 @@ export default function ChatBox() {
     if (!el) return;
     el.scrollTop = el.scrollHeight;
   }, [messages, open]);
+
+  // Load last session messages when opening chat
+  useEffect(() => {
+    const loadLastSession = async () => {
+      try {
+        if (!open || messages.length > 0) return;
+        const sessionsRes = await apiClient.listChatSessions();
+        const sessions = (sessionsRes as any)?.data?.sessions as
+          | { _id: string }[]
+          | undefined;
+        if (!sessions || sessions.length === 0) return;
+
+        const latest = sessions[0];
+        const detailRes = await apiClient.getChatSession(latest._id);
+        const session = (detailRes as any)?.data?.session as
+          | {
+              _id: string;
+              messages: {
+                role: "user" | "assistant";
+                content: string;
+                at: string;
+              }[];
+            }
+          | undefined;
+        if (!session) return;
+
+        setSessionId(session._id);
+        const restored: Msg[] = session.messages.map((m) => ({
+          id: uid(),
+          role: m.role,
+          content: m.content,
+          at: new Date(m.at).getTime(),
+        }));
+        setMessages(restored);
+      } catch {
+        // ignore
+      }
+    };
+    loadLastSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const send = async () => {
     const text = input.trim();
@@ -50,18 +95,40 @@ export default function ChatBox() {
     setInput("");
     setSending(true);
 
-    // Demo reply giả lập
-    await new Promise((r) => setTimeout(r, 300));
-    const assistantMsg: Msg = {
-      id: uid(),
-      role: "assistant",
-      content: t("demoReply"), // ✅ dùng i18n
-      at: Date.now(),
-    };
-    setMessages((prev) => [...prev, assistantMsg]);
+    try {
+      const payload = [
+        {
+          role: "system",
+          content: "You are a helpful assistant for TOEIC learners.",
+        },
+        ...messages.map((m) => ({ role: m.role, content: m.content })),
+        { role: "user", content: text },
+      ];
 
-    setSending(false);
-    textareaRef.current?.focus();
+      const res = await apiClient.chat(payload as any, sessionId || undefined);
+      const reply = (res as any)?.data?.reply || "";
+      const sid = (res as any)?.data?.sessionId as string | undefined;
+      if (sid && !sessionId) setSessionId(sid);
+
+      const assistantMsg: Msg = {
+        id: uid(),
+        role: "assistant",
+        content: reply || t("demoReply"),
+        at: Date.now(),
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+    } catch (err) {
+      const assistantMsg: Msg = {
+        id: uid(),
+        role: "assistant",
+        content: t("demoReply"),
+        at: Date.now(),
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+    } finally {
+      setSending(false);
+      textareaRef.current?.focus();
+    }
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -166,7 +233,15 @@ export default function ChatBox() {
                         <span>{t("ai")}</span>
                       </div>
                     )}
-                    <div className="whitespace-pre-wrap">{m.content}</div>
+                    {m.role === "assistant" ? (
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {m.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <div className="whitespace-pre-wrap">{m.content}</div>
+                    )}
                     <div
                       className={`mt-1 text-[10px] ${
                         m.role === "user"

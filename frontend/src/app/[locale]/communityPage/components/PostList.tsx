@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { useForum } from "@/app/context/ForumContext";
+import { useForum } from "@/context/ForumContext";
 import PostCard from "./PostCard";
 import Pagination from "./Pagination";
 

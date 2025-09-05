@@ -1,11 +1,14 @@
-import Header from "../components/common/Header";
-import Footer from "../components/common/Footer";
+// app/[locale]/layout.tsx (ví dụ đường dẫn, theo cấu trúc của bạn)
+import Header from "../../components/common/Header";
+import Footer from "../../components/common/Footer";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/routing";
 import { cookies } from "next/headers";
-import { ThemeProvider } from "../context/ThemeContext";
-import ChatBox from "../components/common/ChatBox";
+import { ThemeProvider } from "../../context/ThemeContext";
+import ChatBox from "../../components/common/ChatBox";
+import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "sonner";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -28,10 +31,13 @@ export default async function LocaleLayout({
   return (
     <ThemeProvider defaultTheme={theme}>
       <NextIntlClientProvider locale={locale}>
-        <Header />
-        <main>{children}</main>
-        <ChatBox/>
-        <Footer />
+        <AuthProvider>
+          <Header />
+          <main>{children}</main>
+          <ChatBox />
+          <Footer />
+          <Toaster richColors position="top-center" />
+        </AuthProvider>
       </NextIntlClientProvider>
     </ThemeProvider>
   );

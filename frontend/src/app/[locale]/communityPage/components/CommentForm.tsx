@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForum } from "@/app/context/ForumContext";
+import { useForum } from "@/context/ForumContext";
 
 export default function CommentForm({ postId }: { postId: string }) {
   const { addComment } = useForum();

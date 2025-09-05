@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForum } from "@/app/context/ForumContext";
+import { useForum } from "@/context/ForumContext";
 import { useRouter, useParams } from "next/navigation";
 
 export default function NewPostForm() {

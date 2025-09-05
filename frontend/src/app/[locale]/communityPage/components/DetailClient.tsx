@@ -1,6 +1,6 @@
 "use client";
 
-import { useForum } from "@/app/context/ForumContext";
+import { useForum } from "@/context/ForumContext";
 import PostDetail from "./PostDetail";
 import CommentForm from "./CommentForm";
 import CommentList from "./CommentList";

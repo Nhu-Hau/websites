@@ -4,14 +4,12 @@ import { useEffect, RefObject, MutableRefObject } from "react";
 
 type Options = {
   enabled?: boolean;
-  ignore?: RefObject<HTMLElement>[];               // có thể giữ nguyên
-  events?: Array<keyof DocumentEventMap>;          // mặc định: ["pointerdown"]
+  // SỬA Ở ĐÂY: Cho phép ref trong mảng ignore có thể là null
+  ignore?: RefObject<HTMLElement | null>[];
+  events?: Array<keyof DocumentEventMap>;
 };
 
-// Cho phép truyền cả RefObject<T> lẫn MutableRefObject<T|null>
-type AnyRef<T extends HTMLElement> =
-  | RefObject<T>
-  | MutableRefObject<T | null>;
+type AnyRef<T extends HTMLElement> = RefObject<T> | MutableRefObject<T | null>;
 
 export default function useClickOutside<T extends HTMLElement>(
   ref: AnyRef<T>,
@@ -22,23 +20,26 @@ export default function useClickOutside<T extends HTMLElement>(
     if (!enabled) return;
 
     const handler = (ev: Event) => {
-      const el = ref.current as T | null;
+      const el = ref.current;
       if (!el) return;
 
-      const target = ev.target as Node | null;
-      if (!target) return;
+      const target = ev.target;
+      if (!(target instanceof Node)) return;
 
-      if (el.contains(target)) return; // click trong el
-      if (ignore.some(r => r.current?.contains(target))) return; // click trong ignore
+      // Click trong element chính -> bỏ qua
+      if (el.contains(target)) return;
+
+      // Click trong các element ignore -> bỏ qua (đã an toàn với optional chaining)
+      if (ignore.some((r) => r.current?.contains(target))) return;
 
       onOutside(ev);
     };
 
-    events.forEach(e =>
+    events.forEach((e) =>
       document.addEventListener(e, handler, { capture: true })
     );
     return () => {
-      events.forEach(e =>
+      events.forEach((e) =>
         document.removeEventListener(e, handler, { capture: true })
       );
     };

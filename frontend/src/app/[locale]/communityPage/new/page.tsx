@@ -1,4 +1,4 @@
-import { ForumProvider } from "@/app/context/ForumContext";
+import { ForumProvider } from "@/context/ForumContext";
 import NewPostForm from "../components/NewPostForm";
 
 export default function NewPostPage() {

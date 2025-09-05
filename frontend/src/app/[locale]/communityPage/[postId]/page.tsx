@@ -1,4 +1,4 @@
-import { ForumProvider } from "@/app/context/ForumContext";
+import { ForumProvider } from "@/context/ForumContext";
 import DetailClient from "../components/DetailClient";
 
 export default function PostDetailPage({

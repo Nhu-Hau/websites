@@ -1,6 +1,6 @@
 "use client";
 
-import { useForum } from "@/app/context/ForumContext";
+import { useForum } from "@/context/ForumContext";
 
 export default function CommentList({ postId }: { postId: string }) {
   const { comments } = useForum();

@@ -74,7 +74,8 @@
     "rights": "© {year} ToeicPrep. All rights reserved."
   },
   "nav": {
-    "practiceLR": "Practice L&R",
+  "practiceLR": {
+    "title": "Practice L&R",
     "parts": {
       "part1": "Part 1: Photographs",
       "part2": "Part 2: Question-Response",
@@ -83,10 +84,15 @@
       "part5": "Part 5: Incomplete Sentences",
       "part6": "Part 6: Text Completion",
       "part7": "Part 7: Reading Comprehension"
-    },
-    "mockTests": "Tests",
-    "forum": "Forum"
+    }
   },
+  "mockTests": {
+    "title": "Tests",
+    "practiceTests": "Practice Mode",
+    "realTest": "Test Mode"
+  },
+  "forum": "Forum"
+},
   "UserMenu": {
     "login": "Login",
     "register": "Sign Up"
@@ -110,5 +116,66 @@
     "closeChat": "Close chat",
     "close": "Close",
     "demoReply": "This is a demo reply from AI."
+  },
+  "ForgotPassword": {
+    "title": "Forgot password",
+    "subtitle": "Enter your email. If it matches, you'll receive a reset link.",
+    "email": "Email",
+    "placeholder": "Enter your email address",
+    "submit": "Send request",
+    "sending": "Sending...",
+    "emailSent": "If the email exists, a reset link has been sent. Check your inbox or spam.",
+    "backToLogin": "Back to sign in",
+    "createAccount": "Create account",
+    "resend": "Resend",
+    "errorEmailRequired": "Please enter your email.",
+    "errorEmailInvalid": "Invalid email address."
+  },
+  "Login": {
+    "title": "Sign in",
+    "noAccount": "Don't have an account?",
+    "register": "Sign up",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email address",
+    "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "forgotPassword": "Forgot password?",
+    "processing": "Processing...",
+    "login": "Sign in",
+    "or": "or",
+    "redirecting": "Redirecting...",
+    "continueWithGoogle": "Continue with Google",
+    "errorEmailRequired": "Please enter your email.",
+    "errorEmailInvalid": "Invalid email address.",
+    "errorPasswordRequired": "Please enter your password.",
+    "errorPasswordLen": "Password must be at least 8 characters."
+  },
+  "register": {
+    "title": "Sign up",
+    "alreadyAccount": "Already have an account?",
+    "login": "Sign in",
+    "name": "Full name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "passwordPlaceholder": "At least 8 characters",
+    "confirmPlaceholder": "Re-enter your password",
+    "submit": "Sign up",
+    "submitting": "Processing...",
+    "or": "or",
+    "google": "Sign up with Google",
+    "redirecting": "Redirecting...",
+    "errorConfirm": "Confirmation password does not match",
+    "placeholderName": "Enter your full name",
+    "placeholderEmail": "Enter your email address",
+    "errorEmailRequired": "Please enter your email.",
+    "errorEmailInvalid": "Invalid email address.",
+    "errorNameRequired": "Please enter your full name.",
+    "errorNameInvalid": "Name may include letters, spaces, '-', apostrophes (') and periods (.), 2–50 characters.",
+    "errorPasswordRequired": "Please enter your password.",
+    "errorPasswordWeak": "Password must be at least 8 characters, include letters and numbers, and have no leading/trailing spaces.",
+    "errorConfirmRequired": "Please re-enter your password.",
+    "errorConfirmMismatch": "Confirmation password does not match."
   }
 }

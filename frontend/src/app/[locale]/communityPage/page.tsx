@@ -1,15 +1,17 @@
-import { ForumProvider } from "@/app/context/ForumContext";
+"use client";
+
+import { useParams, useSearchParams } from "next/navigation";
+import { ForumProvider } from "@/context/ForumContext"; // nếu bạn để ForumContext ở /context thì đổi lại: "@/context/ForumContext"
 import PostList from "./components/PostList";
 
-export default function CommunityPage({
-  params,
-  searchParams,
-}: {
-  params: { locale: string };
-  searchParams: { page?: string };
-}) {
-  const locale = params.locale || "vi";
-  const page = Number(searchParams?.page || "1");
+export default function CommunityPage() {
+  // Lấy locale & query page bằng hook của Next (client-safe)
+  const { locale } = useParams<{ locale: string }>();
+  const sp = useSearchParams();
+
+  const currentLocale = locale || "vi";
+  const pageParam = sp.get("page"); // string | null
+  const page = Number(pageParam ?? "1");
 
   return (
     <div
@@ -30,17 +32,21 @@ export default function CommunityPage({
           >
             Community Forum
           </h1>
-          <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-300">
+          {/* <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-300">
             Nơi trao đổi kiến thức về Next.js, TypeScript và Tailwind. Tất cả dữ
             liệu đang ở chế độ mock (không cần backend).
-          </p>
+          </p> */}
         </header>
       </div>
 
       {/* Content */}
       <main className="mx-auto w-full max-w-6xl px-4 pb-20">
         <ForumProvider>
-          <PostList locale={locale} currentPage={page} perPage={6} />
+          <PostList
+            locale={currentLocale}
+            currentPage={Number.isFinite(page) ? page : 1}
+            perPage={6}
+          />
         </ForumProvider>
       </main>
     </div>

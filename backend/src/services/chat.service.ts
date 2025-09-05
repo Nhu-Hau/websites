@@ -1,244 +1,213 @@
-import { IChatMessage } from "../models/ChatMessage";
+// src/services/ChatService.ts
+import type { IChatMessage } from "../models/ChatMessage";
+
+// Nếu chạy Node < 18, cần cài polyfill fetch:
+//   npm i node-fetch
+// rồi bỏ comment dòng dưới:
+// import fetch from "node-fetch";
+
+type OpenAIRole = "system" | "user" | "assistant";
 
 export class ChatService {
   private apiKey: string;
   private baseUrl: string;
+  private model: string;
+
+  private static readonly OUT_OF_SCOPE =
+    "Xin lỗi, mình chỉ hỗ trợ **Tiếng Anh** (TOEIC/IELTS, ngữ pháp, từ vựng, phát âm, kỹ năng đọc–nghe–nói–viết...). Hãy hỏi mình về các chủ đề đó nhé!";
 
   constructor() {
-    this.apiKey = process.env.OPENAI_API_KEY || "";
-    this.baseUrl = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+    this.apiKey = process.env.OPENAI_API_KEY ?? "";
+    this.baseUrl = process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1";
+    this.model = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
   }
 
+  /** System prompt: khóa phạm vi Tiếng Anh */
+  private buildSystemPrompt(): { role: "system"; content: string } {
+    return {
+      role: "system",
+      content: `Bạn là trợ lý học **Tiếng Anh** (ELT) cho người Việt.
+CHỈ trả lời các yêu cầu liên quan đến Tiếng Anh: TOEIC/IELTS, ngữ pháp, từ vựng,
+phát âm, sửa câu/dịch, kỹ năng đọc–nghe–nói–viết, lộ trình & mẹo học.
+Nếu câu hỏi ngoài phạm vi, hãy từ chối lịch sự trong 1–2 câu và gợi ý quay lại chủ đề Tiếng Anh.
+
+Quy tắc:
+- Trả lời ngắn gọn, dễ hiểu, có ví dụ khi hữu ích.
+- Dùng Markdown nhẹ (danh sách, **đậm**, \`code\`) cho dễ đọc.
+- Nếu câu hỏi mơ hồ, hỏi lại 1 câu để làm rõ *nhưng vẫn trong phạm vi Tiếng Anh*.`,
+    };
+  }
+
+  /** Bộ lọc “chỉ Tiếng Anh” – nới để không chặn nhầm câu chữa ngữ pháp */
+  private isEnglishRelated(messages: Partial<IChatMessage>[]) {
+    const lastMsg = messages.length
+      ? String(messages[messages.length - 1]?.content ?? "")
+      : "";
+    const lower = lastMsg.toLowerCase();
+
+    // 1) Từ khóa trực tiếp về English/ELT
+    const directRe =
+      /(tiếng anh|english|toeic|ielts|grammar|ngữ pháp|vocabulary|từ vựng|phát âm|pronunciation|listening|reading|writing|speaking|dịch|translate|sửa câu|thì|tenses|part\s*5|part\s*6|part\s*7|bài tập tiếng anh|collocation|phrasal verb|ielts task)/i;
+    if (directRe.test(lower)) return true;
+
+    // 2) Có từ tiếng Anh + tín hiệu "chữa bài" tiếng Việt (vd: "he are students sai chỗ nào")
+    const hasAsciiWord = /[a-z][a-z'\-]+/i.test(lastMsg); // có từ a-z
+    const viCue =
+      /(sai|đúng|sửa|chữa|nghĩa|dịch|câu này|check|kiểm tra|phân tích|giải thích)/i.test(
+        lower
+      );
+    if (hasAsciiWord && viCue) return true;
+
+    // 3) Nhiều chữ cái tiếng Anh => có thể là câu English
+    const letters = (lastMsg.match(/[a-z]/gi) || []).length;
+    const ratio = letters / Math.max(lastMsg.length, 1);
+    if (ratio > 0.25) return true;
+
+    // 4) Ngữ cảnh 3 tin gần nhất
+    const ctx = messages
+      .slice(-3)
+      .map((m) => (m?.content ?? "").toString().toLowerCase())
+      .join(" ");
+    if (directRe.test(ctx)) return true;
+
+    // 5) Loại trừ vài chủ đề kỹ thuật thường nhầm
+    if (
+      /(router|openwrt|docker|git|gmail|smtp|openai|mp3|android|rom|vlan|zerotier|mongodb|express|react|node\.js)/i.test(
+        lower
+      )
+    ) {
+      return false;
+    }
+
+    return false;
+  }
+
+  /** Gọi OpenAI tạo câu trả lời (nếu có API key) */
   async generateResponse(messages: Partial<IChatMessage>[]): Promise<string> {
     try {
-      // Nếu không có API key, trả về phản hồi demo
+      // Chặn sớm những câu hỏi ngoài phạm vi
+      if (!this.isEnglishRelated(messages)) {
+        return ChatService.OUT_OF_SCOPE;
+      }
+
+      // Không có API key -> trả demo có giới hạn phạm vi
       if (!this.apiKey) {
         return this.getDemoResponse(messages);
       }
 
-      // Chuẩn bị messages cho OpenAI
-      const openaiMessages = messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }));
+      // Chuẩn hóa messages (mặc định role lạ -> 'user')
+      const openaiMessages = messages
+        .filter((m) => m?.content)
+        .map((m) => {
+          const role = (String(m.role) as OpenAIRole) || "user";
+          const safeRole: OpenAIRole =
+            role === "assistant" || role === "user" ? role : "user";
+          return { role: safeRole, content: String(m.content) };
+        });
 
-      // Thêm system prompt
-      const systemPrompt = {
-        role: "system",
-        content: `Bạn là một trợ lý AI chuyên về luyện thi TOEIC. Bạn có thể:
-        - Giải thích các câu hỏi TOEIC
-        - Cung cấp mẹo làm bài thi
-        - Giải thích ngữ pháp và từ vựng
-        - Hướng dẫn chiến lược làm bài
-        - Trả lời các câu hỏi về TOEIC
-        
-        Hãy trả lời một cách thân thiện, chính xác và hữu ích. Nếu câu hỏi không liên quan đến TOEIC, hãy nhẹ nhàng hướng cuộc trò chuyện về chủ đề TOEIC.`,
+      const body = {
+        model: this.model,
+        messages: [this.buildSystemPrompt(), ...openaiMessages],
+        max_tokens: 800,
+        temperature: 0.7,
       };
 
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const resp = await fetch(`${this.baseUrl}/chat/completions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.apiKey}`,
         },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [systemPrompt, ...openaiMessages],
-          max_tokens: 1000,
-          temperature: 0.7,
-        }),
+        body: JSON.stringify(body),
       });
 
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
+      if (!resp.ok) {
+        const text = await resp.text(); // log lỗi chi tiết
+        throw new Error(`OpenAI API ${resp.status}: ${text.slice(0, 2000)}`);
       }
 
-      const data = await response.json();
-      return (
-        data.choices[0]?.message?.content ||
-        "Xin lỗi, tôi không thể tạo phản hồi."
-      );
-    } catch (error) {
-      console.error("Error generating AI response:", error);
+      const data = await resp.json();
+      const text =
+        data?.choices?.[0]?.message?.content?.trim() ??
+        "Xin lỗi, tôi không thể tạo phản hồi.";
+      return text;
+    } catch (err) {
+      console.error("[ChatService] generateResponse error:", err);
+      // Fallback an toàn (vẫn giữ phạm vi)
       return this.getDemoResponse(messages);
     }
   }
 
+  /** Demo trả lời (khi không có API key hoặc lỗi) – chỉ về Tiếng Anh */
   private getDemoResponse(messages: Partial<IChatMessage>[]): string {
-    const lastMessage =
-      messages[messages.length - 1]?.content?.toLowerCase() || "";
+    if (!this.isEnglishRelated(messages)) return ChatService.OUT_OF_SCOPE;
 
-    // Phản hồi demo dựa trên nội dung tin nhắn với Markdown format
-    if (lastMessage.includes("toeic") || lastMessage.includes("thi")) {
+    const lastRaw = (messages.at(-1)?.content ?? "").toString();
+    const last = lastRaw.toLowerCase();
+
+    // Nhận diện nhanh các lỗi phổ biến để minh họa (vd: "he are students")
+    if (/\bhe\s+are\s+student(s)?\b/i.test(lastRaw)) {
+      return `**Sửa câu:** \`he are students\`
+
+**Sai** vì **he** (ngôi 3 số ít) phải đi với **is**, và danh từ đếm được số ít cần mạo từ.  
+**Đúng:**
+- \`He is a student.\`
+- \`They are students.\` (nếu muốn số nhiều)
+- \`He is one of the students.\` (1 người trong nhóm)
+
+**Bảng to be (hiện tại):**  
+I **am** · You **are** · He/She/It **is** · We/They **are**`;
+    }
+
+    if (last.includes("toeic") || last.includes("thi")) {
       return `# 🎯 Luyện thi TOEIC
 
-Tôi có thể giúp bạn luyện thi TOEIC! Dưới đây là các phần chính của bài thi:
+## 📚 Cấu trúc
+**Listening (100 – 45’)**: Part 1–4  
+**Reading (100 – 75’)**: Part 5–7
 
-## 📚 Cấu trúc bài thi TOEIC
-
-### **Listening (100 câu - 45 phút)**
-- **Part 1**: Mô tả tranh (6 câu)
-- **Part 2**: Hỏi - đáp (25 câu)  
-- **Part 3**: Đoạn hội thoại (39 câu)
-- **Part 4**: Bài nói ngắn (30 câu)
-
-### **Reading (100 câu - 75 phút)**
-- **Part 5**: Hoàn thành câu (30 câu)
-- **Part 6**: Hoàn thành đoạn văn (16 câu)
-- **Part 7**: Đọc hiểu (54 câu)
-
-Bạn muốn tìm hiểu về phần nào? Tôi có thể giúp bạn với:
-- 📖 **Chiến lược làm bài** cho từng phần
-- 📝 **Ngữ pháp** quan trọng
-- 📚 **Từ vựng** theo chủ đề
-- 💡 **Mẹo làm bài** hiệu quả`;
+Bạn muốn tập trung phần nào (vd: *Part 5 từ loại*, *Part 7 tìm thông tin*)? Mình sẽ kèm mẹo + ví dụ.`;
     }
 
-    if (lastMessage.includes("listening") || lastMessage.includes("nghe")) {
-      return `# 🎧 Phần Listening TOEIC
-
-## Cấu trúc chi tiết:
-
-### **Part 1: Mô tả tranh (6 câu)**
-- Xem tranh và chọn câu mô tả đúng nhất
-- **Mẹo**: Tập trung vào hành động, vị trí, số lượng
-
-### **Part 2: Hỏi - đáp (25 câu)**
-- Nghe câu hỏi và chọn câu trả lời phù hợp
-- **Mẹo**: Chú ý từ khóa và ngữ cảnh
-
-### **Part 3: Đoạn hội thoại (39 câu)**
-- Nghe đoạn hội thoại và trả lời câu hỏi
-- **Mẹo**: Đọc câu hỏi trước khi nghe
-
-### **Part 4: Bài nói ngắn (30 câu)**
-- Nghe bài nói và trả lời câu hỏi
-- **Mẹo**: Tập trung vào thông tin chính
-
-Bạn muốn tôi giải thích chi tiết phần nào?`;
+    if (last.includes("listening") || last.includes("nghe")) {
+      return `# 🎧 TOEIC Listening – Mẹo nhanh
+- **Part 1:** chú ý hành động, vị trí, số lượng
+- **Part 2:** nghe từ khóa; tránh bẫy đồng âm/chủ đề
+- **Part 3–4:** đọc câu hỏi trước khi nghe; để ý tên riêng, số liệu`;
     }
 
-    if (lastMessage.includes("reading") || lastMessage.includes("đọc")) {
-      return `# 📖 Phần Reading TOEIC
-
-## Cấu trúc chi tiết:
-
-### **Part 5: Hoàn thành câu (30 câu)**
-- Chọn từ/cụm từ phù hợp để hoàn thành câu
-- **Tập trung**: Ngữ pháp, từ vựng, collocation
-
-### **Part 6: Hoàn thành đoạn văn (16 câu)**
-- Chọn từ/cụm từ phù hợp để hoàn thành đoạn văn
-- **Tập trung**: Ngữ cảnh, liên kết câu
-
-### **Part 7: Đọc hiểu (54 câu)**
-- **Part 7A**: Đọc hiểu đơn (29 câu)
-- **Part 7B**: Đọc hiểu kép (25 câu)
-- **Tập trung**: Kỹ năng đọc nhanh, tìm thông tin
-
-## 💡 Chiến lược làm bài:
-1. **Đọc câu hỏi trước** để biết cần tìm gì
-2. **Scan** để tìm thông tin liên quan
-3. **Đọc kỹ** đoạn văn chứa thông tin
-4. **Loại trừ** các đáp án sai
-
-Bạn muốn tôi hướng dẫn chi tiết phần nào?`;
+    if (last.includes("reading") || last.includes("đọc")) {
+      return `# 📖 TOEIC Reading – Chiến lược
+- **Part 5:** ưu tiên thì, từ loại, collocation  
+- **Part 6:** dựa ngữ cảnh trước–sau để chọn  
+- **Part 7:** đọc câu hỏi → scan → đọc kỹ đoạn liên quan`;
     }
 
-    if (lastMessage.includes("grammar") || lastMessage.includes("ngữ pháp")) {
-      return `# 📝 Ngữ pháp TOEIC quan trọng
-
-## Các chủ đề ngữ pháp chính:
-
-### **1. Thì động từ (Tenses)**
-- Present Simple/Continuous
-- Past Simple/Perfect
-- Future forms
-- **Ví dụ**: "The meeting \`will be held\` tomorrow"
-
-### **2. Câu điều kiện (Conditionals)**
-- Type 1: If + present, will + V
-- Type 2: If + past, would + V
-- **Ví dụ**: "If I \`had\` more time, I \`would study\` harder"
-
-### **3. Mệnh đề quan hệ (Relative Clauses)**
-- who, which, that, where, when
-- **Ví dụ**: "The book \`which\` I bought yesterday is interesting"
-
-### **4. Giới từ (Prepositions)**
-- in, on, at, by, for, with, of
-- **Ví dụ**: "I'm interested \`in\` learning English"
-
-### **5. Cấu trúc câu**
-- Passive voice
-- Reported speech
-- Gerunds vs Infinitives
-
-Bạn muốn tôi giải thích chi tiết chủ đề nào?`;
+    if (last.includes("grammar") || last.includes("ngữ pháp")) {
+      return `# 📝 Ngữ pháp trọng điểm
+1) Thì & thể (present/past/future, passive)  
+2) Từ loại (N/V/Adj/Adv)  
+3) Mệnh đề quan hệ (who/which/that/where)  
+4) Giới từ & collocations  
+5) Câu điều kiện (Type 1/2/3)`;
     }
 
-    if (lastMessage.includes("vocabulary") || lastMessage.includes("từ vựng")) {
-      return `# 📚 Từ vựng TOEIC theo chủ đề
+    if (last.includes("vocabulary") || last.includes("từ vựng")) {
+      return `# 📚 Từ vựng theo chủ đề
+- **Business/Office:** agenda, attachment, invoice  
+- **Travel/Hotel:** reservation, itinerary, amenities  
+- **Banking/Shopping:** refund, warranty, transaction
 
-## Các chủ đề từ vựng quan trọng:
-
-### **🏢 Business & Office**
-- **Meeting**: agenda, conference, presentation
-- **Email**: correspondence, attachment, recipient
-- **Office**: equipment, supplies, maintenance
-
-### **✈️ Travel & Transportation**
-- **Flight**: departure, arrival, boarding pass
-- **Hotel**: reservation, check-in, amenities
-- **Transport**: schedule, fare, route
-
-### **🛍️ Shopping & Services**
-- **Shopping**: purchase, refund, warranty
-- **Banking**: account, transaction, interest
-- **Restaurant**: menu, reservation, service
-
-### **🏥 Health & Education**
-- **Health**: appointment, prescription, treatment
-- **Education**: curriculum, enrollment, tuition
-- **Career**: promotion, salary, benefits
-
-## 💡 Mẹo học từ vựng:
-1. **Học theo chủ đề** thay vì học lẻ tẻ
-2. **Tạo câu ví dụ** với từ mới
-3. **Luyện tập thường xuyên** với flashcards
-4. **Đọc nhiều** để gặp từ trong ngữ cảnh
-
-Bạn muốn tôi giúp học từ vựng chủ đề nào?`;
+**Mẹo:** học theo chủ đề → tạo câu ví dụ → ôn cách quãng (spaced repetition)`;
     }
 
-    return `# 🤖 Trợ lý AI TOEIC
-
-Xin chào! Tôi là trợ lý AI chuyên về **TOEIC**. Tôi có thể giúp bạn:
-
-## 🎯 Dịch vụ hỗ trợ:
-
-### **📚 Luyện thi TOEIC**
-- Giải thích cấu trúc bài thi
-- Chiến lược làm bài hiệu quả
-- Mẹo tiết kiệm thời gian
-
-### **📝 Ngữ pháp & Từ vựng**
-- Giải thích ngữ pháp quan trọng
-- Từ vựng theo chủ đề
-- Ví dụ thực tế
-
-### **💡 Hướng dẫn chi tiết**
-- Phân tích từng phần thi
-- Lỗi thường gặp và cách tránh
-- Lộ trình học tập
-
-## 🚀 Bắt đầu ngay:
-Hãy hỏi tôi bất kỳ câu hỏi nào về TOEIC! Ví dụ:
-- "Giải thích Part 1 Listening"
-- "Từ vựng chủ đề Business"
-- "Mẹo làm Part 7 Reading"
-
-**Bạn muốn hỏi gì?** 😊`;
+    // Mặc định: prompt mở cho English
+    return `# 🤖 Trợ lý Tiếng Anh
+Mình chuyên **TOEIC/IELTS, ngữ pháp, từ vựng, phát âm** và kỹ năng đọc–nghe–nói–viết.  
+Bạn có thể hỏi:
+- “Sửa câu này giúp mình”
+- “Giải thích thì hiện tại hoàn thành”
+- “Mẹo làm Part 7 TOEIC”`;
   }
 }
 

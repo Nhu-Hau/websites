@@ -43,11 +43,10 @@ export default function LoginPage() {
     },
   });
 
-function onGoogle() {
-  setGLoading(true);
-  window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/google`;
-}
-
+  function onGoogle() {
+    setGLoading(true);
+    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/google`;
+  }
 
   return (
     <AuthLayout
@@ -104,13 +103,15 @@ function onGoogle() {
           />
           <FieldError message={errors.email} />
         </div>
-
         {/* Password */}
         <PasswordField
           id="password"
           name="password"
           label={t("password")}
-          placeholder="••••••••"
+          placeholder={"Nhập mật khẩu của bạn"}
+          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 outline-none
+                       focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-50/10
+                       text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
           autoComplete="current-password"
           show={pw.show}
           onToggle={pw.toggle}

@@ -8,16 +8,16 @@ export const refreshCookieName = "refresh_token";
 export const signupCookieName = "google_signup";
 export const signupCookieOpts = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  path: "/", 
-  maxAge: 10 * 60 * 1000, 
+  secure: isProd ? true : false,
+  sameSite: isProd ? "none" : "lax",
+  path: "/",
+  maxAge: 10 * 60 * 1000,
 } as const;
 
 export const accessCookieOpts: CookieOptions = {
   httpOnly: true,
   secure: isProd ? true : false,
-  sameSite: isProd ? "none" : "lax", 
+  sameSite: isProd ? "none" : "lax",
   path: "/",
   maxAge: 15 * 60 * 1000,
 };

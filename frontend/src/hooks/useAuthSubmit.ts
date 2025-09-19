@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // hooks/useAuthSubmit.ts
 "use client";
 
@@ -26,23 +26,25 @@ export function useAuthSubmit({ kind, url, t, onSuccess }: SubmitOpts) {
     const fd = new FormData(e.currentTarget);
     const data = Object.fromEntries(fd) as Record<string, string>;
 
-    const errs = validateAuth(kind, data, t);
-    if (hasAuthErrors(errs)) {
-      setErrors(errs);
+    const validationErrors = validateAuth(kind, data, t);
+    if (hasAuthErrors(validationErrors)) {
+      setErrors(validationErrors);
       return;
     }
 
     setErrors({});
     setLoading(true);
+
     try {
       const { ok, json } = await postJson(url, data);
+
       if (!ok) {
-        toast.error(json?.message || t("common.error"));
+        toast.error(json?.message || "Đã xảy ra lỗi, vui lòng thử lại sau.");
         return;
       }
       onSuccess?.(json);
     } catch (err) {
-      toast.error(t("common.error"));
+      toast.error("Đã xảy ra lỗi, vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }

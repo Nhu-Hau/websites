@@ -1,0 +1,162 @@
+{
+  "format": {
+    "p1.people": "Tranh tả người",
+    "p1.object": "Tranh tả vật",
+    "p1.people_object": "Tranh tả cả người và vật",
+
+    "p4.telephone": "Tin nhắn thoại",
+    "p4.news": "Bản tin",
+    "p4.talk": "Bài phát biểu/diễn văn",
+    "p4.meeting_excerpt": "Trích họp",
+
+    "p7.email_letter": "Email/Letter",
+    "p7.article_review": "Article/Review",
+    "p7.advertisement": "Advertisement",
+    "p7.announcement": "Announcement/Notice",
+    "p7.text_chain": "Text message chain",
+    "p7.schedule": "Schedule",
+    "p7.instructions": "Instructions",
+    "p7.list_menu": "List/Menu"
+  },
+
+  "qtype": {
+    "what": "Câu hỏi WHAT",
+    "who": "Câu hỏi WHO",
+    "where": "Câu hỏi WHERE",
+    "when": "Câu hỏi WHEN",
+    "how": "Câu hỏi HOW",
+    "why": "Câu hỏi WHY",
+    "yes_no": "Câu hỏi YES/NO",
+    "tag_question": "Câu hỏi đuôi",
+    "alternative": "Câu hỏi lựa chọn",
+    "request_suggestion": "Câu yêu cầu/đề nghị",
+    "statement": "Câu trần thuật",
+
+    "topic_purpose": "Câu hỏi về chủ đề/mục đích",
+    "identity": "Câu hỏi về danh tính (người nói/địa điểm)",
+    "details": "Câu hỏi chi tiết",
+    "future_action": "Câu hỏi hành động tương lai",
+    "chart_table": "Kết hợp bảng biểu",
+    "implication": "Hàm ý/suy ngẫm",
+    "find_info": "Tìm thông tin",
+    "error_spotting": "Tìm chi tiết sai",
+    "inference": "Suy luận",
+    "insert_sentence": "Điền câu",
+    "synonym": "Tìm từ đồng nghĩa",
+
+    "word_form": "Câu hỏi từ loại",
+    "vocabulary": "Câu hỏi từ vựng",
+    "grammar_check": "Câu hỏi ngữ pháp"
+  },
+
+  "topic": {
+    "company.general_office": "Company - General Office Work",
+    "company.business_marketing": "Company - Business/Marketing",
+    "company.event_project": "Company - Event/Project",
+    "company.facility": "Company - Facility"
+  },
+
+  "grammar": {
+    "noun": "Danh từ",
+    "pronoun": "Đại từ",
+    "adjective": "Tính từ",
+    "tense": "Thì",
+    "voice": "Thể (chủ/bị động)",
+    "adverb": "Trạng từ",
+    "to_inf": "Động từ nguyên mẫu (to-V)",
+    "participle": "Phân từ/Cấu trúc phân từ",
+    "preposition": "Giới từ",
+    "conjunction": "Liên từ",
+    "relative_clause": "Mệnh đề quan hệ",
+    "conditional": "Câu điều kiện"
+  },
+
+  "structure": {
+    "single": "Cấu trúc: một đoạn",
+    "multi": "Cấu trúc: nhiều đoạn"
+  }
+}
+
+{
+  // Part 1
+  "Tranh tả người": "p1.people",
+  "Tranh tả vật": "p1.object",
+  "Tranh tả cả người và vật": "p1.people_object",
+
+  // Part 2
+  "Câu hỏi WHAT": "what",
+  "Câu hỏi WHO": "who",
+  "Câu hỏi WHERE": "where",
+  "Câu hỏi WHEN": "when",
+  "Câu hỏi HOW": "how",
+  "Câu hỏi WHY": "why",
+  "Câu hỏi YES/NO": "yes_no",
+  "Câu hỏi đuôi": "tag_question",
+  "Câu hỏi lựa chọn": "alternative",
+  "Câu yêu cầu, đề nghị": "request_suggestion",
+  "Câu trần thuật": "statement",
+
+  // Part 3/4 common
+  "Câu hỏi về chủ đề, mục đích": "topic_purpose",
+  "Câu hỏi về danh tính người nói": "identity",
+  "Câu hỏi về danh tính, địa điểm": "identity",
+  "Câu hỏi về chi tiết": "details",
+  "Câu hỏi về chi tiết cuộc hội thoại": "details",
+  "Câu hỏi về hành động tương lai": "future_action",
+  "Câu hỏi kết hợp bảng biểu": "chart_table",
+  "Câu hỏi về hàm ý câu nói": "implication",
+  "Câu hỏi yêu cầu, gợi ý": "request_suggestion",
+
+  "Telephone message - Tin nhắn thoại": "p4.telephone",
+  "News report, Broadcast - Bản tin": "p4.news",
+  "Talk - Bài phát biểu, diễn văn": "p4.talk",
+  "Excerpt from a meeting - Trích dẫn từ buổi họp": "p4.meeting_excerpt",
+
+  // Topics
+  "Chủ đề: Company - General Office Work": "topic.company.general_office",
+  "Chủ đề: Company - Business, Marketing": "topic.company.business_marketing",
+  "Chủ đề: Company - Event, Project": "topic.company.event_project",
+  "Chủ đề: Company - Facility": "topic.company.facility",
+
+  // Part 5/6 question groups
+  "Câu hỏi từ loại": "qtype.word_form",
+  "Câu hỏi ngữ pháp": "qtype.grammar_check",
+  "Câu hỏi từ vựng": "qtype.vocabulary",
+  "Câu hỏi điền câu vào đoạn văn": "qtype.insert_sentence",
+
+  // Grammar
+  "Danh từ [Grammar]": "noun",
+  "Đại từ [Grammar]": "pronoun",
+  "Tính từ [Grammar]": "adjective",
+  "Thì [Grammar]": "tense",
+  "Thể [Grammar]": "voice",
+  "Trạng từ [Grammar]": "adverb",
+  "Động từ nguyên mẫu [Grammar]": "to_inf",
+  "Động từ nguyên mẫu có to [Grammar]": "to_inf",
+  "Phân từ và Cấu trúc phân từ [Grammar]": "participle",
+  "Giới từ [Grammar]": "preposition",
+  "Liên từ [Grammar]": "conjunction",
+  "Mệnh đề quan hệ [Grammar]": "relative_clause",
+  "Câu điều kiện [Grammar]": "conditional",
+
+  // Part 6 formats (dùng chung p7.*)
+  "Hình thức: Thư điện tử/ thư tay (Email/ Letter)": "p7.email_letter",
+  "Hình thức: Quảng cáo (Advertisement)": "p7.advertisement",
+
+  // Part 7
+  "Câu hỏi tìm thông tin": "find_info",
+  "Câu hỏi tìm chi tiết sai": "error_spotting",
+  "Câu hỏi suy luận": "inference",
+  "Câu hỏi điền câu": "insert_sentence",
+  "Câu hỏi tìm từ đồng nghĩa": "synonym",
+  "Cấu trúc: một đoạn": "strusingle",
+  "Cấu trúc: nhiều đoạn": "strumulti",
+  "Dạng bài: Email/ Letter: Thư điện tử/ Thư tay": "p7.email_letter",
+  "Dạng bài: Article/ Review: Bài báo/ Bài đánh giá": "p7.article_review",
+  "Dạng bài: Advertisement - Quảng cáo": "p7.advertisement",
+  "Dạng bài: Announcement/ Notice: Thông báo": "p7.announcement",
+  "Dạng bài: Text message chain - Chuỗi tin nhắn": "p7.text_chain",
+  "Dạng bài: Schedule - Lịch trình, thời gian biểu": "p7.schedule",
+  "Dạng bài: Instructions: Văn bản hướng dẫn": "p7.instructions",
+  "Dạng bài: List/ Menu: Danh sách/ Thực đơn": "p7.list_menu"
+};

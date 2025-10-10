@@ -39,6 +39,7 @@ export default function AdminChatPage() {
   const [newMessage, setNewMessage] = React.useState("");
   const [sending, setSending] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [unreadCount, setUnreadCount] = React.useState(0);
 
   React.useEffect(() => {
     (async () => {
@@ -65,6 +66,12 @@ export default function AdminChatPage() {
       });
       const data = await response.json();
       setConversations(data.data || []);
+      
+      // Tính tổng unread count từ tất cả conversations
+      const totalUnread = (data.data || []).reduce((sum: number, conv: any) => 
+        sum + (conv.unreadCount || 0), 0
+      );
+      setUnreadCount(totalUnread);
     } catch (err) {
       console.error("Failed to load conversations:", err);
     }
@@ -73,19 +80,42 @@ export default function AdminChatPage() {
   // Load messages for selected conversation
   const loadMessages = React.useCallback(async (sessionId: string) => {
     if (!sessionId) return;
+    console.log("Loading messages for sessionId:", sessionId);
     setLoading(true);
     try {
       const response = await fetch(`/api/admin-chat/admin/messages/${sessionId}`, {
         credentials: "include",
       });
+      console.log("Response status:", response.status);
       const data = await response.json();
+      console.log("Messages data:", data);
       
       // Loại bỏ tin nhắn trùng lặp dựa trên _id
       const uniqueMessages = (data.data || []).filter((msg: Message, index: number, self: Message[]) => 
         index === self.findIndex(m => m._id === msg._id)
       );
       
+      console.log("Unique messages:", uniqueMessages);
       setMessages(uniqueMessages);
+      
+      // Reset unread count khi admin xem tin nhắn
+      setUnreadCount(0);
+      
+      // Cập nhật conversations để reset unread count cho conversation này
+      setConversations(prev => prev.map(conv => 
+        conv._id === sessionId 
+          ? { ...conv, unreadCount: 0 }
+          : conv
+      ));
+      
+      // Reload conversations để cập nhật unread count
+      loadConversations();
+      
+      // Thông báo cho AdminChatLink component
+      console.log("AdminChatPage: Dispatching admin-viewed-messages event for sessionId:", sessionId);
+      window.dispatchEvent(new CustomEvent('admin-viewed-messages', { 
+        detail: { sessionId } 
+      }));
     } catch (err) {
       console.error("Failed to load messages:", err);
     } finally {
@@ -100,6 +130,7 @@ export default function AdminChatPage() {
   }, [me, loadConversations]);
 
   React.useEffect(() => {
+    console.log("Selected conversation changed:", selectedConversation);
     if (selectedConversation) {
       loadMessages(selectedConversation);
     }
@@ -107,10 +138,18 @@ export default function AdminChatPage() {
 
   // Real-time listeners
   React.useEffect(() => {
-    if (!socket) return;
+    if (!socket) {
+      console.log("Admin chat page: No socket available");
+      return;
+    }
+
+    console.log("Admin chat page: Setting up socket listeners");
+    
+    // Join admin room để nhận tin nhắn
+    socket.emit("admin:join-conversation", "admin");
 
     const handleNewMessage = (data: any) => {
-      console.log("Admin received new-message:", data);
+      console.log("Admin chat page received new-message:", data);
       if (data.message) {
         const newMessage: Message = {
           _id: data.message._id,
@@ -131,6 +170,22 @@ export default function AdminChatPage() {
           }
           return [...prev, newMessage];
         });
+        
+        // Tăng unread count nếu tin nhắn từ user
+        if (data.message.role === 'user') {
+          console.log("Admin chat page: Incrementing unread count");
+          setUnreadCount(prev => prev + 1);
+          
+          // Cập nhật conversations để tăng unread count cho conversation này
+          setConversations(prev => prev.map(conv => 
+            conv._id === data.message.sessionId 
+              ? { ...conv, unreadCount: (conv.unreadCount || 0) + 1 }
+              : conv
+          ));
+          
+          // Reload conversations để cập nhật unread count
+          loadConversations();
+        }
       }
     };
 
@@ -164,22 +219,21 @@ export default function AdminChatPage() {
       loadConversations();
     };
 
-    // Join admin room
-    socket.emit("admin:join-conversation", selectedConversation);
+    // Join admin room để nhận tin nhắn từ tất cả conversations
+    socket.emit("admin:join-conversation", "admin");
 
     socket.on("new-message", handleNewMessage);
     socket.on("admin-message", handleAdminMessage);
     socket.on("conversation-updated", handleConversationUpdate);
 
     return () => {
+      console.log("Admin chat page: Cleaning up socket listeners");
       socket.off("new-message", handleNewMessage);
       socket.off("admin-message", handleAdminMessage);
       socket.off("conversation-updated", handleConversationUpdate);
-      if (selectedConversation) {
-        socket.emit("admin:leave-conversation", selectedConversation);
-      }
+      socket.emit("admin:leave-conversation", "admin");
     };
-  }, [socket, selectedConversation, loadConversations]);
+  }, [socket, loadConversations]);
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || sending) return;
@@ -227,6 +281,11 @@ export default function AdminChatPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <FaUserTie className="h-6 w-6" />
             Quản lý Chat với Admin
+            {unreadCount > 0 && (
+              <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Trả lời tin nhắn từ người dùng

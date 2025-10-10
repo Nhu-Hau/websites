@@ -31,6 +31,8 @@ export function useSocket() {
         return;
       }
 
+      console.log("Admin socket: Initializing with token:", token);
+
       const newSocket = io(process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000", {
         auth: {
           token: token,

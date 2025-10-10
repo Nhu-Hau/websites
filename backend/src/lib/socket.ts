@@ -63,15 +63,29 @@ export function setupSocketIO(server: HTTPServer) {
     // Handle admin chat events
     socket.on("admin:join-conversation", (sessionId: string) => {
       if (socket.isAdmin) {
-        socket.join(`conversation:${sessionId}`);
-        console.log(`Admin ${socket.userId} joined conversation ${sessionId}`);
+        if (sessionId === "admin") {
+          // Join admin room để nhận tất cả tin nhắn
+          socket.join("admin");
+          console.log(`Admin ${socket.userId} joined admin room`);
+        } else {
+          // Join specific conversation
+          socket.join(`conversation:${sessionId}`);
+          console.log(`Admin ${socket.userId} joined conversation ${sessionId}`);
+        }
       }
     });
 
     socket.on("admin:leave-conversation", (sessionId: string) => {
       if (socket.isAdmin) {
-        socket.leave(`conversation:${sessionId}`);
-        console.log(`Admin ${socket.userId} left conversation ${sessionId}`);
+        if (sessionId === "admin") {
+          // Leave admin room
+          socket.leave("admin");
+          console.log(`Admin ${socket.userId} left admin room`);
+        } else {
+          // Leave specific conversation
+          socket.leave(`conversation:${sessionId}`);
+          console.log(`Admin ${socket.userId} left conversation ${sessionId}`);
+        }
       }
     });
 
@@ -108,12 +122,19 @@ export function setupSocketIO(server: HTTPServer) {
 
 // Helper function để emit tin nhắn mới
 export function emitNewMessage(io: SocketIOServer, sessionId: string, message: any) {
+  console.log("emitNewMessage: Emitting to conversation:", sessionId);
   io.to(`conversation:${sessionId}`).emit("new-message", message);
+  
+  console.log("emitNewMessage: Emitting to admin room");
+  // Gửi tin nhắn đến admin room để admin nhận được
+  io.to("admin").emit("new-message", message);
 }
 
 // Helper function để emit tin nhắn admin
 export function emitAdminMessage(io: SocketIOServer, sessionId: string, message: any) {
   io.to(`conversation:${sessionId}`).emit("admin-message", message);
+  // Gửi tin nhắn đến user room để user nhận được
+  io.to(`user:${message.userId}`).emit("admin-message", message);
   io.to("admin").emit("conversation-updated", { sessionId, message });
 }
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import LogoutButton from "./components/LogoutButton";
+import AdminChatLink from "./components/AdminChatLink";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,7 +34,7 @@ export default function RootLayout({
             <nav className="flex items-center gap-4 text-sm">
               <Link href="/" className="hover:underline">Dashboard</Link>
               <Link href="/users" className="hover:underline">Users</Link>
-              <Link href="/admin-chat" className="hover:underline">Admin Chat</Link>
+              <AdminChatLink />
               <LogoutButton />
             </nav>
           </div>

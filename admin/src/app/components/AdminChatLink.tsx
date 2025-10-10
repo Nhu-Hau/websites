@@ -1,0 +1,109 @@
+"use client";
+
+import Link from "next/link";
+import { useSocket } from "../../hooks/useSocket";
+import { useState, useEffect, useCallback } from "react";
+
+export default function AdminChatLink() {
+  const { socket } = useSocket();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Load unread count
+  const loadUnreadCount = useCallback(async () => {
+    try {
+      const response = await fetch("/api/admin-chat/admin/conversations", {
+        credentials: "include",
+      });
+      const data = await response.json();
+      
+      if (data?.data) {
+        // Tính tổng unread count từ tất cả conversations
+        const totalUnread = (data.data || []).reduce((sum: number, conv: any) => 
+          sum + (conv.unreadCount || 0), 0
+        );
+        setUnreadCount(totalUnread);
+      }
+    } catch (err) {
+      console.error("Failed to load unread count:", err);
+    }
+  }, []);
+
+  // Load unread count when component mounts
+  useEffect(() => {
+    loadUnreadCount();
+  }, [loadUnreadCount]);
+
+  // Listen for admin viewed messages event
+  useEffect(() => {
+    console.log("AdminChatLink: Setting up admin-viewed-messages event listener");
+    
+    const handleAdminViewedMessages = (event: CustomEvent) => {
+      console.log("AdminChatLink: Received admin-viewed-messages event:", event.detail);
+      console.log("AdminChatLink: Admin viewed messages, reloading unread count");
+      
+      // Reset unread count ngay lập tức
+      setUnreadCount(0);
+      
+      // Reload unread count để cập nhật chính xác
+      loadUnreadCount();
+    };
+
+    window.addEventListener('admin-viewed-messages', handleAdminViewedMessages as EventListener);
+
+    return () => {
+      console.log("AdminChatLink: Cleaning up admin-viewed-messages event listener");
+      window.removeEventListener('admin-viewed-messages', handleAdminViewedMessages as EventListener);
+    };
+  }, [loadUnreadCount]);
+
+  // Real-time listeners
+  useEffect(() => {
+    if (!socket) {
+      console.log("AdminChatLink: No socket available");
+      return;
+    }
+
+    console.log("AdminChatLink: Setting up socket listeners");
+    
+    // Join admin room để nhận tin nhắn
+    socket.emit("admin:join-conversation", "admin");
+
+    const handleNewMessage = (data: any) => {
+      console.log("Admin navigation received new-message:", data);
+      if (data.message && data.message.role === 'user') {
+        console.log("Admin navigation: Incrementing unread count");
+        setUnreadCount(prev => prev + 1);
+        
+        // Reload unread count để cập nhật chính xác
+        loadUnreadCount();
+      }
+    };
+
+    const handleConversationUpdate = (data: any) => {
+      console.log("Admin navigation received conversation-updated:", data);
+      // Reload unread count when conversation is updated
+      loadUnreadCount();
+    };
+
+    socket.on("new-message", handleNewMessage);
+    socket.on("conversation-updated", handleConversationUpdate);
+
+    return () => {
+      console.log("AdminChatLink: Cleaning up socket listeners");
+      socket.off("new-message", handleNewMessage);
+      socket.off("conversation-updated", handleConversationUpdate);
+      socket.emit("admin:leave-conversation", "admin");
+    };
+  }, [socket, loadUnreadCount]);
+
+  return (
+    <Link href="/admin-chat" className="hover:underline relative">
+      Admin Chat
+      {unreadCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full animate-pulse">
+          {unreadCount > 9 ? "9+" : unreadCount}
+        </span>
+      )}
+    </Link>
+  );
+}

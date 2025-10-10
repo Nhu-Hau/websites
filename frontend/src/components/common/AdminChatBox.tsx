@@ -59,6 +59,7 @@ export default function AdminChatBox() {
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [sessionId, setSessionId] = useState(() => {
     if (typeof window !== "undefined") {
       // Tạo sessionId riêng cho mỗi user
@@ -138,6 +139,34 @@ export default function AdminChatBox() {
     }
   }, [sessionId, user]);
 
+  // Load unread count when component mounts
+  const loadUnreadCount = useCallback(async () => {
+    try {
+      if (!user) return;
+      const response = await fetch(`/api/admin-chat/sessions`, {
+        credentials: "include",
+      });
+      const data = await response.json();
+      
+      if (data?.data) {
+        // Tính tổng unread count từ tất cả sessions
+        const totalUnread = data.data.reduce((sum: number, session: any) => 
+          sum + (session.unreadCount || 0), 0
+        );
+        setUnreadCount(totalUnread);
+      }
+    } catch (err) {
+      console.error("Failed to load unread count:", err);
+    }
+  }, [user]);
+
+  // Load unread count when component mounts
+  useEffect(() => {
+    if (user) {
+      loadUnreadCount();
+    }
+  }, [loadUnreadCount, user]);
+
   useEffect(() => {
     if (user && open) {
       loadChatHistory();
@@ -187,6 +216,11 @@ export default function AdminChatBox() {
           }
           return [...prev, newMessage];
         });
+        
+        // Tăng unread count nếu chat đóng
+        if (!open) {
+          setUnreadCount(prev => prev + 1);
+        }
       }
     };
 
@@ -208,7 +242,7 @@ export default function AdminChatBox() {
       socket.off("error", handleError);
       socket.emit("user:leave-conversation", sessionId);
     };
-  }, [socket, user, sessionId]);
+  }, [socket, user, sessionId, open]);
 
   // Auto-scroll when messages change/open toggles
   useEffect(() => {
@@ -216,6 +250,13 @@ export default function AdminChatBox() {
     if (!el) return;
     el.scrollTop = el.scrollHeight;
   }, [messages, open]);
+
+  // Reset unread count when chat opens
+  useEffect(() => {
+    if (open) {
+      setUnreadCount(0);
+    }
+  }, [open]);
 
   // --- SEND with optimistic UI (user msg + pending admin bubble) ---
   const send = async () => {
@@ -347,20 +388,30 @@ export default function AdminChatBox() {
   return (
     <>
       {/* Floating Button */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Đóng chat admin" : "Mở chat admin"}
-        className="fixed bottom-20 right-5 z-[60] h-14 w-14 rounded-full
-          bg-gradient-to-tr from-green-500 to-emerald-500 text-white
-          shadow-lg shadow-green-500/30 hover:scale-105 active:scale-95 transition
-          dark:from-green-500 dark:to-emerald-500"
-      >
+      <div className="fixed bottom-20 right-5 z-[60]">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Đóng chat admin" : "Mở chat admin"}
+          className="h-14 w-14 rounded-full relative
+            bg-gradient-to-tr from-green-500 to-emerald-500 text-white
+            shadow-lg shadow-green-500/30 hover:scale-105 active:scale-95 transition
+            dark:from-green-500 dark:to-emerald-500"
+        >
         {open ? (
           <FiX className="mx-auto h-6 w-6" />
         ) : (
           <FaUserTie className="mx-auto h-6 w-6" />
         )}
-      </button>
+        
+        </button>
+        
+        {/* Notification Badge */}
+        {unreadCount > 0 && (
+          <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center animate-pulse">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </div>
+        )}
+      </div>
 
       {/* Panel */}
       <div

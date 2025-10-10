@@ -42,10 +42,17 @@ router.post("/send", requireAuth, async (req, res, next) => {
     // Emit real-time message
     const io = (global as any).io;
     if (io) {
+      console.log("Emitting new message to admin room:", {
+        sessionId,
+        message: userMessage.toObject(),
+        type: "user-message"
+      });
       emitNewMessage(io, sessionId, {
         message: userMessage.toObject(),
         type: "user-message"
       });
+    } else {
+      console.log("No socket.io instance available");
     }
 
     res.json({
@@ -236,7 +243,10 @@ router.get("/admin/messages/:sessionId", requireAdminAuth, async (req, res, next
     });
 
     if (!sessionExists) {
-      return res.status(404).json({ message: "Conversation not found" });
+      // Nếu sessionId chưa tồn tại, trả về array rỗng (chưa có tin nhắn)
+      return res.json({
+        data: [],
+      });
     }
 
     const messages = await AdminChatMessage.find({

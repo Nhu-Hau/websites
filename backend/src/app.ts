@@ -47,7 +47,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin-chat", adminChatRoutes);
 app.use("/api/admin-auth", adminAuthRoutes);
 app.use("/api/socket-auth", socketAuthRoutes);
-app.use("/api", practiceRoutes);
+app.use("/api/practice", practiceRoutes);
 app.use("/api/courses", coursesRoutes);
 app.use("/api/payments", paymentsRoutes);
 

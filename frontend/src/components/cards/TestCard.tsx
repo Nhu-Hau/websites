@@ -1,7 +1,18 @@
+// frontend/src/components/cards/TestCard.tsx
 "use client";
 
+import React from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShieldCheck, Lock, Timer, ListChecks } from "lucide-react";
+import { Timer, ListChecks, CheckCircle2, RotateCcw, BarChart3 } from "lucide-react";
+
+export type AttemptSummary = {
+  lastAt: string; // ISO
+  correct: number;
+  total: number;
+  acc: number; // 0..1
+  count: number;
+};
 
 type Props = {
   locale: string;
@@ -10,7 +21,8 @@ type Props = {
   test: number;
   totalQuestions?: number;
   durationMin?: number;
-  access?: "free" | "premium";
+  /** Thông tin “đã làm” lấy từ /api/practice/progress */
+  attemptSummary?: AttemptSummary;
 };
 
 export default function TestCard({
@@ -20,14 +32,16 @@ export default function TestCard({
   test,
   totalQuestions = 10,
   durationMin = 10,
-  access = "free",
+  attemptSummary,
 }: Props) {
-  const isPro = access === "premium";
+  const router = useRouter();
 
-  const accessBadgeClass =
-    access === "free"
-      ? "bg-gradient-to-r from-blue-100/80 to-sky-200/80 text-blue-900 border-blue-300/50 dark:from-sky-700/50 dark:to-sky-600/50 dark:text-sky-200 dark:border-sky-700/50"
-      : "bg-gradient-to-r from-orange-200/80 to-red-200/80 text-red-900 border-red-300/50 dark:from-orange-900/50 dark:to-red-800/50 dark:text-red-300 dark:border-red-700/50";
+  const href = `/${encodeURIComponent(locale)}/practice/${encodeURIComponent(partKey)}/${level}/${test}`;
+  const historyHref = `/${encodeURIComponent(locale)}/practice/history?partKey=${encodeURIComponent(
+    partKey
+  )}&level=${level}&test=${test}`;
+
+  const ribbonBg = "bg-[#272343] dark:bg-zinc-700";
 
   const levelStyles: Record<
     1 | 2 | 3,
@@ -57,38 +71,34 @@ export default function TestCard({
   };
 
   const d = levelStyles[level];
-  const href = `/${encodeURIComponent(locale)}/practice/${encodeURIComponent(
-    partKey
-  )}/${level}/${test}`;
-  const ribbonBg = "bg-[#272343] dark:bg-zinc-700";
+  const done = !!attemptSummary;
 
-  const card = (
+  function goDoTest() {
+    router.push(href);
+  }
+
+  return (
     <div
-      className={`group relative block overflow-hidden rounded-2xl border border-zinc-300/50 bg-white/60 p-6 shadow-lg backdrop-blur-md transition-all duration-500 hover:shadow-2xl dark:border-zinc-700/50 dark:bg-zinc-800/50 ${
-        isPro ? "cursor-not-allowed opacity-70 grayscale-[35%]" : ""
-      }`}
+      role="button"
+      onClick={goDoTest}
+      className="group relative block overflow-hidden rounded-2xl border border-zinc-300/50 bg-white/60 p-6 shadow-lg backdrop-blur-md transition-all duration-500 hover:shadow-2xl dark:border-zinc-700/50 dark:bg-zinc-800/50"
     >
+      {/* shimmer */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-zinc-100/20 via-transparent to-zinc-300/10 opacity-60 transition-opacity duration-500 group-hover:opacity-80 dark:from-zinc-800/20 dark:to-zinc-950/10" />
 
-      {/* góc phải badge */}
-      <div
-        className={`absolute right-4 top-4 z-20 flex items-center gap-2 rounded-xl border px-3 py-1.5 shadow-sm border-white/40 backdrop-blur-sm ${accessBadgeClass}`}
-      >
-        <span className="relative z-10 flex items-center gap-1 text-[11px] font-semibold">
-          {access === "free" ? (
-            <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-          ) : (
-            <Lock className="h-3.5 w-3.5" aria-hidden />
-          )}
-          {access.toUpperCase()}
-        </span>
-      </div>
+      {/* Ribbon ĐÃ LÀM */}
+      {done && (
+        <div className="absolute -right-9 top-5 z-20 rotate-45">
+          <div className="flex items-center gap-1 rounded-md bg-emerald-600 px-8 py-1 text-xs font-bold text-white shadow-md">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            <span>ĐÃ LÀM</span>
+          </div>
+        </div>
+      )}
 
-      {/* phần tiêu đề + thanh level */}
+      {/* Tiêu đề + level */}
       <div className="relative z-10 flex flex-col gap-3">
-        <h3
-          className={`text-base sm:text-lg font-bold text-white px-3 py-1.5 rounded-md shadow-sm tracking-tight w-fit ${ribbonBg}`}
-        >
+        <h3 className={`text-base sm:text-lg font-bold text-white px-3 py-1.5 rounded-md shadow-sm tracking-tight w-fit ${ribbonBg}`}>
           Test {test}
         </h3>
 
@@ -100,19 +110,15 @@ export default function TestCard({
             {[1, 2, 3].map((i) => (
               <span
                 key={i}
-                className={`h-3 w-1 rounded-sm bg-current/30 ${
-                  i <= d.bars ? "bg-current" : ""
-                }`}
+                className={`h-3 w-1 rounded-sm bg-current/30 ${i <= d.bars ? "bg-current" : ""}`}
               />
             ))}
           </div>
-          <span className="text-[11px] font-semibold tracking-wide uppercase">
-            {d.label}
-          </span>
+          <span className="text-[11px] font-semibold tracking-wide uppercase">{d.label}</span>
         </div>
       </div>
 
-      {/* info hàng dưới */}
+      {/* Info hàng dưới */}
       <div className="relative z-10 mt-4 flex items-center gap-4 text-sm font-medium tracking-wide text-zinc-700 dark:text-zinc-300">
         <div className="flex items-center gap-1.5">
           <ListChecks className="h-4 w-4" aria-hidden />
@@ -122,20 +128,45 @@ export default function TestCard({
           <Timer className="h-4 w-4" aria-hidden />
           <span>{durationMin} phút</span>
         </div>
+        {done && typeof attemptSummary?.acc === "number" && (
+          <div className="ml-auto text-xs text-zinc-600 dark:text-zinc-400">
+            Lần gần nhất: <b>{Math.round((attemptSummary.acc ?? 0) * 100)}%</b>
+          </div>
+        )}
       </div>
 
-      {/* CTA */}
-      <div className="relative z-10 mt-5 flex items-center gap-2 text-sm font-semibold text-zinc-700 transition-colors duration-300 group-hover:text-zinc-900 dark:text-zinc-300 dark:group-hover:text-white">
-        <span>Làm bài ngay</span>
-        <span
-          aria-hidden
-          className="text-zinc-400 group-hover:text-zinc-600 dark:text-zinc-500 dark:group-hover:text-zinc-400"
+      {/* Footer: 2 nút cùng một hàng */}
+      <div className="relative z-10 mt-5 flex items-center justify-between">
+        {/* Nút làm bài / làm lại */}
+        <Link
+          href={href}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex items-center gap-2 rounded-xl text-zinc-700 dark:text-zinc-300"
         >
-          →
-        </span>
+          {done ? (
+            <>
+              <RotateCcw className="h-4 w-4" />
+              Làm lại
+            </>
+          ) : (
+            <>Làm bài ngay</>
+          )}
+        </Link>
+
+        {/* Nút xem lịch sử (chỉ khi đã làm) */}
+        {done ? (
+          <Link
+            href={historyHref}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700"
+          >
+            <BarChart3 className="h-4 w-4" />
+            Xem lịch sử
+          </Link>
+        ) : (
+          <span className="text-xs text-zinc-400">Chưa có lịch sử</span>
+        )}
       </div>
     </div>
   );
-
-  return isPro ? card : <Link href={href}>{card}</Link>;
 }

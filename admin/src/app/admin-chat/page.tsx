@@ -79,7 +79,13 @@ export default function AdminChatPage() {
         credentials: "include",
       });
       const data = await response.json();
-      setMessages(data.data || []);
+      
+      // Loại bỏ tin nhắn trùng lặp dựa trên _id
+      const uniqueMessages = (data.data || []).filter((msg: Message, index: number, self: Message[]) => 
+        index === self.findIndex(m => m._id === msg._id)
+      );
+      
+      setMessages(uniqueMessages);
     } catch (err) {
       console.error("Failed to load messages:", err);
     } finally {
@@ -116,7 +122,15 @@ export default function AdminChatPage() {
           isRead: data.message.isRead,
           createdAt: data.message.createdAt,
         };
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => {
+          // Kiểm tra xem tin nhắn đã tồn tại chưa
+          const exists = prev.some(msg => msg._id === newMessage._id);
+          if (exists) {
+            console.log("Message already exists, skipping:", newMessage._id);
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
       }
     };
 
@@ -133,7 +147,15 @@ export default function AdminChatPage() {
           isRead: data.message.isRead,
           createdAt: data.message.createdAt,
         };
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => {
+          // Kiểm tra xem tin nhắn đã tồn tại chưa
+          const exists = prev.some(msg => msg._id === newMessage._id);
+          if (exists) {
+            console.log("Message already exists, skipping:", newMessage._id);
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
       }
     };
 

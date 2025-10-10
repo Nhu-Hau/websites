@@ -122,7 +122,13 @@ export default function AdminChatBox() {
             at: new Date(msg.createdAt).getTime(),
           })
         );
-        setMessages(formattedMessages);
+        
+        // Loại bỏ tin nhắn trùng lặp dựa trên id
+        const uniqueMessages = formattedMessages.filter((msg, index, self) => 
+          index === self.findIndex(m => m.id === msg.id)
+        );
+        
+        setMessages(uniqueMessages);
       } else {
         // Nếu không có data, set messages rỗng
         setMessages([]);
@@ -151,7 +157,15 @@ export default function AdminChatBox() {
           content: data.message.content,
           at: new Date(data.message.createdAt).getTime(),
         };
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => {
+          // Kiểm tra xem tin nhắn đã tồn tại chưa
+          const exists = prev.some(msg => msg.id === newMessage.id);
+          if (exists) {
+            console.log("Message already exists, skipping:", newMessage.id);
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
       }
     };
 
@@ -164,7 +178,15 @@ export default function AdminChatBox() {
           content: data.message.content,
           at: new Date(data.message.createdAt).getTime(),
         };
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => {
+          // Kiểm tra xem tin nhắn đã tồn tại chưa
+          const exists = prev.some(msg => msg.id === newMessage.id);
+          if (exists) {
+            console.log("Message already exists, skipping:", newMessage.id);
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
       }
     };
 
@@ -238,8 +260,8 @@ export default function AdminChatBox() {
       const { message } = json.data;
 
       // 2) Thay bubble tạm bằng dữ liệu thật từ server
-      setMessages((prev) =>
-        prev.map((m) => {
+      setMessages((prev) => {
+        const updatedMessages = prev.map((m) => {
           if (m.id === tempUserId) {
             return {
               id: message._id,
@@ -257,15 +279,22 @@ export default function AdminChatBox() {
             };
           }
           return m;
-        })
-      );
+        });
+        
+        // Loại bỏ tin nhắn trùng lặp dựa trên id
+        const uniqueMessages = updatedMessages.filter((msg, index, self) => 
+          index === self.findIndex(m => m.id === msg.id)
+        );
+        
+        return uniqueMessages;
+      });
     } catch (err: unknown) {
       console.error("Failed to send message:", err);
       setError((err as Error).message || "Có lỗi xảy ra khi gửi tin nhắn");
 
       // Chuyển bubble pending thành thông báo
-      setMessages((prev) =>
-        prev.map((m) =>
+      setMessages((prev) => {
+        const updatedMessages = prev.map((m) =>
           m.id === tempAdminId
             ? {
                 ...m,
@@ -273,8 +302,15 @@ export default function AdminChatBox() {
                 content: "Admin sẽ trả lời sớm nhất có thể. Cảm ơn bạn đã liên hệ!",
               }
             : m
-        )
-      );
+        );
+        
+        // Loại bỏ tin nhắn trùng lặp dựa trên id
+        const uniqueMessages = updatedMessages.filter((msg, index, self) => 
+          index === self.findIndex(m => m.id === msg.id)
+        );
+        
+        return uniqueMessages;
+      });
     } finally {
       setSending(false);
     }

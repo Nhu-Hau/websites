@@ -14,6 +14,9 @@ import placementRoutes from "./routes/placement.routes";
 // import communityRoutes from "./routes/community.routes";
 import partsRoutes from "./routes/parts.routes";
 import adminRoutes from "./routes/admin.routes";
+import adminChatRoutes from "./routes/adminChat.routes";
+import adminAuthRoutes from "./routes/adminAuth.routes";
+import socketAuthRoutes from "./routes/socketAuth.routes";
 
 const app = express();
 const FRONTEND_ORIGIN = process.env.CLIENT_URL || "http://localhost:3000";
@@ -47,6 +50,9 @@ app.use("/api/placement", placementRoutes);
 // app.use("/api/community", communityRoutes);
 app.use("/api/parts", partsRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin-chat", adminChatRoutes);
+app.use("/api/admin-auth", adminAuthRoutes);
+app.use("/api/socket-auth", socketAuthRoutes);
 
 // Error handler (quan trọng: luôn đặt cuối cùng)
 app.use((err: any, _req: any, res: any, _next: any) => {

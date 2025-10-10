@@ -116,6 +116,22 @@
     "clearChat": "Xóa cuộc trò chuyện",
     "error": "Có lỗi xảy ra khi gửi tin nhắn"
   },
+  "adminChat": {
+    "title": "Chat với Admin",
+    "subtitle": "Liên hệ với quản trị viên",
+    "empty": "Hãy bắt đầu cuộc trò chuyện với admin",
+    "placeholder": "Nhập tin nhắn...",
+    "send": "Gửi",
+    "sending": "Đang gửi",
+    "openChat": "Mở chat",
+    "closeChat": "Đóng chat",
+    "close": "Đóng",
+    "loginRequired": "Vui lòng đăng nhập để sử dụng chat",
+    "clearChat": "Xóa cuộc trò chuyện",
+    "error": "Có lỗi xảy ra khi gửi tin nhắn",
+    "admin": "Admin",
+    "user": "Bạn"
+  },
   "ForgotPassword": {
     "title": "Quên mật khẩu",
     "subtitle": "Nhập email. Nếu khớp, bạn sẽ nhận được liên kết đặt lại mật khẩu.",

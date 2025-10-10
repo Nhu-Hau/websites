@@ -3,10 +3,10 @@ import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  // Protect /users -> require access token cookie
-  if (pathname.startsWith("/users")) {
-    const hasAccess = req.cookies.has("access_token") || req.cookies.has("accessToken") || req.cookies.has("access");
-    if (!hasAccess) {
+  // Protect admin routes -> require admin token cookie
+  if (pathname.startsWith("/users") || pathname.startsWith("/admin-chat")) {
+    const hasAdminAccess = req.cookies.has("adminToken");
+    if (!hasAdminAccess) {
       const url = req.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("next", pathname);
@@ -17,7 +17,7 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/users/:path*"],
+  matcher: ["/users/:path*", "/admin-chat/:path*"],
 };
 
 

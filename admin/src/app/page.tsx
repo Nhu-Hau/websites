@@ -13,7 +13,7 @@ export default function Home() {
   React.useEffect(() => {
     (async () => {
       try {
-        const r = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+        const r = await fetch("/api/admin-auth/me", { credentials: "include", cache: "no-store" });
         if (r.ok) {
           const j = await r.json();
           setMe({ id: j?.id, role: j?.role });

@@ -31,7 +31,9 @@ export default function RootLayout({
           <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
             <Link href="/" className="font-semibold text-tealCustom">Admin</Link>
             <nav className="flex items-center gap-4 text-sm">
+              <Link href="/" className="hover:underline">Dashboard</Link>
               <Link href="/users" className="hover:underline">Users</Link>
+              <Link href="/admin-chat" className="hover:underline">Admin Chat</Link>
               <LogoutButton />
             </nav>
           </div>

@@ -7,6 +7,7 @@ import { routing } from "@/routing";
 import { cookies } from "next/headers";
 import { ThemeProvider } from "../../context/ThemeContext";
 import ChatBox from "../../components/common/ChatBox";
+import AdminChatBox from "../../components/common/AdminChatBox";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "sonner";
 
@@ -35,6 +36,7 @@ export default async function LocaleLayout({
           <Header />
           <main>{children}</main>
           <ChatBox />
+          <AdminChatBox />
           <Footer />
           <Toaster richColors position="top-center" />
         </AuthProvider>

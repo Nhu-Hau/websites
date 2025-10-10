@@ -120,6 +120,22 @@
     "clearChat": "Clear conversation",
     "error": "An error occurred while sending message"
   },
+  "adminChat": {
+    "title": "Chat with Admin",
+    "subtitle": "Contact administrator",
+    "empty": "Start a conversation with admin",
+    "placeholder": "Type a message...",
+    "send": "Send",
+    "sending": "Sending",
+    "openChat": "Open chat",
+    "closeChat": "Close chat",
+    "close": "Close",
+    "loginRequired": "Please login to use chat",
+    "clearChat": "Clear conversation",
+    "error": "An error occurred while sending message",
+    "admin": "Admin",
+    "user": "You"
+  },
   "ForgotPassword": {
     "title": "Forgot password",
     "subtitle": "Enter your email. If it matches, you'll receive a reset link.",

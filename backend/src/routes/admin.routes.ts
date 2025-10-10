@@ -1,11 +1,10 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/requireAuth";
-import { requireAdmin } from "../middleware/requireAdmin";
+import { requireAdminAuth } from "../middleware/requireAdminAuth";
 import { deleteUser, listUsers, updateUser, overviewPlacementScores, userScores } from "../controllers/admin.controller";
 
 const router = Router();
 
-router.use(requireAuth, requireAdmin);
+router.use(requireAdminAuth);
 
 router.get("/users", listUsers);
 router.patch("/users/:id", updateUser);

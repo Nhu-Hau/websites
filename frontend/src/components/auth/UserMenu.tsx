@@ -17,7 +17,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import Dropdown from "../common/DropIconHeader";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
@@ -26,12 +26,21 @@ type Access = "free" | "premium";
 type Lvl = 1 | 2 | 3 | 4;
 
 type PartStat = { total: number; correct: number; acc: number };
-type AttemptLite = {
+
+type AttemptItem = {
+  id: string;
+  part: string;           // "part.1" ... "part.7"
+  isCorrect?: boolean;    // một số BE dùng isCorrect
+  correct?: boolean;      // phòng trường hợp tên khác
+};
+
+type AttemptFull = {
   _id: string;
   acc: number;
   submittedAt?: string;
   partStats?: Record<string, PartStat>;
   predicted?: { overall: number; listening: number; reading: number };
+  items?: AttemptItem[]; // để tổng hợp khi thiếu partStats
 };
 
 const PART_ORDER = ["part.1","part.2","part.3","part.4","part.5","part.6","part.7"];
@@ -88,23 +97,41 @@ function partLabel(key: string) {
   return n ? `Part ${n}` : key;
 }
 
+/** Gom thống kê per-part từ attempt.items khi BE không trả sẵn partStats */
+function buildPartStatsFromItems(items?: AttemptItem[]): Record<string, PartStat> {
+  const stats: Record<string, { total: number; correct: number }> = {};
+  if (!items?.length) return {};
+  for (const it of items) {
+    const part = it.part || "unknown";
+    if (!stats[part]) stats[part] = { total: 0, correct: 0 };
+    stats[part].total += 1;
+    const ok = it.isCorrect ?? it.correct ?? false;
+    if (ok) stats[part].correct += 1;
+  }
+  const out: Record<string, PartStat> = {};
+  for (const [k, v] of Object.entries(stats)) {
+    out[k] = { total: v.total, correct: v.correct, acc: v.total ? v.correct / v.total : 0 };
+  }
+  return out;
+}
+
 export default function UserMenu() {
   const t = useTranslations("UserMenu");
   const { user, logout } = useAuth();
   const router = useRouter();
+  const locale = useLocale();
 
   const [loadingPT, setLoadingPT] = React.useState(false);
-  const [latest, setLatest] = React.useState<AttemptLite | null>(null);
+  const [latest, setLatest] = React.useState<AttemptFull | null>(null);
 
   React.useEffect(() => {
     let mounted = true;
-    if (!user) {
-      setLatest(null);
-      return;
-    }
     (async () => {
+      if (!user) { setLatest(null); return; }
       try {
         setLoadingPT(true);
+
+        // 1) Lấy id attempt gần nhất
         const res = await fetch("/api/placement/attempts?limit=1", {
           credentials: "include",
           cache: "no-store",
@@ -113,20 +140,33 @@ export default function UserMenu() {
         const j = await res.json();
         const id = j?.items?.[0]?._id as string | undefined;
         if (!id) return;
+
+        // 2) Lấy full attempt
         const d = await fetch(`/api/placement/attempts/${id}`, {
           credentials: "include",
           cache: "no-store",
         });
         if (!d.ok) return;
-        const full = await d.json();
+        const full = (await d.json()) as AttemptFull;
+
         if (!mounted) return;
+
+        // 3) Nếu thiếu partStats → tự build từ items
+        let partStats = full.partStats;
+        if (!partStats || Object.keys(partStats).length === 0) {
+          partStats = buildPartStatsFromItems(full.items);
+        }
+
         setLatest({
           _id: full._id,
           acc: full.acc,
           submittedAt: full.submittedAt,
-          partStats: full.partStats,
           predicted: full.predicted,
+          partStats,
+          items: full.items,
         });
+      } catch {
+        // ignore
       } finally {
         if (mounted) setLoadingPT(false);
       }
@@ -156,11 +196,17 @@ export default function UserMenu() {
   const userRole = (user?.role as Role | undefined) ?? "user";
   const userAccess = (user?.access as Access | undefined) ?? "free";
 
+  // Dùng stats đã chuẩn hoá; phần nào không có dữ liệu sẽ hiển thị "—"
+  const stats = latest?.partStats ?? {};
   const partRows = PART_ORDER.map((key) => {
-    const stat = latest?.partStats?.[key];
-    if (!stat) return { key, label: partLabel(key), level: null as Lvl | null, href: undefined as string | undefined };
+    const stat = stats[key];
+    if (!stat || !stat.total) {
+      return { key, label: partLabel(key), level: null as Lvl | null, href: undefined as string | undefined };
+    }
     const lv = accToLevel(stat.acc);
-    return { key, label: partLabel(key), level: lv, href: `/practice/parts/${encodeURIComponent(key)}?level=${lv}` };
+    // ✅ Link luôn kèm locale + query level
+    const href = `/${locale}/practice/${encodeURIComponent(key)}?level=${lv}`;
+    return { key, label: partLabel(key), level: lv, href };
   });
 
   return (
@@ -169,13 +215,16 @@ export default function UserMenu() {
         <>
           {/* Trang cá nhân */}
           <li>
-            <Link href="/account" className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700">
+            <Link
+              href={`/${locale}/account`}
+              className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+            >
               <IdCard className="h-4 w-4 text-blue-500" />
               <span>Trang cá nhân</span>
             </Link>
           </li>
 
-          {/* Quyền & Gói (hai dòng độc lập, theo kiểu <li> như bạn yêu cầu) */}
+          {/* Quyền */}
           <li>
             <div className="flex items-center justify-between px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100">
               <div className="flex items-center gap-2">
@@ -186,10 +235,15 @@ export default function UserMenu() {
             </div>
           </li>
 
+          {/* Gói */}
           <li>
             <div className="flex items-center justify-between px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100">
               <div className="flex items-center gap-2">
-                {userAccess === "premium" ? <Crown className="h-4 w-4 text-yellow-500" /> : <Star className="h-4 w-4 text-gray-400" />}
+                {userAccess === "premium" ? (
+                  <Crown className="h-4 w-4 text-yellow-500" />
+                ) : (
+                  <Star className="h-4 w-4 text-gray-400" />
+                )}
                 <span>Gói</span>
               </div>
               <AccessBadge access={userAccess} />
@@ -223,33 +277,31 @@ export default function UserMenu() {
             </div>
           </li>
 
-          {/* Các Part & level gợi ý từ lần Placement gần nhất (nếu có) */}
-          {latest && (
-            <>
-              <li className="px-4 py-2 text-xs uppercase tracking-wide text-zinc-500">Gợi ý theo Part</li>
-              {partRows.map((row) => (
-                <li key={row.key}>
-                  <Link
-                    href={row.href || "#"}
-                    className={`flex items-center justify-between px-4 py-3 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 ${
-                      row.href ? "text-zinc-800 dark:text-zinc-100" : "text-zinc-400 cursor-not-allowed"
-                    }`}
-                    aria-disabled={!row.href}
-                    onClick={(e) => { if (!row.href) e.preventDefault(); }}
-                  >
-                    <span>{row.label}</span>
-                    {row.level ? (
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${LV_BADGE[row.level]}`}>
-                        Lv {row.level}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-zinc-400">—</span>
-                    )}
-                  </Link>
-                </li>
-              ))}
-            </>
-          )}
+          {/* Gợi ý theo Part (tự tính nếu thiếu partStats) */}
+          <li className="px-4 py-2 text-xs uppercase tracking-wide text-zinc-500">
+            Gợi ý theo Part
+          </li>
+          {partRows.map((row) => (
+            <li key={row.key}>
+              <Link
+                href={row.href || "#"}
+                className={`flex items-center justify-between px-4 py-3 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 ${
+                  row.href ? "text-zinc-800 dark:text-zinc-100" : "text-zinc-400 cursor-not-allowed"
+                }`}
+                aria-disabled={!row.href}
+                onClick={(e) => { if (!row.href) e.preventDefault(); }}
+              >
+                <span>{row.label}</span>
+                {row.level ? (
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${LV_BADGE[row.level]}`}>
+                    Level {row.level}
+                  </span>
+                ) : (
+                  <span className="text-xs text-zinc-400">—</span>
+                )}
+              </Link>
+            </li>
+          ))}
 
           {/* Đăng xuất */}
           <li>
@@ -265,13 +317,19 @@ export default function UserMenu() {
       ) : (
         <>
           <li>
-            <Link href="/auth/login" className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700">
+            <Link
+              href={`/${locale}/auth/login`}
+              className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+            >
               <LogIn className="h-4 w-4 text-green-600" />
               <span>{t("login")}</span>
             </Link>
           </li>
           <li>
-            <Link href="/auth/register" className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700">
+            <Link
+              href={`/${locale}/auth/register`}
+              className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+            >
               <UserPlus className="h-4 w-4 text-indigo-600" />
               <span>{t("register")}</span>
             </Link>

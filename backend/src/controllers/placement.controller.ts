@@ -1,4 +1,3 @@
-// src/controllers/placement.controller.ts
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import PlacementAttempt from "../models/PlacementAttempt";
@@ -7,16 +6,12 @@ import { User } from "../models/User";
 const ITEMS_COLL = process.env.ITEMS_COLL || "parts_placement";
 const STIMULI_COLL = process.env.STIMULI_COLL || "stimuli_placement";
 
-// map độ chính xác -> level 1..4
 function accToLevel(acc: number): 1 | 2 | 3 | 4 {
   if (acc >= 0.85) return 4;
   if (acc >= 0.7) return 3;
   if (acc >= 0.55) return 2;
   return 1;
 }
-
-// Tính điểm ước lượng TOEIC 990 (tuyến tính)
-// Listening ~ 495, Reading ~ 495, Overall = L + R
 function predictToeic(listeningAcc: number, readingAcc: number) {
   const listening = Math.max(
     0,
@@ -164,15 +159,12 @@ export async function gradePlacement(req: Request, res: Response) {
   });
 }
 
-// POST /api/placement/submit
-// Body: { testId, answers: Record<itemId,"A"|"B"|"C"|"D">, allIds: string[], timeSec, startedAt?, version? }
-// Lưu và trả về { attemptId, ...result (+ predicted, partStats, weakParts) }
 export async function submitPlacement(req: Request, res: Response) {
   try {
     const userId = (req as any).auth?.userId;
     if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
 
-    // Không cho làm lại
+    // không cho làm lại
     const existed = await PlacementAttempt.findOne({ userId });
     if (existed) {
       return res
@@ -242,10 +234,11 @@ export async function submitPlacement(req: Request, res: Response) {
       };
     });
 
-    for (const k of Object.keys(partStats)) {
+    // tính acc từng part
+    Object.keys(partStats).forEach((k) => {
       const s = partStats[k];
       s.acc = s.total ? s.correct / s.total : 0;
-    }
+    });
 
     const acc = total ? correct / total : 0;
     const level = accToLevel(acc);
@@ -253,17 +246,15 @@ export async function submitPlacement(req: Request, res: Response) {
     const listening = { total: L, correct: Lc, acc: L ? Lc / L : 0 };
     const reading = { total: R, correct: Rc, acc: R ? Rc / R : 0 };
 
-    // điểm ước lượng
     const predicted = predictToeic(listening.acc, reading.acc);
 
-    // part yếu
     const WEAK_THRESH = 0.6;
     const weakParts = Object.entries(partStats)
       .filter(([, s]) => s.acc < WEAK_THRESH)
       .sort((a, b) => a[1].acc - b[1].acc)
       .map(([k]) => k);
 
-    // Lưu DB (giữ schema cũ, không lưu predicted/partStats/weakParts)
+    // Lưu Attempt
     const attempt = await PlacementAttempt.create({
       userId,
       testId,
@@ -281,7 +272,13 @@ export async function submitPlacement(req: Request, res: Response) {
       version: version || "1.0.0",
     });
 
-    // cập nhật user
+    // === NEW: tính partLevels & toeicPred để lưu vào User ===
+    const partLevels: Record<string, 1 | 2 | 3 | 4> = {};
+    Object.entries(partStats).forEach(([k, s]) => {
+      partLevels[k] = accToLevel(s.acc);
+    });
+    const toeicPred = predicted; // {overall,listening,reading}
+
     await User.findByIdAndUpdate(
       userId,
       {
@@ -290,6 +287,8 @@ export async function submitPlacement(req: Request, res: Response) {
           levelUpdatedAt: new Date(),
           levelSource: "placement",
           lastPlacementAttemptId: attempt._id,
+          partLevels, // NEW
+          toeicPred, // NEW
         },
       },
       { new: false }
@@ -304,11 +303,9 @@ export async function submitPlacement(req: Request, res: Response) {
       reading,
       timeSec: timeSec || 0,
       level,
-      // NEW fields trả về cho FE
       predicted,
       partStats,
       weakParts,
-      //
       answersMap: itemResults.reduce((m, r) => {
         m[r.id] = { correctAnswer: r.correctAnswer };
         return m;
@@ -378,7 +375,10 @@ export async function getPlacementAttemptById(req: Request, res: Response) {
 }
 
 // controllers/placement.controller.ts
-export async function getPlacementAttemptItemsOrdered(req: Request, res: Response) {
+export async function getPlacementAttemptItemsOrdered(
+  req: Request,
+  res: Response
+) {
   try {
     const userId = (req as any).auth?.userId;
     if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
@@ -399,7 +399,9 @@ export async function getPlacementAttemptItemsOrdered(req: Request, res: Respons
 
     // Lấy items và sort theo vị trí trong ids (server-side)
     const itemsCol = db.collection(process.env.ITEMS_COLL || "parts_placement");
-    const stimCol = db.collection(process.env.STIMULI_COLL || "stimuli_placement");
+    const stimCol = db.collection(
+      process.env.STIMULI_COLL || "stimuli_placement"
+    );
 
     const items = await itemsCol
       .aggregate([
@@ -411,7 +413,9 @@ export async function getPlacementAttemptItemsOrdered(req: Request, res: Respons
       .toArray();
 
     // Map stimulus ids
-    const sids = Array.from(new Set(items.map((it: any) => it.stimulusId).filter(Boolean)));
+    const sids = Array.from(
+      new Set(items.map((it: any) => it.stimulusId).filter(Boolean))
+    );
     const stArr = sids.length
       ? await stimCol
           .find({ id: { $in: sids } }, { projection: { _id: 0 } })

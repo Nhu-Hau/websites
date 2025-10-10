@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import PartCard from "@/components/cards/PartCard";
 
 const PART_META: Record<string, { title: string; defaultQuestions: number; defaultDuration: number }> = {
@@ -19,6 +19,9 @@ const LEVELS: (1 | 2 | 3 | 4)[] = [1, 2, 3, 4];
 
 export default function PartPage() {
   const { locale, partKey } = useParams<{ locale: string; partKey: string }>();
+  const pathname = usePathname();
+  const router = useRouter();
+  const search = useSearchParams();
 
   const meta = PART_META[partKey] ?? {
     title: `Practice • ${partKey}`,
@@ -26,7 +29,36 @@ export default function PartPage() {
     defaultDuration: 10,
   };
 
-  const [filter, setFilter] = React.useState<null | 1 | 2 | 3 | 4>(null);
+  // đọc ?level= từ URL để set filter ban đầu
+  const levelFromUrl = React.useMemo(() => {
+    const raw = search.get("level");
+    const n = raw ? Number(raw) : NaN;
+    return (n === 1 || n === 2 || n === 3 || n === 4) ? (n as 1|2|3|4) : null;
+  }, [search]);
+
+  const [filter, setFilter] = React.useState<null | 1 | 2 | 3 | 4>(levelFromUrl);
+
+  // nếu URL đổi (back/forward), sync lại filter
+  React.useEffect(() => {
+    setFilter(levelFromUrl);
+  }, [levelFromUrl]);
+
+  // helper: cập nhật ?level= trên URL (không scroll)
+  function updateQuery(next: null | 1 | 2 | 3 | 4) {
+    const q = next ? `?level=${next}` : "";
+    router.replace(`${pathname}${q}`, { scroll: false });
+  }
+
+  function handleClickAll() {
+    setFilter(null);
+    updateQuery(null);
+  }
+  function handleClickLevel(lv: 1 | 2 | 3 | 4) {
+    setFilter(lv);
+    updateQuery(lv);
+  }
+
+  const visibleLevels = LEVELS.filter((lv) => (filter ? lv === filter : true));
 
   return (
     <div className="mx-auto max-w-6xl p-6 mt-16">
@@ -41,7 +73,7 @@ export default function PartPage() {
         <div className="inline-flex items-center gap-2 rounded-xl border p-1.5 bg-white dark:bg-zinc-800">
           <button
             className={`px-3 py-1.5 rounded-lg text-sm ${filter === null ? "bg-black text-white" : "hover:bg-zinc-100"}`}
-            onClick={() => setFilter(null)}
+            onClick={handleClickAll}
           >
             Tất cả
           </button>
@@ -49,7 +81,7 @@ export default function PartPage() {
             <button
               key={lv}
               className={`px-3 py-1.5 rounded-lg text-sm ${filter === lv ? "bg-black text-white" : "hover:bg-zinc-100"}`}
-              onClick={() => setFilter(lv)}
+              onClick={() => handleClickLevel(lv)}
             >
               Level {lv}
             </button>
@@ -58,13 +90,13 @@ export default function PartPage() {
       </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {LEVELS.filter((lv) => (filter ? lv === filter : true)).map((lv) => (
+        {visibleLevels.map((lv) => (
           <PartCard
             key={lv}
-            locale={locale}                  
+            locale={locale}
             partKey={partKey}
             level={lv}
-            title={`${meta.title}`}
+            title={meta.title}
             totalQuestions={meta.defaultQuestions}
             durationMin={meta.defaultDuration}
           />

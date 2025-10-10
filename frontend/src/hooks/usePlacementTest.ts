@@ -123,22 +123,22 @@ export function usePlacementTest() {
     setShowDetails(false);
 
     // Toast chúc mừng
-    const lv = (r.level ?? 1) as 1 | 2 | 3 | 4;
+    const level = (r.level ?? 1) as 1 | 2 | 3 | 4;
     toast.success(
-      `Bạn đã đạt ${levelLabel[lv]} (${Math.round(r.acc * 100)}% chính xác)`,
+      `Bạn đã đạt ${levelLabel[level]} (${Math.round(r.acc * 100)}% chính xác)`,
       {
         classNames: {
-          toast: `border ${levelToastClass[lv]}`,
+          toast: `border ${levelToastClass[level]}`,
         },
         duration: 8000, // 👈 giữ 8 giây
       }
     );
 
     // Confetti nhẹ nếu level >= 3
-    if (lv >= 3) {
+    if (level >= 3) {
       confetti({
-        particleCount: lv === 4 ? 160 : 110,
-        spread: lv === 4 ? 80 : 65,
+        particleCount: level === 4 ? 160 : 110,
+        spread: level === 4 ? 80 : 65,
         startVelocity: 28,
         origin: { y: 0.3 },
       });

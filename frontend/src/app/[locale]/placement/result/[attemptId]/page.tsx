@@ -34,7 +34,6 @@ type Attempt = {
   startedAt?: string;
   submittedAt: string;
   version?: string;
-  // tuỳ BE có hay không:
   partStats?: Record<string, { total: number; correct: number; acc: number }>;
   weakParts?: string[];
   predicted?: { overall: number; listening: number; reading: number };
@@ -42,6 +41,8 @@ type Attempt = {
 };
 
 type ItemsResp = { items: Item[]; stimulusMap: Record<string, Stimulus> };
+
+const LISTENING_PARTS = new Set(["part.1", "part.2", "part.3", "part.4"]);
 
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -56,9 +57,9 @@ export default function PlacementResultPage() {
   const [loading, setLoading] = React.useState(true);
   const [attempt, setAttempt] = React.useState<Attempt | null>(null);
   const [items, setItems] = React.useState<Item[]>([]);
-  const [stimulusMap, setStimulusMap] = React.useState<
-    Record<string, Stimulus>
-  >({});
+  const [stimulusMap, setStimulusMap] = React.useState<Record<string, Stimulus>>(
+    {}
+  );
   const [showDetails, setShowDetails] = React.useState(false);
 
   React.useEffect(() => {
@@ -111,7 +112,6 @@ export default function PlacementResultPage() {
         setAttempt(attemptData);
 
         // 2) Lấy items theo đúng thứ tự khi làm bài
-        // Ưu tiên endpoint mới (đã sort server-side)
         const orderedRes = await fetch(
           `/api/placement/attempts/${encodeURIComponent(
             String(attemptData._id)
@@ -167,6 +167,57 @@ export default function PlacementResultPage() {
     };
   }, [attemptId, router]);
 
+  // ===== Helpers tự tính nếu BE không trả partStats/weakParts/predicted =====
+
+  function computePartStats(
+    at: Attempt
+  ): Record<string, { total: number; correct: number; acc: number }> {
+    if (at.partStats) return at.partStats;
+
+    const byPart: Record<string, { total: number; correct: number }> = {};
+    for (const it of at.items) {
+      if (!byPart[it.part]) byPart[it.part] = { total: 0, correct: 0 };
+      byPart[it.part].total += 1;
+      if (it.isCorrect) byPart[it.part].correct += 1;
+    }
+    const out: Record<string, { total: number; correct: number; acc: number }> =
+      {};
+    for (const [k, v] of Object.entries(byPart)) {
+      out[k] = {
+        total: v.total,
+        correct: v.correct,
+        acc: v.total ? v.correct / v.total : 0,
+      };
+    }
+    return out;
+  }
+
+  function computeWeakParts(
+    stats: Record<string, { total: number; correct: number; acc: number }>
+  ): string[] {
+    return Object.entries(stats)
+      .filter(([, s]) => s.acc < 0.7)
+      .map(([k]) => k);
+  }
+
+  function computePredicted(at: Attempt) {
+    // nếu BE đã có thì dùng luôn
+    if (at.predicted) return at.predicted;
+
+    const round5 = (n: number, min: number, max: number) => {
+      const x = Math.round(n / 5) * 5;
+      return Math.min(max, Math.max(min, x));
+    };
+
+    const rawL = (at.listening?.acc || 0) * 495;
+    const rawR = (at.reading?.acc || 0) * 495;
+    return {
+      listening: round5(rawL, 5, 495),
+      reading: round5(rawR, 5, 495),
+      overall: round5(rawL + rawR, 10, 990),
+    };
+  }
+
   // map đáp án đã chọn từ attempt → answers
   const answers: Record<string, ChoiceId> = React.useMemo(() => {
     const m: Record<string, ChoiceId> = {};
@@ -186,7 +237,7 @@ export default function PlacementResultPage() {
     return m;
   }, [attempt]);
 
-  // group lại theo stimulus để render giống khi làm bài
+  // group theo stimulus để render giống lúc làm
   const { groups, itemIndexMap } = React.useMemo(
     () => groupByStimulus(items, stimulusMap),
     [items, stimulusMap]
@@ -208,7 +259,11 @@ export default function PlacementResultPage() {
     );
   }
 
-  // ghép dữ liệu giống kiểu resp cho ResultsPanel
+  // ===== Đảm bảo ResultsPanel luôn có dữ liệu phân tích =====
+  const partStats = computePartStats(attempt);
+  const weakParts = attempt.weakParts ?? computeWeakParts(partStats);
+  const predicted = computePredicted(attempt);
+
   const respLike = {
     total: attempt.total,
     correct: attempt.correct,
@@ -221,9 +276,9 @@ export default function PlacementResultPage() {
       m[it.id] = { correctAnswer: it.correctAnswer };
       return m;
     }, {} as Record<string, { correctAnswer: ChoiceId }>),
-    partStats: attempt.partStats,
-    weakParts: attempt.weakParts,
-    predicted: attempt.predicted,
+    partStats,   // 👈 luôn có
+    weakParts,   // 👈 luôn có
+    predicted,   // 👈 luôn có (làm tròn bội số 5)
   };
 
   return (
@@ -236,7 +291,7 @@ export default function PlacementResultPage() {
         </p>
       </header>
 
-      {/* 1) Panel kết quả lớn */}
+      {/* 1) Panel kết quả lớn (có Phân tích theo Part & Gợi ý luyện tập) */}
       <ResultsPanel
         resp={respLike as any}
         timeLabel={fmtTime(attempt.timeSec)}

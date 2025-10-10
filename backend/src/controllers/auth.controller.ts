@@ -66,6 +66,7 @@ export async function refresh(req: Request, res: Response) {
 }
 
 // POST /auth/register
+// POST /auth/register
 export async function register(req: Request, res: Response) {
   try {
     const { name, email, password, level } = req.body;
@@ -81,7 +82,9 @@ export async function register(req: Request, res: Response) {
       name,
       email,
       password,
-      level: level ?? "1",
+      role: "user",
+      access: "free",
+      level: level ?? 1,
     });
 
     const { access, refresh } = await issueAndStoreTokens(user);
@@ -184,7 +187,6 @@ export async function completeGoogle(req: Request, res: Response) {
       return res.status(401).json({ message: "Phiên đăng ký đã hết hạn" });
 
     const { email, name, googleId } = verifyGoogleSignupToken(token);
-
     const { password } = req.body || {};
     if (!password || password.length < 8)
       return res
@@ -202,8 +204,9 @@ export async function completeGoogle(req: Request, res: Response) {
       email,
       name,
       password,
-      role: "free",
-      level: "1",
+      role: "user",
+      access: "free",
+      level: 1,
       googleId,
       provider: "google",
     });
@@ -275,7 +278,8 @@ export async function forgotPassword(req: Request, res: Response) {
   });
 
   return res.json({
-    message: "Vui lòng kiểm tra email để lấy mã xác nhận hoặc liên kết đặt lại mật khẩu.",
+    message:
+      "Vui lòng kiểm tra email để lấy mã xác nhận hoặc liên kết đặt lại mật khẩu.",
   });
 }
 
@@ -363,26 +367,36 @@ export async function changePassword(req: Request, res: Response) {
 
     if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
     if (!oldPassword || !newPassword || !confirmNewPassword) {
-      return res.status(400).json({ message: "Vui lòng nhập đầy đủ mật khẩu cũ, mật khẩu mới và xác nhận" });
+      return res.status(400).json({
+        message: "Vui lòng nhập đầy đủ mật khẩu cũ, mật khẩu mới và xác nhận",
+      });
     }
     if (newPassword.length < 8) {
-      return res.status(400).json({ message: "Mật khẩu mới tối thiểu 8 ký tự" });
+      return res
+        .status(400)
+        .json({ message: "Mật khẩu mới tối thiểu 8 ký tự" });
     }
     if (newPassword !== confirmNewPassword) {
-      return res.status(400).json({ message: "Xác nhận mật khẩu mới không khớp" });
+      return res
+        .status(400)
+        .json({ message: "Xác nhận mật khẩu mới không khớp" });
     }
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    if (!user)
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
 
     // So sánh bằng method của model để đồng bộ thư viện bcrypt
     const oldOk = await user.comparePassword(oldPassword);
-    if (!oldOk) return res.status(401).json({ message: "Mật khẩu hiện tại không đúng" });
+    if (!oldOk)
+      return res.status(401).json({ message: "Mật khẩu hiện tại không đúng" });
 
     // Không cho trùng với mật khẩu cũ
     const sameAsOld = await user.comparePassword(newPassword);
     if (sameAsOld) {
-      return res.status(400).json({ message: "Mật khẩu mới không được trùng mật khẩu cũ" });
+      return res
+        .status(400)
+        .json({ message: "Mật khẩu mới không được trùng mật khẩu cũ" });
     }
 
     // Cập nhật (pre-save hook của User sẽ tự hash)

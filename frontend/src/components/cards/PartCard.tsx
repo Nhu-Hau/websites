@@ -10,7 +10,7 @@ type Props = {
   title: string;
   totalQuestions: number;
   durationMin: number;
-  access?: "free" | "pro";
+  access?: "free" | "premium";
 };
 
 export default function PartCard({
@@ -22,7 +22,7 @@ export default function PartCard({
   durationMin,
   access = "free",
 }: Props) {
-  const isPro = access === "pro";
+  const isPro = access === "premium";
 
   const accessBadgeClass =
     access === "free"

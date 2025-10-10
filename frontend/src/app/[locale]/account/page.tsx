@@ -11,7 +11,8 @@ type SafeUser = {
   id: string;
   name?: string;
   email: string;
-  role: "free" | "premium";
+  role: "user" | "admin";
+  access: "free" | "premium";
   level: number;
   levelUpdatedAt?: string | null;
   levelSource?: "manual" | "placement" | null;

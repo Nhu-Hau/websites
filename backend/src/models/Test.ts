@@ -6,7 +6,7 @@ export interface IToeicTest {
   title: string;
   totalDurationMin: number;
   totalQuestions: number;
-  access: "free" | "pro";
+  access: "free" | "premium";
   isFeatured?: boolean;
   version?: string;
   sections: Array<{
@@ -26,7 +26,7 @@ const toeicTestSchema = new Schema<IToeicTest>(
     title: { type: String, required: true },
     totalDurationMin: { type: Number, required: true },
     totalQuestions: { type: Number, required: true },
-    access: { type: String, enum: ["free", "pro"], default: "free" },
+    access: { type: String, enum: ["free", "premium"], default: "free" },
     isFeatured: { type: Boolean, default: false },
     version: { type: String, default: "1.0.0" },
     sections: { type: Schema.Types.Mixed, default: [] },

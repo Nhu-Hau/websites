@@ -8,7 +8,7 @@ export type Part =
   | "part.6"
   | "part.7";
 
-export type AccessTier = "free" | "pro";
+export type AccessTier = "free" | "premium";
 export type ChoiceId = "A" | "B" | "C" | "D";
 
 export interface Choice {

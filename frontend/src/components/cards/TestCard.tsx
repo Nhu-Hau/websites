@@ -6,7 +6,7 @@ import { ShieldCheck, Lock, Timer, ListChecks } from "lucide-react";
 type Props = {
   testId: string;
   title: string;
-  access: "free" | "pro";
+  access: "free" | "premium";
   totalQuestions: number;
   durationMin: number;
   level: 1 | 2 | 3 | 4;
@@ -20,7 +20,7 @@ export default function TestCard({
   durationMin,
   level,
 }: Props) {
-  const isPro = access === "pro";
+  const isPro = access === "premium";
 
   const accessBadgeClass =
     access === "free"

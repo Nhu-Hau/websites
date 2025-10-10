@@ -14,13 +14,15 @@ import {
   IdCard,
   Gauge,
   Target,
+  ShieldCheck,
 } from "lucide-react";
 import Dropdown from "../common/DropIconHeader";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
-type Role = "free" | "premium";
+type Role = "user" | "admin";
+type Access = "free" | "premium";
 type Lvl = 1 | 2 | 3 | 4;
 
 type PartStat = { total: number; correct: number; acc: number };
@@ -32,15 +34,7 @@ type AttemptLite = {
   predicted?: { overall: number; listening: number; reading: number };
 };
 
-const PART_ORDER = [
-  "part.1",
-  "part.2",
-  "part.3",
-  "part.4",
-  "part.5",
-  "part.6",
-  "part.7",
-];
+const PART_ORDER = ["part.1","part.2","part.3","part.4","part.5","part.6","part.7"];
 
 const LV_BADGE: Record<Lvl, string> = {
   1: "border-emerald-300 bg-emerald-100 text-emerald-800",
@@ -50,22 +44,35 @@ const LV_BADGE: Record<Lvl, string> = {
 };
 
 function RoleBadge({ role }: { role: Role }) {
-  const isPro = role === "premium";
+  const isAdmin = role === "admin";
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium capitalize border
-      ${
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium capitalize border ${
+        isAdmin
+          ? "border-purple-300 bg-purple-100 text-purple-700"
+          : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
+      }`}
+      title={isAdmin ? "Admin" : "User"}
+    >
+      <ShieldCheck className="h-3.5 w-3.5" />
+      {isAdmin ? "Admin" : "User"}
+    </span>
+  );
+}
+
+function AccessBadge({ access }: { access: Access }) {
+  const isPro = access === "premium";
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium capitalize border ${
         isPro
           ? "border-yellow-300 bg-yellow-100 text-yellow-700"
           : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300"
       }`}
+      title={isPro ? "Premium" : "Free"}
     >
-      {isPro ? (
-        <Crown className="h-3.5 w-3.5" />
-      ) : (
-        <Star className="h-3.5 w-3.5" />
-      )}
-      {isPro ? "Pro" : "Free"}
+      {isPro ? <Crown className="h-3.5 w-3.5" /> : <Star className="h-3.5 w-3.5" />}
+      {isPro ? "Premium" : "Free"}
     </span>
   );
 }
@@ -89,7 +96,6 @@ export default function UserMenu() {
   const [loadingPT, setLoadingPT] = React.useState(false);
   const [latest, setLatest] = React.useState<AttemptLite | null>(null);
 
-  // Lấy placement attempt gần nhất
   React.useEffect(() => {
     let mounted = true;
     if (!user) {
@@ -125,9 +131,7 @@ export default function UserMenu() {
         if (mounted) setLoadingPT(false);
       }
     })();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [user]);
 
   const handleLogout = async () => {
@@ -146,69 +150,53 @@ export default function UserMenu() {
   };
 
   const rawOverall = (latest?.acc ?? 0) * 990;
-  const predictedOverall = toToeicStep5(
-    latest?.predicted?.overall ?? rawOverall,
-    10,
-    990
-  );
-  const userLevel = ((user?.level as Lvl | undefined) ?? 1) as Lvl;
+  const predictedOverall = toToeicStep5(latest?.predicted?.overall ?? rawOverall, 10, 990);
 
-  // map part → level
+  const userLevel = ((user?.level as Lvl | undefined) ?? 1) as Lvl;
+  const userRole = (user?.role as Role | undefined) ?? "user";
+  const userAccess = (user?.access as Access | undefined) ?? "free";
+
   const partRows = PART_ORDER.map((key) => {
     const stat = latest?.partStats?.[key];
-    if (!stat)
-      return {
-        key,
-        label: partLabel(key),
-        level: null as Lvl | null,
-        href: undefined as string | undefined,
-      };
+    if (!stat) return { key, label: partLabel(key), level: null as Lvl | null, href: undefined as string | undefined };
     const lv = accToLevel(stat.acc);
-    return {
-      key,
-      label: partLabel(key),
-      level: lv,
-      href: `/practice/parts/${encodeURIComponent(key)}?level=${lv}`,
-    };
+    return { key, label: partLabel(key), level: lv, href: `/practice/parts/${encodeURIComponent(key)}?level=${lv}` };
   });
 
   return (
-    <Dropdown
-      button={
-        <div className="w-6 h-6">
-          <UserIcon size="100%" />
-        </div>
-      }
-    >
+    <Dropdown button={<div className="w-6 h-6"><UserIcon size="100%" /></div>}>
       {user ? (
         <>
           {/* Trang cá nhân */}
           <li>
-            <Link
-              href="/account"
-              className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700"
-            >
+            <Link href="/account" className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700">
               <IdCard className="h-4 w-4 text-blue-500" />
               <span>Trang cá nhân</span>
             </Link>
           </li>
 
-          {/* Gói */}
+          {/* Quyền & Gói (hai dòng độc lập, theo kiểu <li> như bạn yêu cầu) */}
           <li>
             <div className="flex items-center justify-between px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100">
               <div className="flex items-center gap-2">
-                {user.role === "premium" ? (
-                  <Crown className="h-4 w-4 text-yellow-500" />
-                ) : (
-                  <Star className="h-4 w-4 text-gray-400" />
-                )}
-                <span>Gói</span>
+                <ShieldCheck className="h-4 w-4 text-purple-600" />
+                <span>Quyền</span>
               </div>
-              <RoleBadge role={user.role as Role} />
+              <RoleBadge role={userRole} />
             </div>
           </li>
 
-          {/* TOEIC ước lượng (li kiểu hàng) */}
+          <li>
+            <div className="flex items-center justify-between px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100">
+              <div className="flex items-center gap-2">
+                {userAccess === "premium" ? <Crown className="h-4 w-4 text-yellow-500" /> : <Star className="h-4 w-4 text-gray-400" />}
+                <span>Gói</span>
+              </div>
+              <AccessBadge access={userAccess} />
+            </div>
+          </li>
+
+          {/* TOEIC ước lượng */}
           <li>
             <div className="flex items-center justify-between px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100">
               <div className="flex items-center gap-2">
@@ -222,32 +210,51 @@ export default function UserMenu() {
             </div>
           </li>
 
-          {/* Level tổng (li kiểu hàng) */}
+          {/* Level tổng */}
           <li>
             <div className="flex items-center justify-between px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100">
               <div className="flex items-center gap-2">
                 <Target className="h-4 w-4 text-zinc-700" />
                 <span>Level tổng</span>
               </div>
-              <span
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${LV_BADGE[userLevel]}`}
-              >
+              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${LV_BADGE[userLevel]}`}>
                 Level {userLevel}
               </span>
             </div>
           </li>
+
+          {/* Các Part & level gợi ý từ lần Placement gần nhất (nếu có) */}
+          {latest && (
+            <>
+              <li className="px-4 py-2 text-xs uppercase tracking-wide text-zinc-500">Gợi ý theo Part</li>
+              {partRows.map((row) => (
+                <li key={row.key}>
+                  <Link
+                    href={row.href || "#"}
+                    className={`flex items-center justify-between px-4 py-3 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 ${
+                      row.href ? "text-zinc-800 dark:text-zinc-100" : "text-zinc-400 cursor-not-allowed"
+                    }`}
+                    aria-disabled={!row.href}
+                    onClick={(e) => { if (!row.href) e.preventDefault(); }}
+                  >
+                    <span>{row.label}</span>
+                    {row.level ? (
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${LV_BADGE[row.level]}`}>
+                        Lv {row.level}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-zinc-400">—</span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </>
+          )}
+
           {/* Đăng xuất */}
           <li>
             <button
-              onClick={async () => {
-                try {
-                  await logout();
-                  toast.success("Đăng xuất thành công");
-                  router.push("/auth/login");
-                } catch {
-                  toast.error("Lỗi khi đăng xuất");
-                }
-              }}
+              onClick={handleLogout}
               className="flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 w-full text-left"
             >
               <LogOut className="h-4 w-4" />
@@ -258,19 +265,13 @@ export default function UserMenu() {
       ) : (
         <>
           <li>
-            <Link
-              href="/auth/login"
-              className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700"
-            >
+            <Link href="/auth/login" className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700">
               <LogIn className="h-4 w-4 text-green-600" />
               <span>{t("login")}</span>
             </Link>
           </li>
           <li>
-            <Link
-              href="/auth/register"
-              className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700"
-            >
+            <Link href="/auth/register" className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700">
               <UserPlus className="h-4 w-4 text-indigo-600" />
               <span>{t("register")}</span>
             </Link>

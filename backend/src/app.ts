@@ -13,9 +13,11 @@ import itemsRoutes from "./routes/items.routes";
 import placementRoutes from "./routes/placement.routes";
 // import communityRoutes from "./routes/community.routes";
 import partsRoutes from "./routes/parts.routes";
+import adminRoutes from "./routes/admin.routes";
 
 const app = express();
 const FRONTEND_ORIGIN = process.env.CLIENT_URL || "http://localhost:3000";
+const ADMIN_ORIGIN = process.env.ADMIN_URL || "http://localhost:3001";
 
 // Tất cả middleware chung nên đặt ở đây
 app.use(helmet());
@@ -23,7 +25,7 @@ app.use(cookieParser());
 app.use(express.json({ limit: "2mb" }));
 app.use(
   cors({
-    origin: FRONTEND_ORIGIN,
+    origin: [FRONTEND_ORIGIN, ADMIN_ORIGIN],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -44,6 +46,7 @@ app.use("/api/items", itemsRoutes);
 app.use("/api/placement", placementRoutes);
 // app.use("/api/community", communityRoutes);
 app.use("/api/parts", partsRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Error handler (quan trọng: luôn đặt cuối cùng)
 app.use((err: any, _req: any, res: any, _next: any) => {

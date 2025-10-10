@@ -28,7 +28,7 @@ export default function Dropdown({ button, children }: DropdownProps) {
 
       <div
         role="menu"
-        className={`absolute right-0 top-9 w-40 rounded-xl bg-white dark:bg-zinc-800 shadow-lg ring-1 ring-black/5 transition duration-150 ${
+        className={`absolute right-0 top-9 w-56 rounded-xl bg-white dark:bg-zinc-800 shadow-lg ring-1 ring-black/5 transition duration-150 ${
           open
             ? "opacity-100 translate-y-0 pointer-events-auto"
             : "opacity-0 translate-y-1 pointer-events-none"

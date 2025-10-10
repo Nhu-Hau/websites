@@ -86,11 +86,7 @@
         "part7": "Phần 7: Đọc hiểu"
       }
     },
-    "mockTests": {
-      "title": "Đề thi thử",
-      "practiceTests": "Luyện đề",
-      "realTest": "Thi thử"
-    },
+    "test": "Luyện đề",
     "forum": "Diễn đàn"
   },
   "UserMenu": {

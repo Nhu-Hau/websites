@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Dropdown from "./NavDropdown";
-import type { NavItemType } from "@/app/types/navTypes";
+import type { NavItemType } from "@/types/navTypes";
 
 interface NavItemProps {
   item: NavItemType;

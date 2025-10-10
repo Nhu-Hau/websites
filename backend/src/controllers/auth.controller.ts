@@ -81,7 +81,7 @@ export async function register(req: Request, res: Response) {
       name,
       email,
       password,
-      level: level ?? "beginner",
+      level: level ?? "1",
     });
 
     const { access, refresh } = await issueAndStoreTokens(user);
@@ -203,7 +203,7 @@ export async function completeGoogle(req: Request, res: Response) {
       name,
       password,
       role: "free",
-      level: "beginner",
+      level: "1",
       googleId,
       provider: "google",
     });

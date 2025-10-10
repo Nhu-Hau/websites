@@ -1,1 +1,1 @@
-export { default } from "@/app/[locale]/placement/components/index";
+export { default } from "@/components/parts/index";

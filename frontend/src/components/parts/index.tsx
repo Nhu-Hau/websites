@@ -3,14 +3,13 @@
 import React from "react";
 import { usePlacementTest } from "@/hooks/usePlacementTest";
 import type { ChoiceId } from "@/types/tests";
-import { Sidebar } from "../components/Sidebar";
-import { ResultsPanel } from "../components/ResultsPanel";
+import { Sidebar } from "./Sidebar";
+import { ResultsPanel } from "./ResultsPanel";
 import { groupByStimulus } from "@/utils/groupByStimulus";
-import { StimulusRowCard } from "../components/StimulusRowCard";
-import { StimulusColumnCard } from "../components/StimulusColumnCard";
-
-// Import the icon you want to use
-// import { FaRegClock } from "react-icons/fa";
+// 🔁 dùng file gộp mới
+import { StimulusRowCard, StimulusColumnCard } from "./StimulusCards";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -37,16 +36,24 @@ export default function PlacementPage() {
     setStarted,
   } = usePlacementTest();
 
+  const { user } = useAuth();
+  const isAuthed = !!user;
+  const onLoginRequest = () =>
+    toast.error("Vui lòng đăng nhập để bắt đầu làm bài");
+
   const { groups, itemIndexMap } = groupByStimulus(items, stimulusMap);
 
   function jumpTo(i: number) {
-    // Nếu chưa bắt đầu thì không cho nhảy
     if (!started || resp) return;
-    document.getElementById(`q-${i + 1}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document
+      .getElementById(`q-${i + 1}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   const correctMap: Record<string, ChoiceId> | undefined = resp?.answersMap
-    ? Object.fromEntries(Object.entries(resp.answersMap).map(([k, v]) => [k, v.correctAnswer]))
+    ? Object.fromEntries(
+        Object.entries(resp.answersMap).map(([k, v]) => [k, v.correctAnswer])
+      )
     : undefined;
 
   return (
@@ -59,14 +66,28 @@ export default function PlacementPage() {
           total={total}
           answered={answered}
           timeLabel={!resp ? fmtTime(timeSec) : fmtTime(resp.timeSec)}
-          onSubmit={submit}
+          onSubmit={() => {
+            if (!started) {
+              onLoginRequest();
+              return;
+            }
+            void submit();
+          }}
           onJump={jumpTo}
           disabledSubmit={!total || answered === 0}
           onToggleDetails={() => setShowDetails((s) => !s)}
           showDetails={showDetails}
-          countdownSec={18 * 60}
+          countdownSec={35 * 60} // 35 phút
           started={started}
-          onStart={() => setStarted(true)}
+          onStart={() => {
+            if (!isAuthed) {
+              onLoginRequest();
+              return;
+            }
+            setStarted(true);
+          }}
+          isAuthed={isAuthed}
+          onLoginRequest={onLoginRequest}
         />
 
         <main className="col-span-3">
@@ -76,18 +97,17 @@ export default function PlacementPage() {
 
           {!loading && (
             <>
-              {/* CHƯA BẮT ĐẦU: ẩn toàn bộ đề, chỉ hiện thông báo gọn */}
               {!started && !resp ? (
                 <div className="rounded-2xl border p-6 bg-gray-50 text-center">
                   <div className="text-lg font-semibold mb-1">
-                    Nhấn <span className="underline">Bắt đầu</span> ở thanh bên trái để hiển thị đề
+                    Nhấn <span className="underline">Bắt đầu</span> ở thanh bên
+                    trái để hiển thị đề
                   </div>
                   <div className="text-sm text-gray-600">
-                    Thời gian 18 phút sẽ đếm ngược sau khi bạn bắt đầu.
+                    Thời gian <b>35 phút</b> sẽ đếm ngược sau khi bạn bắt đầu.
                   </div>
                 </div>
               ) : (
-                // ĐÃ BẮT ĐẦU hoặc ĐÃ NỘP: hiển thị nội dung đề
                 <div className="space-y-6">
                   {groups.map((g) =>
                     g.stimulus?.part === "part.1" ? (
@@ -127,7 +147,13 @@ export default function PlacementPage() {
                   {!resp && items.length > 0 && (
                     <div className="flex justify-center">
                       <button
-                        onClick={submit}
+                        onClick={() => {
+                          if (!started) {
+                            onLoginRequest();
+                            return;
+                          }
+                          void submit();
+                        }}
                         className="px-5 py-3 rounded-2xl bg-black text-white disabled:opacity-50"
                         disabled={answered === 0}
                       >

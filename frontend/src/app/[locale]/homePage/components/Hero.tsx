@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React from "react";
 import Link from "next/link";
@@ -7,10 +8,11 @@ import {
   FiArrowRight,
   FiBarChart2,
   FiClock,
-  FiHeadphones,
-  FiBookOpen,
   FiCheckCircle,
+  FiTarget,
 } from "react-icons/fi";
+import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 function Stat({
   number,
@@ -41,7 +43,10 @@ function PlacementModal({
   onClose: () => void;
   onStart: () => void;
 }) {
-  if (!open) return null;
+  const { user } = useAuth();
+  // nếu đã có attempt placement thì ẩn modal
+  if (!open || (user && (user as any).lastPlacementAttemptId)) return null;
+
   return (
     <div
       role="dialog"
@@ -51,7 +56,7 @@ function PlacementModal({
       <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl dark:bg-zinc-800">
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-zinc-700">
           <h2 className="text-base font-semibold text-slate-900 dark:text-zinc-100">
-            Kiểm tra nhanh – Placement Test
+            Mini TOEIC – Placement Test
           </h2>
           <button
             onClick={onClose}
@@ -61,17 +66,22 @@ function PlacementModal({
             ✕
           </button>
         </div>
+
         <div className="space-y-3 px-5 py-4 text-sm text-slate-700 dark:text-zinc-300">
           <p className="flex items-center gap-2 text-slate-800 dark:text-zinc-200">
-            <FiClock className="text-sky-600 dark:text-sky-500" /> 18 phút • 33
-            câu • Gồm Listening & Reading
+            <FiClock className="text-sky-600 dark:text-sky-500" />{" "}
+            <b>35 phút</b> • <b>55 câu</b>
           </p>
           <p>
-            Bạn muốn làm bài **Placement Test** để xem nhanh trình độ hiện tại
-            không? Hoàn thành bài kiểm tra, hệ thống sẽ gợi ý **lộ trình học phù
-            hợp** cho bạn.
+            Gồm cả Listening & Reading (đề rút gọn mô phỏng cấu trúc thi thật).
+          </p>
+          <p>
+            Hoàn thành <b>Mini TOEIC 55 câu</b>, hệ thống sẽ ước lượng{" "}
+            <b>điểm TOEIC (0–990)</b> và xếp bạn vào <b>Level 1–4</b>, kèm gợi ý{" "}
+            <b>lộ trình học phù hợp</b>.
           </p>
         </div>
+
         <div className="grid grid-cols-2 gap-3 border-t border-slate-200 px-5 py-4 dark:border-zinc-700">
           <button
             onClick={onClose}
@@ -93,23 +103,21 @@ function PlacementModal({
 
 export default function Hero() {
   const [openPrompt, setOpenPrompt] = React.useState(false);
+  const [checking, setChecking] = React.useState(false);
+  const { user } = useAuth();
 
   React.useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const force = params.get("placement") === "1";
-
       const key = "placement_prompt_last_seen";
       const last = localStorage.getItem(key);
       const now = Date.now();
-
       const coolDownMs = 24 * 60 * 60 * 1000;
-      const shouldOpen = force || !last || now - Number(last) > coolDownMs;
 
-      if (shouldOpen) {
-        setOpenPrompt(true);
-      }
-    } catch (e) {
+      const shouldOpen = force || !last || now - Number(last) > coolDownMs;
+      if (shouldOpen) setOpenPrompt(true);
+    } catch {
       setOpenPrompt(true);
     }
   }, []);
@@ -117,16 +125,86 @@ export default function Hero() {
   const handleClose = React.useCallback(() => {
     try {
       localStorage.setItem("placement_prompt_last_seen", String(Date.now()));
-    } catch (e) {}
+    } catch {}
     setOpenPrompt(false);
   }, []);
 
-  const handleStart = React.useCallback(() => {
+  const handleStart = React.useCallback(async () => {
     try {
       localStorage.setItem("placement_prompt_last_seen", String(Date.now()));
-    } catch (e) {}
-    window.location.href = "/placement";
-  }, []);
+    } catch {}
+
+    // Chưa đăng nhập
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để làm Mini TOEIC 55 câu", {
+        duration: 2500,
+        action: {
+          label: "Đăng nhập",
+          onClick: () => (window.location.href = "/auth/login"),
+        },
+      });
+      return;
+    }
+
+    // Đã đăng nhập → kiểm tra đã làm placement chưa
+    if (checking) return;
+    setChecking(true);
+    try {
+      const res = await fetch("/api/placement/attempts?limit=1", {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          toast.error("Phiên đăng nhập đã hết hạn", {
+            duration: 3000,
+            action: {
+              label: "Đăng nhập lại",
+              onClick: () => (window.location.href = "/auth/login"),
+            },
+          });
+        } else {
+          toast.error("Không kiểm tra được trạng thái bài kiểm tra");
+        }
+        return;
+      }
+
+      const data = await res.json();
+      const total = Number(data?.total ?? 0);
+      const firstId = data?.items?.[0]?._id as string | undefined;
+
+      if (total > 0) {
+        // ĐÃ LÀM RỒI → show toast có nút xem lại
+        toast.error("Bạn đã làm Placement Test rồi, không thể làm lại", {
+          duration: 5000,
+          action: {
+            label: firstId ? "Xem kết quả" : "Xem lịch sử",
+            onClick: () => {
+              if (firstId) {
+                window.location.href = `/placement/result/${firstId}`;
+              } else {
+                window.location.href = `/placement/history`;
+              }
+            },
+          },
+        });
+        return;
+      }
+
+      toast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
+        duration: 2500,
+      });
+
+      setTimeout(() => {
+        window.location.href = "/placement";
+      }, 2500); 
+    } catch {
+      toast.error("Không kiểm tra được trạng thái bài kiểm tra");
+    } finally {
+      setChecking(false);
+    }
+  }, [user, checking]);
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-white via-indigo-50/50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900">
@@ -149,13 +227,14 @@ export default function Hero() {
 
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-100 md:text-6xl">
             Xác định trình độ trong{" "}
-            <span className="text-sky-500 dark:text-sky-400">18 phút</span>
+            <span className="text-sky-500 dark:text-sky-400">35 phút</span>
           </h1>
+
           <p className="mt-5 max-w-3xl text-base leading-7 text-slate-600 dark:text-zinc-400 md:text-lg">
-            Bài Placement Test 33 câu (Listening & Reading) giúp ước lượng trình
-            độ hiện tại và đề xuất lộ trình học cá nhân hóa. Sau đó, bạn có thể
-            luyện các bộ đề bám sát đề thi thật, mô phỏng phòng thi và chấm điểm
-            tức thì.
+            Bài <b>Mini TOEIC 55 câu</b> (Listening & Reading) giúp bạn ước
+            lượng <b>điểm TOEIC (0–990)</b>, xếp <b>Level 1–4</b> và đề xuất{" "}
+            <b>lộ trình học cá nhân hóa</b>. Sau đó bạn có thể luyện các đề đầy
+            đủ, mô phỏng phòng thi và chấm điểm tức thì.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -174,18 +253,30 @@ export default function Hero() {
             </Link>
           </div>
 
-          <div className="mt-8 grid grid-cols-3 gap-4 text-center md:max-w-md">
-            <Stat number="33 câu" label="Thời gian" icon={<FiClock />} />
-            <Stat number="18 phút" label="Cấu trúc" icon={<FiCheckCircle />} />
-            <Stat number="Lộ trình" label="Đề xuất" icon={<FiBarChart2 />} />
+          <div className="mt-8 grid grid-cols-3 gap-4 text-center md:max-w-xl">
+            <Stat
+              number="55 câu"
+              label="Số lượng câu hỏi"
+              icon={<FiCheckCircle />}
+            />
+            <Stat
+              number="35 phút"
+              label="Thời gian làm bài"
+              icon={<FiClock />}
+            />
+            <Stat
+              number="Dự đoán 0–990"
+              label="Điểm TOEIC ước lượng"
+              icon={<FiTarget />}
+            />
           </div>
 
           <p className="mt-4 text-xs text-slate-500 dark:text-zinc-500">
             * Hoàn thành bài kiểm tra để nhận bản{" "}
             <span className="font-semibold dark:text-zinc-400">
-              đánh giá trình độ
+              đánh giá chi tiết
             </span>{" "}
-            và{" "}
+            (theo từng Part) và{" "}
             <span className="font-semibold dark:text-zinc-400">
               lộ trình cá nhân hoá
             </span>{" "}

@@ -3,7 +3,24 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Item, Stimulus, TestDef, ChoiceId } from "@/types/tests";
-import type { GradeResp } from "../types/placement";
+import type { GradeResp } from "@/types/placement";
+import { toast } from "sonner";
+import confetti from "canvas-confetti";
+import { useAuth } from "@/context/AuthContext";
+
+const levelLabel: Record<1 | 2 | 3 | 4, string> = {
+  1: "Level 1 - Cơ bản",
+  2: "Level 2 - Trung cấp",
+  3: "Level 3 - Khá",
+  4: "Level 4 - Nâng cao",
+};
+
+const levelToastClass: Record<1 | 2 | 3 | 4, string> = {
+  1: "border-emerald-300 bg-emerald-50 text-emerald-700",
+  2: "border-blue-300 bg-blue-50 text-blue-700",
+  3: "border-violet-300 bg-violet-50 text-violet-700",
+  4: "border-amber-300 bg-amber-50 text-amber-700",
+};
 
 export function usePlacementTest() {
   const [def, setDef] = useState<TestDef | null>(null);
@@ -16,22 +33,25 @@ export function usePlacementTest() {
   const [loading, setLoading] = useState(true);
   const [started, setStarted] = useState(false);
 
-  // Timer
+  const { refresh } = useAuth(); // để cập nhật user.level trên UI ngay sau submit
+
+  // Timer (tăng khi chưa có resp)
   useEffect(() => {
     if (resp) return;
     const id = setInterval(() => setTimeSec((t) => t + 1), 1000);
     return () => clearInterval(id);
   }, [resp]);
 
-  // Load data
+  // Load định nghĩa test + items
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         setLoading(true);
-        const td: TestDef = await fetch("/api/placement/test").then((r) =>
-          r.json()
-        );
+        const td: TestDef = await fetch("/api/placement/test", {
+          credentials: "include",
+          cache: "no-store",
+        }).then((r) => r.json());
         if (!mounted) return;
         setDef(td);
 
@@ -43,12 +63,12 @@ export function usePlacementTest() {
         const data = await fetch("/api/placement/items", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ ids }),
         }).then((r) => r.json());
 
         let its: Item[] = data.items || [];
         its = its.sort((a, b) => {
-          // ưu tiên order nếu có
           const ao = (a as any).order ?? null;
           const bo = (b as any).order ?? null;
           if (ao != null && bo != null) return ao - bo;
@@ -60,6 +80,7 @@ export function usePlacementTest() {
         setStimulusMap(data.stimulusMap || {});
       } catch (e) {
         console.error("Load placement failed", e);
+        toast.error("Không tải được đề kiểm tra");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -74,13 +95,61 @@ export function usePlacementTest() {
 
   async function submit() {
     if (!def) return;
-    const r: GradeResp = await fetch("/api/placement/grade", {
+
+    const res = await fetch("/api/placement/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ testId: def.testId, answers, timeSec }),
-    }).then((res) => res.json());
+      credentials: "include",
+      body: JSON.stringify({
+        testId: def.testId,
+        answers,
+        timeSec,
+        allIds: items.map((it) => it.id), // chấm cả câu bỏ trống
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        toast.error("Vui lòng đăng nhập trước khi nộp bài");
+      } else {
+        toast.error(err?.message || "Nộp bài thất bại");
+      }
+      return;
+    }
+
+    const r: GradeResp = await res.json();
     setResp(r);
     setShowDetails(false);
+
+    // Toast chúc mừng
+    const lv = (r.level ?? 1) as 1 | 2 | 3 | 4;
+    toast.success(
+      `Bạn đã đạt ${levelLabel[lv]} (${Math.round(r.acc * 100)}% chính xác)`,
+      {
+        classNames: {
+          toast: `border ${levelToastClass[lv]}`,
+        },
+        duration: 8000, // 👈 giữ 8 giây
+      }
+    );
+
+    // Confetti nhẹ nếu level >= 3
+    if (lv >= 3) {
+      confetti({
+        particleCount: lv === 4 ? 160 : 110,
+        spread: lv === 4 ? 80 : 65,
+        startVelocity: 28,
+        origin: { y: 0.3 },
+      });
+    }
+
+    // Cập nhật user trong context (để menu hiển thị level mới)
+    try {
+      await refresh();
+    } catch {
+      // ignore
+    }
   }
 
   return {

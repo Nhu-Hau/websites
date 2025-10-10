@@ -10,13 +10,13 @@ import {
 } from "@/app/[locale]/homePage/components";
 import { GoogleAuthEffect } from "@/components/auth/GoogleAuthEffect";
 
-export default function HomePage({
+export default async function HomePage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const auth =
-    typeof searchParams.auth === "string" ? searchParams.auth : undefined;
+  const sp = await searchParams; 
+  const auth = typeof sp.auth === "string" ? sp.auth : undefined;
 
   return (
     <main className="min-h-screen bg-white antialiased">

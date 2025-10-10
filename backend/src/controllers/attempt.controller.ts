@@ -9,16 +9,6 @@ import {
   attachLabelsToTags,
 } from "../lib/gradeAndAggregate";
 
-/**
- * POST /api/attempts
- * Body:
- * {
- *   userId: string,
- *   testId: string,
- *   startedAt?: string,
- *   answers: [{ itemId: string, choice: 'A'|'B'|'C'|'D', timeSec?: number }]
- * }
- */
 export async function submitAttempt(
   req: Request,
   res: Response,
@@ -75,10 +65,6 @@ export async function submitAttempt(
   }
 }
 
-/**
- * GET /api/attempts/latest/:userId
- * Trả thống kê của lần làm bài gần nhất của user
- */
 export async function latestAnalytics(
   req: Request,
   res: Response,

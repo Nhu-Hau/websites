@@ -1,22 +1,29 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// frontend/src/context/AuthContext.tsx
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-type User = {
+export type User = {
   id: string;
   email: string;
   name?: string;
-  role?: "free" | "premium";
-  level?: "beginner" | "intermediate" | "advanced";
+  role: "free" | "premium";
+  level: 1 | 2 | 3 | 4;              
+  levelUpdatedAt?: string | null;
+  levelSource?: "manual" | "placement" | null;
+  lastPlacementAttemptId?: string | null;
   createdAt?: string;
   updatedAt?: string;
 } | null;
 
 type AuthContextType = {
   user: User;
+  setUser: (u: User) => void;
   login: (u: NonNullable<User>) => void;
   logout: () => Promise<void> | void;
-  loading: boolean; // đang tải profile ban đầu
+  refresh: () => Promise<void>;   
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -25,32 +32,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User>(null);
   const [loading, setLoading] = useState(true);
 
-  // Gọi /me khi mount; nếu 401 thì thử /refresh rồi gọi lại /me
+  async function fetchMe() {
+    const res = await fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",            
+    });
+    if (!res.ok) throw new Error(String(res.status));
+    const profile = await res.json();
+    setUser(profile);
+  }
+
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        // 1) thử /me
-        let res = await fetch("/api/auth/me", { credentials: "include" });
-
-        // 2) nếu 401 → refresh
-        if (res.status === 401) {
-          const r = await fetch("/api/auth/refresh", {
-            method: "POST",
-            credentials: "include",
-          });
-          if (r.ok) {
-            res = await fetch("/api/auth/me", { credentials: "include" });
+        try {
+          await fetchMe();
+        } catch (e: any) {
+          if (String(e.message) === "401") {
+            const r = await fetch("/api/auth/refresh", {
+              method: "POST",
+              credentials: "include",
+            });
+            if (r.ok) await fetchMe();
+            else setUser(null);
+          } else {
+            setUser(null);
           }
         }
-
-        // 3) ok → set user
-        if (res.ok) {
-          const profile = await res.json();
-          if (mounted) setUser(profile);
-        }
-      } catch {}
-      if (mounted) setLoading(false);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     })();
     return () => {
       mounted = false;
@@ -58,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   function login(u: NonNullable<User>) {
-    setUser(u); // cập nhật ngay sau khi API đăng nhập/đăng ký trả về
+    setUser(u); // sau khi /login trả về
   }
 
   async function logout() {
@@ -68,8 +80,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }
 
+  async function refresh() {
+    try {
+      await fetchMe();
+    } catch {
+      // nếu lỗi (401…) thì set null
+      setUser(null);
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{ user, setUser, login, logout, refresh, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );

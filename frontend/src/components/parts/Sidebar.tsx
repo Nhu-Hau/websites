@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Item, ChoiceId } from "@/types/tests";
 import type { GradeResp } from "@/types/placement";
 import { FaRegClock } from "react-icons/fa";
@@ -17,15 +18,17 @@ export function Sidebar({
   resp,
   total,
   answered,
-  timeLabel, // dùng khi đã nộp
+  timeLabel,
   onSubmit,
   onJump,
   disabledSubmit,
   onToggleDetails,
   showDetails,
-  countdownSec = 18 * 60,
-  started, // NEW
-  onStart, // NEW
+  countdownSec = 35 * 60,
+  started,
+  onStart,
+  isAuthed,
+  onLoginRequest,
 }: {
   items: Item[];
   answers: Record<string, ChoiceId>;
@@ -39,19 +42,22 @@ export function Sidebar({
   onToggleDetails: () => void;
   showDetails: boolean;
   countdownSec?: number;
-  started: boolean; // NEW
-  onStart: () => void; // NEW
+  started: boolean;
+  onStart: () => void;
+  isAuthed: boolean;
+  onLoginRequest: () => void;
 }) {
   const [leftSec, setLeftSec] = useState<number>(countdownSec);
   const tickingRef = useRef<number | null>(null);
   const submittedRef = useRef(false);
+  const router = useRouter();
 
-  // Nếu `countdownSec` đổi (hiếm), reset leftSec khi CHƯA bắt đầu
+  // reset leftSec khi CHƯA bắt đầu
   useEffect(() => {
     if (!started && !resp) setLeftSec(countdownSec);
   }, [countdownSec, started, resp]);
 
-  // Start/Stop interval theo started/resp
+  // Start/Stop interval
   useEffect(() => {
     if (resp || !started) {
       if (tickingRef.current) {
@@ -74,7 +80,7 @@ export function Sidebar({
     };
   }, [resp, started]);
 
-  // Hết giờ -> auto submit 1 lần
+  // Hết giờ → auto submit
   useEffect(() => {
     if (!resp && started && leftSec <= 0 && !submittedRef.current) {
       submittedRef.current = true;
@@ -106,6 +112,17 @@ export function Sidebar({
     onSubmit();
   }
 
+  function handleStartClick() {
+    if (!isAuthed) {
+      onLoginRequest?.();
+      return;
+    }
+    onStart();
+  }
+
+  const l = resp?.listening ?? { total: 0, correct: 0, acc: 0 };
+  const r = resp?.reading ?? { total: 0, correct: 0, acc: 0 };
+
   return (
     <aside className="col-span-1">
       <div className="sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto space-y-4">
@@ -114,24 +131,41 @@ export function Sidebar({
             Bài đánh giá trình độ
           </h1>
           <h1 className="flex items-center gap-1 text-gray-600 font-normal text-2xl">
-            33 câu, 18 phút
+            55 câu, 35 phút
           </h1>
         </div>
 
-        {/* Banner nhỏ: chỉ hiện khi chưa bắt đầu & chưa nộp */}
+        {/* Banner: chỉ hiện khi chưa bắt đầu & chưa nộp */}
         {!started && !resp && (
           <div className="rounded-xl border p-3 bg-amber-50 text-amber-900">
             <div className="text-sm">
               Thời gian sẽ bắt đầu tính khi bạn nhấn <b>Bắt đầu</b>.
             </div>
-            <div className=" mt-2">
+            <div className="mt-2 flex items-center gap-2">
+              {/* Nút Bắt đầu */}
               <button
                 className="px-3 py-2 rounded-lg bg-black text-white"
-                onClick={onStart}
+                onClick={handleStartClick}
               >
                 Bắt đầu
               </button>
+
+              {/* Nút Đăng nhập → chỉ hiện khi chưa login */}
+              {!isAuthed && (
+                <button
+                  type="button"
+                  className="px-3 py-2 rounded-lg border"
+                  onClick={() => router.push("/auth/login")}
+                >
+                  Đăng nhập
+                </button>
+              )}
             </div>
+            {!isAuthed && (
+              <div className="text-xs mt-2 text-amber-900/80">
+                Bạn cần <b>đăng nhập</b> để bắt đầu làm bài và lưu kết quả.
+              </div>
+            )}
           </div>
         )}
 
@@ -158,7 +192,6 @@ export function Sidebar({
               onClick={handleManualSubmit}
               className="w-full px-4 py-2 rounded-xl bg-black text-white disabled:opacity-50"
               disabled={disabledSubmit || !started}
-              // chỉ cho nộp khi đã bắt đầu (tránh lỡ tay nộp khi chưa start)
             >
               Nộp bài
             </button>
@@ -170,20 +203,29 @@ export function Sidebar({
           <div className="flex flex-wrap gap-2">
             {items.map((it, i) => {
               const picked = answers[it.id];
-              const correct = resp?.answersMap?.[it.id]?.correctAnswer;
+              const correct = resp?.answersMap?.[it.id]?.correctAnswer as
+                | ChoiceId
+                | undefined;
+
               let cls =
                 "w-9 h-9 rounded-full border text-sm flex items-center justify-center";
+
               if (!resp) {
                 cls += picked
                   ? " bg-green-600 text-white border-green-600"
                   : " hover:bg-gray-50";
               } else {
-                if (!picked)
-                  cls += " bg-gray-300 text-gray-800 border-gray-300";
-                else if (picked === correct)
+                if (
+                  picked !== undefined &&
+                  correct !== undefined &&
+                  picked === correct
+                ) {
                   cls += " bg-green-600 text-white border-green-600";
-                else cls += " bg-red-600 text-white border-red-600";
+                } else {
+                  cls += " bg-red-600 text-white border-red-600";
+                }
               }
+
               return (
                 <button
                   key={it.id}
@@ -197,36 +239,6 @@ export function Sidebar({
             })}
           </div>
         </div>
-
-        {resp && (
-          <div className="rounded-2xl border p-4 space-y-1 bg-gray-50">
-            <div className="font-semibold text-center">TỔNG QUAN</div>
-            <div className="text-sm text-center">
-              Đúng: <b>{resp.correct}</b> / {resp.total}
-            </div>
-            <div className="text-sm text-center">
-              Chính xác:{" "}
-              <b className="text-green-600">{(resp.acc * 100).toFixed(1)}%</b>
-            </div>
-            <div className="text-xs text-gray-500 text-center">
-              Listening: {resp.listening.correct}/{resp.listening.total} (
-              {(resp.listening.acc * 100).toFixed(0)}%)
-              <br />
-              Reading: {resp.reading.correct}/{resp.reading.total} (
-              {(resp.reading.acc * 100).toFixed(0)}%)
-            </div>
-            <div className="text-sm text-center mt-1">
-              Level: <b>{resp.level.toUpperCase()}</b>
-            </div>
-
-            <button
-              onClick={onToggleDetails}
-              className="w-full mt-2 px-3 py-2 rounded-xl border"
-            >
-              {showDetails ? "Ẩn chi tiết đáp án" : "Xem chi tiết đáp án"}
-            </button>
-          </div>
-        )}
       </div>
     </aside>
   );

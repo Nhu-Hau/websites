@@ -7,7 +7,10 @@ import type { ChoiceId, Item, Stimulus } from "@/types/tests";
 import type { GradeResp } from "@/types/placement";
 import { Sidebar } from "@/components/parts/Sidebar";
 import { ResultsPanel } from "@/components/parts/ResultsPanel";
-import { StimulusRowCard, StimulusColumnCard } from "@/components/parts/StimulusCards";
+import {
+  StimulusRowCard,
+  StimulusColumnCard,
+} from "@/components/parts/StimulusCards";
 import { groupByStimulus } from "@/utils/groupByStimulus";
 import { toast } from "sonner";
 
@@ -28,16 +31,24 @@ export default function PracticePartLevelPage() {
 
   const [loading, setLoading] = React.useState(true);
   const [items, setItems] = React.useState<Item[]>([]);
-  const [stimulusMap, setStimulusMap] = React.useState<Record<string, Stimulus>>({});
+  const [stimulusMap, setStimulusMap] = React.useState<
+    Record<string, Stimulus>
+  >({});
   const [answers, setAnswers] = React.useState<Record<string, ChoiceId>>({});
   const [started, setStarted] = React.useState(false);
   const [timeSec, setTimeSec] = React.useState(0);
   const [showDetails, setShowDetails] = React.useState(false);
-  const [resp, setResp] = React.useState<GradeResp & {
-    predicted?: { overall: number; listening: number; reading: number };
-    partStats?: Record<string, { total: number; correct: number; acc: number }>;
-    weakParts?: string[];
-  } | null>(null);
+  const [resp, setResp] = React.useState<
+    | (GradeResp & {
+        predicted?: { overall: number; listening: number; reading: number };
+        partStats?: Record<
+          string,
+          { total: number; correct: number; acc: number }
+        >;
+        weakParts?: string[];
+      })
+    | null
+  >(null);
 
   React.useEffect(() => {
     if (!started || resp) return;
@@ -55,11 +66,17 @@ export default function PracticePartLevelPage() {
         setStarted(false);
         setTimeSec(0);
 
-        const qs = new URLSearchParams({ level: String(levelNum), limit: "50" });
-        const r = await fetch(`/api/parts/${encodeURIComponent(partKey)}/items?${qs}`, {
-          credentials: "include",
-          cache: "no-store",
+        const qs = new URLSearchParams({
+          level: String(levelNum),
+          limit: "50",
         });
+        const r = await fetch(
+          `/api/parts/${encodeURIComponent(partKey)}/items?${qs}`,
+          {
+            credentials: "include",
+            cache: "no-store",
+          }
+        );
         if (!r.ok) {
           toast.error("Không tải được câu hỏi");
           if (mounted) {
@@ -83,7 +100,9 @@ export default function PracticePartLevelPage() {
         if (mounted) setLoading(false);
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [partKey, levelNum]);
 
   const { groups, itemIndexMap } = React.useMemo(
@@ -105,28 +124,37 @@ export default function PracticePartLevelPage() {
     partStats: Record<string, { total: number; correct: number; acc: number }>;
     weakParts: string[];
   } {
-    let total = items.length, correct = 0;
-    let L = 0, Lc = 0, R = 0, Rc = 0;
+    let total = items.length,
+      correct = 0;
+    let L = 0,
+      Lc = 0,
+      R = 0,
+      Rc = 0;
 
     const answersMap: Record<string, { correctAnswer: ChoiceId }> = {};
     for (const it of items) {
       const ok = answers[it.id] === it.answer;
       if (ok) correct++;
       const isL = LISTENING_PARTS.has(it.part);
-      if (isL) { L++; if (ok) Lc++; }
-      else { R++; if (ok) Rc++; }
+      if (isL) {
+        L++;
+        if (ok) Lc++;
+      } else {
+        R++;
+        if (ok) Rc++;
+      }
       answersMap[it.id] = { correctAnswer: it.answer as ChoiceId };
     }
 
     const acc = total ? correct / total : 0;
     const listening = { total: L, correct: Lc, acc: L ? Lc / L : 0 };
     const reading = { total: R, correct: Rc, acc: R ? Rc / R : 0 };
-    const level =
-      acc >= 0.85 ? 4 :
-      acc >= 0.70 ? 3 :
-      acc >= 0.55 ? 2 : 1;
+    const level = acc >= 0.85 ? 4 : acc >= 0.7 ? 3 : acc >= 0.55 ? 2 : 1;
 
-    const byPart: Record<string, { total: number; correct: number; acc: number }> = {
+    const byPart: Record<
+      string,
+      { total: number; correct: number; acc: number }
+    > = {
       [partKey]: { total, correct, acc: total ? correct / total : 0 },
     };
 
@@ -145,10 +173,17 @@ export default function PracticePartLevelPage() {
     const weakParts = byPart[partKey].acc < 0.7 ? [partKey] : [];
 
     return {
-      total, correct, acc,
-      listening, reading, timeSec,
-      level, answersMap,
-      predicted, partStats: byPart, weakParts,
+      total,
+      correct,
+      acc,
+      listening,
+      reading,
+      timeSec,
+      level,
+      answersMap,
+      predicted,
+      partStats: byPart,
+      weakParts,
     };
   }
 
@@ -157,14 +192,90 @@ export default function PracticePartLevelPage() {
       toast.error("Chưa có câu hỏi để chấm");
       return;
     }
-    const r = buildResult();
-    setResp(r);
-    toast.success("Đã chấm bài phần luyện tập");
+    // build payload answers
+    const answersPayload: Record<string, ChoiceId> = {};
+    for (const it of items) {
+      if (answers[it.id] != null) answersPayload[it.id] = answers[it.id];
+    }
+
+    try {
+      const res = await fetch(
+        `/api/practice/parts/${encodeURIComponent(partKey)}/submit`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            level: levelNum,
+            answers: answersPayload,
+            timeSec,
+          }),
+        }
+      );
+      if (!res.ok) throw new Error("submit failed");
+      const json = await res.json();
+
+      // build resp-like để hiển thị ngay
+      const total = json.total as number;
+      const correct = json.correct as number;
+      const acc = json.acc as number;
+      const answersMap: Record<string, { correctAnswer: ChoiceId }> = {};
+      items.forEach((it) => {
+        answersMap[it.id] = { correctAnswer: it.answer as ChoiceId };
+      });
+
+      const listening = {
+        total: items.filter((it) =>
+          ["part.1", "part.2", "part.3", "part.4"].includes(it.part)
+        ).length,
+        correct: items.filter(
+          (it) =>
+            ["part.1", "part.2", "part.3", "part.4"].includes(it.part) &&
+            answers[it.id] === it.answer
+        ).length,
+        acc: 0,
+      };
+      listening.acc = listening.total ? listening.correct / listening.total : 0;
+
+      const reading = {
+        total: items.filter((it) =>
+          ["part.5", "part.6", "part.7"].includes(it.part)
+        ).length,
+        correct: items.filter(
+          (it) =>
+            ["part.5", "part.6", "part.7"].includes(it.part) &&
+            answers[it.id] === it.answer
+        ).length,
+        acc: 0,
+      };
+      reading.acc = reading.total ? reading.correct / reading.total : 0;
+
+      setResp({
+        total,
+        correct,
+        acc,
+        listening,
+        reading,
+        timeSec,
+        level: acc >= 0.85 ? 4 : acc >= 0.7 ? 3 : acc >= 0.55 ? 2 : 1,
+        answersMap,
+        // optional: show predicted returned by BE
+        predicted: json.recommended?.predicted,
+        partStats: { [partKey]: { total, correct, acc } },
+        weakParts: [],
+      } as any);
+
+      toast.success("Đã nộp & cập nhật gợi ý luyện tập");
+    } catch {
+      toast.error("Nộp bài thất bại");
+    }
   }
 
   function jumpTo(i: number) {
     if (!started || resp) return;
-    document.getElementById(`q-${i + 1}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document
+      .getElementById(`q-${i + 1}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   const total = items.length;
@@ -177,7 +288,8 @@ export default function PracticePartLevelPage() {
           Luyện {partKey.replace("part.", "Part ")} • Level {levelNum}
         </h1>
         <p className="text-sm text-zinc-500">
-          Bộ luyện theo Part với UI như Mini TOEIC. Chọn đáp án và nộp để xem kết quả.
+          Bộ luyện theo Part với UI như Mini TOEIC. Chọn đáp án và nộp để xem
+          kết quả.
         </p>
       </header>
 
@@ -190,7 +302,10 @@ export default function PracticePartLevelPage() {
           answered={answered}
           timeLabel={!resp ? fmtTime(timeSec) : fmtTime(resp.timeSec)}
           onSubmit={() => {
-            if (!started) { toast.error("Nhấn Bắt đầu để làm bài"); return; }
+            if (!started) {
+              toast.error("Nhấn Bắt đầu để làm bài");
+              return;
+            }
             submit();
           }}
           onJump={jumpTo}
@@ -205,17 +320,21 @@ export default function PracticePartLevelPage() {
         />
 
         <main className="col-span-3">
-          {loading && <div className="text-sm text-gray-500">Đang tải câu hỏi…</div>}
+          {loading && (
+            <div className="text-sm text-gray-500">Đang tải câu hỏi…</div>
+          )}
 
           {!loading && (
             <>
               {!started && !resp ? (
                 <div className="rounded-2xl border p-6 bg-gray-50 text-center">
                   <div className="text-lg font-semibold mb-1">
-                    Nhấn <span className="underline">Bắt đầu</span> ở thanh bên trái để hiển thị đề
+                    Nhấn <span className="underline">Bắt đầu</span> ở thanh bên
+                    trái để hiển thị đề
                   </div>
                   <div className="text-sm text-gray-600">
-                    Thời gian <b>{DURATION_MIN} phút</b> sẽ đếm ngược sau khi bạn bắt đầu.
+                    Thời gian <b>{DURATION_MIN} phút</b> sẽ đếm ngược sau khi
+                    bạn bắt đầu.
                   </div>
                 </div>
               ) : (
@@ -231,7 +350,9 @@ export default function PracticePartLevelPage() {
                         answers={answers}
                         correctMap={correctMap}
                         locked={!!resp}
-                        onPick={(itemId, choice) => setAnswers((p) => ({ ...p, [itemId]: choice }))}
+                        onPick={(itemId, choice) =>
+                          setAnswers((p) => ({ ...p, [itemId]: choice }))
+                        }
                         showStimulusDetails={!!resp && showDetails}
                         showPerItemExplain={!!resp && showDetails}
                       />
@@ -245,7 +366,9 @@ export default function PracticePartLevelPage() {
                         answers={answers}
                         correctMap={correctMap}
                         locked={!!resp}
-                        onPick={(itemId, choice) => setAnswers((p) => ({ ...p, [itemId]: choice }))}
+                        onPick={(itemId, choice) =>
+                          setAnswers((p) => ({ ...p, [itemId]: choice }))
+                        }
                         showStimulusDetails={!!resp && showDetails}
                       />
                     )
@@ -255,7 +378,10 @@ export default function PracticePartLevelPage() {
                     <div className="flex justify-center">
                       <button
                         onClick={() => {
-                          if (!started) { toast.error("Nhấn Bắt đầu để làm bài"); return; }
+                          if (!started) {
+                            toast.error("Nhấn Bắt đầu để làm bài");
+                            return;
+                          }
                           submit();
                         }}
                         className="px-5 py-3 rounded-2xl bg-black text-white disabled:opacity-50"

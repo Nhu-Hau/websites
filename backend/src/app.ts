@@ -8,15 +8,13 @@ import authRoutes from "./routes/auth.routes";
 import chatRoutes from "./routes/chat.routes";
 import { connectMongo } from "./lib/mongoose";
 import passport, { initPassport } from "./lib/passport";
-import itemsRoutes from "./routes/items.routes";
-// import attemptRoutes from "./routes/attempt.routes";
 import placementRoutes from "./routes/placement.routes";
-// import communityRoutes from "./routes/community.routes";
 import partsRoutes from "./routes/parts.routes";
 import adminRoutes from "./routes/admin.routes";
 import adminChatRoutes from "./routes/adminChat.routes";
 import adminAuthRoutes from "./routes/adminAuth.routes";
 import socketAuthRoutes from "./routes/socketAuth.routes";
+import practiceRoutes from "./routes/practice.routes";
 
 const app = express();
 const FRONTEND_ORIGIN = process.env.CLIENT_URL || "http://localhost:3000";
@@ -39,22 +37,18 @@ app.use(morgan("dev"));
 initPassport();
 app.use(passport.initialize());
 
-// Các route handler được đặt sau middleware
 app.get("/health", (_req, res) => res.json({ ok: true }));
 app.use("/api/tests", testsRouter);
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
-app.use("/api/items", itemsRoutes);
-// app.use("/api/attempts", attemptRoutes);
 app.use("/api/placement", placementRoutes);
-// app.use("/api/community", communityRoutes);
 app.use("/api/parts", partsRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin-chat", adminChatRoutes);
 app.use("/api/admin-auth", adminAuthRoutes);
 app.use("/api/socket-auth", socketAuthRoutes);
+app.use("/api", practiceRoutes);
 
-// Error handler (quan trọng: luôn đặt cuối cùng)
 app.use((err: any, _req: any, res: any, _next: any) => {
   console.error(err);
   res.status(500).json({ message: err?.message || "Internal Server Error" });

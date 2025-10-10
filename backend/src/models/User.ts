@@ -9,14 +9,16 @@ export interface IUser extends Document {
   role: "user" | "admin";
   access: "free" | "premium";
   level: 1 | 2 | 3 | 4;
+  partLevels?: Record<string, 1 | 2 | 3 | 4>;
+  toeicPred?: { overall: number; listening: number; reading: number } | null;
   googleId?: string;
   provider?: "local" | "google";
   picture?: string;
   refreshTokenHash?: string | null;
   refreshTokenExp?: Date | null;
   levelUpdatedAt?: Date | null;
-  levelSource?: "manual" | "placement" | null;           
-  lastPlacementAttemptId?: Types.ObjectId | null;         
+  levelSource?: "manual" | "placement" | null;
+  lastPlacementAttemptId?: Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidate: string): Promise<boolean>;
@@ -36,6 +38,12 @@ const userSchema = new Schema<IUser>(
     role: { type: String, enum: ["user", "admin"], default: "user" },
     access: { type: String, enum: ["free", "premium"], default: "free" },
     level: { type: Number, enum: [1, 2, 3, 4], default: 1 },
+    partLevels: { type: Schema.Types.Mixed, default: {} },
+    toeicPred: {
+      overall: { type: Number, default: null },
+      listening: { type: Number, default: null },
+      reading: { type: Number, default: null },
+    },
     googleId: String,
     provider: { type: String, default: "local" },
     picture: String,
@@ -44,8 +52,16 @@ const userSchema = new Schema<IUser>(
 
     // 👇 Metadata level
     levelUpdatedAt: { type: Date, default: null },
-    levelSource: { type: String, enum: ["manual", "placement"], default: "manual" },
-    lastPlacementAttemptId: { type: Schema.Types.ObjectId, ref: "PlacementAttempt", default: null },
+    levelSource: {
+      type: String,
+      enum: ["manual", "placement"],
+      default: "manual",
+    },
+    lastPlacementAttemptId: {
+      type: Schema.Types.ObjectId,
+      ref: "PlacementAttempt",
+      default: null,
+    },
   },
   { timestamps: true, versionKey: false }
 );

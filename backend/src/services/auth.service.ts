@@ -15,15 +15,28 @@ import {
   refreshCookieOpts,
 } from "../config/cookies";
 
-export function toSafeUser(user: IUser) {
+export function toSafeUser(u: IUser) {
   return {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    level: user.level,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
+    id: String(u._id),
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    access: u.access,
+    level: u.level,
+    levelUpdatedAt: u.levelUpdatedAt,
+    levelSource: u.levelSource,
+    lastPlacementAttemptId: u.lastPlacementAttemptId,
+    picture: u.picture,
+    createdAt: u.createdAt,
+    updatedAt: u.updatedAt,
+
+    // NEW:
+    partLevels: u.partLevels
+      ? Object.fromEntries(
+          (u.partLevels as any)?.entries?.() || Object.entries(u.partLevels)
+        )
+      : {},
+    toeicPred: u.toeicPred || { overall: 0, listening: 0, reading: 0 },
   };
 }
 

@@ -11,10 +11,19 @@ import {
   Target,
   ArrowRight,
 } from "lucide-react";
+import Link from "next/link";
+import { useLocale } from "next-intl";
 
-/** Đổi link luyện tập ở đây nếu cần */
-function buildPracticeHref(partKey: string, level: 1 | 2 | 3 | 4) {
-  return `/practice/parts/${encodeURIComponent(partKey)}?level=${level}`;
+/** Xây link luyện tập: luôn prepend /[locale] + giữ ?level= */
+function buildPracticeHref(
+  locale: string,
+  partKey: string,
+  level: 1 | 2 | 3 | 4
+) {
+  return {
+    pathname: `/${locale}/practice/${encodeURIComponent(partKey)}`,
+    query: { level: String(level) },
+  } as const;
 }
 function partLabel(partKey: string) {
   const n = partKey.match(/\d+/)?.[0];
@@ -56,20 +65,21 @@ function fmtTime(totalSec: number) {
   const s = totalSec % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
 }
-function levelColor(lv: 1 | 2 | 3 | 4) {
-  switch (lv) {
+function levelColor(level: 1 | 2 | 3 | 4) {
+  switch (level) {
     case 1:
-      return "text-emerald-200 font-extrabold"; // xanh lá nhạt
+      return "text-emerald-200 font-extrabold";
     case 2:
-      return "text-sky-200 font-extrabold"; // xanh dương nhạt
+      return "text-sky-200 font-extrabold";
     case 3:
-      return "text-violet-200 font-extrabold"; // tím nhạt
+      return "text-violet-200 font-extrabold";
     case 4:
-      return "text-amber-200 font-extrabold"; // vàng nhạt
+      return "text-amber-200 font-extrabold";
     default:
       return "text-white";
   }
 }
+
 export function ResultsPanel({
   resp,
   timeLabel,
@@ -85,23 +95,24 @@ export function ResultsPanel({
   onToggleDetails?: () => void;
   showDetails?: boolean;
 }) {
-  const lv = (resp.level ?? 1) as 1 | 2 | 3 | 4;
+  const locale = useLocale(); // ✅ vd: "vi"
+  const level = (resp.level ?? 1) as 1 | 2 | 3 | 4;
 
   const wrapClass =
-    lv === 4
+    level === 4
       ? "border-amber-300/70 bg-amber-50 text-amber-900"
-      : lv === 3
+      : level === 3
       ? "border-violet-300/70 bg-violet-50 text-violet-900"
-      : lv === 2
+      : level === 2
       ? "border-blue-300/70 bg-blue-50 text-blue-900"
       : "border-emerald-300/70 bg-emerald-50 text-emerald-900";
 
   const levelName =
-    lv === 4
+    level === 4
       ? "Level 4 - Nâng cao"
-      : lv === 3
+      : level === 3
       ? "Level 3 - Khá"
-      : lv === 2
+      : level === 2
       ? "Level 2 - Trung cấp"
       : "Level 1 - Cơ bản";
 
@@ -113,6 +124,7 @@ export function ResultsPanel({
       return na - nb;
     });
   }, [resp.partStats]);
+
   const toToeicStep5 = (raw: number, min: number, max: number) => {
     const rounded = Math.round(raw / 5) * 5;
     return Math.min(max, Math.max(min, rounded));
@@ -140,14 +152,13 @@ export function ResultsPanel({
           <span className="font-semibold">{(resp.acc * 100).toFixed(1)}%</span>
           {typeof resp.timeSec === "number" ? (
             <>
-              {" "}
-              - Thời gian:{" "}
+              {" "} - Thời gian:{" "}
               <span className="font-semibold">{fmtTime(resp.timeSec)}</span>
             </>
           ) : timeLabel ? (
             <>
-              {" "}
-              - Thời gian: <span className="font-semibold">{timeLabel}</span>
+              {" "} - Thời gian:{" "}
+              <span className="font-semibold">{timeLabel}</span>
             </>
           ) : null}
         </div>
@@ -160,8 +171,7 @@ export function ResultsPanel({
           <div>
             <div className="text-sm text-zinc-600">Điểm TOEIC ước lượng</div>
             <div className="text-4xl font-black leading-none">
-              {predictedOverall}{" "}
-              <span className="text-xl font-bold">/ 990</span>
+              {predictedOverall} <span className="text-xl font-bold">/ 990</span>
             </div>
           </div>
         </div>
@@ -191,7 +201,7 @@ export function ResultsPanel({
         </div>
       </section>
 
-      {/* 3) Tổng quan đậm nét */}
+      {/* 3) Tổng quan */}
       <section className="rounded-2xl border p-6">
         <div className="text-xl font-bold text-center">TỔNG QUAN</div>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3 text-center">
@@ -227,7 +237,7 @@ export function ResultsPanel({
         )}
       </section>
 
-      {/* 4) Phân tích từng Part + đề xuất (to, dễ chạm) */}
+      {/* 4) Phân tích từng Part & Gợi ý luyện tập */}
       {partsSorted.length > 0 && (
         <section className="rounded-2xl border p-6">
           <header className="mb-4 flex items-center justify-between">
@@ -247,21 +257,15 @@ export function ResultsPanel({
             {partsSorted.map(([partKey, stat]) => {
               const status = statusFromAcc(stat.acc);
               const recommend = recommendLevel(stat.acc);
-              const href = buildPracticeHref(partKey, recommend);
 
               return (
-                <div
-                  key={partKey}
-                  className="rounded-2xl border p-5 flex flex-col gap-3"
-                >
+                <div key={partKey} className="rounded-2xl border p-5 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border text-base font-bold">
                         {partKey.match(/\d+/)?.[0] ?? "?"}
                       </span>
-                      <div className="text-lg font-semibold">
-                        {partLabel(partKey)}
-                      </div>
+                      <div className="text-lg font-semibold">{partLabel(partKey)}</div>
                     </div>
                     <span
                       className={`inline-flex items-center gap-1 rounded border px-2.5 py-1 text-sm font-semibold ${status.color}`}
@@ -271,26 +275,18 @@ export function ResultsPanel({
                   </div>
 
                   <div className="text-sm text-zinc-600">
-                    Đúng{" "}
-                    <b>
-                      {stat.correct}/{stat.total}
-                    </b>{" "}
-                    -{" "}
-                    <b className="text-green-700">
-                      {(stat.acc * 100).toFixed(0)}%
-                    </b>
+                    Đúng <b>{stat.correct}/{stat.total}</b> –{" "}
+                    <b className="text-green-700">{(stat.acc * 100).toFixed(0)}%</b>
                   </div>
 
-                  <a
-                    href={href}
+                  <Link
+                    href={buildPracticeHref(locale, partKey, recommend)}
                     className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-base font-semibold text-white hover:bg-zinc-800"
                   >
-                    Luyện {partLabel(partKey)} –
-                    <span className={levelColor(recommend)}>
-                      Level {recommend}
-                    </span>
+                    Luyện {partLabel(partKey)} –{" "}
+                    <span className={levelColor(recommend)}>Level {recommend}</span>
                     <ArrowRight className="h-6 w-6" />
-                  </a>
+                  </Link>
                 </div>
               );
             })}

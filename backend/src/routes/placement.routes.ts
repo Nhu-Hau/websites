@@ -1,4 +1,3 @@
-// src/routes/placement.routes.ts
 import { Router } from "express";
 import { requireAuth } from "../middleware/requireAuth";
 import {
@@ -13,16 +12,18 @@ import {
 
 const router = Router();
 
+/**
+ * Mount ở app.ts: app.use("/api/placement", router)
+ * => các path dưới đây KHÔNG lặp "/placement" nữa
+ */
 router.get("/test", getPlacementTest);
 router.post("/items", getPlacementItems);
 router.post("/grade", gradePlacement);
 router.post("/submit", requireAuth, submitPlacement);
 router.get("/attempts", requireAuth, getMyPlacementAttempts);
 router.get("/attempts/:id", requireAuth, getPlacementAttemptById);
-router.get(
-  "/placement/attempts/:id/items",
-  requireAuth,
-  getPlacementAttemptItemsOrdered
-);
+
+// ⚠️ SỬA path: KHÔNG được viết "/placement/attempts/:id/items"
+router.get("/attempts/:id/items", requireAuth, getPlacementAttemptItemsOrdered);
 
 export default router;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -21,6 +22,7 @@ export function Sidebar({
   timeLabel,
   onSubmit,
   onJump,
+  // giữ prop cho tương thích nhưng sẽ override theo started
   disabledSubmit,
   onToggleDetails,
   showDetails,
@@ -52,12 +54,12 @@ export function Sidebar({
   const submittedRef = useRef(false);
   const router = useRouter();
 
-  // reset leftSec khi CHƯA bắt đầu
+  // Reset lại thời gian khi CHƯA bắt đầu và chưa có kết quả
   useEffect(() => {
     if (!started && !resp) setLeftSec(countdownSec);
   }, [countdownSec, started, resp]);
 
-  // Start/Stop interval
+  // Quản lý interval đếm ngược
   useEffect(() => {
     if (resp || !started) {
       if (tickingRef.current) {
@@ -67,10 +69,7 @@ export function Sidebar({
       return;
     }
     if (!tickingRef.current) {
-      tickingRef.current = window.setInterval(
-        () => setLeftSec((t) => t - 1),
-        1000
-      );
+      tickingRef.current = window.setInterval(() => setLeftSec((t) => t - 1), 1000);
     }
     return () => {
       if (tickingRef.current) {
@@ -120,18 +119,17 @@ export function Sidebar({
     onStart();
   }
 
-  const l = resp?.listening ?? { total: 0, correct: 0, acc: 0 };
-  const r = resp?.reading ?? { total: 0, correct: 0, acc: 0 };
+  const canSubmit = started && !resp; // ✅ chỉ cần đã bắt đầu (không bắt buộc answered > 0)
 
   return (
     <aside className="col-span-1">
       <div className="sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto space-y-4">
         <div className="flex items-start flex-col">
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            Bài đánh giá trình độ
+            Bài luyện theo Part
           </h1>
           <h1 className="flex items-center gap-1 text-gray-600 font-normal text-2xl">
-            55 câu, 35 phút
+            {total} câu • {Math.round(countdownSec / 60)} phút
           </h1>
         </div>
 
@@ -142,15 +140,9 @@ export function Sidebar({
               Thời gian sẽ bắt đầu tính khi bạn nhấn <b>Bắt đầu</b>.
             </div>
             <div className="mt-2 flex items-center gap-2">
-              {/* Nút Bắt đầu */}
-              <button
-                className="px-3 py-2 rounded-lg bg-black text-white"
-                onClick={handleStartClick}
-              >
+              <button className="px-3 py-2 rounded-lg bg-black text-white" onClick={handleStartClick}>
                 Bắt đầu
               </button>
-
-              {/* Nút Đăng nhập → chỉ hiện khi chưa login */}
               {!isAuthed && (
                 <button
                   type="button"
@@ -191,7 +183,7 @@ export function Sidebar({
             <button
               onClick={handleManualSubmit}
               className="w-full px-4 py-2 rounded-xl bg-black text-white disabled:opacity-50"
-              disabled={disabledSubmit || !started}
+              disabled={!canSubmit}
             >
               Nộp bài
             </button>
@@ -203,23 +195,14 @@ export function Sidebar({
           <div className="flex flex-wrap gap-2">
             {items.map((it, i) => {
               const picked = answers[it.id];
-              const correct = resp?.answersMap?.[it.id]?.correctAnswer as
-                | ChoiceId
-                | undefined;
+              const correct = resp?.answersMap?.[it.id]?.correctAnswer as ChoiceId | undefined;
 
-              let cls =
-                "w-9 h-9 rounded-full border text-sm flex items-center justify-center";
+              let cls = "w-9 h-9 rounded-full border text-sm flex items-center justify-center";
 
               if (!resp) {
-                cls += picked
-                  ? " bg-green-600 text-white border-green-600"
-                  : " hover:bg-gray-50";
+                cls += picked ? " bg-green-600 text-white border-green-600" : " hover:bg-gray-50";
               } else {
-                if (
-                  picked !== undefined &&
-                  correct !== undefined &&
-                  picked === correct
-                ) {
+                if (picked !== undefined && correct !== undefined && picked === correct) {
                   cls += " bg-green-600 text-white border-green-600";
                 } else {
                   cls += " bg-red-600 text-white border-red-600";

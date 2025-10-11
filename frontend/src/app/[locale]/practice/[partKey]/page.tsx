@@ -2,17 +2,25 @@
 "use client";
 
 import React from "react";
-import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import PartCard from "@/components/cards/PartCard";
 
-const PART_META: Record<string, { title: string; defaultQuestions: number; defaultDuration: number }> = {
-  "part.1": { title: "Part 1", defaultQuestions: 10, defaultDuration: 6 },
-  "part.2": { title: "Part 2", defaultQuestions: 15, defaultDuration: 10 },
-  "part.3": { title: "Part 3", defaultQuestions: 9, defaultDuration: 12 },
-  "part.4": { title: "Part 4", defaultQuestions: 9, defaultDuration: 12 },
-  "part.5": { title: "Part 5", defaultQuestions: 15, defaultDuration: 12 },
-  "part.6": { title: "Part 6", defaultQuestions: 12, defaultDuration: 12 },
-  "part.7": { title: "Part 7", defaultQuestions: 20, defaultDuration: 20 },
+const PART_META: Record<
+  string,
+  { title: string; defaultQuestions: number; defaultDuration: number }
+> = {
+  "part.1": { title: "Part 1", defaultQuestions: 6, defaultDuration: 5 },
+  "part.2": { title: "Part 2", defaultQuestions: 25, defaultDuration: 10 },
+  "part.3": { title: "Part 3", defaultQuestions: 39, defaultDuration: 18 },
+  "part.4": { title: "Part 4", defaultQuestions: 30, defaultDuration: 12 },
+  "part.5": { title: "Part 5", defaultQuestions: 30, defaultDuration: 15 },
+  "part.6": { title: "Part 6", defaultQuestions: 16, defaultDuration: 10 },
+  "part.7": { title: "Part 7", defaultQuestions: 54, defaultDuration: 50 },
 };
 
 const LEVELS: (1 | 2 | 3 | 4)[] = [1, 2, 3, 4];
@@ -29,58 +37,63 @@ export default function PartPage() {
     defaultDuration: 10,
   };
 
-  // đọc ?level= từ URL để set filter ban đầu
-  const levelFromUrl = React.useMemo(() => {
+  // Đọc level từ URL (nếu có)
+  const levelFromUrl = React.useMemo<1 | 2 | 3 | 4 | null>(() => {
     const raw = search.get("level");
     const n = raw ? Number(raw) : NaN;
-    return (n === 1 || n === 2 || n === 3 || n === 4) ? (n as 1|2|3|4) : null;
+    return n === 1 || n === 2 || n === 3 || n === 4
+      ? (n as 1 | 2 | 3 | 4)
+      : null;
   }, [search]);
 
-  const [filter, setFilter] = React.useState<null | 1 | 2 | 3 | 4>(levelFromUrl);
+  // State filter: luôn là 1|2|3|4 (mặc định 1)
+  const [filter, setFilter] = React.useState<1 | 2 | 3 | 4>(levelFromUrl ?? 1);
 
-  // nếu URL đổi (back/forward), sync lại filter
+  // Nếu URL chưa có ?level= → set mặc định ?level=1 ngay khi mount
   React.useEffect(() => {
-    setFilter(levelFromUrl);
-  }, [levelFromUrl]);
+    if (levelFromUrl === null) {
+      router.replace(`${pathname}?level=1`, { scroll: false });
+      setFilter(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // chỉ chạy 1 lần khi mount
+
+  // Sync khi level trên URL đổi (back/forward)
+  React.useEffect(() => {
+    if (levelFromUrl !== null && levelFromUrl !== filter) {
+      setFilter(levelFromUrl);
+    }
+  }, [levelFromUrl, filter]);
 
   // helper: cập nhật ?level= trên URL (không scroll)
-  function updateQuery(next: null | 1 | 2 | 3 | 4) {
-    const q = next ? `?level=${next}` : "";
-    router.replace(`${pathname}${q}`, { scroll: false });
+  function updateQuery(next: 1 | 2 | 3 | 4) {
+    router.replace(`${pathname}?level=${next}`, { scroll: false });
   }
 
-  function handleClickAll() {
-    setFilter(null);
-    updateQuery(null);
-  }
   function handleClickLevel(lv: 1 | 2 | 3 | 4) {
     setFilter(lv);
     updateQuery(lv);
   }
 
-  const visibleLevels = LEVELS.filter((lv) => (filter ? lv === filter : true));
+  const visibleLevels = [filter]; // chỉ hiển thị đúng 1 level đang chọn
 
   return (
     <div className="mx-auto max-w-6xl p-6 mt-16">
       <header className="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{meta.title}</h1>
-          <p className="text-sm text-zinc-600">
-            Chọn Level để luyện theo {partKey}. Nhấn vào một card để bắt đầu.
+          <h1 className="text-4xl font-bold">{meta.title}</h1>
+          <p className="text-md text-zinc-600">
+            Chọn cấp độ phù hợp để luyện tập từng phần của bài thi TOEIC
           </p>
         </div>
 
         <div className="inline-flex items-center gap-2 rounded-xl border p-1.5 bg-white dark:bg-zinc-800">
-          <button
-            className={`px-3 py-1.5 rounded-lg text-sm ${filter === null ? "bg-black text-white" : "hover:bg-zinc-100"}`}
-            onClick={handleClickAll}
-          >
-            Tất cả
-          </button>
           {LEVELS.map((lv) => (
             <button
               key={lv}
-              className={`px-3 py-1.5 rounded-lg text-sm ${filter === lv ? "bg-black text-white" : "hover:bg-zinc-100"}`}
+              className={`px-3 py-1.5 rounded-lg text-sm ${
+                filter === lv ? "bg-black text-white" : "hover:bg-zinc-100"
+              }`}
               onClick={() => handleClickLevel(lv)}
             >
               Level {lv}

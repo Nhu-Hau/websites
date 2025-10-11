@@ -70,7 +70,6 @@ export default function NavItem({ item }: NavItemProps) {
             aria-current={isActive ? "page" : undefined}
           >
             <span>{item.label}</span>
-            {/* underline animate */}
             <span
               className={[
                 "pointer-events-none absolute left-0 -bottom-0.5 h-0.5 bg-sky-600 dark:bg-sky-600",

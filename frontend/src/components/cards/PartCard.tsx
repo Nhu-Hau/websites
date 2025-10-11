@@ -83,7 +83,6 @@ export default function PartCard({
       </div>
     </div>;
 
-  // Dùng Link khi là free; pro thì chỉ render div (disabled)
   return isPro ? card : (
     <Link href={href} className="block">
       {card}

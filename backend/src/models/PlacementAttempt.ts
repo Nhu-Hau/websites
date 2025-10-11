@@ -30,6 +30,13 @@ const PlacementAttemptSchema = new Schema(
     },
     level: { type: Number, required: true, enum: [1, 2, 3, 4] },
     items: { type: [ItemResultSchema], default: [] },
+    predicted: {
+      overall: { type: Number },
+      listening: { type: Number },
+      reading: { type: Number },
+    },
+    partStats: { type: Schema.Types.Mixed },
+    weakParts: [String],
     allIds: { type: [String], default: [] },
     timeSec: { type: Number, default: 0 },
     startedAt: { type: Date },

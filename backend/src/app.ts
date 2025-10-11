@@ -15,6 +15,8 @@ import adminChatRoutes from "./routes/adminChat.routes";
 import adminAuthRoutes from "./routes/adminAuth.routes";
 import socketAuthRoutes from "./routes/socketAuth.routes";
 import practiceRoutes from "./routes/practice.routes";
+import coursesRoutes from "./routes/courses.routes";
+import paymentsRoutes from "./routes/payments.routes";
 
 const app = express();
 const FRONTEND_ORIGIN = process.env.CLIENT_URL || "http://localhost:3000";
@@ -48,6 +50,8 @@ app.use("/api/admin-chat", adminChatRoutes);
 app.use("/api/admin-auth", adminAuthRoutes);
 app.use("/api/socket-auth", socketAuthRoutes);
 app.use("/api", practiceRoutes);
+app.use("/api/courses", coursesRoutes);
+app.use("/api/payments", paymentsRoutes);
 
 app.use((err: any, _req: any, res: any, _next: any) => {
   console.error(err);

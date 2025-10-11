@@ -6,7 +6,6 @@ import type { ChoiceId } from "@/types/tests";
 import { Sidebar } from "./Sidebar";
 import { ResultsPanel } from "./ResultsPanel";
 import { groupByStimulus } from "@/utils/groupByStimulus";
-// 🔁 dùng file gộp mới
 import { StimulusRowCard, StimulusColumnCard } from "./StimulusCards";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";

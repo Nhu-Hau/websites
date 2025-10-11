@@ -77,17 +77,17 @@
     "practiceLR": {
       "title": "Luyện L&R",
       "parts": {
-        "part1": "Phần 1: Mô tả tranh",
-        "part2": "Phần 2: Hỏi - đáp",
-        "part3": "Phần 3: Đoạn hội thoại",
-        "part4": "Phần 4: Bài nói ngắn",
-        "part5": "Phần 5: Hoàn thành câu",
-        "part6": "Phần 6: Hoàn thành đoạn văn",
-        "part7": "Phần 7: Đọc hiểu"
+        "part1": "Part 1: Mô tả tranh",
+        "part2": "Part 2: Hỏi - đáp",
+        "part3": "Part 3: Đoạn hội thoại",
+        "part4": "Part 4: Bài nói ngắn",
+        "part5": "Part 5: Hoàn thành câu",
+        "part6": "Part 6: Hoàn thành đoạn văn",
+        "part7": "Part 7: Đọc hiểu"
       }
     },
-    "test": "Luyện đề",
-    "forum": "Diễn đàn"
+    "course": "Khoá học",
+    "news": "Tin tức"
   },
   "UserMenu": {
     "login": "Đăng nhập",

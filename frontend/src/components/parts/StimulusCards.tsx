@@ -5,6 +5,66 @@ import React from "react";
 import type { Stimulus, Item, ChoiceId } from "@/types/tests";
 
 /* =========================
+   Shared: Khung vàng hiển thị nội dung (transcript/explain)
+   ========================= */
+function YellowInfoBlock({
+  title,
+  content,
+}: {
+  title: string;
+  content: string;
+}) {
+  return (
+    <div className="rounded-lg border p-3 bg-amber-50/60 text-amber-900">
+      <div className="text-sm font-semibold">{title}</div>
+      <pre className="mt-1 text-sm whitespace-pre-wrap leading-relaxed">
+        {content}
+      </pre>
+    </div>
+  );
+}
+
+/* =========================
+   Shared: Panel khung vàng cho Stimulus (Transcript/Explain)
+   Có fallback field: media.script, media.explain, script, explain
+   ========================= */
+function StimulusYellowPanel({
+  stimulus,
+}: {
+  stimulus?: Stimulus | null;
+}) {
+  if (!stimulus) return null;
+
+  // Fallback các field có thể có
+  const transcript =
+    (stimulus as any)?.media?.script ??
+    (stimulus as any)?.script ??
+    null;
+
+  const explain =
+    (stimulus as any)?.media?.explain ??
+    (stimulus as any)?.explain ??
+    null;
+
+  if (!transcript && !explain) return null;
+
+  return (
+    <div className="mt-2 grid grid-cols-1 gap-3">
+      {transcript && (
+        <div className="md:col-span-2">
+          <YellowInfoBlock title="Transcript" content={String(transcript)} />
+        </div>
+      )}
+      {explain && (
+        <div className="md:col-span-1">
+          <YellowInfoBlock title="Giải thích" content={String(explain)} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================
    Shared: ChoiceRow (Row mode uses this)
    ========================= */
 function ChoiceRow({
@@ -14,6 +74,7 @@ function ChoiceRow({
   correct,
   locked,
   onPick,
+  showPerItemExplain,
 }: {
   item: Item;
   displayIndex: number;
@@ -21,7 +82,12 @@ function ChoiceRow({
   correct?: ChoiceId;
   locked: boolean;
   onPick: (c: ChoiceId) => void;
+  showPerItemExplain: boolean;
 }) {
+  // Fallback item explain: item.explain, item.media.explain
+  const itemExplain =
+    (item as any)?.explain ?? (item as any)?.media?.explain ?? null;
+
   return (
     <div id={`q-${displayIndex}`} className="rounded-xl border p-3">
       <div className="flex items-center justify-between mb-2">
@@ -76,11 +142,21 @@ function ChoiceRow({
               onClick={() => onPick(ch.id)}
             >
               <b className="mr-2">{ch.id}.</b>
-              {ch.text}
+              {ch.text /* nếu dùng content thì đổi sang ch.content */}
             </button>
           );
         })}
       </div>
+
+      {/* Explain per-item: khung vàng đồng bộ */}
+      {locked && showPerItemExplain && !!itemExplain && (
+        <div className="mt-3">
+          <YellowInfoBlock
+            title={`Giải thích câu ${displayIndex}`}
+            content={String(itemExplain)}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -98,6 +174,7 @@ export function StimulusColumnCard({
   locked,
   onPick,
   showStimulusDetails,
+  showPerItemExplain,
 }: {
   groupKey: string;
   stimulus?: Stimulus | null;
@@ -108,15 +185,14 @@ export function StimulusColumnCard({
   locked: boolean;
   onPick: (itemId: string, choice: ChoiceId) => void;
   showStimulusDetails: boolean;
+  showPerItemExplain?: boolean;
 }) {
   const imgs = Array.isArray(stimulus?.media?.image)
-    ? stimulus.media.image
+    ? stimulus!.media!.image
     : stimulus?.media?.image
-    ? [stimulus.media.image]
+    ? [stimulus!.media!.image]
     : [];
   const audio = stimulus?.media?.audio;
-  const transcript = stimulus?.media?.script;
-  const sExplain = stimulus?.media?.explain;
 
   return (
     <section className="rounded-2xl border-[2px] border-gray-300 p-4 space-y-4">
@@ -127,43 +203,23 @@ export function StimulusColumnCard({
         ))}
       {audio && <audio controls src={audio} className="w-full" />}
 
-      {/* Transcript/Explain khi đã nộp và bật chi tiết */}
-      {locked && showStimulusDetails && (transcript || sExplain) && (
-        <div className="grid grid-cols-1 gap-4 mt-1">
-          <div className="col-span-2">
-            {transcript && (
-              <details open className="text-sm">
-                <summary className="cursor-pointer font-medium">
-                  Transcript
-                </summary>
-                <pre className="whitespace-pre-wrap mt-1 text-gray-700">
-                  {transcript}
-                </pre>
-              </details>
-            )}
-          </div>
-          <div className="col-span-1">
-            {sExplain && (
-              <details open className="text-sm">
-                <summary className="cursor-pointer font-medium">
-                  Giải thích
-                </summary>
-                <pre className="whitespace-pre-wrap mt-1 text-gray-700">
-                  {sExplain}
-                </pre>
-              </details>
-            )}
-          </div>
-        </div>
+      {/* Stimulus transcript/explain: KHUNG VÀNG */}
+      {locked && showStimulusDetails && (
+        <StimulusYellowPanel stimulus={stimulus} />
       )}
 
-      {/* Các câu con dạng cột (mỗi câu là 1 block) */}
+      {/* Các câu con dạng cột */}
       <div className="space-y-4">
         {items.map((it) => {
           const idx0 = itemIndexMap.get(it.id)!;
           const displayIndex = idx0 + 1;
           const picked = answers[it.id];
           const correct = correctMap?.[it.id];
+
+          // per-item explain fallback
+          const itemExplain =
+            (it as any)?.explain ?? (it as any)?.media?.explain ?? null;
+
           return (
             <div
               key={it.id}
@@ -229,6 +285,16 @@ export function StimulusColumnCard({
                   );
                 })}
               </div>
+
+              {/* per-item explain: KHUNG VÀNG đồng bộ */}
+              {locked && showPerItemExplain && !!itemExplain && (
+                <div className="mt-3">
+                  <YellowInfoBlock
+                    title={`Giải thích câu ${displayIndex}`}
+                    content={String(itemExplain)}
+                  />
+                </div>
+              )}
             </div>
           );
         })}
@@ -250,7 +316,7 @@ export function StimulusRowCard({
   locked,
   onPick,
   showStimulusDetails,
-  showPerItemExplain, // hiện tại chưa dùng explain per-item, có thể bổ sung sau
+  showPerItemExplain,
 }: {
   groupKey: string;
   stimulus?: Stimulus | null;
@@ -264,13 +330,11 @@ export function StimulusRowCard({
   showPerItemExplain: boolean;
 }) {
   const imgs = Array.isArray(stimulus?.media?.image)
-    ? stimulus.media.image
+    ? stimulus!.media!.image
     : stimulus?.media?.image
-    ? [stimulus.media.image]
+    ? [stimulus!.media!.image]
     : [];
   const audio = stimulus?.media?.audio;
-  const transcript = stimulus?.media?.script;
-  const sExplain = stimulus?.media?.explain;
 
   return (
     <section className="rounded-2xl border-[2px] border-gray-300 p-4">
@@ -291,34 +355,9 @@ export function StimulusRowCard({
             </div>
           )}
 
-          {/* transcript/explain của stimulus */}
-          {locked && showStimulusDetails && (transcript || sExplain) && (
-            <div className="grid grid-cols-1 gap-4 mt-1">
-              <div className="col-span-2">
-                {transcript && (
-                  <details open className="text-sm">
-                    <summary className="cursor-pointer font-medium">
-                      Transcript
-                    </summary>
-                    <pre className="whitespace-pre-wrap mt-1 text-gray-700">
-                      {transcript}
-                    </pre>
-                  </details>
-                )}
-              </div>
-              <div className="col-span-1">
-                {sExplain && (
-                  <details open className="text-sm">
-                    <summary className="cursor-pointer font-medium">
-                      Giải thích
-                    </summary>
-                    <pre className="whitespace-pre-wrap mt-1 text-gray-700">
-                      {sExplain}
-                    </pre>
-                  </details>
-                )}
-              </div>
-            </div>
+          {/* Stimulus transcript/explain: KHUNG VÀNG */}
+          {locked && showStimulusDetails && (
+            <StimulusYellowPanel stimulus={stimulus} />
           )}
         </div>
 
@@ -338,6 +377,7 @@ export function StimulusRowCard({
                 correct={correct}
                 locked={locked}
                 onPick={(c) => onPick(it.id, c)}
+                showPerItemExplain={showPerItemExplain}
               />
             );
           })}

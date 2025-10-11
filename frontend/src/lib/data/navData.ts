@@ -21,7 +21,7 @@ export function MenuNav(): NavItemType[] {
         { label: t("practiceLR.parts.part7"), href: `/${locale}/practice/part.7` },
       ],
     },
-    { label: t("test"), href: `/${locale}/practice/tests` },
-    { label: t("forum"), href: `/${locale}/communityPage` },
+    { label: t("course"), href: `/${locale}/courses` },
+    { label: t("news"), href: `/${locale}/communityPage` },
   ];
 }

@@ -328,6 +328,7 @@ export default function PlacementResultPage() {
               locked={true}
               onPick={() => {}}
               showStimulusDetails={showDetails}
+              showPerItemExplain={showDetails} 
             />
           )
         )}

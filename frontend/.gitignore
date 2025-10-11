@@ -9,8 +9,12 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build output
-dist/
-build/
+/dist/
+/build/
+
+# Generated JS files from TypeScript compilation
+*.js
+*.js.map
 
 # Env files
 .env

@@ -1,10 +1,12 @@
-// src/routes/parts.routes.ts
 import { Router } from "express";
-import { getPartItemsByLevel } from "../controllers/parts.controller";
+import { getPartItemsByLevelAndTest, listTestsByLevel } from "../controllers/parts.controller";
 
 const router = Router();
 
-// GET /api/parts/:partKey/items?level=1&limit=50
-router.get("/:partKey/items", getPartItemsByLevel);
+// Lấy danh sách test cho 1 part + level (để build card Test 1,2,3)
+router.get("/:partKey/tests", listTestsByLevel);
+
+// Lấy items cho 1 part + level + test
+router.get("/:partKey/items", getPartItemsByLevelAndTest);
 
 export default router;

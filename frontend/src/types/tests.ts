@@ -1,131 +1,38 @@
-// src/types/tests.ts
-export type Part =
-  | "part.1"
-  | "part.2"
-  | "part.3"
-  | "part.4"
-  | "part.5"
-  | "part.6"
-  | "part.7";
-
-export type AccessTier = "free" | "premium";
+// ChoiceId vẫn như cũ
 export type ChoiceId = "A" | "B" | "C" | "D";
 
-export interface Choice {
+// CHỈNH: text? để không bắt buộc phải có nội dung
+export type Choice = {
   id: ChoiceId;
-  text?: string;
-}
-
-export interface Stimulus {
-  id: string;
-  part: Part;
-  media?: {
-    audio?: string;
-    image?: string[];
-    script?: string;
-    explain?: string;
-  };
-  passage?: string;
-  meta?: Record<string, string>;
-}
-
-export interface Item {
-  id: string;
-  part: Part;
-  stimulusId?: string;
-  tags?: string[];
-  stem?: string;
-  choices: Choice[];
-  answer: ChoiceId;
-  explain?: string;
-}
-
-export interface Section {
-  name: "Listening" | "Reading";
-  durationMin: number;
-  parts: Record<Part, string[]>;
-}
-
-export interface TestDef {
-  testId: string;
-  title: string;
-  totalDurationMin: number;
-  totalQuestions: number;
-  sections: Section[];
-  access: AccessTier;
-  isFeatured?: boolean;
-  description?: string;
-  version?: string;
-}
-
-export interface AnswerRow {
-  itemId: string;
-  choice: ChoiceId;
-  correct: boolean;
-  timeSec?: number;
-  at: string;
-}
-
-export interface Attempt {
-  attemptId: string;
-  userId: string;
-  testId: string;
-  startedAt: string;
-  finishedAt?: string;
-  answers: AnswerRow[];
-}
-
-export const TOEIC_COUNTS: Record<Part, number> = {
-  "part.1": 6,
-  "part.2": 25,
-  "part.3": 39,
-  "part.4": 30,
-  "part.5": 30,
-  "part.6": 16,
-  "part.7": 54,
+  text?: string;      // mới: có thể không có (Part 1 chỉ có A/B/C/D)
+  content?: string;   // phòng khi bạn dùng "content" thay vì "text"
 };
 
-export const TOEIC_DURATION_MIN = 120;
-export const TOEIC_QUESTIONS = 200;
-export const TOEIC_LISTENING_MIN = 45;
-export const TOEIC_READING_MIN = 75;
+export type Item = {
+  id: string;
+  part: string;           // "part.1" ... "part.7"
+  stimulusId?: string;
+  stem?: string | null;
+  choices: Choice[];
+  answer: ChoiceId;
+  level?: 1 | 2 | 3 | 4;
+  test?: number;
+  // mới: giải thích từng câu (nếu có)
+  explain?: string;
+};
 
-export interface AttemptAnswerOut {
-  itemId: string;
-  choice: ChoiceId;
-  correct: boolean;
-  timeSec?: number;
-  at: string;
-  part?:
-    | "part.1"
-    | "part.2"
-    | "part.3"
-    | "part.4"
-    | "part.5"
-    | "part.6"
-    | "part.7";
-  tags?: string[];
-}
+// CHỈNH: image/audio có thể là string HOẶC string[]
+export type StimulusMedia = {
+  image?: string | string[];
+  audio?: string | string[];
+  script?: string;
+  explain?: string;
+};
 
-export interface ByPartRow {
+export type Stimulus = {
+  id: string;
   part: string;
-  attempts: number;
-  correct: number;
-  accuracy: number; // 0..1
-}
-
-export interface ByTagRow {
-  tag: string;
-  label?: string;
-  attempts: number;
-  correct: number;
-  accuracy: number; // 0..1
-}
-
-export interface SubmitAttemptResp {
-  attemptId: string;
-  score: { total: number; correct: number; accuracy: number };
-  byPart: ByPartRow[];
-  byTag: ByTagRow[];
-  message?: string;
-}
+  level?: 1 | 2 | 3 | 4;
+  test?: number;
+  media?: StimulusMedia;
+};

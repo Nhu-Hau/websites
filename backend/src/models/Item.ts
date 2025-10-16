@@ -3,8 +3,8 @@ import mongoose, { Schema, Document } from "mongoose";
 export type ChoiceId = "A" | "B" | "C" | "D";
 
 export interface IChoice {
-  id: ChoiceId;         // A/B/C/D
-  text?: string;        // có thể trống (đối với Part 1 chỉ chọn A-D)
+  id: ChoiceId;    
+  text?: string;  
 }
 
 export interface IItem extends Document {

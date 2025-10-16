@@ -1,5 +1,5 @@
 // types/placement.ts
-import type { ChoiceId } from "@/types/tests";
+import type { ChoiceId } from "@/types/tests"
 
 export interface GradeResp {
   total: number;

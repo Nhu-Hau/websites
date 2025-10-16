@@ -4,6 +4,13 @@
 import React from "react";
 import type { Stimulus, Item, ChoiceId } from "@/types/tests";
 
+/** Kiểu choice “mềm” để tránh any */
+type ChoiceLike = {
+  id: ChoiceId;
+  text?: string;
+  content?: string;
+};
+
 /* =========================
    Shared: Khung vàng hiển thị nội dung (transcript/explain)
    ========================= */
@@ -28,14 +35,9 @@ function YellowInfoBlock({
    Shared: Panel khung vàng cho Stimulus (Transcript/Explain)
    Có fallback field: media.script, media.explain, script, explain
    ========================= */
-function StimulusYellowPanel({
-  stimulus,
-}: {
-  stimulus?: Stimulus | null;
-}) {
+function StimulusYellowPanel({ stimulus }: { stimulus?: Stimulus | null }) {
   if (!stimulus) return null;
 
-  // Fallback các field có thể có
   const transcript =
     (stimulus as any)?.media?.script ??
     (stimulus as any)?.script ??
@@ -65,6 +67,14 @@ function StimulusYellowPanel({
 }
 
 /* =========================
+   Helpers: Chuẩn hoá media (image/audio là string | string[])
+   ========================= */
+function toArray<T>(val?: T | T[]): T[] {
+  if (!val) return [];
+  return Array.isArray(val) ? val : [val];
+}
+
+/* =========================
    Shared: ChoiceRow (Row mode uses this)
    ========================= */
 function ChoiceRow({
@@ -84,7 +94,6 @@ function ChoiceRow({
   onPick: (c: ChoiceId) => void;
   showPerItemExplain: boolean;
 }) {
-  // Fallback item explain: item.explain, item.media.explain
   const itemExplain =
     (item as any)?.explain ?? (item as any)?.media?.explain ?? null;
 
@@ -120,7 +129,7 @@ function ChoiceRow({
       {item.stem && <div className="text-md mb-2 font-bold">{item.stem}</div>}
 
       <div className="space-y-2">
-        {(item.choices || []).map((ch) => {
+        {((item.choices ?? []) as ChoiceLike[]).map((ch: ChoiceLike) => {
           let cls = "text-left px-3 py-2 rounded-lg border w-full";
           if (!locked) {
             cls +=
@@ -134,6 +143,7 @@ function ChoiceRow({
               cls += " bg-red-600 text-white border-red-600";
             else cls += " bg-white";
           }
+          const label = ch.text ?? ch.content ?? "";
           return (
             <button
               key={ch.id}
@@ -142,13 +152,12 @@ function ChoiceRow({
               onClick={() => onPick(ch.id)}
             >
               <b className="mr-2">{ch.id}.</b>
-              {ch.text /* nếu dùng content thì đổi sang ch.content */}
+              {label}
             </button>
           );
         })}
       </div>
 
-      {/* Explain per-item: khung vàng đồng bộ */}
       {locked && showPerItemExplain && !!itemExplain && (
         <div className="mt-3">
           <YellowInfoBlock
@@ -187,36 +196,29 @@ export function StimulusColumnCard({
   showStimulusDetails: boolean;
   showPerItemExplain?: boolean;
 }) {
-  const imgs = Array.isArray(stimulus?.media?.image)
-    ? stimulus!.media!.image
-    : stimulus?.media?.image
-    ? [stimulus!.media!.image]
-    : [];
-  const audio = stimulus?.media?.audio;
+  const imgs = toArray((stimulus as any)?.media?.image as string | string[]);
+  const audios = toArray((stimulus as any)?.media?.audio as string | string[]);
 
   return (
     <section className="rounded-2xl border-[2px] border-gray-300 p-4 space-y-4">
-      {/* Media chung */}
       {!!imgs.length &&
         imgs.map((url, i) => (
           <img key={i} src={url} alt="" className="rounded-lg border w-3/4" />
         ))}
-      {audio && <audio controls src={audio} className="w-full" />}
+      {!!audios.length &&
+        audios.map((src, i) => (
+          <audio key={i} controls src={src} className="w-full" />
+        ))}
 
-      {/* Stimulus transcript/explain: KHUNG VÀNG */}
-      {locked && showStimulusDetails && (
-        <StimulusYellowPanel stimulus={stimulus} />
-      )}
+      {locked && showStimulusDetails && <StimulusYellowPanel stimulus={stimulus} />}
 
-      {/* Các câu con dạng cột */}
       <div className="space-y-4">
-        {items.map((it) => {
-          const idx0 = itemIndexMap.get(it.id)!;
-          const displayIndex = idx0 + 1;
+        {items.map((it, iIdx) => {
+          const idx0 = itemIndexMap.get(it.id);
+          const displayIndex = (idx0 ?? iIdx) + 1;
           const picked = answers[it.id];
           const correct = correctMap?.[it.id];
 
-          // per-item explain fallback
           const itemExplain =
             (it as any)?.explain ?? (it as any)?.media?.explain ?? null;
 
@@ -258,7 +260,7 @@ export function StimulusColumnCard({
               )}
 
               <div className="space-y-2 w-full flex flex-col">
-                {(it.choices || []).map((ch) => {
+                {((it.choices ?? []) as ChoiceLike[]).map((ch: ChoiceLike) => {
                   let cls = "text-left px-3 py-2 rounded-lg border w-1/2";
                   if (!locked) {
                     cls +=
@@ -272,6 +274,7 @@ export function StimulusColumnCard({
                       cls += " bg-red-600 text-white border-red-600";
                     else cls += " bg-white";
                   }
+                  const label = ch.text ?? ch.content ?? "";
                   return (
                     <button
                       key={ch.id}
@@ -280,13 +283,12 @@ export function StimulusColumnCard({
                       onClick={() => onPick(it.id, ch.id)}
                     >
                       <b className="mr-2">{ch.id}.</b>
-                      {ch.text}
+                      {label}
                     </button>
                   );
                 })}
               </div>
 
-              {/* per-item explain: KHUNG VÀNG đồng bộ */}
               {locked && showPerItemExplain && !!itemExplain && (
                 <div className="mt-3">
                   <YellowInfoBlock
@@ -329,19 +331,18 @@ export function StimulusRowCard({
   showStimulusDetails: boolean;
   showPerItemExplain: boolean;
 }) {
-  const imgs = Array.isArray(stimulus?.media?.image)
-    ? stimulus!.media!.image
-    : stimulus?.media?.image
-    ? [stimulus!.media!.image]
-    : [];
-  const audio = stimulus?.media?.audio;
+  const imgs = toArray((stimulus as any)?.media?.image as string | string[]);
+  const audios = toArray((stimulus as any)?.media?.audio as string | string[]);
 
   return (
     <section className="rounded-2xl border-[2px] border-gray-300 p-4">
       <div className="grid grid-cols-3 gap-4">
         {/* LEFT: media chung */}
         <div className="col-span-2 space-y-3">
-          {audio && <audio controls src={audio} className="w-full" />}
+          {!!audios.length &&
+            audios.map((src, i) => (
+              <audio key={i} controls src={src} className="w-full" />
+            ))}
           {!!imgs.length && (
             <div className="space-y-2">
               {imgs.map((url, i) => (
@@ -363,9 +364,9 @@ export function StimulusRowCard({
 
         {/* RIGHT: tất cả câu con */}
         <div className="col-span-1 space-y-3">
-          {items.map((it) => {
-            const idx0 = itemIndexMap.get(it.id)!;
-            const displayIndex = idx0 + 1;
+          {items.map((it, iIdx) => {
+            const idx0 = itemIndexMap.get(it.id);
+            const displayIndex = (idx0 ?? iIdx) + 1;
             const picked = answers[it.id];
             const correct = correctMap?.[it.id];
             return (

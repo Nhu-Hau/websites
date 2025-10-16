@@ -2,19 +2,11 @@
 "use client";
 
 import React from "react";
-import {
-  useParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
-import PartCard from "@/components/cards/PartCard";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
+import TestCard from "@/components/cards/TestCard";
 
-const PART_META: Record<
-  string,
-  { title: string; defaultQuestions: number; defaultDuration: number }
-> = {
-  "part.1": { title: "Part 1", defaultQuestions: 6, defaultDuration: 5 },
+const PART_META: Record<string, { title: string; defaultQuestions: number; defaultDuration: number }> = {
+  "part.1": { title: "Part 1", defaultQuestions: 6,  defaultDuration: 5 },
   "part.2": { title: "Part 2", defaultQuestions: 25, defaultDuration: 10 },
   "part.3": { title: "Part 3", defaultQuestions: 39, defaultDuration: 18 },
   "part.4": { title: "Part 4", defaultQuestions: 30, defaultDuration: 12 },
@@ -23,7 +15,10 @@ const PART_META: Record<
   "part.7": { title: "Part 7", defaultQuestions: 54, defaultDuration: 50 },
 };
 
-const LEVELS: (1 | 2 | 3 | 4)[] = [1, 2, 3, 4];
+// ✔ Chỉ 3 level đúng theo DB hiện tại
+const LEVELS: (1 | 2 | 3)[] = [1, 2, 3];
+
+type TestsResp = { tests: number[] };
 
 export default function PartPage() {
   const { locale, partKey } = useParams<{ locale: string; partKey: string }>();
@@ -37,45 +32,61 @@ export default function PartPage() {
     defaultDuration: 10,
   };
 
-  // Đọc level từ URL (nếu có)
-  const levelFromUrl = React.useMemo<1 | 2 | 3 | 4 | null>(() => {
+  // đọc ?level= từ URL → mặc định 1
+  const levelFromUrl = React.useMemo<1|2|3>(() => {
     const raw = search.get("level");
-    const n = raw ? Number(raw) : NaN;
-    return n === 1 || n === 2 || n === 3 || n === 4
-      ? (n as 1 | 2 | 3 | 4)
-      : null;
+    const n = raw ? Number(raw) : 1;
+    return (n === 1 || n === 2 || n === 3) ? (n as 1|2|3) : 1;
   }, [search]);
 
-  // State filter: luôn là 1|2|3|4 (mặc định 1)
-  const [filter, setFilter] = React.useState<1 | 2 | 3 | 4>(levelFromUrl ?? 1);
+  const [filter, setFilter] = React.useState<1|2|3>(levelFromUrl);
+  const [tests, setTests] = React.useState<number[]>([]);
+  const [loading, setLoading] = React.useState(false);
 
-  // Nếu URL chưa có ?level= → set mặc định ?level=1 ngay khi mount
+  // Sync URL ↔ state
   React.useEffect(() => {
-    if (levelFromUrl === null) {
-      router.replace(`${pathname}?level=1`, { scroll: false });
-      setFilter(1);
-    }
+    if (levelFromUrl !== filter) setFilter(levelFromUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // chỉ chạy 1 lần khi mount
+  }, [levelFromUrl]);
 
-  // Sync khi level trên URL đổi (back/forward)
+  // Nếu URL chưa có ?level= → gán ngay
   React.useEffect(() => {
-    if (levelFromUrl !== null && levelFromUrl !== filter) {
-      setFilter(levelFromUrl);
+    const raw = search.get("level");
+    if (!raw) {
+      router.replace(`${pathname}?level=1`, { scroll: false });
     }
-  }, [levelFromUrl, filter]);
+  }, [pathname, router, search]);
 
-  // helper: cập nhật ?level= trên URL (không scroll)
-  function updateQuery(next: 1 | 2 | 3 | 4) {
-    router.replace(`${pathname}?level=${next}`, { scroll: false });
-  }
+  // nạp danh sách test cho part + level
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setTests([]);
+        const qs = new URLSearchParams({ level: String(filter) });
+        const res = await fetch(`/api/parts/${encodeURIComponent(partKey)}/tests?${qs}`, {
+          cache: "no-store",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("failed");
+        const j = (await res.json()) as TestsResp;
+        if (!mounted) return;
+        setTests(Array.isArray(j.tests) ? j.tests : []);
+      } catch (e) {
+        console.error(e);
+        if (mounted) setTests([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [partKey, filter]);
 
-  function handleClickLevel(lv: 1 | 2 | 3 | 4) {
+  function handleClickLevel(lv: 1|2|3) {
     setFilter(lv);
-    updateQuery(lv);
+    router.replace(`${pathname}?level=${lv}`, { scroll: false });
   }
-
-  const visibleLevels = [filter]; // chỉ hiển thị đúng 1 level đang chọn
 
   return (
     <div className="mx-auto max-w-6xl p-6 mt-16">
@@ -87,13 +98,12 @@ export default function PartPage() {
           </p>
         </div>
 
+        {/* ✔ Giữ đúng thanh chọn level cũ */}
         <div className="inline-flex items-center gap-2 rounded-xl border p-1.5 bg-white dark:bg-zinc-800">
           {LEVELS.map((lv) => (
             <button
               key={lv}
-              className={`px-3 py-1.5 rounded-lg text-sm ${
-                filter === lv ? "bg-black text-white" : "hover:bg-zinc-100"
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-sm ${filter === lv ? "bg-black text-white" : "hover:bg-zinc-100"}`}
               onClick={() => handleClickLevel(lv)}
             >
               Level {lv}
@@ -102,19 +112,33 @@ export default function PartPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {visibleLevels.map((lv) => (
-          <PartCard
-            key={lv}
-            locale={locale}
-            partKey={partKey}
-            level={lv}
-            title={meta.title}
-            totalQuestions={meta.defaultQuestions}
-            durationMin={meta.defaultDuration}
-          />
-        ))}
-      </div>
+      {/* Card = TEST (Test 1, Test 2, …) */}
+      {loading ? (
+        <div className="text-sm text-zinc-500">Đang tải danh sách bài…</div>
+      ) : tests.length === 0 ? (
+        <div className="rounded-2xl border p-6 text-sm text-zinc-500">
+          Chưa có bài (test) cho Level {filter}.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {tests.map((test) => (
+            <TestCard
+              key={test}
+              locale={locale}
+              partKey={partKey}
+              level={filter}
+              // 👇 title hiển thị Test N
+              test={test}
+              // số câu/phút chỉ hiển thị ở card, không ảnh hưởng đề
+              totalQuestions={meta.defaultQuestions}
+              durationMin={meta.defaultDuration}
+              access="free"
+              // ⭕️ sửa link đích sang /practice/[part]/[level]/[test]
+              // (Bạn sửa PartCard ở dưới)
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

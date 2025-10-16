@@ -3,7 +3,6 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-import testsRouter from "./routes/tests.routes";
 import authRoutes from "./routes/auth.routes";
 import chatRoutes from "./routes/chat.routes";
 import { connectMongo } from "./lib/mongoose";
@@ -40,7 +39,6 @@ initPassport();
 app.use(passport.initialize());
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
-app.use("/api/tests", testsRouter);
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/placement", placementRoutes);

@@ -16,7 +16,7 @@ import { Layers, Hash, ListChecks, Timer, CalendarClock } from "lucide-react";
 type AttemptDoc = {
   _id: string;
   partKey: string;
-  level: 1|2|3|4;
+  level: 1|2|3;
   test?: number | null;
   total: number;
   correct: number;

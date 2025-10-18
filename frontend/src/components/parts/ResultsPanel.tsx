@@ -18,7 +18,7 @@ import { useLocale } from "next-intl";
 function buildPracticeHref(
   locale: string,
   partKey: string,
-  level: 1 | 2 | 3 | 4
+  level: 1 | 2 | 3
 ) {
   return {
     pathname: `/${locale}/practice/${encodeURIComponent(partKey)}`,
@@ -54,18 +54,17 @@ function statusFromAcc(acc: number) {
     color: "bg-emerald-100 text-emerald-800 border-emerald-300",
   };
 }
-function recommendLevel(acc: number): 1 | 2 | 3 | 4 {
+function recommendLevel(acc: number): 1 | 2 | 3 {
   if (acc < 0.55) return 1;
   if (acc < 0.7) return 2;
-  if (acc < 0.85) return 3;
-  return 4;
+  return 3;
 }
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
 }
-function levelColor(level: 1 | 2 | 3 | 4) {
+function levelColor(level: 1 | 2 | 3) {
   switch (level) {
     case 1:
       return "text-emerald-200 font-extrabold";
@@ -73,8 +72,6 @@ function levelColor(level: 1 | 2 | 3 | 4) {
       return "text-sky-200 font-extrabold";
     case 3:
       return "text-violet-200 font-extrabold";
-    case 4:
-      return "text-amber-200 font-extrabold";
     default:
       return "text-white";
   }
@@ -96,21 +93,17 @@ export function ResultsPanel({
   showDetails?: boolean;
 }) {
   const locale = useLocale(); // ✅ vd: "vi"
-  const level = (resp.level ?? 1) as 1 | 2 | 3 | 4;
+  const level = (resp.level ?? 1) as 1 | 2 | 3;
 
   const wrapClass =
-    level === 4
-      ? "border-amber-300/70 bg-amber-50 text-amber-900"
-      : level === 3
+    level === 3
       ? "border-violet-300/70 bg-violet-50 text-violet-900"
       : level === 2
       ? "border-blue-300/70 bg-blue-50 text-blue-900"
       : "border-emerald-300/70 bg-emerald-50 text-emerald-900";
 
   const levelName =
-    level === 4
-      ? "Level 4 - Nâng cao"
-      : level === 3
+    level === 3
       ? "Level 3 - Khá"
       : level === 2
       ? "Level 2 - Trung cấp"

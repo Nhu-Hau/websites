@@ -24,7 +24,7 @@ type SafeUser = {
   email: string;
   role: "user" | "admin";
   access: "free" | "premium";
-  level: 1|2|3|4;
+  level: 1|2|3;
   levelUpdatedAt?: string | null;
   levelSource?: "manual" | "placement" | null;
   lastPlacementAttemptId?: string | null;
@@ -41,11 +41,10 @@ const ACCESS_BADGE: Record<SafeUser["access"], string> = {
   free: "border-zinc-300 bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200",
   premium: "border-yellow-300 bg-yellow-100 text-yellow-800",
 };
-const LEVEL_BADGE: Record<1|2|3|4, string> = {
+const LEVEL_BADGE: Record<1|2|3, string> = {
   1: "border-emerald-300 bg-emerald-100 text-emerald-800",
   2: "border-sky-300 bg-sky-100 text-sky-800",
   3: "border-violet-300 bg-violet-100 text-violet-800",
-  4: "border-amber-300 bg-amber-100 text-amber-900",
 };
 
 export default function AccountPage() {
@@ -108,7 +107,7 @@ export default function AccountPage() {
   }
   if (!user) return null;
 
-  const levelBadgeClass = LEVEL_BADGE[(Math.min(Math.max(user.level, 1), 4) as 1|2|3|4) || 1];
+  const levelBadgeClass = LEVEL_BADGE[(Math.min(Math.max(user.level, 1), 3) as 1|2|3) || 1];
   const predictedOverall = latest?.predicted?.overall;
 
   return (

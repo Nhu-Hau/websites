@@ -24,7 +24,7 @@ import { toast } from "sonner";
 
 type Role = "user" | "admin";
 type Access = "free" | "premium";
-type Lvl = 1 | 2 | 3 | 4;
+type Lvl = 1 | 2 | 3;
 
 type PartStat = { total: number; correct: number; acc: number };
 
@@ -60,7 +60,6 @@ const LV_BADGE: Record<Lvl, string> = {
   1: "border-emerald-300 bg-emerald-100 text-emerald-800",
   2: "border-sky-300 bg-sky-100 text-sky-800",
   3: "border-violet-300 bg-violet-100 text-violet-800",
-  4: "border-amber-300 bg-amber-100 text-amber-900",
 };
 
 function RoleBadge({ role }: { role: Role }) {
@@ -102,7 +101,6 @@ function AccessBadge({ access }: { access: Access }) {
 }
 
 function accToLevel(acc: number): Lvl {
-  if (acc >= 0.85) return 4;
   if (acc >= 0.7) return 3;
   if (acc >= 0.55) return 2;
   return 1;

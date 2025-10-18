@@ -7,7 +7,7 @@ export type AdminUser = {
   email: string;
   role: 'user'|'admin';
   access: 'free'|'premium';
-  level: 1|2|3|4;
+  level: 1|2|3;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -24,7 +24,7 @@ export async function adminListUsers(params?: { page?: number; limit?: number; q
   return res.json() as Promise<{ items: AdminUser[]; total: number; page: number; limit: number; pages: number }>;
 }
 
-export async function adminUpdateUser(id: string, body: Partial<Pick<AdminUser,'name'|'role'|'access'>> & { level?: 1|2|3|4 }) {
+export async function adminUpdateUser(id: string, body: Partial<Pick<AdminUser,'name'|'role'|'access'>> & { level?: 1|2|3 }) {
   const res = await fetch(`${API_BASE}/api/admin/users/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -44,7 +44,7 @@ export async function adminDeleteUser(id: string) {
 export async function adminOverview() {
   const res = await fetch(`${API_BASE}/api/admin/analytics/overview`, { credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch overview failed'); }
-  return res.json() as Promise<{ totalUsers: number; avgOverall: number; byLevel: Record<'1'|'2'|'3'|'4', number> | Record<number, number>; histogram: { min: number; max: number; count: number }[] }>;
+  return res.json() as Promise<{ totalUsers: number; avgOverall: number; byLevel: Record<'1'|'2'|'3', number> | Record<number, number>; histogram: { min: number; max: number; count: number }[] }>;
 }
 
 export async function adminUserScores() {

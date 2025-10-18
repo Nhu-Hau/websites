@@ -2,18 +2,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Item, Stimulus, ChoiceId } from "@/types/tests";
+import type { Item, Stimulus, TestDef, ChoiceId } from "@/types/tests";
 import type { GradeResp } from "@/types/placement";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
-
-type TestDef = {
-  testId: string;
-  sections: {
-    parts: Record<string, string[]>;
-  }[];
-};
 
 const levelLabel: Record<1 | 2 | 3, string> = {
   1: "Level 1 - Cơ bản",
@@ -62,8 +55,7 @@ export function usePlacementTest() {
 
         const ids: string[] = [];
         for (const sec of td.sections) {
-          const partArrays = Object.values(sec.parts) as string[][];
-          for (const arr of partArrays) ids.push(...arr);
+          for (const arr of Object.values(sec.parts)) ids.push(...arr);
         }
 
         const data = await fetch("/api/placement/items", {
@@ -128,9 +120,8 @@ export function usePlacementTest() {
     setResp(r);
     setShowDetails(false);
 
-    // đảm bảo level nằm trong 1..3
-    const level = Math.max(1, Math.min(3, Math.round(r.level as number | undefined as any || 1))) as 1 | 2 | 3;
-
+    // Toast chúc mừng
+    const level = (r.level ?? 1) as 1 | 2 | 3;
     toast.success(
       `Bạn đã đạt ${levelLabel[level]} (${Math.round(r.acc * 100)}% chính xác)`,
       {
@@ -141,8 +132,8 @@ export function usePlacementTest() {
       }
     );
 
-    // Confetti nhẹ chỉ khi đạt top level (3)
-    if (level === 3) {
+    // Confetti nhẹ nếu level >= 3
+    if (level >= 3) {
       confetti({
         particleCount: 160,
         spread: 80,

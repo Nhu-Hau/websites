@@ -4,7 +4,7 @@ import mongoose, { Schema, Types, Document } from "mongoose";
 export interface IPracticeAttempt extends Document {
   userId: Types.ObjectId;
   partKey: string;
-  level: 1 | 2 | 3 | 4;
+  level: 1 | 2 | 3;
   test?: number | null;
   total: number;
   correct: number;
@@ -24,7 +24,7 @@ const PracticeAttemptSchema = new Schema<IPracticeAttempt>(
       index: true,
     },
     partKey: { type: String, required: true, index: true },
-    level: { type: Number, enum: [1, 2, 3, 4], required: true },
+    level: { type: Number, enum: [1, 2, 3], required: true },
     test: { type: Number, default: null },
     total: { type: Number, required: true },
     correct: { type: Number, required: true },

@@ -15,7 +15,7 @@ export type Item = {
   stem?: string | null;
   choices: Choice[];
   answer: ChoiceId;
-  level?: 1 | 2 | 3 | 4;
+  level?: 1 | 2 | 3;
   test?: number;
   // mới: giải thích từng câu (nếu có)
   explain?: string;
@@ -32,7 +32,7 @@ export type StimulusMedia = {
 export type Stimulus = {
   id: string;
   part: string;
-  level?: 1 | 2 | 3 | 4;
+  level?: 1 | 2 | 3;
   test?: number;
   media?: StimulusMedia;
 };

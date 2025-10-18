@@ -10,7 +10,7 @@ export type User = {
   name?: string;
   role: "user" | "admin";
   access: "free" | "premium";
-  level: 1 | 2 | 3 | 4;              
+  level: 1 | 2 | 3;              
   levelUpdatedAt?: string | null;
   levelSource?: "manual" | "placement" | null;
   lastPlacementAttemptId?: string | null;

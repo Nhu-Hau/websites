@@ -16,6 +16,9 @@ import socketAuthRoutes from "./routes/socketAuth.routes";
 import practiceRoutes from "./routes/practice.routes";
 import coursesRoutes from "./routes/courses.routes";
 import paymentsRoutes from "./routes/payments.routes";
+import communityRoutes from "./routes/community.routes";
+import path from "path";
+import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
 
 const app = express();
 const FRONTEND_ORIGIN = process.env.CLIENT_URL || "http://localhost:3000";
@@ -50,7 +53,9 @@ app.use("/api/socket-auth", socketAuthRoutes);
 app.use("/api/practice", practiceRoutes);
 app.use("/api/courses", coursesRoutes);
 app.use("/api/payments", paymentsRoutes);
-
+app.use("/api/community", communityRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads"))); 
+app.use(UPLOADS_ROUTE, express.static(UPLOADS_DIR));
 app.use((err: any, _req: any, res: any, _next: any) => {
   console.error(err);
   res.status(500).json({ message: err?.message || "Internal Server Error" });

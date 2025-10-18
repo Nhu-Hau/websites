@@ -22,6 +22,6 @@ export function MenuNav(): NavItemType[] {
       ],
     },
     { label: t("course"), href: `/${locale}/courses` },
-    { label: t("news"), href: `/${locale}/communityPage` },
+    { label: t("forum"), href: `/${locale}/community` },
   ];
 }

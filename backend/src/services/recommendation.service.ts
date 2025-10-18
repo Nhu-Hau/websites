@@ -4,8 +4,7 @@ import { User } from "../models/User";
 const LISTENING = new Set(["part.1","part.2","part.3","part.4"]);
 const READING   = new Set(["part.5","part.6","part.7"]);
 
-function accToLevel(acc:number): 1|2|3|4 {
-  if (acc >= 0.85) return 4;
+function accToLevel(acc:number): 1|2|3 {
   if (acc >= 0.70) return 3;
   if (acc >= 0.55) return 2;
   return 1;
@@ -33,7 +32,7 @@ export async function recomputeUserRecommendations(userId: string) {
   }
 
   // gợi ý level theo part
-  const partLevels: Record<string, 1|2|3|4> = {};
+  const partLevels: Record<string, 1|2|3> = {};
   Object.entries(emaAcc).forEach(([partKey, acc])=>{
     partLevels[partKey] = accToLevel(acc);
   });

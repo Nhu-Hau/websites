@@ -43,14 +43,14 @@ export async function updateUser(req: Request, res: Response) {
       name?: string;
       role?: "user" | "admin";
       access?: "free" | "premium";
-      level?: 1 | 2 | 3 | 4;
+      level?: 1 | 2 | 3;
     };
 
     const allowed: any = {};
     if (typeof name === "string" && name.trim()) allowed.name = name.trim();
     if (role === "user" || role === "admin") allowed.role = role;
     if (access === "free" || access === "premium") allowed.access = access;
-    if ([1, 2, 3, 4].includes(Number(level))) allowed.level = Number(level);
+    if ([1, 2, 3].includes(Number(level))) allowed.level = Number(level);
 
     const user = await User.findByIdAndUpdate(id, { $set: allowed }, { new: true });
     if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
@@ -100,7 +100,7 @@ export async function overviewPlacementScores(_req: Request, res: Response) {
       return res.json({
         totalUsers: 0,
         avgOverall: 0,
-        byLevel: { 1: 0, 2: 0, 3: 0, 4: 0 },
+        byLevel: { 1: 0, 2: 0, 3: 0 },
         histogram: [],
       });
     }
@@ -125,7 +125,7 @@ export async function overviewPlacementScores(_req: Request, res: Response) {
       { min: 600, max: 800, count: 0 },
       { min: 800, max: 1000, count: 0 },
     ];
-    const byLevel: Record<1|2|3|4, number> = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    const byLevel: Record<1|2|3, number> = { 1: 0, 2: 0, 3: 0 };
 
     for (const u of users as any[]) {
       const a = userIdToAttempt[String(u._id)];
@@ -140,7 +140,7 @@ export async function overviewPlacementScores(_req: Request, res: Response) {
       if (b) b.count++;
 
       // Level
-      if ([1,2,3,4].includes(u.level)) byLevel[u.level as 1|2|3|4]++;
+      if ([1,2,3].includes(u.level)) byLevel[u.level as 1|2|3]++;
     }
 
     const totalUsers = attempts.length;

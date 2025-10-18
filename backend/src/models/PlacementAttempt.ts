@@ -28,7 +28,7 @@ const PlacementAttemptSchema = new Schema(
       correct: { type: Number, required: true },
       acc: { type: Number, required: true },
     },
-    level: { type: Number, required: true, enum: [1, 2, 3, 4] },
+    level: { type: Number, required: true, enum: [1, 2, 3] },
     items: { type: [ItemResultSchema], default: [] },
     test: { type: Number, default: null, index: true },
     predicted: {

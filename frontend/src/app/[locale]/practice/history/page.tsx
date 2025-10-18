@@ -7,7 +7,7 @@ import { CalendarClock, ListChecks, Timer, Layers, Hash } from "lucide-react";
 type Attempt = {
   _id: string;
   partKey: string;     // "part.1"..."part.7"
-  level: 1|2|3|4;
+  level: 1|2|3;
   test?: number | null;
   total: number;
   correct: number;

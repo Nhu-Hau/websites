@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 // ====== Kiểu dùng trong app ======
 export type Role = "user" | "admin";
 export type Access = "free" | "premium";
-export type Lvl = 1 | 2 | 3 | 4;
+export type Lvl = 1 | 2 | 3;
 
 export interface IPurchase {
   slug: string;
@@ -85,7 +85,7 @@ const userSchema = new Schema<IUser>(
       index: true,
     },
 
-    level: { type: Number, enum: [1, 2, 3, 4], default: 1 },
+    level: { type: Number, enum: [1, 2, 3], default: 1 },
 
     partLevels: { type: Schema.Types.Mixed, default: {} },
 

@@ -6,8 +6,7 @@ import { User } from "../models/User";
 const ITEMS_COLL = process.env.ITEMS_COLL || "parts_placement";
 const STIMULI_COLL = process.env.STIMULI_COLL || "stimuli_placement";
 
-function accToLevel(acc: number): 1 | 2 | 3 | 4 {
-  if (acc >= 0.85) return 4;
+function accToLevel(acc: number): 1 | 2 | 3 {
   if (acc >= 0.7) return 3;
   if (acc >= 0.55) return 2;
   return 1;
@@ -276,7 +275,7 @@ export async function submitPlacement(req: Request, res: Response) {
     });
 
     // === NEW: tính partLevels & toeicPred để lưu vào User ===
-    const partLevels: Record<string, 1 | 2 | 3 | 4> = {};
+    const partLevels: Record<string, 1 | 2 | 3> = {};
     Object.entries(partStats).forEach(([k, s]) => {
       partLevels[k] = accToLevel(s.acc);
     });

@@ -28,7 +28,7 @@ type Attempt = {
   acc: number;
   listening: { total: number; correct: number; acc: number };
   reading: { total: number; correct: number; acc: number };
-  level: 1 | 2 | 3 | 4;
+  level: 1 | 2 | 3;
   items: AttemptItem[];
   timeSec: number;
   startedAt?: string;

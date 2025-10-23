@@ -6,6 +6,7 @@ import { createServer } from "./app";
 import { setupSocketIO } from "./lib/socket";
 import { Server as HTTPServer } from "http";
 
+
 const PORT = process.env.PORT || 4000;
 
 createServer()
@@ -26,4 +27,6 @@ createServer()
   .catch((err) => {
     console.error("Failed to start server:", err);
     process.exit(1);
-  });
+  }
+  
+);

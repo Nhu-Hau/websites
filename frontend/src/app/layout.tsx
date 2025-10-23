@@ -1,6 +1,6 @@
 // src/app/layout.tsx
 import "./globals.css";
-
+import '@livekit/components-styles';
 export const metadata = {
   title: "TOEIC PREP",
   description:

@@ -1,6 +1,7 @@
+// frontend/src/app/[locale]/practice/[partKey]/page.tsx
 import LevelSwitcher from "@/components/parts/LevelSwitcher";
-import TestCard, { AttemptSummary } from "@/components/cards/TestCard";
 import { apiBase } from "@/lib/api";
+import TestCard, { AttemptSummary } from "@/components/cards/TestCard";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { History, Headphones, BookOpen } from "lucide-react";
@@ -16,14 +17,16 @@ const PART_META: Record<string, { title: string; defaultQuestions: number; defau
 };
 
 type Props = {
-  params: { locale: string; partKey: string };
-  searchParams: { level?: string };
+  params: Promise<{ locale: string; partKey: string }>;
+  searchParams: Promise<{ level?: string }>;
 };
 
 export default async function PartPage({ params, searchParams }: Props) {
-  const { locale, partKey } = params;
+  // ✅ BẮT BUỘC await
+  const { locale, partKey } = await params;
+  const sp = await searchParams;
 
-  const levelParam = Number(searchParams.level ?? 1);
+  const levelParam = Number(sp.level ?? 1);
   const level: 1 | 2 | 3 = [1, 2, 3].includes(levelParam) ? (levelParam as 1 | 2 | 3) : 1;
 
   const meta = PART_META[partKey] ?? {
@@ -34,32 +37,25 @@ export default async function PartPage({ params, searchParams }: Props) {
 
   const base = apiBase();
 
-  // 1) Lấy danh sách test cho part + level
-  const testsRes = await fetch(
-    `${base}/api/parts/${encodeURIComponent(partKey)}/tests?level=${level}`,
-    { cache: "no-store" }
-  );
+  // Lấy danh sách test
+  const testsRes = await fetch(`${base}/api/parts/${encodeURIComponent(partKey)}/tests?level=${level}`, {
+    cache: "no-store",
+  });
   const { tests = [] } = testsRes.ok ? await testsRes.json() : { tests: [] as number[] };
 
-  // 2) Lấy tiến độ đã làm theo từng test (dựa theo cookie user)
-  const cookieStore = await cookies(); // ✅ dùng await để có .getAll()
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ");
-
-  let attemptsByTest: Record<number, AttemptSummary> = {};
+  // Lấy tiến độ “đã làm” theo test (cần cookie để BE biết user)
+  const cookieHeader = (await cookies()).toString(); // ✅ cookies() là sync/awaitable theo Next
+  let progressByTest: Record<number, AttemptSummary> = {};
   try {
     const progRes = await fetch(
       `${base}/api/practice/progress?partKey=${encodeURIComponent(partKey)}&level=${level}`,
-      { cache: "no-store", headers: cookieHeader ? { cookie: cookieHeader } : {} }
+      { cache: "no-store", headers: { cookie: cookieHeader } }
     );
     if (progRes.ok) {
       const pj = await progRes.json();
-      // BE có thể trả {progress} hoặc {progressByTest}
-      const raw = (pj?.progress ?? pj?.progressByTest ?? {}) as Record<string, AttemptSummary>;
-      attemptsByTest = Object.fromEntries(
-        Object.entries(raw).map(([k, v]) => [Number(k), v])
+      const map = pj?.progress ?? pj?.progressByTest ?? {}; // hỗ trợ cả 2 key
+      progressByTest = Object.fromEntries(
+        Object.entries(map).map(([k, v]) => [Number(k), v as AttemptSummary])
       );
     }
   } catch {
@@ -69,7 +65,6 @@ export default async function PartPage({ params, searchParams }: Props) {
   return (
     <div className="mx-auto max-w-6xl p-6 mt-16">
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {/* Left: Title + tag */}
         <div className="space-y-2">
           {/^part\.[1-4]$/.test(partKey) ? (
             <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-200">
@@ -88,12 +83,14 @@ export default async function PartPage({ params, searchParams }: Props) {
           </p>
         </div>
 
-        {/* Right: Level switcher + Lịch sử */}
-        <div className="flex items-center gap-2">
+        <div className="inline-flex items-stretch">
           <LevelSwitcher level={level} />
           <Link
             href={`/${locale}/practice/history?partKey=${encodeURIComponent(partKey)}&level=${level}`}
-            className="inline-flex items-center gap-1 rounded-xl border px-3 py-3.5 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800"
+            className="
+              ml-2 inline-flex items-center gap-1 rounded-2xl border border-zinc-200 dark:border-zinc-700
+              bg-white/80 dark:bg-zinc-800/70 px-3 py-1.5 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800
+            "
           >
             <History className="h-4 w-4" />
             Lịch sử
@@ -102,23 +99,24 @@ export default async function PartPage({ params, searchParams }: Props) {
       </header>
 
       {tests.length === 0 ? (
-        <div className="rounded-2xl border p-6 text-sm text-zinc-500">
-          Chưa có bài (test) cho Level {level}.
-        </div>
+        <div className="rounded-2xl border p-6 text-sm text-zinc-500">Chưa có bài (test) cho Level {level}.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {tests.map((testNum: number) => (
-            <TestCard
-              key={testNum}
-              locale={locale}
-              partKey={partKey}
-              level={level}
-              test={testNum}
-              totalQuestions={meta.defaultQuestions}
-              durationMin={meta.defaultDuration}
-              attemptSummary={attemptsByTest[testNum]}
-            />
-          ))}
+          {tests.map((testNum: number) => {
+            const p = progressByTest[testNum]; // AttemptSummary | undefined
+            return (
+              <TestCard
+                key={testNum}
+                locale={locale}
+                partKey={partKey}
+                level={level}
+                test={testNum}
+                totalQuestions={meta.defaultQuestions}
+                durationMin={meta.defaultDuration}
+                attemptSummary={p}
+              />
+            );
+          })}
         </div>
       )}
     </div>

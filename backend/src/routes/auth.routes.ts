@@ -3,8 +3,10 @@ import { Router } from "express";
 import { requireAuth } from "../middleware/requireAuth";
 import * as auth from "../controllers/auth.controller";
 import { noStore } from "../middleware/noStore";
+import multer from "multer";
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/me", requireAuth, auth.me, noStore);
 router.post("/logout", auth.logout);
@@ -21,4 +23,8 @@ router.post("/forgot-password", auth.forgotPassword);
 router.post("/reset-password", auth.resetPassword);
 router.post("/change-password", requireAuth, auth.changePassword);
 router.post("/reset-password-code", auth.resetPasswordCode);
+
+router.post("/avatar", requireAuth, upload.single("avatar"), auth.uploadAvatar);
+router.delete("/avatar", requireAuth, auth.deleteAvatar);
+
 export default router;

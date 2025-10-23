@@ -1,3 +1,4 @@
+//backend/src/app.ts
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -55,6 +56,7 @@ app.use("/api/courses", coursesRoutes);
 app.use("/api/payments", paymentsRoutes);
 app.use("/api/community", communityRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads"))); 
+app.use("/api/account", authRoutes);
 app.use(UPLOADS_ROUTE, express.static(UPLOADS_DIR));
 app.use((err: any, _req: any, res: any, _next: any) => {
   console.error(err);

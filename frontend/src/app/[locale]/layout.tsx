@@ -1,4 +1,4 @@
-// app/[locale]/layout.tsx (ví dụ đường dẫn, theo cấu trúc của bạn)
+// app/[locale]/layout.tsx
 import Header from "../../components/common/Header";
 import Footer from "../../components/common/Footer";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
@@ -10,6 +10,9 @@ import ChatBox from "../../components/common/ChatBox";
 import AdminChatBox from "../../components/common/AdminChatBox";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "sonner";
+import { ToastContainer } from "react-toastify";
+import CornerToast from "@/components/common/CornerToast";
+import SocketBridge from "@/components/common/SocketBridge";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -33,14 +36,17 @@ export default async function LocaleLayout({
     <ThemeProvider defaultTheme={theme}>
       <NextIntlClientProvider locale={locale}>
         <AuthProvider>
-          <Header />
-          <main>{children}</main>
-          <ChatBox />
-          <AdminChatBox />
-          <Footer />
-          <Toaster richColors position="top-center" />
+            <Header />
+            <main>{children}</main>
+            <ChatBox />
+            <AdminChatBox />
+            <Footer />
+            <Toaster richColors position="top-center" />
         </AuthProvider>
       </NextIntlClientProvider>
+      <ToastContainer /* ... */ />
+      <CornerToast />
+      <SocketBridge />
     </ThemeProvider>
   );
 }

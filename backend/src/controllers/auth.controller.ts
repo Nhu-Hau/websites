@@ -5,6 +5,7 @@ import { User, IUser } from "../models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { extractKeyFromUrl, safeDeleteS3, BUCKET, uploadBufferToS3 } from "../lib/s3";
 import {
   toSafeUser,
   issueAndStoreTokens,
@@ -20,6 +21,82 @@ import { PasswordCodeModel } from "../models/PasswordCode";
 
 const RESET_SECRET = process.env.RESET_SECRET!;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+
+/** Cập nhật avatar người dùng (multer.memoryStorage -> req.file) */
+export async function uploadAvatar(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const f = (req as any).file as Express.Multer.File | undefined;
+    if (!f) return res.status(400).json({ message: "Thiếu file" });
+
+    // 1) Upload ảnh mới lên S3 (gợi ý: lib/s3 đã phân loại type= image/file)
+    const { url, key } = await uploadBufferToS3({
+      buffer: f.buffer,
+      mime: f.mimetype,
+      originalName: f.originalname,
+      folder: "avatar", // ⟵ lưu vào s3://project.toeic/avatar/
+    });
+
+    // 2) Xoá avatar cũ (nếu có)
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const oldUrl = user.picture;
+    if (oldUrl) {
+      const oldKey = extractKeyFromUrl(BUCKET, oldUrl);
+      if (oldKey) {
+        try {
+          await safeDeleteS3(oldKey);
+        } catch (e) {
+          console.warn(
+            "[uploadAvatar] Failed to delete old avatar:",
+            oldKey,
+            e
+          );
+        }
+      }
+    }
+
+    // 3) Lưu url mới
+    user.picture = url;
+    await user.save();
+
+    return res.json({ ok: true, picture: url, key });
+  } catch (e) {
+    console.error("[uploadAvatar] ERROR", e);
+    return res.status(500).json({ message: "Upload avatar failed" });
+  }
+}
+
+export async function deleteAvatar(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user.picture)
+      return res.status(400).json({ message: "No avatar to delete" });
+
+    // Xoá trên S3
+    const key = extractKeyFromUrl(BUCKET, user.picture);
+    if (key) {
+      console.log(`[deleteAvatar] deleting key: ${key}`);
+      await safeDeleteS3(key);
+    }
+
+    // Xoá DB
+    user.picture = undefined;
+    await user.save();
+
+    return res.json({ ok: true, message: "Avatar deleted successfully" });
+  } catch (e) {
+    console.error("[deleteAvatar] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
 
 // GET /auth/me
 export async function me(req: Request, res: Response, next: NextFunction) {

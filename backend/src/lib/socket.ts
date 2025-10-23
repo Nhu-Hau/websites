@@ -1,144 +1,123 @@
+// backend/src/lib/socket.ts
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { Server as HTTPServer } from "http";
-import jwt from "jsonwebtoken";
-import { User } from "../models/User";
 
 export interface AuthenticatedSocket extends Socket {
   userId?: string;
-  role?: string;
-  isAdmin?: boolean;
 }
 
 export function setupSocketIO(server: HTTPServer) {
   const io = new SocketIOServer(server, {
     cors: {
-      origin: [process.env.CLIENT_URL || "http://localhost:3000", process.env.ADMIN_URL || "http://localhost:3001"],
+      origin: [
+        process.env.CLIENT_URL || "http://localhost:3000",
+        process.env.ADMIN_URL || "http://localhost:3001",
+      ],
       credentials: true,
     },
   });
 
-  // Middleware để xác thực socket
-  io.use(async (socket: AuthenticatedSocket, next) => {
-    try {
-      // Lấy token từ query hoặc handshake
-      const token = socket.handshake.auth?.token || socket.handshake.query?.token;
-      
-      if (!token) {
-        return next(new Error("Authentication error"));
-      }
-
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback-secret") as any;
-      
-      // Lấy thông tin user
-      const user = await User.findById(decoded.userId).select("role");
-      if (!user) {
-        return next(new Error("User not found"));
-      }
-
-      socket.userId = decoded.userId;
-      socket.role = user.role;
-      socket.isAdmin = user.role === "admin";
-      
-      next();
-    } catch (err) {
-      next(new Error("Authentication error"));
-    }
-  });
-
   io.on("connection", (socket: AuthenticatedSocket) => {
-    console.log(`User connected: ${socket.userId} (${socket.role})`);
+    socket.join("community");
+    console.log("[socket] connected", socket.id);
 
-    // Admin join admin room
-    if (socket.isAdmin) {
-      socket.join("admin");
-      console.log(`Admin ${socket.userId} joined admin room`);
-    }
-
-    // User join their own room
-    if (socket.userId) {
-      socket.join(`user:${socket.userId}`);
-    }
-
-    // Handle admin chat events
-    socket.on("admin:join-conversation", (sessionId: string) => {
-      if (socket.isAdmin) {
-        if (sessionId === "admin") {
-          // Join admin room để nhận tất cả tin nhắn
-          socket.join("admin");
-          console.log(`Admin ${socket.userId} joined admin room`);
-        } else {
-          // Join specific conversation
-          socket.join(`conversation:${sessionId}`);
-          console.log(`Admin ${socket.userId} joined conversation ${sessionId}`);
-        }
+    socket.on("identify", ({ userId }: { userId?: string }) => {
+      if (userId && typeof userId === "string") {
+        socket.userId = userId;
+        socket.join(`user:${userId}`);
+        console.log(
+          "[socket] identify -> join room",
+          `user:${userId}`,
+          "by",
+          socket.id
+        );
       }
     });
 
-    socket.on("admin:leave-conversation", (sessionId: string) => {
-      if (socket.isAdmin) {
-        if (sessionId === "admin") {
-          // Leave admin room
-          socket.leave("admin");
-          console.log(`Admin ${socket.userId} left admin room`);
-        } else {
-          // Leave specific conversation
-          socket.leave(`conversation:${sessionId}`);
-          console.log(`Admin ${socket.userId} left conversation ${sessionId}`);
-        }
+    socket.on("join", ({ room }: { room: string }) => {
+      if (room && typeof room === "string") {
+        socket.join(room);
+        console.log("[socket] join", room, "by", socket.id);
       }
-    });
-
-    // Handle user chat events
-    socket.on("user:join-conversation", async (sessionId: string) => {
-      if (socket.userId) {
-        // Lấy thông tin user để có email
-        const User = require("../models/User").User;
-        const user = await User.findById(socket.userId).select("email");
-        if (!user) {
-          socket.emit("error", { message: "User not found" });
-          return;
-        }
-
-        // Cho phép user join conversation room ngay cả khi chưa có tin nhắn
-        // Chỉ cần kiểm tra sessionId có format đúng không
-        if (sessionId && sessionId.startsWith(`admin_session_${socket.userId}_`)) {
-          socket.join(`conversation:${sessionId}`);
-          console.log(`User ${user.email} joined conversation ${sessionId}`);
-        } else {
-          console.log(`User ${user.email} denied access to conversation ${sessionId}`);
-          socket.emit("error", { message: "Access denied to this conversation" });
-        }
-      }
-    });
-
-    socket.on("disconnect", () => {
-      console.log(`User disconnected: ${socket.userId}`);
     });
   });
-
+  (global as any).io = io;
   return io;
 }
 
-// Helper function để emit tin nhắn mới
-export function emitNewMessage(io: SocketIOServer, sessionId: string, message: any) {
-  console.log("emitNewMessage: Emitting to conversation:", sessionId);
-  io.to(`conversation:${sessionId}`).emit("new-message", message);
-  
-  console.log("emitNewMessage: Emitting to admin room");
-  // Gửi tin nhắn đến admin room để admin nhận được
-  io.to("admin").emit("new-message", message);
+/* ============ Emit helpers (community) ============ */
+export function emitCommunityNewPost(io: SocketIOServer, post: any) {
+  io.to("community").emit("community:new-post", post);
 }
 
-// Helper function để emit tin nhắn admin
-export function emitAdminMessage(io: SocketIOServer, sessionId: string, message: any) {
-  io.to(`conversation:${sessionId}`).emit("admin-message", message);
-  // Gửi tin nhắn đến user room để user nhận được
-  io.to(`user:${message.userId}`).emit("admin-message", message);
-  io.to("admin").emit("conversation-updated", { sessionId, message });
+export function emitCommunityNewComment(
+  io: SocketIOServer,
+  postId: string,
+  comment: any
+) {
+  io.to(`post:${postId}`).emit("community:new-comment", { postId, comment });
+  io.except(`post:${postId}`)
+    .to("community")
+    .emit("community:new-comment", { postId, comment });
 }
 
-// Helper function để emit cập nhật danh sách cuộc trò chuyện
-export function emitConversationUpdate(io: SocketIOServer, conversation: any) {
-  io.to("admin").emit("conversation-updated", conversation);
+export function emitCommunityLike(
+  io: SocketIOServer,
+  postId: string,
+  payload: { likesCount: number; liked: boolean; userId?: string }
+) {
+  io.to(`post:${postId}`).emit("community:like-updated", {
+    postId,
+    ...payload,
+  });
+  io.except(`post:${postId}`)
+    .to("community")
+    .emit("community:like-updated", { postId, ...payload });
+}
+
+export function emitCommunityPostDeleted(io: SocketIOServer, postId: string) {
+  io.to(`post:${postId}`).emit("community:post-deleted", { postId });
+  io.except(`post:${postId}`)
+    .to("community")
+    .emit("community:post-deleted", { postId });
+}
+
+export function emitCommunityCommentDeleted(
+  io: SocketIOServer,
+  postId: string,
+  commentId: string
+) {
+  io.to(`post:${postId}`).emit("community:comment-deleted", {
+    postId,
+    commentId,
+  });
+  io.except(`post:${postId}`)
+    .to("community")
+    .emit("community:comment-deleted", { postId, commentId });
+}
+
+export function emitNotifyUser(
+  io: SocketIOServer,
+  userId: string,
+  data: { message: string; link: string; type: "like" | "comment"; meta?: any }
+) {
+  const id = `${Date.now()}_${Math.random().toString(36).slice(2)}`; // 🔒 1 id cho cả 2 emit
+
+  // dropdown ở Header
+  io.to(`user:${userId}`).emit("notify:user", {
+    id,
+    message: data.message,
+    link: data.link,
+    type: data.type,
+    createdAt: new Date().toISOString(),
+    read: false,
+  });
+
+  // corner toast góc phải
+  io.to(`user:${userId}`).emit("corner-toast", {
+    id,
+    title: data.type === "comment" ? "Bình luận mới" : "Lượt thích mới",
+    message: data.message,
+    link: data.link,
+  });
 }

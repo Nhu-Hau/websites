@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // src/app/layout.tsx
+// @ts-ignore
 import "./globals.css";
 
 export const metadata = {

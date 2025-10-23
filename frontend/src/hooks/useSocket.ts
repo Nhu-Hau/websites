@@ -1,83 +1,41 @@
-import { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
+// frontend/src/hooks/useSocket.ts
+"use client";
+
+import { useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
+import { getSocket } from "@/lib/socket";
 import { useAuth } from "@/context/AuthContext";
 
-export function useSocket() {
+export function useSocket(): { socket: Socket; connected: boolean } {
   const { user } = useAuth();
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
-  const socketRef = useRef<Socket | null>(null);
+  const socket = getSocket(); // ✅ luôn dùng singleton
 
   useEffect(() => {
-    if (!user) {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-        setSocket(null);
-        setConnected(false);
-      }
-      return;
-    }
-
-    // Lấy token từ API
-    const getSocketToken = async () => {
-      try {
-        const response = await fetch("/api/socket-auth/token", {
-          credentials: "include",
-        });
-        if (response.ok) {
-          const data = await response.json();
-          return data.token;
-        }
-        return null;
-      } catch (err) {
-        console.error("Failed to get socket token:", err);
-        return null;
+    const onConnect = () => {
+      setConnected(true);
+      // join các room cần thiết mỗi lần connect/reconnect
+      socket.emit("join", { room: "community" });
+      if (user?.id) {
+        socket.emit("identify", { userId: user.id });
+        socket.emit("join", { room: `user:${user.id}` });
       }
     };
+    const onDisconnect = () => setConnected(false);
 
-    const initSocket = async () => {
-      const token = await getSocketToken();
-      if (!token) {
-        console.log("No socket token found");
-        return;
-      }
-    
-      const newSocket = io(process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000", {
-        auth: {
-          token: token,
-        },
-        autoConnect: true,
-      });
+    // gọi ngay nếu đã kết nối
+    if (socket.connected) onConnect();
 
-      newSocket.on("connect", () => {
-        console.log("Socket connected");
-        setConnected(true);
-      });
+    socket.on("connect", onConnect);
+    socket.on("reconnect", onConnect);
+    socket.on("disconnect", onDisconnect);
 
-      newSocket.on("disconnect", () => {
-        console.log("Socket disconnected");
-        setConnected(false);
-      });
-
-      newSocket.on("connect_error", (err) => {
-        console.error("Socket connection error:", err);
-        setConnected(false);
-      });
-
-      socketRef.current = newSocket;
-      setSocket(newSocket);
-
-      return () => {
-        newSocket.disconnect();
-        socketRef.current = null;
-        setSocket(null);
-        setConnected(false);
-      };
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("reconnect", onConnect);
+      socket.off("disconnect", onDisconnect);
     };
-
-    initSocket();
-  }, [user]);
+  }, [socket, user?.id]);
 
   return { socket, connected };
 }

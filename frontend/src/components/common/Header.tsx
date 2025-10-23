@@ -7,9 +7,7 @@ import { Menu } from "lucide-react";
 import Image from "next/image";
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
-import SearchButton from "../search/SearchButton";
-import ThemeToggle from "../theme/ThemeToggle";
-import LanguageSwitcher from "../languages/LanguageSwitcher";
+import HeaderActions from "@/components/common/HeaderActions";
 import useClickOutside from "@/hooks/useClickOutside";
 import useEscapeKey from "@/hooks/useEscapeKey";
 import UserMenu from "../auth/UserMenu";
@@ -88,9 +86,11 @@ export default function Header() {
                 className="object-contain rounded-full"
                 priority
               />
-              <div className="text-xl xl:text-2xl font-semibold text-zinc-900 dark:text-zinc-100 hidden sm:block -tracking-tighter">
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold font-[Playfair Display] bg-gradient-to-r from-amber-600 to-yellow-500 dark:from-amber-300 dark:to-yellow-200 text-transparent bg-clip-text tracking-wider animate-slide-in [text-shadow:_0_2px_4px_rgba(0,0,0,0.15)] dark:[text-shadow:_0_2px_4px_rgba(0,0,0,0.4)] hover:from-amber-700 hover:to-yellow-600 dark:hover:from-amber-400 dark:hover:to-yellow-300 transition-colors duration-300">
                 Toeic
-                <span className="text-sky-600">Prep</span>
+                <span className="bg-gradient-to-r from-sky-600 to-sky-600 dark:from-sky-300 dark:to-sky-300 bg-clip-text text-transparent hover:from-sky-700 hover:to-sky-700 dark:hover:from-sky-200 dark:hover:to-sky-200 transition-colors duration-300">
+                  Prep
+                </span>
               </div>
             </Link>
           </div>
@@ -102,9 +102,11 @@ export default function Header() {
             </div>
             {/* Right: actions */}
             <div className="flex items-center">
-              <SearchButton />
-              <ThemeToggle />
-              <LanguageSwitcher />
+              <HeaderActions />
+              <div
+                className="mx-6 h-6 w-0.5 bg-black dark:bg-zinc-700"
+                aria-hidden
+              />
               <UserMenu />
             </div>
           </div>

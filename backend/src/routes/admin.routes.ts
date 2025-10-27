@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 import { requireAdminAuth } from "../middleware/requireAdminAuth";
 import { deleteUser, listUsers, updateUser, overviewPlacementScores, userScores } from "../controllers/admin.controller";
 import { 
@@ -8,10 +9,26 @@ import {
   listCommunityComments, 
   deleteCommunityComment 
 } from "../controllers/admin.community.controller";
+import {
+  listParts,
+  getPart,
+  createPart,
+  updatePart,
+  deletePart,
+  getPartsStats,
+  listTests,
+  getTestItems,
+  createTest,
+  createOrUpdateItem,
+  deleteTest,
+  uploadStimulusMedia
+} from "../controllers/admin.parts.controller";
 
 const router = Router();
 
 router.use(requireAdminAuth);
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/users", listUsers);
 router.patch("/users/:id", updateUser);
@@ -25,6 +42,20 @@ router.post("/community/posts", createCommunityPost);
 router.delete("/community/posts/:id", deleteCommunityPost);
 router.get("/community/comments", listCommunityComments);
 router.delete("/community/comments/:id", deleteCommunityComment);
+
+// Parts admin routes
+router.get("/parts", listParts);
+router.get("/parts/stats", getPartsStats);
+router.get("/parts/tests", listTests);
+router.get("/parts/test/items", getTestItems);
+router.post("/parts/test", createTest);
+router.delete("/parts/test", deleteTest);
+router.post("/parts/item", createOrUpdateItem);
+router.post("/parts/upload", upload.single("file"), uploadStimulusMedia);
+router.get("/parts/:id", getPart);
+router.post("/parts", createPart);
+router.patch("/parts/:id", updatePart);
+router.delete("/parts/:id", deletePart);
 
 export default router;
 

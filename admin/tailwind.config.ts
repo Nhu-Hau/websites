@@ -13,6 +13,7 @@ export default {
       },
       colors: {
         tealCustom: "#35509A",
+        white: "#ffffff",
       },
     },
   },

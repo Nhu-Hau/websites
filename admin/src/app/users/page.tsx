@@ -109,7 +109,7 @@ export default function UsersPage() {
               <th className="p-3">Tên</th>
               <th className="p-3">Role</th>
               <th className="p-3">Gói</th>
-              <th className="p-3">Level</th>
+              {/*<th className="p-3">Level</th>*/}
               <th className="p-3 w-40">Hành động</th>
             </tr>
           </thead>
@@ -120,7 +120,7 @@ export default function UsersPage() {
                 <td className="p-3">{u.name}</td>
                 <td className="p-3"><span className="px-2 py-1 rounded-full border text-xs">{u.role}</span></td>
                 <td className="p-3"><span className="px-2 py-1 rounded-full border text-xs">{u.access}</span></td>
-                <td className="p-3">{u.level}</td>
+                {/*<td className="p-3">{u.level}</td>*/}
                 <td className="p-3">
                   <div className="flex gap-2">
                     <button onClick={()=>onToggleRole(u)} className="px-2 py-1 text-xs rounded border">Chuyển quyền</button>

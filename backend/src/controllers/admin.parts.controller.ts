@@ -59,13 +59,22 @@ export async function getTestItems(req: Request, res: Response) {
 
     const db = mongoose.connection;
     const itemsCol = db.collection(PARTS_COLL);
+    const stimCol = db.collection(STIMULI_COLL);
 
     const items = await itemsCol
       .find({ part: partStr, level: levelNum, test: testNum })
       .sort({ order: 1, id: 1 })
       .toArray();
 
-    return res.json({ items });
+    // Build stimulusMap
+    const sids = Array.from(new Set(items.map((it: any) => it.stimulusId).filter(Boolean)));
+    const stArr = sids.length
+      ? await stimCol.find({ id: { $in: sids } }, { projection: { _id: 0 } }).toArray()
+      : [];
+    const stimulusMap: Record<string, any> = {};
+    for (const s of stArr) stimulusMap[s.id] = s;
+
+    return res.json({ items, stimulusMap });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ message: "Lỗi máy chủ" });
@@ -307,6 +316,57 @@ export async function deleteTest(req: Request, res: Response) {
       message: "Đã xóa test thành công",
       deletedCount: result.deletedCount 
     });
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ message: e.message || "Lỗi máy chủ" });
+  }
+}
+
+// PATCH /api/admin/parts/stimulus/:id - Update stimulus by id
+export async function updateStimulus(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const { media } = req.body;
+    
+    if (!media || typeof media !== 'object') {
+      return res.status(400).json({ message: "Thiếu trường media" });
+    }
+
+    const db = mongoose.connection;
+    const stimCol = db.collection(STIMULI_COLL);
+
+    const result = await stimCol.findOneAndUpdate(
+      { id },
+      { $set: { media } },
+      { returnDocument: "after" }
+    );
+
+    if (!result) {
+      return res.status(404).json({ message: "Không tìm thấy stimulus" });
+    }
+
+    return res.json({ stimulus: result });
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ message: e.message || "Lỗi máy chủ" });
+  }
+}
+
+// DELETE /api/admin/parts/stimulus/:id - Delete stimulus by id
+export async function deleteStimulus(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+
+    const db = mongoose.connection;
+    const stimCol = db.collection(STIMULI_COLL);
+
+    const result = await stimCol.findOneAndDelete({ id });
+
+    if (!result) {
+      return res.status(404).json({ message: "Không tìm thấy stimulus" });
+    }
+
+    return res.json({ message: "Đã xóa stimulus thành công" });
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ message: e.message || "Lỗi máy chủ" });

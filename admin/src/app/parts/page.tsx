@@ -9,12 +9,17 @@ import {
   adminDeletePart,
   adminDeleteTest,
   adminGetPartsStats,
+  adminUpdateStimulus,
+  adminDeleteStimulus,
   AdminTest,
   AdminPart,
   AdminPartsStats,
+  AdminStimulus,
 } from "@/lib/apiClient";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import EditStimulusModal from "@/components/EditStimulusModal";
+import EditQuestionModal from "@/components/EditQuestionModal";
 
 export default function PartsPage() {
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
@@ -22,8 +27,13 @@ export default function PartsPage() {
   const [tests, setTests] = React.useState<AdminTest[]>([]);
   const [expandedTest, setExpandedTest] = React.useState<string | null>(null);
   const [testItems, setTestItems] = React.useState<Record<string, AdminPart[]>>({});
+  const [testStimuli, setTestStimuli] = React.useState<Record<string, Record<string, AdminStimulus>>>({});
   const [stats, setStats] = React.useState<AdminPartsStats | null>(null);
   const [busy, setBusy] = React.useState(false);
+
+  // Modal states
+  const [editStimulus, setEditStimulus] = React.useState<AdminStimulus | null>(null);
+  const [editQuestion, setEditQuestion] = React.useState<AdminPart | null>(null);
 
   // Filters
   const [part, setPart] = React.useState("");
@@ -62,12 +72,13 @@ export default function PartsPage() {
       setExpandedTest(key);
       if (!testItems[key]) {
         try {
-          const items = await adminGetTestItems({
+          const result = await adminGetTestItems({
             part: test.part,
             level: test.level,
             test: test.test,
           });
-          setTestItems({ ...testItems, [key]: items.items });
+          setTestItems({ ...testItems, [key]: result.items });
+          setTestStimuli({ ...testStimuli, [key]: result.stimulusMap });
         } catch (e: any) {
           console.error("Load test items error:", e);
         }
@@ -249,7 +260,7 @@ export default function PartsPage() {
                       {test.part} - Level {test.level} - Test {test.test}
                     </div>
                     <div className="text-sm text-zinc-600">
-                      {test.itemCount} câu hỏi • ID đầu tiên: {test.firstItemId}
+                      {test.itemCount} câu hỏi  {/*• ID đầu tiên: {test.firstItemId}*/}
                     </div>
                   </div>
                 </div>
@@ -263,16 +274,64 @@ export default function PartsPage() {
 
               {isExpanded && (
                 <div className="border-t bg-zinc-50">
-                  <div className="p-4">
+                  <div className="p-4 space-y-4">
+                    {/* Stimuli section */}
+                    {testStimuli[key] && Object.keys(testStimuli[key]).length > 0 && (
+                      <div>
+                        <div className="text-sm font-medium mb-2">Các stimuli đang dùng trong test này:</div>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.values(testStimuli[key]).map((stimulus) => (
+                            <div key={stimulus.id} className="border rounded px-3 py-1 bg-white text-xs font-mono flex items-center gap-2">
+                              {stimulus.id}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditStimulus(stimulus);
+                                }}
+                                className="text-xs text-blue-600 hover:underline"
+                              >
+                                Sửa
+                              </button>
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`Xóa stimulus ${stimulus.id}?`)) {
+                                    try {
+                                      await adminDeleteStimulus(stimulus.id);
+                                      alert("Đã xóa stimulus thành công");
+                                      // Reload test data
+                                      const [part, level, test] = key.split('-');
+                                      const result = await adminGetTestItems({
+                                        part,
+                                        level: parseInt(level),
+                                        test: parseInt(test),
+                                      });
+                                      setTestItems({ ...testItems, [key]: result.items });
+                                      setTestStimuli({ ...testStimuli, [key]: result.stimulusMap });
+                                    } catch (err: any) {
+                                      alert(err?.message || "Lỗi xóa stimulus");
+                                    }
+                                  }
+                                }}
+                                className="text-xs text-red-600 hover:underline"
+                              >
+                                Xóa
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="text-sm font-medium mb-3">Chi tiết câu hỏi:</div>
                     <div className="overflow-auto max-h-[400px]">
                       <table className="w-full text-sm">
                         <thead className="bg-white">
                           <tr className="text-left">
                             <th className="p-2 border-b">ID</th>
-                            <th className="p-2 border-b">Order</th>
+                            <th className="p-2 border-b">Stem</th>
+                            <th className="p-2 border-b">StimulusId</th>
                             <th className="p-2 border-b">Answer</th>
-                            <th className="p-2 border-b">Tags</th>
                             <th className="p-2 border-b w-32">Hành động</th>
                           </tr>
                         </thead>
@@ -280,32 +339,18 @@ export default function PartsPage() {
                           {items.map((item) => (
                             <tr key={item._id || item.id} className="border-b hover:bg-white">
                               <td className="p-2 font-mono text-xs">{item.id}</td>
-                              <td className="p-2">{item.order ?? 0}</td>
-                              <td className="p-2 font-semibold">{item.answer}</td>
-                              <td className="p-2 text-xs">
-                                {Array.isArray(item.tags) ? (
-                                  <div className="flex flex-wrap gap-1">
-                                    {item.tags.slice(0, 2).map((tag, i) => (
-                                      <span key={i} className="px-1.5 py-0.5 rounded bg-zinc-200">
-                                        {tag}
-                                      </span>
-                                    ))}
-                                    {item.tags.length > 2 && (
-                                      <span className="text-zinc-400">+{item.tags.length - 2}</span>
-                                    )}
-                                  </div>
-                                ) : (
-                                  "—"
-                                )}
+                              <td className="p-2 text-xs max-w-xs truncate">
+                                {item.stem || "—"}
                               </td>
+                              <td className="p-2 font-mono text-xs">
+                                {item.stimulusId || "—"}
+                              </td>
+                              <td className="p-2 font-semibold">{item.answer}</td>
                               <td className="p-2">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const newAnswer = prompt("Cập nhật đáp án:", item.answer);
-                                    if (newAnswer && ['A', 'B', 'C', 'D'].includes(newAnswer.toUpperCase())) {
-                                      void handleUpdate(item, { answer: newAnswer.toUpperCase() });
-                                    }
+                                    setEditQuestion(item);
                                   }}
                                   className="px-2 py-1 text-xs rounded border hover:bg-white mr-1"
                                 >
@@ -339,6 +384,47 @@ export default function PartsPage() {
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      <EditStimulusModal
+        stimulus={editStimulus}
+        isOpen={editStimulus !== null}
+        onClose={() => setEditStimulus(null)}
+        onUpdate={() => {
+          // Reload test data
+          if (expandedTest) {
+            const [part, level, test] = expandedTest.split('-');
+            adminGetTestItems({
+              part,
+              level: parseInt(level),
+              test: parseInt(test),
+            }).then((result) => {
+              setTestItems({ ...testItems, [expandedTest]: result.items });
+              setTestStimuli({ ...testStimuli, [expandedTest]: result.stimulusMap });
+            });
+          }
+        }}
+      />
+      
+      <EditQuestionModal
+        item={editQuestion}
+        isOpen={editQuestion !== null}
+        onClose={() => setEditQuestion(null)}
+        onUpdate={() => {
+          // Reload test data
+          if (expandedTest) {
+            const [part, level, test] = expandedTest.split('-');
+            adminGetTestItems({
+              part,
+              level: parseInt(level),
+              test: parseInt(test),
+            }).then((result) => {
+              setTestItems({ ...testItems, [expandedTest]: result.items });
+              setTestStimuli({ ...testStimuli, [expandedTest]: result.stimulusMap });
+            });
+          }
+        }}
+      />
     </div>
   );
 }

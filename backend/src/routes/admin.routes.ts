@@ -21,6 +21,8 @@ import {
   createTest,
   createOrUpdateItem,
   deleteTest,
+  updateStimulus,
+  deleteStimulus,
   uploadStimulusMedia
 } from "../controllers/admin.parts.controller";
 
@@ -51,11 +53,13 @@ router.get("/parts/test/items", getTestItems);
 router.post("/parts/test", createTest);
 router.delete("/parts/test", deleteTest);
 router.post("/parts/item", createOrUpdateItem);
-router.post("/parts/upload", upload.single("file"), uploadStimulusMedia);
-router.get("/parts/:id", getPart);
-router.post("/parts", createPart);
-router.patch("/parts/:id", updatePart);
-router.delete("/parts/:id", deletePart);
+  router.post("/parts/upload", upload.single("file"), uploadStimulusMedia);
+  router.patch("/parts/stimulus/:id", updateStimulus);
+  router.delete("/parts/stimulus/:id", deleteStimulus);
+  router.get("/parts/:id", getPart);
+  router.post("/parts", createPart);
+  router.patch("/parts/:id", updatePart);
+  router.delete("/parts/:id", deletePart);
 
 export default router;
 

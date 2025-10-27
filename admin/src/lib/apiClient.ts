@@ -132,6 +132,7 @@ export type AdminPart = {
   answer: string;
   tags?: string[];
   question?: string;
+  stem?: string;
   options?: Record<string, any>;
   stimulusId?: string | null;
   _id?: string;
@@ -221,7 +222,7 @@ export async function adminGetTestItems(params: { part: string; level: number; t
   usp.set('test', String(params.test));
   const res = await fetch(`${API_BASE}/api/admin/parts/test/items?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch test items failed'); }
-  return res.json() as Promise<{ items: AdminPart[] }>;
+  return res.json() as Promise<{ items: AdminPart[]; stimulusMap: Record<string, AdminStimulus> }>;
 }
 
 export async function adminDeleteTest(params: { part: string; level: number; test: number }) {
@@ -285,6 +286,26 @@ export async function adminUploadStimulusMedia(file: File) {
   }
   
   return res.json() as Promise<{ url: string; key: string; type: string; name: string; size: number }>;
+}
+
+export async function adminUpdateStimulus(id: string, media: any) {
+  const res = await fetch(`${API_BASE}/api/admin/parts/stimulus/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ media }),
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Update stimulus failed'); }
+  return res.json() as Promise<{ stimulus: AdminStimulus }>;
+}
+
+export async function adminDeleteStimulus(id: string) {
+  const res = await fetch(`${API_BASE}/api/admin/parts/stimulus/${encodeURIComponent(id)}`, { 
+    method: 'DELETE',
+    credentials: 'include' 
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete stimulus failed'); }
+  return res.json() as Promise<{ message: string }>;
 }
 
 

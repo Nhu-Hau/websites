@@ -54,13 +54,36 @@ export function extractKeyFromUrl(bucket: string, url: string): string | null {
       return decodeURIComponent(path);
     }
 
-    // CloudFront/domain khác: cố gắng lấy phần sau 'community/' (PREFIX)
-    const idx = path.indexOf(PREFIX);
-    if (idx >= 0) {
-      return decodeURIComponent(path.slice(idx));
+    // CloudFront/domain khác: cố gắng lấy phần sau bucket name hoặc common prefixes
+    // Path có thể là: <bucket>/<key> hoặc chỉ <key>
+    
+    // Thử các prefix phổ biến
+    const prefixesToTry = [
+      PREFIX,              // community/
+      "Upload/",           // Upload/ (cho stimuli media)
+      "parts/",            // parts/
+      "stimuli/",          // stimuli/
+    ];
+    
+    for (const prefix of prefixesToTry) {
+      const idx = path.indexOf(prefix);
+      if (idx >= 0) {
+        return decodeURIComponent(path.slice(idx));
+      }
     }
 
-    return null;
+    // Nếu không match prefix nào, thử lấy phần sau bucket name
+    const bucketName = decodeURIComponent(bucket);
+    const bucketIdx = path.indexOf(bucketName);
+    if (bucketIdx >= 0) {
+      const afterBucket = path.slice(bucketIdx + bucketName.length).replace(/^\/+/, "");
+      if (afterBucket) {
+        return decodeURIComponent(afterBucket);
+      }
+    }
+
+    // Cuối cùng: trả về path đã decode (nếu có)
+    return decodeURIComponent(path);
   } catch {
     return null;
   }

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { uploadBufferToS3, BUCKET } from "../lib/s3";
+import { uploadBufferToS3, BUCKET, extractKeyFromUrl, safeDeleteS3 } from "../lib/s3";
 
 const PARTS_COLL = process.env.PARTS_COLL || "parts";
 const STIMULI_COLL = process.env.STIMULI_COLL || "stimuli";
@@ -290,6 +290,58 @@ export async function deletePart(req: Request, res: Response) {
   }
 }
 
+/** Helper function to delete all S3 files from stimulus media */
+async function deleteStimulusMediaFromS3(media: any) {
+  console.log('[deleteStimulusMediaFromS3] media:', JSON.stringify(media, null, 2));
+  
+  if (!media || typeof media !== 'object') {
+    console.log('[deleteStimulusMediaFromS3] media is not an object or is null');
+    return;
+  }
+  
+  // media có thể chứa: image, audio (string hoặc string[])
+  const mediaFields = ['image', 'audio'];
+  
+  for (const field of mediaFields) {
+    const value = media[field];
+    if (!value) {
+      console.log(`[deleteStimulusMediaFromS3] No value for field: ${field}`);
+      continue;
+    }
+    
+    console.log(`[deleteStimulusMediaFromS3] Processing field: ${field}, value:`, value);
+    
+    // Nếu là array
+    if (Array.isArray(value)) {
+      for (const url of value) {
+        if (typeof url === 'string' && url) {
+          const key = extractKeyFromUrl(BUCKET, url);
+          console.log(`[deleteStimulusMediaFromS3] URL: ${url}, extracted key: ${key}`);
+          if (key) {
+            console.log(`[deleteStimulusMediaFromS3] Deleting S3 key: ${key}`);
+            await safeDeleteS3(key);
+          } else {
+            console.log(`[deleteStimulusMediaFromS3] Could not extract key from URL: ${url}`);
+          }
+        }
+      }
+    } 
+    // Nếu là string
+    else if (typeof value === 'string') {
+      const key = extractKeyFromUrl(BUCKET, value);
+      console.log(`[deleteStimulusMediaFromS3] URL: ${value}, extracted key: ${key}`);
+      if (key) {
+        console.log(`[deleteStimulusMediaFromS3] Deleting S3 key: ${key}`);
+        await safeDeleteS3(key);
+      } else {
+        console.log(`[deleteStimulusMediaFromS3] Could not extract key from URL: ${value}`);
+      }
+    } else {
+      console.log(`[deleteStimulusMediaFromS3] Unsupported value type for field ${field}:`, typeof value);
+    }
+  }
+}
+
 // DELETE /api/admin/parts/test - Delete all items of a test
 export async function deleteTest(req: Request, res: Response) {
   try {
@@ -306,6 +358,18 @@ export async function deleteTest(req: Request, res: Response) {
     const itemsCol = db.collection(PARTS_COLL);
     const stimCol = db.collection(STIMULI_COLL);
 
+    // Get all stimuli that will be deleted to delete their S3 files
+    const stimuliToDelete = await stimCol
+      .find({ part: partStr, level: levelNum, test: testNum })
+      .toArray();
+    
+    // Delete S3 files for all stimuli
+    for (const stimulus of stimuliToDelete) {
+      if (stimulus.media) {
+        await deleteStimulusMediaFromS3(stimulus.media);
+      }
+    }
+
     // Delete all items of the test
     const result = await itemsCol.deleteMany({ part: partStr, level: levelNum, test: testNum });
     
@@ -316,6 +380,45 @@ export async function deleteTest(req: Request, res: Response) {
       message: "Đã xóa test thành công",
       deletedCount: result.deletedCount 
     });
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ message: e.message || "Lỗi máy chủ" });
+  }
+}
+
+// POST /api/admin/parts/stimulus - Create new stimulus
+export async function createStimulus(req: Request, res: Response) {
+  try {
+    const { id, part, level, test, media } = req.body;
+    
+    if (!id || !part || level === undefined || test === undefined) {
+      return res.status(400).json({ message: "Thiếu trường bắt buộc: id, part, level, test" });
+    }
+
+    if (!media || typeof media !== 'object') {
+      return res.status(400).json({ message: "Thiếu trường media" });
+    }
+
+    const db = mongoose.connection;
+    const stimCol = db.collection(STIMULI_COLL);
+
+    // Check if stimulus already exists
+    const existing = await stimCol.findOne({ id });
+    if (existing) {
+      return res.status(400).json({ message: "Stimulus ID đã tồn tại" });
+    }
+
+    const stimulusData = {
+      id,
+      part,
+      level,
+      test,
+      media,
+    };
+
+    await stimCol.insertOne(stimulusData);
+
+    return res.json({ stimulus: stimulusData });
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ message: e.message || "Lỗi máy chủ" });
@@ -335,15 +438,54 @@ export async function updateStimulus(req: Request, res: Response) {
     const db = mongoose.connection;
     const stimCol = db.collection(STIMULI_COLL);
 
+    // Get existing stimulus to check for old media
+    const existingStimulus = await stimCol.findOne({ id });
+    
+    if (!existingStimulus) {
+      return res.status(404).json({ message: "Không tìm thấy stimulus" });
+    }
+
+    // Delete old media files if they exist and are different from new ones
+    if (existingStimulus.media) {
+      const oldMedia = existingStimulus.media;
+      const mediaFields = ['image', 'audio'];
+      
+      for (const field of mediaFields) {
+        const oldValue = oldMedia[field];
+        const newValue = media[field];
+        
+        // Delete old file if it exists and is different from new value
+        // Also delete if old value exists but new value is null/empty
+        if (oldValue) {
+          const shouldDelete = !newValue || (newValue && oldValue !== newValue);
+          
+          if (shouldDelete) {
+            console.log(`[updateStimulus] Deleting old ${field}: ${oldValue}`);
+            if (Array.isArray(oldValue)) {
+              for (const url of oldValue) {
+                if (typeof url === 'string' && url) {
+                  const key = extractKeyFromUrl(BUCKET, url);
+                  if (key) {
+                    await safeDeleteS3(key);
+                  }
+                }
+              }
+            } else if (typeof oldValue === 'string') {
+              const key = extractKeyFromUrl(BUCKET, oldValue);
+              if (key) {
+                await safeDeleteS3(key);
+              }
+            }
+          }
+        }
+      }
+    }
+
     const result = await stimCol.findOneAndUpdate(
       { id },
       { $set: { media } },
       { returnDocument: "after" }
     );
-
-    if (!result) {
-      return res.status(404).json({ message: "Không tìm thấy stimulus" });
-    }
 
     return res.json({ stimulus: result });
   } catch (e: any) {
@@ -360,11 +502,20 @@ export async function deleteStimulus(req: Request, res: Response) {
     const db = mongoose.connection;
     const stimCol = db.collection(STIMULI_COLL);
 
-    const result = await stimCol.findOneAndDelete({ id });
+    // Get stimulus before deleting to get media info
+    const stimulus = await stimCol.findOne({ id });
 
-    if (!result) {
+    if (!stimulus) {
       return res.status(404).json({ message: "Không tìm thấy stimulus" });
     }
+
+    // Delete S3 files if exist
+    if (stimulus.media) {
+      await deleteStimulusMediaFromS3(stimulus.media);
+    }
+
+    // Delete stimulus from database
+    await stimCol.findOneAndDelete({ id });
 
     return res.json({ message: "Đã xóa stimulus thành công" });
   } catch (e: any) {

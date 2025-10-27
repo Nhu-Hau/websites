@@ -20,6 +20,8 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import EditStimulusModal from "@/components/EditStimulusModal";
 import EditQuestionModal from "@/components/EditQuestionModal";
+import AddQuestionModal from "@/components/AddQuestionModal";
+import AddStimulusModal from "@/components/AddStimulusModal";
 
 export default function PartsPage() {
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
@@ -34,6 +36,20 @@ export default function PartsPage() {
   // Modal states
   const [editStimulus, setEditStimulus] = React.useState<AdminStimulus | null>(null);
   const [editQuestion, setEditQuestion] = React.useState<AdminPart | null>(null);
+  const [addQuestionModal, setAddQuestionModal] = React.useState<{ isOpen: boolean; part: string; level: number; test: number; itemsCount: number }>({
+    isOpen: false,
+    part: "",
+    level: 0,
+    test: 0,
+    itemsCount: 0,
+  });
+  const [addStimulusModal, setAddStimulusModal] = React.useState<{ isOpen: boolean; part: string; level: number; test: number; stimuliCount: number }>({
+    isOpen: false,
+    part: "",
+    level: 0,
+    test: 0,
+    stimuliCount: 0,
+  });
 
   // Filters
   const [part, setPart] = React.useState("");
@@ -275,6 +291,30 @@ export default function PartsPage() {
               {isExpanded && (
                 <div className="border-t bg-zinc-50">
                   <div className="p-4 space-y-4">
+                    {/* Action buttons */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const currentItemsCount = testItems[key]?.length || 0;
+                          setAddQuestionModal({ isOpen: true, part: test.part, level: test.level, test: test.test, itemsCount: currentItemsCount });
+                        }}
+                        className="px-3 py-1.5 text-sm rounded border bg-white hover:bg-zinc-50"
+                      >
+                        + Thêm câu hỏi
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const currentStimuliCount = testStimuli[key] ? Object.keys(testStimuli[key]).length : 0;
+                          setAddStimulusModal({ isOpen: true, part: test.part, level: test.level, test: test.test, stimuliCount: currentStimuliCount });
+                        }}
+                        className="px-3 py-1.5 text-sm rounded border bg-white hover:bg-zinc-50"
+                      >
+                        + Thêm stimulus
+                      </button>
+                    </div>
+
                     {/* Stimuli section */}
                     {testStimuli[key] && Object.keys(testStimuli[key]).length > 0 && (
                       <div>
@@ -424,6 +464,52 @@ export default function PartsPage() {
             });
           }
         }}
+      />
+
+      <AddQuestionModal
+        isOpen={addQuestionModal.isOpen}
+        onClose={() => setAddQuestionModal({ isOpen: false, part: "", level: 0, test: 0, itemsCount: 0 })}
+        onSuccess={() => {
+          // Reload test data
+          if (expandedTest) {
+            const [part, level, test] = expandedTest.split('-');
+            adminGetTestItems({
+              part,
+              level: parseInt(level),
+              test: parseInt(test),
+            }).then((result) => {
+              setTestItems({ ...testItems, [expandedTest]: result.items });
+              setTestStimuli({ ...testStimuli, [expandedTest]: result.stimulusMap });
+            });
+          }
+        }}
+        part={addQuestionModal.part}
+        level={addQuestionModal.level}
+        test={addQuestionModal.test}
+        itemsCount={addQuestionModal.itemsCount}
+      />
+
+      <AddStimulusModal
+        isOpen={addStimulusModal.isOpen}
+        onClose={() => setAddStimulusModal({ isOpen: false, part: "", level: 0, test: 0, stimuliCount: 0 })}
+        onSuccess={() => {
+          // Reload test data
+          if (expandedTest) {
+            const [part, level, test] = expandedTest.split('-');
+            adminGetTestItems({
+              part,
+              level: parseInt(level),
+              test: parseInt(test),
+            }).then((result) => {
+              setTestItems({ ...testItems, [expandedTest]: result.items });
+              setTestStimuli({ ...testStimuli, [expandedTest]: result.stimulusMap });
+            });
+          }
+        }}
+        part={addStimulusModal.part}
+        level={addStimulusModal.level}
+        test={addStimulusModal.test}
+        stimuliCount={addStimulusModal.stimuliCount}
       />
     </div>
   );

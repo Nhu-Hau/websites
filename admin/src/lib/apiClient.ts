@@ -288,6 +288,17 @@ export async function adminUploadStimulusMedia(file: File) {
   return res.json() as Promise<{ url: string; key: string; type: string; name: string; size: number }>;
 }
 
+export async function adminCreateStimulus(body: { id: string; part: string; level: number; test: number; media: any }) {
+  const res = await fetch(`${API_BASE}/api/admin/parts/stimulus`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Create stimulus failed'); }
+  return res.json() as Promise<{ stimulus: AdminStimulus }>;
+}
+
 export async function adminUpdateStimulus(id: string, media: any) {
   const res = await fetch(`${API_BASE}/api/admin/parts/stimulus/${encodeURIComponent(id)}`, {
     method: 'PATCH',

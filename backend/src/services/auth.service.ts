@@ -22,7 +22,6 @@ export function toSafeUser(u: IUser) {
     email: u.email,
     role: u.role,
     access: u.access,
-    level: u.level,
     levelUpdatedAt: u.levelUpdatedAt,
     levelSource: u.levelSource,
     lastPlacementAttemptId: u.lastPlacementAttemptId,

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+//frontend/src/app/[locale]/practice/[partKey]/[level]/[test]/page.tsx
 "use client";
 
 import React from "react";
@@ -281,20 +282,20 @@ export default function PracticePartLevelTestPage() {
           </h1>
 
           {/* Badges phải */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-sm font-medium text-zinc-800 dark:text-zinc-100">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/80 dark:bg-emerald-900/50 px-3 py-1.5 text-sm font-semibold text-emerald-800 dark:text-emerald-300">
               <Layers className="h-4 w-4" />
               Level {levelNum}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-sm font-medium text-zinc-800 dark:text-zinc-100">
+            <span className="inline-flex items-center gap-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/80 dark:bg-blue-900/50 px-3 py-1.5 text-sm font-semibold text-blue-800 dark:text-blue-300">
               <Hash className="h-4 w-4" />
               Test {testNum}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-sm font-medium text-zinc-800 dark:text-zinc-100">
+            <span className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-white/80 dark:bg-zinc-800/70 px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">
               <ListChecks className="h-4 w-4" />
-              {items.length} câu
+              {total} câu
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-sm font-medium text-zinc-800 dark:text-zinc-100">
+            <span className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-white/80 dark:bg-zinc-800/70 px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">
               <Timer className="h-4 w-4" />
               {durationMin} phút
             </span>
@@ -312,7 +313,7 @@ export default function PracticePartLevelTestPage() {
           timeLabel={!resp ? fmtTime(timeSec) : fmtTime(resp.timeSec)}
           onSubmit={submit}
           onJump={jumpTo}
-          disabledSubmit={!total || answered === 0}
+          // disabledSubmit={!total || answered === 0}
           onToggleDetails={() => setShowDetails((s) => !s)}
           showDetails={showDetails}
           countdownSec={durationMin * 60}
@@ -330,25 +331,10 @@ export default function PracticePartLevelTestPage() {
             (!resp ? (
               /* ===== TRƯỚC KHI NỘP ===== */
               <div className="space-y-6">
-                <div className="flex items-center justify-between rounded-xl border p-4 bg-white">
-                  <div className="text-sm text-zinc-700">
-                    Đã chọn <b>{answered}</b>/<b>{total}</b> • Thời gian:{" "}
-                    {fmtTime(timeSec)}
-                  </div>
-                  <button
-                    onClick={submit}
-                    className="px-5 py-2 rounded-xl bg-black text-white disabled:opacity-50"
-                    disabled={!total || answered === 0}
-                  >
-                    Nộp bài
-                  </button>
-                </div>
-
                 {groups.map((g) =>
                   g.stimulus?.part === "part.1" ? (
                     <StimulusRowCard
                       key={g.key}
-                      groupKey={g.key}
                       stimulus={g.stimulus}
                       items={g.items}
                       itemIndexMap={itemIndexMap}
@@ -364,7 +350,6 @@ export default function PracticePartLevelTestPage() {
                   ) : (
                     <StimulusColumnCard
                       key={g.key}
-                      groupKey={g.key}
                       stimulus={g.stimulus}
                       items={g.items}
                       itemIndexMap={itemIndexMap}
@@ -425,7 +410,6 @@ export default function PracticePartLevelTestPage() {
                     g.stimulus?.part === "part.1" ? (
                       <StimulusRowCard
                         key={g.key}
-                        groupKey={g.key}
                         stimulus={g.stimulus}
                         items={g.items}
                         itemIndexMap={itemIndexMap}
@@ -439,7 +423,6 @@ export default function PracticePartLevelTestPage() {
                     ) : (
                       <StimulusColumnCard
                         key={g.key}
-                        groupKey={g.key}
                         stimulus={g.stimulus}
                         items={g.items}
                         itemIndexMap={itemIndexMap}

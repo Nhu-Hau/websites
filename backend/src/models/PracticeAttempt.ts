@@ -1,6 +1,6 @@
+// backend/src/models/PracticeAttempt.ts
 import mongoose, { Schema, Types, Document } from "mongoose";
 
-// thêm field userAnswers vào interface
 export interface IPracticeAttempt extends Document {
   userId: Types.ObjectId;
   partKey: string;
@@ -13,6 +13,8 @@ export interface IPracticeAttempt extends Document {
   answersMap: Record<string, { correctAnswer: string }>;
   userAnswers: Record<string, string | null>;
   submittedAt: Date;
+  /** NEW */
+  isRetake: boolean; // <- thêm
 }
 
 const PracticeAttemptSchema = new Schema<IPracticeAttempt>(
@@ -33,9 +35,12 @@ const PracticeAttemptSchema = new Schema<IPracticeAttempt>(
     answersMap: { type: Schema.Types.Mixed, default: {} },
     userAnswers: { type: Schema.Types.Mixed, default: {} },
     submittedAt: { type: Date, default: Date.now },
+    /** NEW */
+    isRetake: { type: Boolean, default: false }, // <- thêm
   },
   { timestamps: true, versionKey: false }
 );
+
 PracticeAttemptSchema.index({
   userId: 1,
   partKey: 1,

@@ -436,7 +436,7 @@ export default function AccountPage() {
           <div className="text-xs text-zinc-500">Thời gian tạo</div>
           <div className="font-medium">
             {user.createdAt ? new Date(user.createdAt).toLocaleString() : "-"}
-          </div>
+          </div>  
         </div>
       </div>
 

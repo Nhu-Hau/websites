@@ -3,17 +3,19 @@
 
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ResultsPanel } from "../../../../../components/parts/ResultsPanel";
+import { ResultsPanel } from "@/components/parts/ResultsPanel";
 import {
   StimulusRowCard,
   StimulusColumnCard,
-} from "../../../../../components/parts/StimulusCards";
+} from "@/components/parts/StimulusCards";
 import { groupByStimulus } from "@/utils/groupByStimulus";
 import type { ChoiceId, Item, Stimulus } from "@/types/tests";
+import { Sidebar } from "@/components/parts/Sidebar";
+import { Trophy, Gauge } from "lucide-react";
 
 type AttemptItem = {
   id: string;
-  part: string; // "part.1"..."part.7"
+  part: string;
   picked: ChoiceId | null;
   correctAnswer: ChoiceId;
   isCorrect: boolean;
@@ -42,7 +44,25 @@ type Attempt = {
 
 type ItemsResp = { items: Item[]; stimulusMap: Record<string, Stimulus> };
 
-const LISTENING_PARTS = new Set(["part.1", "part.2", "part.3", "part.4"]);
+// ===== Helpers (KHÔNG tạo file riêng) =====
+function roundToStep(n: number, step: number) {
+  // chống lỗi số học nhị phân
+  return Math.round((n + Number.EPSILON) / step) * step;
+}
+function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n));
+}
+function toToeicStep5(raw: number, min = 5, max = 495) {
+  const r = roundToStep(raw, 5);
+  // đảm bảo ra bội số của 5 sau khi clamp
+  const c = clamp(r, min, max);
+  return roundToStep(c, 5);
+}
+function toToeicStep10(raw: number, min = 10, max = 990) {
+  const r = roundToStep(raw, 10);
+  const c = clamp(r, min, max);
+  return roundToStep(c, 10);
+}
 
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -57,9 +77,9 @@ export default function PlacementResultPage() {
   const [loading, setLoading] = React.useState(true);
   const [attempt, setAttempt] = React.useState<Attempt | null>(null);
   const [items, setItems] = React.useState<Item[]>([]);
-  const [stimulusMap, setStimulusMap] = React.useState<Record<string, Stimulus>>(
-    {}
-  );
+  const [stimulusMap, setStimulusMap] = React.useState<
+    Record<string, Stimulus>
+  >({});
   const [showDetails, setShowDetails] = React.useState(false);
 
   React.useEffect(() => {
@@ -68,8 +88,6 @@ export default function PlacementResultPage() {
     async function load() {
       try {
         setLoading(true);
-
-        // 1) Lấy attempt (hỗ trợ "last")
         let attemptData: Attempt | null = null;
 
         if (attemptId === "last") {
@@ -83,7 +101,10 @@ export default function PlacementResultPage() {
             if (last?._id) {
               const detailRes = await fetch(
                 `/api/placement/attempts/${last._id}`,
-                { credentials: "include", cache: "no-store" }
+                {
+                  credentials: "include",
+                  cache: "no-store",
+                }
               );
               if (detailRes.ok) attemptData = await detailRes.json();
             }
@@ -100,18 +121,9 @@ export default function PlacementResultPage() {
           if (res.ok) attemptData = (await res.json()) as Attempt;
         }
 
-        if (!mounted) return;
-
-        if (!attemptData) {
-          setAttempt(null);
-          setItems([]);
-          setStimulusMap({});
-          return;
-        }
-
+        if (!mounted || !attemptData) return;
         setAttempt(attemptData);
 
-        // 2) Lấy items theo đúng thứ tự khi làm bài
         const orderedRes = await fetch(
           `/api/placement/attempts/${encodeURIComponent(
             String(attemptData._id)
@@ -127,7 +139,6 @@ export default function PlacementResultPage() {
           return;
         }
 
-        // Fallback: dùng endpoint cũ + tự sort theo attempt.items/allIds
         const allIds = attemptData.allIds?.length
           ? attemptData.allIds
           : attemptData.items.map((i) => i.id);
@@ -167,13 +178,9 @@ export default function PlacementResultPage() {
     };
   }, [attemptId, router]);
 
-  // ===== Helpers tự tính nếu BE không trả partStats/weakParts/predicted =====
-
-  function computePartStats(
-    at: Attempt
-  ): Record<string, { total: number; correct: number; acc: number }> {
+  // Tính toán bổ sung
+  function computePartStats(at: Attempt) {
     if (at.partStats) return at.partStats;
-
     const byPart: Record<string, { total: number; correct: number }> = {};
     for (const it of at.items) {
       if (!byPart[it.part]) byPart[it.part] = { total: 0, correct: 0 };
@@ -194,50 +201,61 @@ export default function PlacementResultPage() {
 
   function computeWeakParts(
     stats: Record<string, { total: number; correct: number; acc: number }>
-  ): string[] {
+  ) {
     return Object.entries(stats)
       .filter(([, s]) => s.acc < 0.7)
       .map(([k]) => k);
   }
 
-  function computePredicted(at: Attempt) {
-    // nếu BE đã có thì dùng luôn
-    if (at.predicted) return at.predicted;
-
-    const round5 = (n: number, min: number, max: number) => {
-      const x = Math.round(n / 5) * 5;
-      return Math.min(max, Math.max(min, x));
-    };
-
-    const rawL = (at.listening?.acc || 0) * 495;
-    const rawR = (at.reading?.acc || 0) * 495;
-    return {
-      listening: round5(rawL, 5, 495),
-      reading: round5(rawR, 5, 495),
-      overall: round5(rawL + rawR, 10, 990),
-    };
+  // Helpers giữ nguyên như bạn đã thêm:
+  function roundToStep(n: number, step: number) {
+    return Math.round((n + Number.EPSILON) / step) * step;
+  }
+  function clamp(n: number, min: number, max: number) {
+    return Math.min(max, Math.max(min, n));
+  }
+  function toToeicStep5(raw: number, min = 5, max = 495) {
+    const r = roundToStep(raw, 5);
+    const c = clamp(r, min, max);
+    return roundToStep(c, 5);
+  }
+  function toToeicStep10(raw: number, min = 10, max = 990) {
+    const r = roundToStep(raw, 10);
+    const c = clamp(r, min, max);
+    return roundToStep(c, 10);
   }
 
-  // map đáp án đã chọn từ attempt → answers
-  const answers: Record<string, ChoiceId> = React.useMemo(() => {
+  // ✅ Luôn chuẩn hoá: L/R bội 5 (5..495), Overall bội 10 (10..990)
+  function computePredicted(at: Attempt) {
+    const rawL = (at.listening?.acc || 0) * 495;
+    const rawR = (at.reading?.acc || 0) * 495;
+
+    // Nếu server đã có predicted, vẫn lấy làm "gợi ý" nhưng normalize lại
+    const baseL = at.predicted?.listening ?? rawL;
+    const baseR = at.predicted?.reading ?? rawR;
+
+    const listening = toToeicStep5(baseL, 5, 495);
+    const reading = toToeicStep5(baseR, 5, 495);
+
+    // overall: nếu server có overall thì normalize, còn không thì từ L+R
+    const overallRaw = at.predicted?.overall ?? listening + reading;
+    const overall = toToeicStep10(overallRaw, 10, 990);
+
+    return { listening, reading, overall };
+  }
+  const answers = React.useMemo(() => {
     const m: Record<string, ChoiceId> = {};
-    attempt?.items.forEach((it) => {
-      if (it.picked) m[it.id] = it.picked;
-    });
+    attempt?.items.forEach((it) => it.picked && (m[it.id] = it.picked));
     return m;
   }, [attempt]);
 
-  // map đáp án đúng → correctMap
-  const correctMap: Record<string, ChoiceId> | undefined = React.useMemo(() => {
+  const correctMap = React.useMemo(() => {
     if (!attempt) return undefined;
     const m: Record<string, ChoiceId> = {};
-    attempt.items.forEach((it) => {
-      m[it.id] = it.correctAnswer;
-    });
+    attempt.items.forEach((it) => (m[it.id] = it.correctAnswer));
     return m;
   }, [attempt]);
 
-  // group theo stimulus để render giống lúc làm
   const { groups, itemIndexMap } = React.useMemo(
     () => groupByStimulus(items, stimulusMap),
     [items, stimulusMap]
@@ -245,110 +263,145 @@ export default function PlacementResultPage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto p-6 mt-16 text-sm text-gray-500">
-        Đang tải kết quả…
+      <div className="max-w-7xl mx-auto px-6 py-20 mt-16 flex flex-col items-center justify-center text-center">
+        <div className="h-12 w-12 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+        <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+          Đang tải kết quả...
+        </p>
       </div>
     );
   }
 
   if (!attempt) {
     return (
-      <div className="max-w-7xl mx-auto p-6 mt-16 text-sm text-red-600">
-        Không tìm thấy kết quả.
+      <div className="max-w-7xl mx-auto px-6 py-20 mt-16 flex flex-col items-center justify-center text-center">
+        <div className="mb-4 rounded-full bg-zinc-100 dark:bg-zinc-800 p-6">
+          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-zinc-300 to-zinc-400 dark:from-zinc-700 dark:to-zinc-600" />
+        </div>
+        <h3 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          Không tìm thấy kết quả
+        </h3>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          Bản ghi có thể đã bị xóa.
+        </p>
       </div>
     );
   }
 
-  // ===== Đảm bảo ResultsPanel luôn có dữ liệu phân tích =====
   const partStats = computePartStats(attempt);
   const weakParts = attempt.weakParts ?? computeWeakParts(partStats);
   const predicted = computePredicted(attempt);
 
   const respLike = {
-    total: attempt.total,
-    correct: attempt.correct,
-    acc: attempt.acc,
-    listening: attempt.listening,
-    reading: attempt.reading,
-    timeSec: attempt.timeSec,
-    level: attempt.level,
+    ...attempt,
+    partStats,
+    weakParts,
+    predicted, // <-- truyền xuống để ResultsPanel ưu tiên dùng, đảm bảo KHỚP header
     answersMap: attempt.items.reduce((m, it) => {
       m[it.id] = { correctAnswer: it.correctAnswer };
       return m;
     }, {} as Record<string, { correctAnswer: ChoiceId }>),
-    partStats,   // 👈 luôn có
-    weakParts,   // 👈 luôn có
-    predicted,   // 👈 luôn có (làm tròn bội số 5)
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 mt-16">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold">Kết quả Mini TOEIC 55 câu</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Mã lần làm: {attempt._id} • Nộp lúc{" "}
-          {new Date(attempt.submittedAt).toLocaleString()}
-        </p>
+    <div className="max-w-7xl mx-auto px-6 py-10 mt-16">
+      {/* Header */}
+      <header className="mb-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-gradient-to-br from-blue-600 to-blue-700 p-3 shadow-lg">
+              <Trophy className="h-7 w-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight">
+                Kết quả bài kiểm tra trình độ
+              </h1>
+              <p className="mt-1 text-base text-zinc-600 dark:text-zinc-400">
+                {new Date(attempt.submittedAt).toLocaleString()}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/70 px-4 py-2">
+            <Gauge className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              TOEIC ước lượng:{" "}
+              <strong className="font-bold text-blue-600 dark:text-blue-400">
+                {predicted.overall}
+              </strong>{" "}
+              / 990
+            </span>
+          </div>
+        </div>
       </header>
 
-      {/* 1) Panel kết quả lớn (có Phân tích theo Part & Gợi ý luyện tập) */}
-      <ResultsPanel
-        resp={respLike as any}
-        timeLabel={fmtTime(attempt.timeSec)}
-        onToggleDetails={() => setShowDetails((s) => !s)}
-        showDetails={showDetails}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:items-start">
+        {/* Sidebar */}
+        <div className="lg:col-span-1">
+          <Sidebar
+            items={items}
+            answers={answers}
+            resp={respLike as any}
+            total={items.length}
+            answered={Object.keys(answers).length}
+            timeLabel={fmtTime(attempt.timeSec)}
+            onSubmit={() => {}}
+            onJump={(i) =>
+              document
+                .getElementById(`q-${i + 1}`)
+                ?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+            onToggleDetails={() => setShowDetails((s) => !s)}
+            showDetails={showDetails}
+            countdownSec={35 * 60}
+            started={true}
+            onStart={() => {}}
+            isAuthed={true}
+            onLoginRequest={() => {}}
+          />
+        </div>
 
-      {/* 2) Toàn bộ đề — locked view (đúng thứ tự làm) */}
-      <section className="mt-8 space-y-6">
-        {groups.map((g) =>
-          g.stimulus?.part === "part.1" ? (
-            <StimulusRowCard
-              key={g.key}
-              groupKey={g.key}
-              stimulus={g.stimulus}
-              items={g.items}
-              itemIndexMap={itemIndexMap}
-              answers={answers}
-              correctMap={correctMap}
-              locked={true}
-              onPick={() => {}}
-              showStimulusDetails={showDetails}
-              showPerItemExplain={showDetails}
-            />
-          ) : (
-            <StimulusColumnCard
-              key={g.key}
-              groupKey={g.key}
-              stimulus={g.stimulus}
-              items={g.items}
-              itemIndexMap={itemIndexMap}
-              answers={answers}
-              correctMap={correctMap}
-              locked={true}
-              onPick={() => {}}
-              showStimulusDetails={showDetails}
-              showPerItemExplain={showDetails} 
-            />
-          )
-        )}
-      </section>
+        {/* Main */}
+        <main className="lg:col-span-3">
+          <ResultsPanel
+            resp={respLike as any}
+            timeLabel={fmtTime(attempt.timeSec)}
+            onToggleDetails={() => setShowDetails((s) => !s)}
+            showDetails={showDetails}
+          />
 
-      <div className="mt-10 flex gap-3">
-        <button
-          className="rounded-xl border px-4 py-2 hover:bg-zinc-50"
-          onClick={() => setShowDetails((s) => !s)}
-        >
-          {showDetails
-            ? "Ẩn transcript/giải thích"
-            : "Hiện transcript/giải thích"}
-        </button>
-        <button
-          className="rounded-xl border px-4 py-2 hover:bg-zinc-50"
-          onClick={() => router.push("/homePage")}
-        >
-          Về trang chủ
-        </button>
+          <section className="mt-8 space-y-6">
+            {groups.map((g) =>
+              g.stimulus?.part === "part.1" ? (
+                <StimulusRowCard
+                  key={g.key}
+                  stimulus={g.stimulus}
+                  items={g.items}
+                  itemIndexMap={itemIndexMap}
+                  answers={answers}
+                  correctMap={correctMap}
+                  locked={true}
+                  onPick={() => {}}
+                  showStimulusDetails={showDetails}
+                  showPerItemExplain={showDetails}
+                />
+              ) : (
+                <StimulusColumnCard
+                  key={g.key}
+                  stimulus={g.stimulus}
+                  items={g.items}
+                  itemIndexMap={itemIndexMap}
+                  answers={answers}
+                  correctMap={correctMap}
+                  locked={true}
+                  onPick={() => {}}
+                  showStimulusDetails={showDetails}
+                  showPerItemExplain={showDetails}
+                />
+              )
+            )}
+          </section>
+        </main>
       </div>
     </div>
   );

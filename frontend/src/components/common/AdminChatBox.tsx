@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -416,7 +417,7 @@ export default function AdminChatBox() {
       {/* Panel */}
       <div
         ref={wrapperRef}
-        className={`fixed bottom-32 right-5 z-[59] w-[92vw] max-w-sm
+        className={`fixed bottom-16 right-10 z-[59] w-[92vw] max-w-sm
           transition-all duration-200 ${
             open
               ? "opacity-100 translate-y-0"

@@ -1,6 +1,7 @@
 //frontend/src/components/parts/Sidebar.tsx
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,8 +20,9 @@ import {
 } from "lucide-react";
 
 function fmtMMSS(sec: number) {
-  const m = Math.floor(Math.max(sec, 0) / 60);
-  const s = Math.max(sec, 0) % 60;
+  const safe = Math.max(0, sec | 0);
+  const m = Math.floor(safe / 60);
+  const s = safe % 60;
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
@@ -32,8 +34,8 @@ export function Sidebar({
   answered,
   timeLabel,
   onSubmit,
+  onSubmitWithLeftSec,
   onJump,
-  disabledSubmit, // vẫn giữ, nhưng submit sẽ dựa theo started/resp
   onToggleDetails,
   showDetails,
   countdownSec = 35 * 60,
@@ -49,8 +51,8 @@ export function Sidebar({
   answered: number;
   timeLabel: string;
   onSubmit: () => void;
+  onSubmitWithLeftSec?: (left: number) => void; // ⬅️ mới
   onJump: (i: number) => void;
-  disabledSubmit: boolean;
   onToggleDetails: () => void;
   showDetails: boolean;
   countdownSec?: number;
@@ -60,261 +62,192 @@ export function Sidebar({
   onLoginRequest: () => void;
 }) {
   const [leftSec, setLeftSec] = useState<number>(countdownSec);
+
+  const initialSecRef = useRef<number>(countdownSec);
+
   const tickingRef = useRef<number | null>(null);
   const submittedRef = useRef(false);
+
   const router = useRouter();
 
-  // Reset lại thời gian khi CHƯA bắt đầu và chưa có kết quả
   useEffect(() => {
-    if (!started && !resp) setLeftSec(countdownSec);
+    if (!started && !resp) {
+      setLeftSec(countdownSec);
+      initialSecRef.current = countdownSec;
+      submittedRef.current = false;
+    }
   }, [countdownSec, started, resp]);
 
-  // Interval đếm lùi
   useEffect(() => {
     if (resp || !started) {
-      if (tickingRef.current) {
-        clearInterval(tickingRef.current);
-        tickingRef.current = null;
-      }
+      if (tickingRef.current) clearInterval(tickingRef.current);
+      tickingRef.current = null;
       return;
     }
     if (!tickingRef.current) {
-      tickingRef.current = window.setInterval(
-        () => setLeftSec((t) => t - 1),
-        1000
-      );
+      tickingRef.current = window.setInterval(() => {
+        setLeftSec((t) => (t > 0 ? t - 1 : 0));
+      }, 1000);
     }
     return () => {
-      if (tickingRef.current) {
-        clearInterval(tickingRef.current);
-        tickingRef.current = null;
-      }
+      if (tickingRef.current) clearInterval(tickingRef.current);
+      tickingRef.current = null;
     };
   }, [resp, started]);
 
-  // Hết giờ → auto submit
   useEffect(() => {
     if (!resp && started && leftSec <= 0 && !submittedRef.current) {
       submittedRef.current = true;
-      if (tickingRef.current) {
-        clearInterval(tickingRef.current);
-        tickingRef.current = null;
-      }
+      if (tickingRef.current) clearInterval(tickingRef.current);
+      tickingRef.current = null;
       onSubmit();
+      onSubmitWithLeftSec?.(leftSec);
     }
-  }, [leftSec, resp, started, onSubmit]);
-
-  // Clear khi unmount
-  useEffect(() => {
-    return () => {
-      if (tickingRef.current) {
-        clearInterval(tickingRef.current);
-        tickingRef.current = null;
-      }
-    };
-  }, []);
+  }, [leftSec, resp, started, onSubmit, onSubmitWithLeftSec]);
 
   const countdownLabel = useMemo(
     () => (started ? fmtMMSS(leftSec) : "--:--"),
     [leftSec, started]
   );
 
-  function handleManualSubmit() {
-    submittedRef.current = true;
-    onSubmit();
-  }
-
-  function handleStartClick() {
-    if (!isAuthed) {
-      onLoginRequest?.();
-      return;
-    }
-    onStart();
-  }
-
-  const canSubmit = started && !resp; // chỉ cần đã bắt đầu & chưa nộp
-  const progress = total
-    ? Math.min(100, Math.round((answered / total) * 100))
-    : 0;
+  const canSubmit = started && !resp;
+  const progress = total ? Math.min(100, Math.round((answered / total) * 100)) : 0;
 
   return (
     <aside className="col-span-1">
-      <div className="sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto space-y-4">
-        {/* Title + chips */}
-        <div className="flex flex-col gap-2">
-          <h2 className="text-xl font-bold">Bài luyện theo Part</h2>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1">
+      <div className="sticky top-24 h-[calc(100vh-5rem)] overflow-y-auto space-y-5 pb-6">
+        {/* Header */}
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 dark:bg-gray-700 px-3 py-1.5 text-sm font-medium">
               <ListChecks className="h-4 w-4" />
               {total} câu
             </span>
-            <span className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1">
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/30 px-3 py-1.5 text-sm font-medium text-sky-700 dark:text-sky-400">
               <TimerIcon className="h-4 w-4" />
-              {Math.round(countdownSec / 60)} phút
+              {Math.ceil(initialSecRef.current / 60)} phút
             </span>
           </div>
         </div>
 
-        {/* Banner: chưa bắt đầu & chưa nộp */}
+        {/* Start Banner */}
         {!started && !resp && (
-          <div className="rounded-xl border p-4 bg-amber-50 text-amber-900">
-            <div className="text-sm">
-              Thời gian sẽ bắt đầu tính khi bạn nhấn <b>Bắt đầu</b>.
-            </div>
-            <div className="mt-3 flex items-center gap-2">
+          <div className="rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/30 p-4 border border-amber-200 dark:border-amber-700">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Thời gian bắt đầu khi bạn nhấn <strong>Bắt đầu</strong>.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
               <button
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black text-white"
-                onClick={handleStartClick}
+                onClick={() => (isAuthed ? onStart() : onLoginRequest?.())}
+                className="inline-flex items-center gap-2 rounded-lg bg-slate-900 hover:bg-black text-white px-4 py-2 font-semibold transition-all"
               >
                 <Play className="h-4 w-4" />
                 Bắt đầu
               </button>
               {!isAuthed && (
                 <button
-                  type="button"
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border"
                   onClick={() => router.push("/auth/login")}
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   <LogIn className="h-4 w-4" />
                   Đăng nhập
                 </button>
               )}
             </div>
-            {!isAuthed && (
-              <div className="text-xs mt-2 text-amber-900/80">
-                Bạn cần <b>đăng nhập</b> để bắt đầu làm bài và lưu kết quả.
-              </div>
-            )}
           </div>
         )}
 
-        {/* Stats card */}
-        <div className="rounded-2xl border p-4 space-y-3">
+        {/* Stats */}
+        <div className="rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-5 shadow-sm space-y-4">
           {!resp ? (
             <>
-              <div className="flex items-center justify-between text-sm">
-                <div>
-                  Đã chọn: <b>{answered}</b> / {total}
-                </div>
-                <div className="text-red-600 flex items-center gap-1">
-                  <FaRegClock className="inline-block align-middle text-gray-600" />
+              <div className="flex items-center justify-between text-sm font-medium">
+                <span>
+                  Đã chọn: <strong>{answered}/{total}</strong>
+                </span>
+                <span className="flex items-center gap-1 text-red-600 dark:text-red-400">
+                  <FaRegClock className="h-4 w-4" />
                   {countdownLabel}
-                </div>
+                </span>
               </div>
-
-              {/* Progress */}
-              <div className="h-2 w-full rounded-full bg-zinc-200 overflow-hidden">
+              <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                 <div
-                  className="h-2 bg-zinc-900 transition-all"
+                  className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all duration-300"
                   style={{ width: `${progress}%` }}
-                  aria-valuenow={progress}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
                 />
               </div>
-
               <button
-                onClick={handleManualSubmit}
-                className="w-full px-4 py-2 rounded-xl bg-black text-white disabled:opacity-50"
+                onClick={() => { onSubmit(); onSubmitWithLeftSec?.(leftSec); }}
                 disabled={!canSubmit}
+                className="w-full rounded-lg bg-gradient-to-r from-slate-900 to-black hover:from-black hover:to-slate-900 text-white py-2.5 font-semibold disabled:opacity-50 transition-all"
               >
                 Nộp bài
               </button>
             </>
           ) : (
-            <div className="flex flex-col gap-3">
-              <div className="text-sm text-gray-600 flex items-center gap-1">
-                <FaRegClock className="inline-block align-middle" />
-                Thời gian làm: {timeLabel}
+            <>
+              <div className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                <FaRegClock className="h-4 w-4" />
+                Thời gian: <strong>{timeLabel}</strong>
               </div>
-
-              {/* Toggle xem chi tiết sau khi nộp */}
               <button
                 onClick={onToggleDetails}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm hover:bg-zinc-50"
+                className="w-full flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2.5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
               >
-                {showDetails ? (
-                  <>
-                    <EyeOff className="h-4 w-4" />
-                    Ẩn chi tiết đáp án
-                  </>
-                ) : (
-                  <>
-                    <Eye className="h-4 w-4" />
-                    Xem chi tiết đáp án
-                  </>
-                )}
+                {showDetails ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showDetails ? "Ẩn đáp án" : "Xem đáp án"}
               </button>
-            </div>
+            </>
           )}
         </div>
 
-        {/* Legend sau khi nộp */}
+        {/* Legend */}
         {resp && (
-          <div className="rounded-2xl border p-4">
-            <div className="font-semibold mb-2">Chú thích</div>
+          <div className="rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4">
+            <p className="font-semibold text-sm mb-2">Chú thích</p>
             <div className="flex flex-wrap gap-2 text-xs">
-              <span className="inline-flex items-center gap-1 rounded-full bg-green-600 text-white px-2 py-1">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Đúng
+              <span className="flex items-center gap-1 rounded-full bg-emerald-600 text-white px-2.5 py-1">
+                <CheckCircle2 className="h-3.5 w-3.5" /> Đúng
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-red-600 text-white px-2 py-1">
-                <XCircle className="h-3.5 w-3.5" />
-                Sai
+              <span className="flex items-center gap-1 rounded-full bg-red-600 text-white px-2.5 py-1">
+                <XCircle className="h-3.5 w-3.5" /> Sai
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-zinc-300 text-zinc-800 px-2 py-1">
-                {/* dùng icon CheckCircle2 mờ hoặc bỏ icon cũng được */}
+              <span className="flex items-center gap-1 rounded-full bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-2.5 py-1">
                 Bỏ trống
               </span>
             </div>
           </div>
         )}
 
-        {/* Grid câu hỏi */}
-        {/* Grid câu hỏi */}
-        <div className="rounded-2xl border p-4">
-          <div className="font-semibold mb-2">Câu hỏi</div>
-          <div className="flex flex-wrap gap-2">
+        {/* Question Grid */}
+        <div className="rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4">
+          <p className="font-semibold text-sm mb-3">Câu hỏi</p>
+          <div className="flex flex-wrap gap-2 justify-start">
             {items.map((it, i) => {
               const picked = answers[it.id];
-              const correct = resp?.answersMap?.[it.id]?.correctAnswer as
-                | ChoiceId
-                | undefined;
-
+              const correct = resp?.answersMap?.[it.id]?.correctAnswer as ChoiceId | undefined;
               let cls =
-                "w-9 h-9 rounded-full border text-sm flex items-center justify-center transition-all duration-200";
+                "min-w-10 h-10 rounded-full border-2 font-bold text-sm flex items-center justify-center transition-all";
 
               if (!resp) {
-                // 🟡 Trước khi nộp
                 cls += picked
-                  ? " bg-zinc-900 text-white border-zinc-900"
-                  : " hover:bg-zinc-100 dark:hover:bg-zinc-700";
+                  ? " bg-slate-900 text-white border-slate-900"
+                  : " border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700";
               } else {
-                // ✅ Sau khi nộp: Xanh = đúng / Đỏ = sai / Xám = bỏ trống
-                if (picked === undefined) {
+                if (!picked)
                   cls +=
-                    " bg-zinc-300 text-zinc-800 border-zinc-300 dark:bg-zinc-700 dark:text-zinc-200";
-                } else if (correct !== undefined && picked === correct) {
-                  cls += " bg-green-600 text-white border-green-600";
-                } else {
-                  cls += " bg-red-600 text-white border-red-600";
-                }
+                    " bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600";
+                else if (picked === correct)
+                  cls += " bg-emerald-600 text-white border-emerald-600";
+                else cls += " bg-red-600 text-white border-red-600";
               }
 
               return (
                 <button
                   key={it.id}
-                  className={cls}
-                  title={
-                    !resp
-                      ? `Câu ${i + 1}`
-                      : picked === undefined
-                      ? `Câu ${i + 1}: Bỏ trống`
-                      : picked === correct
-                      ? `Câu ${i + 1}: Đúng`
-                      : `Câu ${i + 1}: Sai`
-                  }
                   onClick={() => onJump(i)}
+                  className={cls}
+                  title={`Câu ${i + 1}`}
                 >
                   {i + 1}
                 </button>

@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -33,50 +30,48 @@ type Attachment = {
 };
 
 function AttachmentIcon({ type }: { type: "image" | "link" | "file" }) {
-  if (type === "image")
-    return <ImageIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />;
-  if (type === "file")
-    return <FileIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />;
-  return <LinkIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />;
+  const iconClass = "h-4 w-4 text-gray-500 dark:text-gray-400";
+  if (type === "image") return <ImageIcon className={iconClass} />;
+  if (type === "file") return <FileIcon className={iconClass} />;
+  return <LinkIcon className={iconClass} />;
 }
 
-function Avatar({ name, url }: { name?: string; url?: string }) {
-  if (url)
+function Avatar({ url, name }: { url?: string; name?: string }) {
+  if (url) {
     return (
       <img
         src={url}
-        alt={name || "avatar"}
-        className="h-10 w-10 rounded-full object-cover"
+        alt={name}
+        className="h-10 w-10 rounded-full object-cover ring-2 ring-white dark:ring-gray-800 shadow-sm"
       />
     );
+  }
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
-      <UserIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm shadow-sm">
+      {(name?.[0] ?? "?").toUpperCase()}
     </div>
   );
 }
 
-function fmtSize(n?: number) {
-  if (!n) return "";
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+function fmtSize(bytes?: number): string {
+  if (!bytes) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export default function PostDetail({ postId }: { postId: string }) {
   const router = useRouter();
   const pathname = usePathname();
-  const locale = React.useMemo(
-    () => pathname.split("/")[1] || "vi",
-    [pathname]
-  );
+  const locale = React.useMemo(() => pathname.split("/")[1] || "vi", [pathname]);
 
   const [post, setPost] = React.useState<any>(null);
   const [comments, setComments] = React.useState<CommunityComment[]>([]);
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
   const [cmtInput, setCmtInput] = React.useState("");
   const [cmtAttaches, setCmtAttaches] = React.useState<Attachment[]>([]);
-  const fileRef = React.useRef<HTMLInputElement | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const loadingRef = React.useRef(false);
   const submittingRef = React.useRef(false);
@@ -86,17 +81,14 @@ export default function PostDetail({ postId }: { postId: string }) {
     loadingRef.current = true;
     setLoading(true);
     try {
-      const r = await fetch(
-        `${API_BASE}/api/community/posts/${postId}?page=1&limit=50`,
-        {
-          credentials: "include",
-          cache: "no-store",
-        }
-      );
-      if (!r.ok) throw new Error("Không thể tải bài viết");
-      const j = await r.json();
-      setPost(j.post);
-      setComments(j.comments?.items ?? []);
+      const res = await fetch(`${API_BASE}/api/community/posts/${postId}?page=1&limit=50`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (!res.ok) throw new Error("Không tải được bài viết");
+      const data = await res.json();
+      setPost(data.post);
+      setComments(data.comments?.items ?? []);
     } catch {
       toast.error("Lỗi khi tải bài viết");
     } finally {
@@ -110,435 +102,367 @@ export default function PostDetail({ postId }: { postId: string }) {
   }, [loadPost]);
 
   React.useEffect(() => {
-    const s = getSocket();
+    const socket = getSocket();
     const room = `post:${postId}`;
-    s.emit("join", { room });
+    socket.emit("join", { room });
 
-    const onLike = (p: {
-      postId: string;
-      likesCount: number;
-      liked?: boolean;
-    }) => {
-      if (p.postId === postId) {
-        setPost((prev: any) =>
-          prev ? { ...prev, likesCount: p.likesCount } : prev
-        );
+    const handleLike = (data: { postId: string; likesCount: number; liked?: boolean }) => {
+      if (data.postId === postId) {
+        setPost((p: any) => p ? { ...p, likesCount: data.likesCount, liked: data.liked } : p);
       }
     };
 
-    const onNewComment = (p: { postId: string; comment?: any }) => {
-      if (p.postId !== postId || !p.comment) return;
+    const handleNewComment = (data: { postId: string; comment: any }) => {
+      if (data.postId !== postId || !data.comment) return;
       setComments((prev) => {
-        if (prev.some((c) => c._id === p.comment._id)) return prev;
-        return [...prev, p.comment];
+        if (prev.some(c => c._id === data.comment._id)) return prev;
+        return [...prev, data.comment];
       });
-      setPost((prev: any) =>
-        prev ? { ...prev, commentsCount: (prev.commentsCount || 0) + 1 } : prev
-      );
+      setPost((p: any) => p ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p);
     };
 
-    const onCommentDeleted = (p: { postId: string; commentId: string }) => {
-      if (p.postId !== postId) return;
-      setComments((prev) => prev.filter((c) => c._id !== p.commentId));
-      setPost((prev: { commentsCount: any }) =>
-        prev
-          ? {
-              ...prev,
-              commentsCount: Math.max(0, (prev.commentsCount || 0) - 1),
-            }
-          : prev
-      );
+    const handleCommentDeleted = (data: { postId: string; commentId: string }) => {
+      if (data.postId !== postId) return;
+      setComments(prev => prev.filter(c => c._id !== data.commentId));
+      setPost((p: any) => p ? { ...p, commentsCount: Math.max(0, (p.commentsCount || 0) - 1) } : p);
     };
 
-    const onDeleted = (p: { postId: string }) => {
-      if (p.postId === postId) router.push("/community");
+    const handlePostDeleted = (data: { postId: string }) => {
+      if (data.postId === postId) router.push(`/${locale}/community`);
     };
 
-    s.on("community:like-updated", onLike);
-    s.on("community:new-comment", onNewComment);
-    s.on("community:comment-deleted", onCommentDeleted);
-    s.on("community:post-deleted", onDeleted);
+    socket.on("community:like-updated", handleLike);
+    socket.on("community:new-comment", handleNewComment);
+    socket.on("community:comment-deleted", handleCommentDeleted);
+    socket.on("community:post-deleted", handlePostDeleted);
 
     return () => {
-      s.emit("leave", { room });
-      s.off("community:like-updated", onLike);
-      s.off("community:new-comment", onNewComment);
-      s.off("community:comment-deleted", onCommentDeleted);
-      s.off("community:post-deleted", onDeleted);
+      socket.emit("leave", { room });
+      socket.off("community:like-updated", handleLike);
+      socket.off("community:new-comment", handleNewComment);
+      socket.off("community:comment-deleted", handleCommentDeleted);
+      socket.off("community:post-deleted", handlePostDeleted);
     };
-  }, [postId, loadPost, router]);
+  }, [postId, router, locale]);
 
-  async function toggleLike() {
+  const toggleLike = async () => {
     try {
-      const r = await fetch(`${API_BASE}/api/community/posts/${postId}/like`, {
+      const res = await fetch(`${API_BASE}/api/community/posts/${postId}/like`, {
         method: "POST",
         credentials: "include",
       });
-      if (!r.ok) throw new Error("Like thất bại");
-      const j = await r.json();
-      setPost((p: any) => ({ ...p, liked: j.liked, likesCount: j.likesCount }));
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setPost((p: any) => ({ ...p, liked: data.liked, likesCount: data.likesCount }));
     } catch {
-      toast.error("Không thể thích bài viết.");
+      toast.error("Không thể thích bài viết");
     }
-  }
+  };
 
-  async function handleCmtFiles(files: FileList) {
-    if (!files?.length) return;
-    for (const f of Array.from(files)) {
-      const fd = new FormData();
-      fd.append("file", f);
-      const r = await fetch(`${API_BASE}/api/community/upload`, {
-        method: "POST",
-        credentials: "include",
-        body: fd,
-      });
-      if (!r.ok) continue;
-      const j = await r.json();
-      setCmtAttaches((prev) => [
-        ...prev,
-        { type: j.type, url: j.url, name: j.name, size: j.size },
-      ]);
+  const handleFileUpload = async (files: FileList) => {
+    for (const file of Array.from(files)) {
+      const formData = new FormData();
+      formData.append("file", file);
+      try {
+        const res = await fetch(`${API_BASE}/api/community/upload`, {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+        if (!res.ok) continue;
+        const data = await res.json();
+        setCmtAttaches(prev => [...prev, { type: data.type, url: data.url, name: data.name, size: data.size }]);
+      } catch {}
     }
-  }
+  };
 
-  function removeCmtAttach(i: number) {
-    setCmtAttaches((prev) => prev.filter((_, idx) => idx !== i));
-  }
+  const removeAttachment = (index: number) => {
+    setCmtAttaches(prev => prev.filter((_, i) => i !== index));
+  };
 
-  async function submitComment() {
+  const submitComment = async () => {
     if (submittingRef.current) return;
-
-    const text = cmtInput.trim();
-    const files = cmtAttaches;
-
-    if (text.length === 0 && files.length === 0) {
-      toast.error("Hãy nhập nội dung hoặc thêm tệp");
+    const content = cmtInput.trim();
+    if (!content && cmtAttaches.length === 0) {
+      toast.error("Vui lòng nhập nội dung hoặc đính kèm tệp");
       return;
     }
 
     submittingRef.current = true;
     try {
-      const body = { content: text || "", attachments: files };
-      const r = await fetch(
-        `${API_BASE}/api/community/posts/${postId}/comments`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      );
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        throw new Error(err?.message || "Bình luận thất bại");
-      }
-      const j = await r.json();
-      setComments((prev) =>
-        prev.some((c) => c._id === j._id) ? prev : [...prev, j]
-      );
-      setPost((p: { commentsCount: any }) =>
-        p
-          ? {
-              ...p,
-              commentsCount:
-                (p.commentsCount || 0) +
-                (comments.some((c) => c._id === j._id) ? 0 : 1),
-            }
-          : p
-      );
+      const res = await fetch(`${API_BASE}/api/community/posts/${postId}/comments`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: content || "", attachments: cmtAttaches }),
+      });
+      if (!res.ok) throw new Error("Gửi bình luận thất bại");
+      const comment = await res.json();
+      setComments(prev => prev.some(c => c._id === comment._id) ? prev : [...prev, comment]);
+      setPost((p: any) => p ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p);
       setCmtInput("");
       setCmtAttaches([]);
-      toast.success("Đã đăng bình luận");
-    } catch (e: any) {
-      toast.error(e?.message || "Lỗi khi đăng bình luận");
+      toast.success("Đã gửi bình luận!");
+    } catch {
+      toast.error("Lỗi khi gửi bình luận");
     } finally {
       submittingRef.current = false;
     }
-  }
-
-  const onCmtKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      submitComment();
-    }
   };
 
-  async function deletePost() {
-    if (!confirm("Xoá bài viết này?")) return;
-    const r = await fetch(`${API_BASE}/api/community/posts/${postId}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    if (r.ok) router.push(`/${locale}/community`);
-    else toast.error("Lỗi khi xoá");
-  }
+  const deletePost = async () => {
+    if (!confirm("Xóa bài viết này?")) return;
+    const res = await fetch(`${API_BASE}/api/community/posts/${postId}`, { method: "DELETE", credentials: "include" });
+    if (res.ok) router.push(`/${locale}/community`);
+    else toast.error("Xóa thất bại");
+  };
 
-  async function deleteComment(cmtId: string) {
-    if (!confirm("Xoá bình luận này?")) return;
-    const r = await fetch(`${API_BASE}/api/community/comments/${cmtId}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    if (r.ok) loadPost();
-    else toast.error("Xoá bình luận thất bại");
-  }
+  const deleteComment = async (commentId: string) => {
+    if (!confirm("Xóa bình luận này?")) return;
+    const res = await fetch(`${API_BASE}/api/community/comments/${commentId}`, { method: "DELETE", credentials: "include" });
+    if (res.ok) loadPost();
+    else toast.error("Xóa bình luận thất bại");
+  };
 
-  async function sharePost() {
+  const sharePost = async () => {
     try {
       await navigator.share({
-        title: "Bài viết từ Cộng đồng TOEIC",
-        text: post?.content?.slice(0, 100) || "",
-        url: `${window.location.origin}/${locale}/community/post/${postId}`,
+        title: "Bài viết cộng đồng",
+        text: post?.content?.slice(0, 100),
+        url: window.location.href,
       });
     } catch {}
-  }
+  };
 
-  if (!post)
+  if (loading) {
     return (
-      <div className="flex items-center justify-center py-24 text-gray-500 dark:text-gray-400">
-        <Loader2 className="h-6 w-6 animate-spin" />
-        Đang tải…
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+        <div className="mx-auto max-w-5xl px-4 py-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-48"></div>
+            <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+            <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+          </div>
+        </div>
       </div>
     );
+  }
+
+  if (!post) return null;
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 mt-16">
-      <main className="mx-auto max-w-5xl px-4 py-8 xs:px-6 sm:px-8">
-        <article className="rounded-2xl bg-white dark:bg-gray-800 shadow-lg p-6 transition-all hover:shadow-xl">
-          <div className="flex items-start gap-4">
-            <Avatar name={post.user?.name} url={post.user?.picture} />
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {post.user?.name || "Người dùng"}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {new Date(post.createdAt).toLocaleString()}
-                </span>
-                {post.canDelete && (
-                  <button
-                    onClick={deletePost}
-                    className="ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
-                  >
-                    <Trash2 className="h-4 w-4" /> Xoá
-                  </button>
-                )}
-              </div>
-
-              {post.content && (
-                <p className="mt-2 text-gray-800 dark:text-gray-200 text-base leading-relaxed">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
+        <article className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+          {/* Header */}
+          <div className="p-5 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-start gap-3">
+              <Avatar url={post.user?.picture} name={post.user?.name} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                    {post.user?.name || "Người dùng"}
+                  </h3>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(post.createdAt).toLocaleString("vi-VN")}
+                  </span>
+                  {post.canDelete && (
+                    <button
+                      onClick={deletePost}
+                      className="ml-auto flex items-center gap-1.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 px-3 py-1.5 rounded-full transition"
+                    >
+                      <Trash2 className="h-4 w-4" /> Xóa
+                    </button>
+                  )}
+                </div>
+                <p className="mt-2 text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
                   {post.content}
                 </p>
-              )}
+              </div>
             </div>
           </div>
 
+          {/* Attachments */}
           {post.attachments?.length > 0 && (
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {post.attachments.map((a: any, idx: number) => (
-                <a
-                  key={idx}
-                  href={a.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-600 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                >
-                  <AttachmentIcon type={a.type} />
-                  <span className="truncate max-w-[240px]">
-                    {a.name ?? a.url}
-                  </span>
-                  {a.size && (
-                    <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
-                      {fmtSize(a.size)}
-                    </span>
-                  )}
-                </a>
-              ))}
+            <div className="p-5 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {post.attachments.map((a: any, i: number) => (
+                  <a
+                    key={i}
+                    href={a.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+                  >
+                    <AttachmentIcon type={a.type} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {a.name || "Tệp đính kèm"}
+                      </p>
+                      {a.size && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {fmtSize(a.size)}
+                        </p>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
           )}
 
-          <div className="mt-4 flex items-center gap-3">
+          {/* Actions */}
+          <div className="p-4 sm:p-5 flex items-center gap-3 border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={toggleLike}
-              className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 post.liked
-                  ? "bg-red-600 text-white"
-                  : "border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
               }`}
             >
-              <Heart
-                className={`h-4 w-4 ${post.liked ? "fill-current" : ""}`}
-              />
-              <span>{post.likesCount}</span>
+              <Heart className={`h-4 w-4 ${post.liked ? "fill-current" : ""}`} />
+              {post.likesCount}
             </button>
-
-            <button className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-200">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
               <MessageCircle className="h-4 w-4" />
-              <span>{post.commentsCount}</span>
-            </button>
-
+              {post.commentsCount}
+            </div>
             <button
               onClick={sharePost}
-              className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-200"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition ml-auto"
             >
               <Share2 className="h-4 w-4" />
               Chia sẻ
             </button>
           </div>
 
-          <div className="mt-6 rounded-xl border border-gray-200 dark:border-gray-600 p-4 xs:p-6 bg-gray-50 dark:bg-gray-700/50">
-            {loading ? (
-              <div className="flex items-center gap-2 text-base text-gray-500 dark:text-gray-400">
-                <Loader2 className="h-4 w-4 xs:h-5 xs:w-5 animate-spin" />
-                Đang tải bình luận…
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {comments.map((c: any) => (
+          {/* Comments */}
+          <div className="p-5 sm:p-6">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Bình luận</h3>
+
+            <div className="space-y-4 mb-6">
+              {comments.length === 0 ? (
+                <p className="text-gray-500 dark:text-gray-400 text-center py-6">Chưa có bình luận nào.</p>
+              ) : (
+                comments.map((c: any) => (
                   <div
                     key={c._id}
-                    className="rounded-lg border border-gray-200 dark:border-gray-600 p-3 xs:p-4 bg-white dark:bg-gray-800"
+                    className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 border border-gray-200 dark:border-gray-600"
                   >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Avatar name={c.user?.name} url={c.user?.picture} />
-                      <div className="font-medium text-base text-gray-900 dark:text-white">
-                        {c.user?.name || "Người dùng"}
+                    <div className="flex items-start gap-3">
+                      <Avatar url={c.user?.picture} name={c.user?.name} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {c.user?.name || "Người dùng"}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(c.createdAt).toLocaleString("vi-VN")}
+                          </span>
+                          {c.canDelete && (
+                            <button
+                              onClick={() => deleteComment(c._id)}
+                              className="ml-auto text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded-full transition"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                        {c.content && (
+                          <p className="mt-1 text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
+                            {c.content}
+                          </p>
+                        )}
+                        {c.attachments?.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {c.attachments.map((a: any, i: number) => (
+                              <a
+                                key={i}
+                                href={a.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-2 p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition text-sm"
+                              >
+                                <AttachmentIcon type={a.type} />
+                                <span className="truncate max-w-40">{a.name || "Tệp"}</span>
+                                {a.size && <span className="text-xs text-gray-500">{fmtSize(a.size)}</span>}
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(c.createdAt).toLocaleString()}
-                      </div>
-
-                      {c.canDelete && (
-                        <button
-                          onClick={() => deleteComment(c._id)}
-                          className="ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
-                          title="Xoá bình luận"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Xoá
-                        </button>
-                      )}
                     </div>
-
-                    {c.content && (
-                      <div className="mt-2 text-base text-gray-800 dark:text-gray-200">
-                        {c.content}
-                      </div>
-                    )}
-
-                    {c.attachments?.length ? (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {c.attachments.map((a: any, i: number) => (
-                          <a
-                            key={i}
-                            href={a.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 rounded-md border border-gray-200 dark:border-gray-600 px-3 py-1.5 text-base text-gray-700 dark:text-gray-200"
-                          >
-                            <AttachmentIcon type={a.type} />
-                            <span className="truncate max-w-[200px] xs:max-w-[240px]">
-                              {a.name ?? a.url}
-                            </span>
-                            {a.size ? (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {fmtSize(a.size)}
-                              </span>
-                            ) : null}
-                          </a>
-                        ))}
-                      </div>
-                    ) : null}
                   </div>
-                ))}
+                ))
+              )}
+            </div>
 
-                {!comments.length && (
-                  <div className="text-base text-gray-500 dark:text-gray-400">
-                    Chưa có bình luận.
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="mt-4 space-y-3">
-              {!!cmtAttaches.length && (
-                <div className="flex flex-wrap gap-2">
+            {/* Comment Input */}
+            <div className="space-y-3">
+              {cmtAttaches.length > 0 && (
+                <div className="flex flex-wrap gap-3">
                   {cmtAttaches.map((a, i) => (
                     <div
                       key={i}
-                      className="relative rounded-md border border-gray-200 dark:border-gray-600 p-2 bg-gray-50 dark:bg-gray-700"
+                      className="relative group rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden"
                     >
                       {a.type === "image" ? (
-                        <img
-                          src={a.url}
-                          alt={a.name || "image"}
-                          className="max-h-24 xs:max-h-28 max-w-[180px] xs:max-w-[200px] rounded object-cover"
-                        />
+                        <img src={a.url} alt="" className="h-24 w-32 object-cover" />
                       ) : (
-                        <a
-                          href={a.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-sky-600 dark:text-sky-400 hover:underline truncate max-w-[200px] xs:max-w-[240px] block text-base"
-                        >
-                          {a.name || a.url}
-                        </a>
+                        <div className="p-3 bg-gray-50 dark:bg-gray-700 flex items-center gap-2">
+                          <AttachmentIcon type={a.type} />
+                          <span className="text-sm truncate max-w-32">{a.name || "Tệp"}</span>
+                        </div>
                       )}
                       <button
-                        className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1.5 text-white"
-                        onClick={() => removeCmtAttach(i)}
+                        onClick={() => removeAttachment(i)}
+                        className="absolute top-1 right-1 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition"
                       >
-                        <X className="h-4 w-4 xs:h-5 xs:w-5" />
+                        <X className="h-3 w-3" />
                       </button>
                     </div>
                   ))}
                 </div>
               )}
 
-              <div className="flex flex-wrap items-start gap-3">
+              <div className="flex gap-2">
                 <textarea
+                  ref={textareaRef}
                   value={cmtInput}
                   onChange={(e) => {
                     setCmtInput(e.target.value);
-                    // auto-grow up to a max height
-                    e.currentTarget.style.height = "auto";
-                    e.currentTarget.style.height = Math.min(e.currentTarget.scrollHeight, 208) + "px"; // ~max-h-52
+                    const el = e.currentTarget;
+                    el.style.height = "auto";
+                    el.style.height = Math.min(el.scrollHeight, 160) + "px";
                   }}
                   onKeyDown={(e) => {
-                    // Enter to send, Shift+Enter for newline
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
                       submitComment();
                     }
                   }}
-                  placeholder="Viết bình luận…"
+                  placeholder="Viết bình luận..."
+                  className="flex-1 min-h-12 max-h-40 resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition"
                   rows={1}
-                  className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-base text-gray-900 dark:text-white leading-relaxed resize-none overflow-auto max-h-52 whitespace-pre-wrap break-words"
                 />
                 <input
                   type="file"
                   multiple
                   hidden
-                  ref={fileRef}
-                  onChange={(e) =>
-                    e.currentTarget.files &&
-                    handleCmtFiles(e.currentTarget.files)
-                  }
+                  ref={fileInputRef}
+                  onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
                 />
                 <button
-                  type="button"
-                  onClick={() => fileRef.current?.click()}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 dark:border-gray-600 px-3 py-2 text-base text-gray-700 dark:text-gray-200"
-                  title="Đính kèm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-3 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
                 >
-                  <Paperclip className="h-4 w-4 xs:h-5 xs:w-5" />
+                  <Paperclip className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                 </button>
                 <button
                   onClick={submitComment}
-                  disabled={
-                    cmtInput.trim().length === 0 && cmtAttaches.length === 0
-                  }
-                  className="rounded-full bg-sky-600 px-4 py-2 text-base font-semibold text-white hover:bg-sky-500 disabled:opacity-50"
+                  disabled={!cmtInput.trim() && cmtAttaches.length === 0}
+                  className="px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium transition"
                 >
                   Gửi
                 </button>

@@ -10,9 +10,6 @@ module.exports = {
       screens: {
         xs: "475px",
       },
-      colors: {
-        tealCustom: "#35509A",
-      },
     },
   },
   plugins: [],

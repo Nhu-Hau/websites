@@ -6,13 +6,20 @@ import {
   FiShield,
   FiPlayCircle,
   FiArrowRight,
-  FiBarChart2,
   FiClock,
   FiCheckCircle,
   FiTarget,
+  FiLoader,
 } from "react-icons/fi";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+
+// Cấu hình toast (chuẩn màu web: xanh lá - đỏ - xanh dương)
+const customToast = {
+  success: (message: string, options?: any) => toast.success(message, options),
+  error: (message: string, options?: any) => toast.error(message, options),
+  info: (message: string, options?: any) => toast(message, options),
+};
 
 function Stat({
   number,
@@ -24,12 +31,16 @@ function Stat({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-4 dark:border-zinc-700 dark:bg-zinc-800">
-      <div className="mb-1 text-2xl text-sky-500 dark:text-sky-400">{icon}</div>
-      <div className="text-xl font-extrabold text-slate-900 dark:text-zinc-100">
+    <div className="group flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-5 transition-all hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800">
+      <div className="mb-2 text-3xl text-sky-500 transition-transform group-hover:scale-110 dark:text-sky-400">
+        {icon}
+      </div>
+      <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100">
         {number}
       </div>
-      <div className="text-xs text-slate-600 dark:text-zinc-400">{label}</div>
+      <div className="mt-1 text-xs font-medium text-slate-600 dark:text-zinc-400">
+        {label}
+      </div>
     </div>
   );
 }
@@ -38,62 +49,72 @@ function PlacementModal({
   open,
   onClose,
   onStart,
+  loading,
 }: {
   open: boolean;
   onClose: () => void;
   onStart: () => void;
+  loading: boolean;
 }) {
   const { user } = useAuth();
-  // nếu đã có attempt placement thì ẩn modal
   if (!open || (user && (user as any).lastPlacementAttemptId)) return null;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
     >
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl dark:bg-zinc-800">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-zinc-700">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-zinc-100">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-all animate-in zoom-in-95 duration-200 dark:bg-zinc-800 dark:ring-white/10">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-zinc-700">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
             Mini TOEIC – Placement Test
           </h2>
           <button
             onClick={onClose}
-            className="rounded-md p-2 text-slate-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-700"
+            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-zinc-400 dark:hover:bg-zinc-700"
             aria-label="Đóng"
           >
             ✕
           </button>
         </div>
 
-        <div className="space-y-3 px-5 py-4 text-sm text-slate-700 dark:text-zinc-300">
-          <p className="flex items-center gap-2 text-slate-800 dark:text-zinc-200">
-            <FiClock className="text-sky-600 dark:text-sky-500" />{" "}
-            <b>35 phút</b> • <b>55 câu</b>
+        <div className="space-y-4 px-6 py-5 text-sm text-slate-700 dark:text-zinc-300">
+          <p className="flex items-center gap-2.5 font-medium text-slate-800 dark:text-zinc-200">
+            <FiClock className="text-sky-600 dark:text-sky-500" />
+            <span className="font-bold">35 phút</span> •{" "}
+            <span className="font-bold">55 câu</span>
           </p>
-          <p>
-            Gồm cả Listening & Reading (đề rút gọn mô phỏng cấu trúc thi thật).
+          <p className="leading-relaxed">
+            Gồm cả <strong>Listening & Reading</strong> (đề rút gọn, mô phỏng cấu trúc thi thật).
           </p>
-          <p>
-            Hoàn thành <b>Mini TOEIC 55 câu</b>, hệ thống sẽ ước lượng{" "}
-            <b>điểm TOEIC (0–990)</b> và xếp bạn vào <b>Level 1–4</b>, kèm gợi ý{" "}
-            <b>lộ trình học phù hợp</b>.
+          <p className="leading-relaxed">
+            Hoàn thành <strong>Mini TOEIC 55 câu</strong>, hệ thống sẽ ước lượng{" "}
+            <strong>điểm TOEIC (0–990)</strong> và xếp bạn vào <strong>Level 1–4</strong>, kèm gợi ý{" "}
+            <strong className="text-sky-600 dark:text-sky-400">lộ trình học phù hợp</strong>.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 border-t border-slate-200 px-5 py-4 dark:border-zinc-700">
+        <div className="grid grid-cols-2 gap-3 border-t border-slate-200 px-6 py-5 dark:border-zinc-700">
           <button
             onClick={onClose}
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-slate-800 hover:bg-slate-50 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600"
+            disabled={loading}
+            className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-all hover:bg-slate-50 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600"
           >
             Để sau
           </button>
           <button
             onClick={onStart}
-            className="rounded-xl bg-sky-600 px-4 py-2 font-semibold text-white hover:bg-sky-500"
+            disabled={loading}
+            className="flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-sky-500 disabled:opacity-70"
           >
-            Làm ngay
+            {loading ? (
+              <>
+                <FiLoader className="animate-spin" /> Đang kiểm tra...
+              </>
+            ) : (
+              "Làm ngay"
+            )}
           </button>
         </div>
       </div>
@@ -130,24 +151,17 @@ export default function Hero() {
   }, []);
 
   const handleStart = React.useCallback(async () => {
+    if (checking) return;
+
     try {
       localStorage.setItem("placement_prompt_last_seen", String(Date.now()));
     } catch {}
 
-    // Chưa đăng nhập
     if (!user) {
-      toast.error("Vui lòng đăng nhập để làm Mini TOEIC 55 câu", {
-        duration: 2500,
-        action: {
-          label: "Đăng nhập",
-          onClick: () => (window.location.href = "/auth/login"),
-        },
-      });
+      customToast.error("Vui lòng đăng nhập để làm Mini TOEIC 55 câu");
       return;
     }
 
-    // Đã đăng nhập → kiểm tra đã làm placement chưa
-    if (checking) return;
     setChecking(true);
     try {
       const res = await fetch("/api/placement/attempts?limit=1", {
@@ -157,7 +171,7 @@ export default function Hero() {
 
       if (!res.ok) {
         if (res.status === 401) {
-          toast.error("Phiên đăng nhập đã hết hạn", {
+          customToast.error("Phiên đăng nhập đã hết hạn", {
             duration: 3000,
             action: {
               label: "Đăng nhập lại",
@@ -165,7 +179,7 @@ export default function Hero() {
             },
           });
         } else {
-          toast.error("Không kiểm tra được trạng thái bài kiểm tra");
+          customToast.error("Không kiểm tra được trạng thái bài kiểm tra");
         }
         return;
       }
@@ -175,8 +189,7 @@ export default function Hero() {
       const firstId = data?.items?.[0]?._id as string | undefined;
 
       if (total > 0) {
-        // ĐÃ LÀM RỒI → show toast có nút xem lại
-        toast.error("Bạn đã làm Placement Test rồi, không thể làm lại", {
+        customToast.error("Bạn đã làm Placement Test rồi", {
           duration: 5000,
           action: {
             label: firstId ? "Xem kết quả" : "Xem lịch sử",
@@ -192,98 +205,116 @@ export default function Hero() {
         return;
       }
 
-      toast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
+      customToast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
         duration: 2500,
       });
 
       setTimeout(() => {
         window.location.href = "/placement";
-      }, 2500); 
+      }, 2600);
     } catch {
-      toast.error("Không kiểm tra được trạng thái bài kiểm tra");
+      customToast.error("Không kiểm tra được trạng thái bài kiểm tra");
     } finally {
       setChecking(false);
+      setOpenPrompt(false);
     }
   }, [user, checking]);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white via-indigo-50/50 to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-24 h-[360px] bg-[radial-gradient(600px_200px_at_50%_-50px,rgba(99,102,241,0.20),transparent)] dark:bg-[radial-gradient(600px_200px_at-50%_-50px,rgba(99,102,241,0.10),transparent)]"
+    <>
+      {/* Toaster cấu hình chuẩn màu web */}
+      <Toaster
+        position="top-center"
+        richColors
+        closeButton
+        toastOptions={{
+          classNames: {
+            toast:
+              "rounded-xl shadow-lg border border-slate-200 dark:border-zinc-700",
+            success: "bg-emerald-600 text-white",
+            error: "bg-red-600 text-white",
+            info: "bg-sky-600 text-white",
+            actionButton: "bg-white/20 hover:bg-white/30",
+          },
+        }}
       />
 
-      <PlacementModal
-        open={openPrompt}
-        onClose={handleClose}
-        onStart={handleStart}
-      />
+      <section className="relative overflow-hidden bg-gradient-to-b from-white via-sky-50/30 to-white dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -top-32 h-96 bg-[radial-gradient(700px_300px_at_50%_-100px,rgba(14,165,233,0.15),transparent)] dark:bg-[radial-gradient(700px_300px_at_50%_-100px,rgba(14,165,233,0.08),transparent)]"
+        />
 
-      <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pt-24 pb-5 sm:px-6">
-        <div>
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3 py-1 text-xs text-sky-700 dark:border-sky-900/50 dark:bg-zinc-800 dark:text-sky-400">
-            <FiShield /> Cấu trúc bám sát đề thi thật
+        <PlacementModal
+          open={openPrompt}
+          onClose={handleClose}
+          onStart={handleStart}
+          loading={checking}
+        />
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-12 pt-20 pb-10 lg:gap-16">
+            <div className="text-center lg:text-left">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-sky-700 backdrop-blur-sm dark:border-sky-800/50 dark:bg-zinc-800/80 dark:text-sky-400">
+                <FiShield className="text-lg" /> Cấu trúc bám sát đề thi thật
+              </div>
+
+              <h1 className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-bold tracking-tight dark:from-zinc-100 dark:to-zinc-300 sm:text-5xl lg:text-6xl">
+                Xác định trình độ trong{" "}
+                <span className="text-sky-600 dark:text-sky-400">35 phút</span>
+              </h1>
+
+              <p className="mt-6 max-w-3xl text-base leading-7 text-slate-600 dark:text-zinc-400 lg:text-lg">
+                Bài <strong>Mini TOEIC 55 câu</strong> (Listening & Reading) giúp bạn ước lượng{" "}
+                <strong>điểm TOEIC (0–990)</strong>, xếp <strong>Level 1–3</strong> và đề xuất{" "}
+                <strong className="text-sky-600 dark:text-sky-400">
+                  lộ trình học cá nhân hóa
+                </strong>.
+              </p>
+
+              <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
+                <button
+                  onClick={handleStart}
+                  disabled={checking}
+                  className="group inline-flex items-center gap-2.5 rounded-xl bg-sky-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-all hover:bg-sky-500 hover:shadow-xl disabled:opacity-70"
+                >
+                  {checking ? (
+                    <FiLoader className="animate-spin" />
+                  ) : (
+                    <FiPlayCircle className="text-xl transition-transform group-hover:scale-110" />
+                  )}
+                  {checking ? "Đang kiểm tra..." : "Làm Placement Test"}
+                </button>
+
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-2.5 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-base font-medium text-slate-800 transition-all hover:bg-slate-50 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                >
+                  Xem bộ đề <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+                </Link>
+              </div>
+
+              <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
+                <Stat number="55 câu" label="Số lượng câu hỏi" icon={<FiCheckCircle />} />
+                <Stat number="35 phút" label="Thời gian làm bài" icon={<FiClock />} />
+                <Stat number="0–990" label="Điểm TOEIC ước lượng" icon={<FiTarget />} />
+              </div>
+
+              <p className="mt-6 text-center text-xs text-slate-500 dark:text-zinc-500 lg:text-left">
+                * Hoàn thành bài kiểm tra để nhận{" "}
+                <span className="font-semibold text-sky-600 dark:text-sky-400">
+                  đánh giá chi tiết
+                </span>{" "}
+                và{" "}
+                <span className="font-semibold text-sky-600 dark:text-sky-400">
+                  lộ trình cá nhân hoá
+                </span>{" "}
+                qua email.
+              </p>
+            </div>
           </div>
-
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-100 md:text-6xl">
-            Xác định trình độ trong{" "}
-            <span className="text-sky-500 dark:text-sky-400">35 phút</span>
-          </h1>
-
-          <p className="mt-5 max-w-3xl text-base leading-7 text-slate-600 dark:text-zinc-400 md:text-lg">
-            Bài <b>Mini TOEIC 55 câu</b> (Listening & Reading) giúp bạn ước
-            lượng <b>điểm TOEIC (0–990)</b>, xếp <b>Level 1–4</b> và đề xuất{" "}
-            <b>lộ trình học cá nhân hóa</b>. Sau đó bạn có thể luyện các đề đầy
-            đủ, mô phỏng phòng thi và chấm điểm tức thì.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <button
-              onClick={handleStart}
-              className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-5 py-3 font-semibold text-white hover:bg-sky-400"
-            >
-              <FiPlayCircle />
-              Làm Placement Test
-            </button>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-slate-800 hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-            >
-              Xem bộ đề <FiArrowRight />
-            </Link>
-          </div>
-
-          <div className="mt-8 grid grid-cols-3 gap-4 text-center md:max-w-xl">
-            <Stat
-              number="55 câu"
-              label="Số lượng câu hỏi"
-              icon={<FiCheckCircle />}
-            />
-            <Stat
-              number="35 phút"
-              label="Thời gian làm bài"
-              icon={<FiClock />}
-            />
-            <Stat
-              number="Dự đoán 0–990"
-              label="Điểm TOEIC ước lượng"
-              icon={<FiTarget />}
-            />
-          </div>
-
-          <p className="mt-4 text-xs text-slate-500 dark:text-zinc-500">
-            * Hoàn thành bài kiểm tra để nhận bản{" "}
-            <span className="font-semibold dark:text-zinc-400">
-              đánh giá chi tiết
-            </span>{" "}
-            (theo từng Part) và{" "}
-            <span className="font-semibold dark:text-zinc-400">
-              lộ trình cá nhân hoá
-            </span>{" "}
-            qua email.
-          </p>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

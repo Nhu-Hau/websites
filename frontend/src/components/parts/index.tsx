@@ -9,6 +9,7 @@ import { groupByStimulus } from "@/utils/groupByStimulus";
 import { StimulusRowCard, StimulusColumnCard } from "./StimulusCards";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import {Trophy} from "lucide-react"
 
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -56,8 +57,27 @@ export default function PlacementPage() {
     : undefined;
 
   return (
-    <div className="max-w-7xl mx-auto p-6 mt-16">
+    <div className="max-w-7xl mx-auto px-4 py-6 mt-16">
+      <header className="mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-gradient-to-br from-blue-600 to-blue-700 p-3 shadow-lg">
+              <Trophy className="h-7 w-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight">
+                Bài kiểm tra xếp trình độ
+              </h1>
+              <p className="text-sm text-zinc-600">
+                Làm bài để xác định cấp độ từng phần Listening & Reading.
+              </p>
+            </div>
+          </div>
+        </div>
+      </header>
+
       <div className="grid grid-cols-4 gap-6">
+        {/* Sidebar */}
         <Sidebar
           items={items}
           answers={answers}
@@ -73,10 +93,10 @@ export default function PlacementPage() {
             void submit();
           }}
           onJump={jumpTo}
-          disabledSubmit={!total || answered === 0}
+          // disabledSubmit={!total || answered === 0}
           onToggleDetails={() => setShowDetails((s) => !s)}
           showDetails={showDetails}
-          countdownSec={35 * 60} // 35 phút
+          countdownSec={35 * 60}
           started={started}
           onStart={() => {
             if (!isAuthed) {
@@ -89,21 +109,24 @@ export default function PlacementPage() {
           onLoginRequest={onLoginRequest}
         />
 
+        {/* Main content */}
         <main className="col-span-3">
           {loading && (
-            <div className="text-sm text-gray-500">Đang tải bài kiểm tra…</div>
+            <div className="text-sm text-zinc-500 bg-white border rounded-xl p-4">
+              Đang tải bài kiểm tra…
+            </div>
           )}
 
           {!loading && (
             <>
               {!started && !resp ? (
-                <div className="rounded-2xl border p-6 bg-gray-50 text-center">
-                  <div className="text-lg font-semibold mb-1">
+                <div className="rounded-2xl border bg-white p-6 text-center">
+                  <div className="text-lg font-semibold mb-1 text-zinc-800">
                     Nhấn <span className="underline">Bắt đầu</span> ở thanh bên
-                    trái để hiển thị đề
+                    trái để hiển thị đề.
                   </div>
-                  <div className="text-sm text-gray-600">
-                    Thời gian <b>35 phút</b> sẽ đếm ngược sau khi bạn bắt đầu.
+                  <div className="text-sm text-zinc-600">
+                    Thời gian làm bài là <b>35 phút</b>.
                   </div>
                 </div>
               ) : (
@@ -112,7 +135,6 @@ export default function PlacementPage() {
                     g.stimulus?.part === "part.1" ? (
                       <StimulusRowCard
                         key={g.key}
-                        groupKey={g.key}
                         stimulus={g.stimulus}
                         items={g.items}
                         itemIndexMap={itemIndexMap}
@@ -128,7 +150,6 @@ export default function PlacementPage() {
                     ) : (
                       <StimulusColumnCard
                         key={g.key}
-                        groupKey={g.key}
                         stimulus={g.stimulus}
                         items={g.items}
                         itemIndexMap={itemIndexMap}
@@ -153,7 +174,7 @@ export default function PlacementPage() {
                           }
                           void submit();
                         }}
-                        className="px-5 py-3 rounded-2xl bg-black text-white disabled:opacity-50"
+                        className="px-6 py-3 rounded-xl bg-black text-white hover:bg-zinc-800 transition disabled:opacity-50"
                         disabled={answered === 0}
                       >
                         Nộp bài

@@ -1,39 +1,115 @@
 import React from "react";
+import Link from "next/link";
 import SectionHeader from "./SectionHeader";
-import { FiHeadphones, FiEdit3, FiBarChart2, FiClock, FiZap, FiShield } from "react-icons/fi";
+import {
+  FiTarget,
+  FiHeadphones,
+  FiMessageSquare,
+  FiUsers,
+  FiPlayCircle,
+  FiBarChart2,
+  FiArrowRight,
+} from "react-icons/fi";
 
 export default function Features() {
-  const items = [
-    { icon: <FiHeadphones className="text-sky-500" />, title: "Nghe hiểu chuẩn giọng bản xứ", desc: "Âm thanh rõ nét, đa giọng đọc; transcript & giải thích chi tiết." },
-    { icon: <FiEdit3 className="text-pink-500" />, title: "Reading & Grammar theo điểm yếu", desc: "Đề xuất bài tập dựa trên lỗi thường gặp, lộ trình cá nhân hoá." },
-    { icon: <FiBarChart2 className="text-violet-500" />, title: "Dashboard tiến bộ", desc: "Thống kê theo Part & kỹ năng, theo dõi điểm qua thời gian." },
-    { icon: <FiClock className="text-amber-500" />, title: "Bộ đếm giờ như phòng thi", desc: "Ôn trong điều kiện sát thật, tối ưu chiến thuật làm bài." },
-    { icon: <FiZap className="text-emerald-500" />, title: "Chấm điểm tức thì", desc: "Phản hồi ngay sau khi nộp, lời giải kèm mẹo làm nhanh." },
-    { icon: <FiShield className="text-indigo-500" />, title: "Ngân hàng đề cập nhật", desc: "Bám sát format ETS mới nhất, kiểm duyệt kỹ." },
+  const features = [
+    {
+      icon: FiTarget,
+      title: "Placement Test",
+      desc: "Kiểm tra rút gọn để ước lượng điểm 0–990 và nhận lộ trình học cá nhân hoá.",
+      href: "/placement",
+      cta: "Làm ngay",
+    },
+    {
+      icon: FiHeadphones,
+      title: "Luyện đề đủ 7 Part",
+      desc: "Ngân hàng đề bám sát thi thật; thống kê độ khó, phân tích lỗi theo Part.",
+      href: "/tests",
+      cta: "Vào luyện đề",
+    },
+    {
+      icon: FiMessageSquare,
+      title: "Chat bot / Chat box",
+      desc: "Hỏi đáp nhanh, giải thích ngữ pháp, gợi ý chiến lược làm bài theo ngữ cảnh.",
+      href: "/chat",
+      cta: "Mở chat",
+    },
+    {
+      icon: FiUsers,
+      title: "Cộng đồng",
+      desc: "Chia sẻ kinh nghiệm, thảo luận mẹo làm bài và cập nhật tài nguyên mới.",
+      href: "/community",
+      cta: "Tham gia",
+    },
+    {
+      icon: FiPlayCircle,
+      title: "Học qua video",
+      desc: "Bài giảng trọng tâm: từ vựng, ngữ pháp, chiến thuật từng Part.",
+      href: "/videos",
+      cta: "Xem video",
+    },
+    {
+      icon: FiBarChart2,
+      title: "Dashboard tiến độ",
+      desc: "Theo dõi điểm, thời gian, tỉ lệ đúng và streak; gợi ý bài kế tiếp.",
+      href: "/dashboard",
+      cta: "Xem dashboard",
+    },
   ];
+
   return (
-    // Thêm dark mode cho nền section
-    <section id="features" className="bg-white dark:bg-zinc-800 py-10">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <section id="features" className="py-8 bg-white dark:bg-zinc-900">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader
           eyebrow="Tính năng nổi bật"
-          title="Tối ưu cho việc luyện đề và tăng điểm nhanh"
-          desc="Thiết kế dựa trên hành trình học của hàng chục nghìn người dùng."
+          title="TẤT CẢ CÔNG CỤ ĐỂ HỌC TOEIC HIỆU QUẢ"
         />
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((it, i) => (
-            <div
-              key={i}
-              // Thêm dark mode cho đường viền
-              className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900"
+
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+
+            return (
+              <Link
+                key={index}
+                href={feature.href}
+                className="group block rounded-xl border border-slate-200 bg-white p-6 transition-all hover:border-sky-300 hover:bg-sky-50/50 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-sky-600 dark:hover:bg-zinc-700/50"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-sky-100 text-sky-600 transition-colors group-hover:bg-sky-200 dark:bg-sky-900 dark:text-sky-400 dark:group-hover:bg-sky-800">
+                    <Icon className="h-6 w-6" />
+                  </div>
+
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-slate-900 dark:right:text-zinc-100">
+                      {feature.title}
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-600 dark:text-zinc-400">
+                      {feature.desc}
+                    </p>
+
+                    <div className="mt-4 flex items-center text-sm font-medium text-sky-600 transition-colors group-hover:text-sky-700 dark:text-sky-400 dark:group-hover:text-sky-300">
+                      {feature.cta}
+                      <FiArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="mt-12 text-center">
+          <p className="text-sm text-slate-600 dark:text-zinc-400">
+            Bắt đầu với{" "}
+            <Link
+              href="/placement"
+              className="font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400"
             >
-              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 dark:bg-zinc-700">
-                <span className="text-xl">{it.icon}</span>
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-zinc-100">{it.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-zinc-400">{it.desc}</p>
-            </div>
-          ))}
+              Placement Test
+            </Link>{" "}
+            để nhận lộ trình học phù hợp nhất với bạn.
+          </p>
         </div>
       </div>
     </section>

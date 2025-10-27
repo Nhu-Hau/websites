@@ -66,22 +66,33 @@ function fmtSize(n?: number) {
 
 export default function PostCard({ post, apiBase, onChanged }: Props) {
   const router = useRouter();
-  const [liked, setLiked] = React.useState(!!post.liked);
-  const [likesCount, setLikesCount] = React.useState(post.likesCount);
-  const actingRef = React.useRef(false); // ✅ chặn double
 
-  // chỉ sync số từ props (socket sẽ đẩy số chuẩn)
+  // ✅ local state cho UX mượt, nhưng số like sẽ luôn sync lại từ props (socket đẩy chuẩn)
+  const [liked, setLiked] = React.useState(!!post.liked);
+  const [likesCount, setLikesCount] = React.useState<number>(
+    Number(post.likesCount) || 0
+  );
+  const actingRef = React.useRef(false); // chặn double click/lag
+
+  // chỉ sync số & màu từ props khi socket/parent cập nhật
   React.useEffect(() => {
-    setLikesCount(post.likesCount);
-  }, [post.likesCount]);
+    setLikesCount(Number(post.likesCount) || 0);
+    setLiked(!!post.liked);
+  }, [post.likesCount, post.liked]);
 
   async function toggleLike(e: React.MouseEvent) {
     e.stopPropagation();
-    if (actingRef.current) return; // ✅ chặn double fire
+    if (actingRef.current) return;
     actingRef.current = true;
 
-    // optimistic: chỉ đổi màu
-    setLiked((prev) => !prev);
+    // optimistic: đổi màu + đổi số ngay cho cảm giác nhanh
+    setLiked((prev) => {
+      setLikesCount((c) => {
+        const safeC = Number(c) || 0;
+        return prev ? Math.max(0, safeC - 1) : safeC + 1;
+      });
+      return !prev;
+    });
 
     try {
       const res = await fetch(
@@ -92,10 +103,33 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
         }
       );
       if (!res.ok) throw new Error("fail");
-      // KHÔNG đụng vào likesCount ở đây; socket sẽ cập nhật chuẩn
+      const data = await res.json();
+
+      // ưu tiên server value nếu có, nhưng bảo đảm number
+      if (typeof data.likesCount === "number") {
+        setLikesCount(Number(data.likesCount) || 0);
+      } else {
+        // nếu server không gửi likesCount, sync bằng liked từ server
+        setLikesCount((c) => {
+          const safeC = Number(c) || 0;
+          return typeof data.liked === "boolean"
+            ? data.liked
+              ? safeC
+              : safeC
+            : safeC;
+        });
+      }
+      // sync liked từ server (để tránh bất đồng)
+      if (typeof data.liked === "boolean") setLiked(data.liked);
     } catch {
-      // revert màu nếu lỗi
-      setLiked((prev) => !prev);
+      // revert nếu lỗi
+      setLiked((prev) => {
+        setLikesCount((c) => {
+          const safeC = Number(c) || 0;
+          return prev ? safeC + 1 : Math.max(safeC - 1, 0);
+        });
+        return !prev;
+      });
       toast.error("Không thể thích bài viết.");
     } finally {
       actingRef.current = false;
@@ -132,80 +166,94 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
   return (
     <article
       onClick={() => router.push(`/community/post/${post._id}`)}
-      className="rounded-2xl bg-white dark:bg-gray-800 shadow-md p-5 hover:shadow-xl transition-all cursor-pointer"
+      className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-200/60 dark:border-gray-700/60 transition-all hover:shadow-xl cursor-pointer"
     >
-      <div className="flex items-start gap-3">
-        <Avatar name={post.user?.name} url={post.user?.picture} />
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-gray-900 dark:text-white">
-              {post.user?.name || "Người dùng"}
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {new Date(post.createdAt).toLocaleString()}
-            </span>
-            {post.canDelete && (
-              <button
-                onClick={deletePost}
-                className="ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
-              >
-                <Trash2 className="h-4 w-4" /> Xoá
-              </button>
+      {/* Header */}
+      <div className="p-5 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-start gap-3">
+          <Avatar name={post.user?.name} url={post.user?.picture} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                {post.user?.name || "Người dùng"}
+              </h3>
+              <time className="text-sm text-gray-500 dark:text-gray-400">
+                {new Date(post.createdAt).toLocaleString("vi-VN")}
+              </time>
+              {post.canDelete && (
+                <button
+                  onClick={deletePost}
+                  className="ml-auto flex items-center gap-1.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 px-3 py-1.5 rounded-full transition"
+                >
+                  <Trash2 className="h-4 w-4" /> Xóa
+                </button>
+              )}
+            </div>
+            {post.content && (
+              <p className="mt-2 text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
+                {post.content}
+              </p>
             )}
           </div>
-
-          {post.content && (
-            <p className="mt-2 text-gray-800 dark:text-gray-200 text-base leading-relaxed">
-              {post.content}
-            </p>
-          )}
         </div>
       </div>
 
+      {/* Attachments */}
       {post.attachments?.length ? (
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          {post.attachments.map((a: Attachment, idx: number) => (
-            <a
-              key={idx}
-              href={a.url}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-            >
-              <AttachmentIcon type={a.type} />
-              <span className="truncate">{a.name ?? a.url}</span>
-              {a.size && (
-                <span className="ml-auto text-xs text-gray-500">
-                  {fmtSize(a.size)}
-                </span>
-              )}
-            </a>
-          ))}
+        <div className="p-5 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {post.attachments.map((a: Attachment, idx: number) => (
+              <a
+                key={idx}
+                href={a.url}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="group flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+              >
+                <AttachmentIcon type={a.type} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {a.name ?? a.url}
+                  </p>
+                  {a.size && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {fmtSize(a.size)}
+                    </p>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
       ) : null}
 
-      <div className="mt-4 flex items-center gap-3">
+      {/* Actions */}
+      <div className="p-4 sm:p-5 flex items-center gap-3">
         <button
           onClick={toggleLike}
-          className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+          aria-label={liked ? "Bỏ thích" : "Thích"}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
             liked
-              ? "bg-red-600 text-white"
-              : "border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              ? "bg-red-500 text-white"
+              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
           }`}
         >
           <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
-          <span>{likesCount}</span>
+          {likesCount}
         </button>
 
-        <button className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-200">
+        <div
+          aria-label="Số bình luận"
+          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
+        >
           <MessageCircle className="h-4 w-4" />
-          <span>{post.commentsCount}</span>
-        </button>
+          {post.commentsCount}
+        </div>
 
         <button
           onClick={sharePost}
-          className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-200"
+          className="ml-auto flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
         >
           <Share2 className="h-4 w-4" />
           Chia sẻ

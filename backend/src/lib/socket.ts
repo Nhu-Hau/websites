@@ -62,10 +62,7 @@ export function emitCommunityNewComment(
 }
 
 export function emitCommunityLike(
-  io: SocketIOServer,
-  postId: string,
-  payload: { likesCount: number; liked: boolean; userId?: string }
-) {
+io: SocketIOServer, postId: string, payload: { likesCount: number; liked: boolean; userId?: string; }, p0?: boolean) {
   io.to(`post:${postId}`).emit("community:like-updated", {
     postId,
     ...payload,

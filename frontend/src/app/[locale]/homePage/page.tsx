@@ -2,8 +2,6 @@ import React from "react";
 import {
   Hero,
   Features,
-  HowItWorks,
-  Categories,
   Testimonials,
   Pricing,
   FinalCTA,
@@ -23,8 +21,6 @@ export default async function HomePage({
       <GoogleAuthEffect auth={auth} />
       <Hero />
       <Features />
-      <HowItWorks />
-      <Categories />
       <Testimonials />
       <Pricing />
       <FinalCTA />

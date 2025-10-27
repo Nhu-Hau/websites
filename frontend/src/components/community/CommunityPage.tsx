@@ -34,10 +34,7 @@ export default function CommunityPage() {
     try {
       const r = await fetch(
         `${API_BASE}/api/community/posts?page=${p}&limit=${PAGE_SIZE}`,
-        {
-          credentials: "include",
-          cache: "no-store",
-        }
+        { credentials: "include", cache: "no-store" }
       );
       if (!r.ok) throw new Error("Không thể tải bài viết");
       const j = await r.json();
@@ -62,7 +59,6 @@ export default function CommunityPage() {
       if (j?.user?._id) {
         const uid = String(j.user._id);
         setCurrentUserId(uid);
-        // ✅ nhận notify riêng
         const s = getSocket();
         s.emit("join", { room: `user:${uid}` });
       }
@@ -73,7 +69,6 @@ export default function CommunityPage() {
     const p = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     setPage(p);
     load(p);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   React.useEffect(() => {
@@ -85,23 +80,23 @@ export default function CommunityPage() {
 
     const onLike = (p: {
       postId: string;
-      likesCount: number;
+      likesCount?: number;
       liked?: boolean;
       userId?: string;
     }) => {
+      // nếu socket báo từ chính user hiện tại, bỏ qua vì PostCard đã cập nhật optimistically
+      if (p.userId && currentUserId && p.userId === currentUserId) return;
+
       setPosts((prev) =>
         prev.map((post) => {
           if (post._id !== p.postId) return post;
-          const next: any = { ...post, likesCount: p.likesCount };
-          if (
-            typeof p.liked === "boolean" &&
-            p.userId &&
-            currentUserId &&
-            p.userId === currentUserId
-          ) {
-            next.liked = p.liked;
-          }
-          return next;
+
+          const safeLikes =
+            typeof p.likesCount === "number"
+              ? p.likesCount
+              : Number(post.likesCount) || 0;
+
+          return { ...post, likesCount: safeLikes };
         })
       );
     };
@@ -126,7 +121,7 @@ export default function CommunityPage() {
       );
     };
 
-    const onNewPost = () => load(page); // hoặc load(1) tùy ý
+    const onNewPost = () => load(page);
     const onPostDeleted = (p: { postId: string }) => {
       setPosts((prev) => prev.filter((x) => x._id !== p.postId));
       setTotal((t) => Math.max(0, t - 1));
@@ -145,9 +140,7 @@ export default function CommunityPage() {
       s.off("community:new-post", onNewPost);
       s.off("community:post-deleted", onPostDeleted);
     };
-    // 👇 không phụ thuộc page; handler dùng setState an toàn
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUserId]);
+  }, [currentUserId, page]);
 
   const onChangePage = (p: number) => {
     const sp = new URLSearchParams(searchParams.toString());
@@ -158,40 +151,42 @@ export default function CommunityPage() {
   const showBottomPager = total >= 4;
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 xs:px-6 sm:px-8 pt-16">
-      <div className="space-y-6">
-        {posts.map((p: any) => (
-          <PostCard
-            key={p._id}
-            post={p}
-            apiBase={API_BASE}
-            onChanged={() => load(page)}
-            currentUserId={currentUserId}
-          />
-        ))}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-9">
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
+        <div className="space-y-6">
+          {posts.map((p: any) => (
+            <PostCard
+              key={p._id}
+              post={p}
+              apiBase={API_BASE}
+              onChanged={() => load(page)}
+              currentUserId={currentUserId}
+            />
+          ))}
 
-        {loading && (
-          <div className="flex justify-center text-sm xs:text-base text-gray-500 dark:text-gray-400 animate-pulse">
-            Đang tải…
-          </div>
-        )}
-        {!loading && total === 0 && (
-          <div className="text-center text-sm xs:text-base text-gray-500 dark:text-gray-400">
-            Chưa có bài viết.
-          </div>
-        )}
-      </div>
-
-      {showBottomPager && (
-        <div className="mt-8 xs:mt-10">
-          <Pagination
-            page={page}
-            total={total}
-            pageSize={PAGE_SIZE}
-            onChange={onChangePage}
-          />
+          {loading && (
+            <div className="flex justify-center text-sm xs:text-base text-gray-500 dark:text-gray-400 animate-pulse py-8">
+              Đang tải…
+            </div>
+          )}
+          {!loading && total === 0 && (
+            <div className="text-center text-sm xs:text-base text-gray-500 dark:text-gray-400 py-12">
+              Chưa có bài viết.
+            </div>
+          )}
         </div>
-      )}
-    </main>
+
+        {showBottomPager && (
+          <div className="mt-10">
+            <Pagination
+              page={page}
+              total={total}
+              pageSize={PAGE_SIZE}
+              onChange={onChangePage}
+            />
+          </div>
+        )}
+      </main>
+    </div>
   );
 }

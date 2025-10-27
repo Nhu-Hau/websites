@@ -18,6 +18,12 @@ export interface IToeicPred {
   reading: number | null;
 }
 
+export interface IPartLevelsMeta {
+  [partKey: string]: {
+    lastChangedAt?: Date | null;
+  };
+}
+
 export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
@@ -25,7 +31,6 @@ export interface IUser extends Document {
   password: string;
   role: Role;
   access: Access;
-  level: Lvl;
   partLevels?: Record<string, Lvl>;
   toeicPred: IToeicPred | null;
   googleId?: string;
@@ -85,8 +90,6 @@ const userSchema = new Schema<IUser>(
       default: "free",
       index: true,
     },
-
-    level: { type: Number, enum: [1, 2, 3], default: 1 },
 
     partLevels: { type: Schema.Types.Mixed, default: {} },
 

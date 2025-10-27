@@ -98,13 +98,18 @@ export async function listPosts(req: Request, res: Response) {
       CommunityPost.countDocuments({}),
     ]);
 
+    // trong listPosts, thay đoạn return out = items.map(...)
     const uid = userId ? String(userId) : null;
     const out = items.map((p: any) => {
       const isOwner = !!uid && String(p.userId) === uid;
       const isLiked =
         !!uid &&
         (p.likedBy || []).some((x: Types.ObjectId) => String(x) === uid);
-      return { ...p, liked: isLiked, canDelete: isOwner };
+
+      // đảm bảo likesCount là number
+      const likesCount = Number(p.likesCount) || 0;
+
+      return { ...p, liked: isLiked, canDelete: isOwner, likesCount };
     });
 
     return res.json({ page, limit, total, items: out });
@@ -113,7 +118,6 @@ export async function listPosts(req: Request, res: Response) {
     return res.status(500).json({ message: "Server error" });
   }
 }
-
 
 // backend/src/controllers/community.controller.ts
 
@@ -463,7 +467,9 @@ export async function addComment(req: Request, res: Response) {
 
       // Tập người nhận: chủ bài + tất cả người đã từng bình luận (trừ người đang comment)
       const recipients = new Set<string>([String(post.userId)]);
-      const previous = await CommunityComment.distinct("userId", { postId: oid(postId) });
+      const previous = await CommunityComment.distinct("userId", {
+        postId: oid(postId),
+      });
       for (const uid of previous as any[]) recipients.add(String(uid));
       recipients.delete(String(userId)); // loại trừ người đang bình luận
 
@@ -519,7 +525,8 @@ export async function toggleLike(req: Request, res: Response) {
     if (io) {
       emitCommunityLike(io, postId, payload);
       if (String(post.userId) !== String(userId) && !wasLiked) {
-        const liker = (await mongoose.model("User").findById(userId))?.name || "Ai đó";
+        const liker =
+          (await mongoose.model("User").findById(userId))?.name || "Ai đó";
         emitNotifyUser(io, String(post.userId), {
           type: "like",
           message: `${liker} đã thích bài viết của bạn`,

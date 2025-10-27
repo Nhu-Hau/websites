@@ -9,74 +9,72 @@ import {
   BookOpen,
   Timer,
   Target,
+  ChevronDown,
+  ChevronUp,
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 
-/** Xây link luyện tập: luôn prepend /[locale] + giữ ?level= */
-function buildPracticeHref(
-  locale: string,
-  partKey: string,
-  level: 1 | 2 | 3
-) {
-  return {
-    pathname: `/${locale}/practice/${encodeURIComponent(partKey)}`,
-    query: { level: String(level) },
-  } as const;
+
+// === UTILS ===
+function buildPracticeHref(locale: string, partKey: string, level: 1 | 2 | 3) {
+  return `/${locale}/practice/${encodeURIComponent(partKey)}?level=${level}`;
 }
+
 function partLabel(partKey: string) {
   const n = partKey.match(/\d+/)?.[0];
   return n ? `Part ${n}` : partKey;
 }
+
 function statusFromAcc(acc: number) {
   if (acc < 0.55)
     return {
       key: "weak",
       label: "Yếu",
-      color: "bg-rose-100 text-rose-800 border-rose-300",
+      color:
+        "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
     };
   if (acc < 0.7)
     return {
       key: "avg",
       label: "Trung bình",
-      color: "bg-amber-100 text-amber-800 border-amber-300",
+      color:
+        "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800",
     };
   if (acc < 0.85)
     return {
       key: "good",
       label: "Khá",
-      color: "bg-sky-100 text-sky-800 border-sky-300",
+      color:
+        "bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-900/30 dark:text-sky-400 dark:border-sky-800",
     };
   return {
     key: "great",
     label: "Tốt",
-    color: "bg-emerald-100 text-emerald-800 border-emerald-300",
+    color:
+      "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
   };
 }
+
 function recommendLevel(acc: number): 1 | 2 | 3 {
   if (acc < 0.55) return 1;
   if (acc < 0.7) return 2;
   return 3;
 }
+
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
 }
-function levelColor(level: 1 | 2 | 3) {
-  switch (level) {
-    case 1:
-      return "text-emerald-200 font-extrabold";
-    case 2:
-      return "text-sky-200 font-extrabold";
-    case 3:
-      return "text-violet-200 font-extrabold";
-    default:
-      return "text-white";
-  }
+
+function toToeicStep5(raw: number, min: number, max: number) {
+  const rounded = Math.round(raw / 5) * 5;
+  return Math.min(max, Math.max(min, rounded));
 }
 
+// === COMPONENT ===
 export function ResultsPanel({
   resp,
   timeLabel,
@@ -92,22 +90,7 @@ export function ResultsPanel({
   onToggleDetails?: () => void;
   showDetails?: boolean;
 }) {
-  const locale = useLocale(); // ✅ vd: "vi"
-  const level = (resp.level ?? 1) as 1 | 2 | 3;
-
-  const wrapClass =
-    level === 3
-      ? "border-violet-300/70 bg-violet-50 text-violet-900"
-      : level === 2
-      ? "border-blue-300/70 bg-blue-50 text-blue-900"
-      : "border-emerald-300/70 bg-emerald-50 text-emerald-900";
-
-  const levelName =
-    level === 3
-      ? "Level 3 - Khá"
-      : level === 2
-      ? "Level 2 - Trung cấp"
-      : "Level 1 - Cơ bản";
+  const locale = useLocale();
 
   const partsSorted = React.useMemo(() => {
     const entries = Object.entries(resp.partStats || {});
@@ -117,11 +100,6 @@ export function ResultsPanel({
       return na - nb;
     });
   }, [resp.partStats]);
-
-  const toToeicStep5 = (raw: number, min: number, max: number) => {
-    const rounded = Math.round(raw / 5) * 5;
-    return Math.min(max, Math.max(min, rounded));
-  };
 
   const rawL = (resp.listening?.acc || 0) * 495;
   const rawR = (resp.reading?.acc || 0) * 495;
@@ -134,168 +112,217 @@ export function ResultsPanel({
   );
 
   return (
-    <div className="space-y-8">
-      {/* 1) Banner to, dễ đọc */}
-      <div className={`rounded-3xl border p-6 sm:p-8 ${wrapClass}`}>
-        <div className="text-2xl font-extrabold tracking-tight">
-          {levelName}
+    <div className="space-y-6">
+      {/* 1. ĐIỂM LỚN – DASHBOARD */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white/80 dark:bg-zinc-800/70 backdrop-blur-xl shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800">
+              <Gauge className="h-8 w-8 text-slate-700 dark:text-slate-300" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                TOEIC
+              </p>
+              <p className="text-3xl font-black text-zinc-900 dark:text-white">
+                {predictedOverall}
+                <span className="text-lg font-bold text-zinc-500 dark:text-zinc-400">
+                  {" "}
+                  / 990
+                </span>
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="mt-2 text-base sm:text-lg">
-          Chính xác{" "}
-          <span className="font-semibold">{(resp.acc * 100).toFixed(1)}%</span>
-          {typeof resp.timeSec === "number" ? (
-            <>
-              {" "} - Thời gian:{" "}
-              <span className="font-semibold">{fmtTime(resp.timeSec)}</span>
-            </>
-          ) : timeLabel ? (
-            <>
-              {" "} - Thời gian:{" "}
-              <span className="font-semibold">{timeLabel}</span>
-            </>
-          ) : null}
-        </div>
-      </div>
 
-      {/* 2) Card điểm lớn */}
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border p-6 flex items-center gap-4">
-          <Gauge className="h-10 w-10 text-zinc-800" />
-          <div>
-            <div className="text-sm text-zinc-600">Điểm TOEIC ước lượng</div>
-            <div className="text-4xl font-black leading-none">
-              {predictedOverall} <span className="text-xl font-bold">/ 990</span>
+        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white/80 dark:bg-zinc-800/70 backdrop-blur-xl shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900 dark:to-emerald-800">
+              <Headphones className="h-8 w-8 text-emerald-700 dark:text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                Listening
+              </p>
+              <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
+                {predictedL} / 495
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                {(resp.listening.acc * 100).toFixed(0)}%
+              </p>
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border p-6 flex items-center gap-4">
-          <Headphones className="h-9 w-9 text-zinc-800" />
-          <div>
-            <div className="text-sm text-zinc-600">Listening (ước lượng)</div>
-            <div className="text-2xl font-extrabold leading-none">
-              {predictedL} <span className="text-base font-bold">/ 495</span>
+
+        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white/80 dark:bg-zinc-800/70 backdrop-blur-xl shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-full bg-gradient-to-br from-sky-100 to-sky-200 dark:from-sky-900 dark:to-sky-800">
+              <BookOpen className="h-8 w-8 text-sky-700 dark:text-sky-400" />
             </div>
-            <div className="text-xs text-zinc-500 mt-1">
-              Độ chính xác {(resp.listening.acc * 100).toFixed(0)}%
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border p-6 flex items-center gap-4">
-          <BookOpen className="h-9 w-9 text-zinc-800" />
-          <div>
-            <div className="text-sm text-zinc-600">Reading (ước lượng)</div>
-            <div className="text-2xl font-extrabold leading-none">
-              {predictedR} <span className="text-base font-bold">/ 495</span>
-            </div>
-            <div className="text-xs text-zinc-500 mt-1">
-              Độ chính xác {(resp.reading.acc * 100).toFixed(0)}%
+            <div>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                Reading
+              </p>
+              <p className="text-2xl font-bold text-sky-700 dark:text-sky-400">
+                {predictedR} / 495
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                {(resp.reading.acc * 100).toFixed(0)}%
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3) Tổng quan */}
-      <section className="rounded-2xl border p-6">
-        <div className="text-xl font-bold text-center">TỔNG QUAN</div>
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3 text-center">
-          <div className="rounded-xl border p-4">
-            <div className="text-sm text-zinc-600">Số câu đúng</div>
-            <div className="text-3xl font-extrabold">
-              {resp.correct}/{resp.total}
-            </div>
+      {/* 2. TỔNG QUAN – ĐƠN GIẢN */}
+      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white/80 dark:bg-zinc-800/70 backdrop-blur-xl shadow-sm">
+        <h2 className="text-xl font-bold text-center text-zinc-900 dark:text-white mb-5">
+          TỔNG QUAN
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+          <div className="p-4">
+            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Số câu đúng
+            </p>
+            <p className="text-3xl font-bold text-zinc-900 dark:text-white mt-1">
+              {resp.correct} / {resp.total}
+            </p>
           </div>
-          <div className="rounded-xl border p-4">
-            <div className="text-sm text-zinc-600">Độ chính xác</div>
-            <div className="text-3xl font-extrabold text-emerald-700">
-              {(resp.acc * 100).toFixed(1)}%
-            </div>
+          <div className="p-4">
+            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Độ chính xác
+            </p>
+            <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+              {(resp.acc * 100).toFixed(0)}%
+            </p>
           </div>
-          <div className="rounded-xl border p-4">
-            <div className="text-sm text-zinc-600">Thời gian</div>
-            <div className="text-3xl font-extrabold">
-              {fmtTime(resp.timeSec)}
-            </div>
+          <div className="p-4">
+            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Thời gian
+            </p>
+            <p className="text-3xl font-bold text-zinc-900 dark:text-white mt-1">
+              {timeLabel || fmtTime(resp.timeSec)}
+            </p>
           </div>
         </div>
 
-        {!!onToggleDetails && (
-          <div className="mt-4">
-            <button
-              onClick={onToggleDetails}
-              className="w-full rounded-xl border px-4 py-3 text-base font-semibold hover:bg-zinc-50"
-            >
-              {showDetails ? "Ẩn chi tiết đáp án" : "Xem chi tiết đáp án"}
-            </button>
-          </div>
+        {onToggleDetails && (
+          <button
+            onClick={onToggleDetails}
+            className={`
+              mt-5 w-full inline-flex items-center justify-center gap-2 rounded-xl
+              px-5 py-3 text-base font-semibold transition-all
+              ${
+                showDetails
+                  ? "bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300"
+                  : "bg-zinc-900 text-white hover:bg-zinc-800 shadow-md"
+              }
+            `}
+          >
+            {showDetails ? (
+              <>
+                <ChevronUp className="h-5 w-5" />
+                Ẩn chi tiết đáp án
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-5 w-5" />
+                Xem chi tiết đáp án
+              </>
+            )}
+          </button>
         )}
       </section>
 
-      {/* 4) Phân tích từng Part & Gợi ý luyện tập */}
+      {/* 3. PHÂN TÍCH PART */}
       {partsSorted.length > 0 && (
-        <section className="rounded-2xl border p-6">
-          <header className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Target className="h-6 w-6 text-zinc-800" />
-              <h3 className="text-xl font-bold">
-                Phân tích theo Part & Gợi ý luyện tập
+        <section className="rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white/80 dark:bg-zinc-800/70 backdrop-blur-xl shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
+                Phân tích theo Part
               </h3>
             </div>
-            <div className="hidden sm:flex items-center gap-2 text-sm text-zinc-500">
-              <Timer className="h-4 w-4" />
+            <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+              <Timer className="w-4 h-4" />
               Mini test 55 câu • 35 phút
             </div>
-          </header>
+          </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {partsSorted.map(([partKey, stat]) => {
-              const status = statusFromAcc(stat.acc);
-              const recommend = recommendLevel(stat.acc);
+              const lv = recommendLevel(stat.acc); // giống 'levels[p]'
+              const lastAcc = Math.round(stat.acc * 100); // giống 'lastAccByPart[p]'
+
+              // màu badge Level (nhẹ như ví dụ 2)
+              const levelBadge =
+                lv === 1
+                  ? "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200"
+                  : lv === 2
+                  ? "border-sky-300 bg-sky-100 text-sky-800 dark:border-sky-700 dark:bg-sky-900/30 dark:text-sky-200"
+                  : "border-violet-300 bg-violet-100 text-violet-800 dark:border-violet-700 dark:bg-violet-900/30 dark:text-violet-200";
 
               return (
-                <div key={partKey} className="rounded-2xl border p-5 flex flex-col gap-3">
+                <div
+                  key={partKey}
+                  className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 bg-zinc-50 dark:bg-zinc-800/60"
+                >
+                  {/* Header: tên Part + badge Level */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border text-base font-bold">
-                        {partKey.match(/\d+/)?.[0] ?? "?"}
-                      </span>
-                      <div className="text-lg font-semibold">{partLabel(partKey)}</div>
+                    <div className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                      {partLabel(partKey)}
                     </div>
-                    <span
-                      className={`inline-flex items-center gap-1 rounded border px-2.5 py-1 text-sm font-semibold ${status.color}`}
+
+                    {lv ? (
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${levelBadge}`}
+                      >
+                        Level {lv}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-zinc-400">—</span>
+                    )}
+                  </div>
+
+                  {/* Dòng “Lần gần nhất” giống block 2 */}
+                  <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+                    Lần gần nhất:{" "}
+                    <b>{Number.isFinite(lastAcc) ? `${lastAcc}%` : "—"}</b>
+                  </div>
+
+                  {/* Nút hành động */}
+                  <div className="mt-3 flex items-center gap-2">
+                    <Link
+                      href={
+                        lv
+                          ? buildPracticeHref(locale, partKey, lv)
+                          : `/${locale}/practice/${encodeURIComponent(partKey)}`
+                      }
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black text-white text-xs"
                     >
-                      {status.label}
-                    </span>
+                      Luyện ngay
+                      <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
                   </div>
-
-                  <div className="text-sm text-zinc-600">
-                    Đúng <b>{stat.correct}/{stat.total}</b> –{" "}
-                    <b className="text-green-700">{(stat.acc * 100).toFixed(0)}%</b>
-                  </div>
-
-                  <Link
-                    href={buildPracticeHref(locale, partKey, recommend)}
-                    className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-3 text-base font-semibold text-white hover:bg-zinc-800"
-                  >
-                    Luyện {partLabel(partKey)} –{" "}
-                    <span className={levelColor(recommend)}>Level {recommend}</span>
-                    <ArrowRight className="h-6 w-6" />
-                  </Link>
                 </div>
               );
             })}
           </div>
 
-          {resp.weakParts?.length ? (
-            <p className="mt-4 text-sm text-zinc-700">
-              Gợi ý ưu tiên:{" "}
-              <b>{resp.weakParts.map((k) => partLabel(k)).join(", ")}</b>. Hãy
-              luyện trước các phần này để cải thiện nhanh.
+          {/* GỢI Ý */}
+          <div className="mt-5 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+            <p className="text-sm text-amber-800 dark:text-amber-300 font-medium">
+              {resp.weakParts?.length ? (
+                <>
+                  Gợi ý ưu tiên:{" "}
+                  <strong>{resp.weakParts.map(partLabel).join(", ")}</strong>
+                </>
+              ) : (
+                "Nhịp độ ổn định! Tiếp tục luyện đều."
+              )}
             </p>
-          ) : (
-            <p className="mt-4 text-sm text-zinc-700">
-              Nhịp độ ổn! Tiếp tục luyện đều để tăng điểm nhanh hơn.
-            </p>
-          )}
+          </div>
         </section>
       )}
     </div>

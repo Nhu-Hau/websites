@@ -100,7 +100,9 @@ export function LanguageSwitcher() {
 export function Notification() {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  useClickOutside(wrapperRef, () => { if (open) setOpen(false); });
+  useClickOutside(wrapperRef, () => {
+    if (open) setOpen(false);
+  });
 
   const { items, unread, markAllRead, clearAll } = useNotifications();
 
@@ -114,7 +116,12 @@ export function Notification() {
           if (!open) setTimeout(() => markAllRead(), 150);
         }}
         className="p-2 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900 focus:outline-none transition duration-300 hover:scale-105 relative text-gray-800 dark:text-gray-100"
-        {...(!open ? { "data-tooltip-id": "notification-tooltip", "data-tooltip-content": "Xem thông báo" } : {})}
+        {...(!open
+          ? {
+              "data-tooltip-id": "notification-tooltip",
+              "data-tooltip-content": "Xem thông báo",
+            }
+          : {})}
       >
         <div className="w-6 h-6 relative flex items-center justify-center">
           <Bell size="100%" />
@@ -143,13 +150,18 @@ export function Notification() {
           </div>
 
           {items.length === 0 ? (
-            <div className="text-sm text-zinc-500 dark:text-zinc-400">Chưa có thông báo</div>
+            <div className="text-sm text-zinc-500 dark:text-zinc-400">
+              Chưa có thông báo
+            </div>
           ) : (
             <ul className="space-y-2 max-h-80 overflow-auto">
               {items.map((n) => (
                 <li key={n.id}>
                   <Link
                     href={n.link}
+                    onClick={() =>
+                      setOpen(false)
+                    } /* Thêm dòng này để đóng dropdown khi click link */
                     className={`block p-3 rounded-lg transition-colors duration-200 ${
                       n.read
                         ? "bg-zinc-50 dark:bg-zinc-800 hover:bg-sky-100 dark:hover:bg-sky-900"
@@ -171,7 +183,14 @@ export function Notification() {
       )}
 
       {!open && (
-        <Tooltip id="notification-tooltip" place="bottom" positionStrategy="fixed" offset={8} delayHide={0} className="bg-zinc-800 text-white text-xs rounded-lg px-2 py-1" />
+        <Tooltip
+          id="notification-tooltip"
+          place="bottom"
+          positionStrategy="fixed"
+          offset={8}
+          delayHide={0}
+          className="bg-zinc-800 text-white text-xs rounded-lg px-2 py-1"
+        />
       )}
     </div>
   );
@@ -194,7 +213,9 @@ export function ThemeToggle() {
         className="p-2 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900 focus:outline-none transition duration-300 hover:scale-105 text-gray-800 dark:text-gray-100"
         data-tooltip-id="theme-tooltip"
         data-tooltip-content={
-          theme === "light" ? "Chuyển sang chế độ tối" : "Chuyển sang chế độ sáng"
+          theme === "light"
+            ? "Chuyển sang chế độ tối"
+            : "Chuyển sang chế độ sáng"
         }
       >
         <div className="w-6 h-6 flex items-center justify-center">

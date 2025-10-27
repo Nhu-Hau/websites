@@ -1,17 +1,28 @@
-// frontend/src/components/cards/TestCard.tsx
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Timer, ListChecks, CheckCircle2, RotateCcw, BarChart3 } from "lucide-react";
+import {
+  Timer,
+  ListChecks,
+  CheckCircle2,
+  RotateCcw,
+  Play,
+  Target,
+  CalendarDays,
+} from "lucide-react";
 
+/* ============ Types ============ */
 export type AttemptSummary = {
-  lastAt: string; // ISO
+  lastAt: string;
   correct: number;
   total: number;
   acc: number; // 0..1
   count: number;
+  bestAcc?: number;
+  streak?: number;
+  lastAttemptId?: string;
 };
 
 type Props = {
@@ -21,8 +32,37 @@ type Props = {
   test: number;
   totalQuestions?: number;
   durationMin?: number;
-  /** Thông tin “đã làm” lấy từ /api/practice/progress */
   attemptSummary?: AttemptSummary;
+};
+
+/* ============ Utils ============ */
+function cn(...args: Array<string | false | null | undefined>) {
+  return args.filter(Boolean).join(" ");
+}
+
+/** Map màu CỐ ĐỊNH cho Tailwind (không dùng string động) */
+const TONE: Record<
+  1 | 2 | 3,
+  { grad: string; soft: string; text: string; border: string }
+> = {
+  1: {
+    grad: "bg-gradient-to-r from-emerald-500 to-emerald-600",
+    soft: "bg-emerald-50 dark:bg-emerald-950/30",
+    text: "text-emerald-700 dark:text-emerald-300",
+    border: "border-emerald-200 dark:border-emerald-900/40",
+  },
+  2: {
+    grad: "bg-gradient-to-r from-sky-500 to-sky-600",
+    soft: "bg-sky-50 dark:bg-sky-950/30",
+    text: "text-sky-700 dark:text-sky-300",
+    border: "border-sky-200 dark:border-sky-900/40",
+  },
+  3: {
+    grad: "bg-gradient-to-r from-violet-500 to-violet-600",
+    soft: "bg-violet-50 dark:bg-violet-950/30",
+    text: "text-violet-700 dark:text-violet-300",
+    border: "border-violet-200 dark:border-violet-900/40",
+  },
 };
 
 export default function TestCard({
@@ -35,138 +75,171 @@ export default function TestCard({
   attemptSummary,
 }: Props) {
   const router = useRouter();
-
-  const href = `/${encodeURIComponent(locale)}/practice/${encodeURIComponent(partKey)}/${level}/${test}`;
-  const historyHref = `/${encodeURIComponent(locale)}/practice/history?partKey=${encodeURIComponent(
-    partKey
-  )}&level=${level}&test=${test}`;
-
-  const ribbonBg = "bg-[#272343] dark:bg-zinc-700";
-
-  const levelStyles: Record<
-    1 | 2 | 3,
-    { ring: string; bg: string; text: string; label: string; bars: number }
-  > = {
-    1: {
-      ring: "ring-emerald-200/70 dark:ring-emerald-800/70",
-      bg: "bg-emerald-100/80 dark:bg-emerald-900/70",
-      text: "text-emerald-900 dark:text-emerald-300",
-      label: "Level 1",
-      bars: 1,
-    },
-    2: {
-      ring: "ring-blue-200/70 dark:ring-blue-800/70",
-      bg: "bg-blue-100/80 dark:bg-blue-900/70",
-      text: "text-blue-900 dark:text-blue-300",
-      label: "Level 2",
-      bars: 2,
-    },
-    3: {
-      ring: "ring-violet-200/70 dark:ring-violet-800/70",
-      bg: "bg-violet-100/80 dark:bg-violet-900/70",
-      text: "text-violet-900 dark:text-violet-300",
-      label: "Level 3",
-      bars: 3,
-    },
-  };
-
-  const d = levelStyles[level];
   const done = !!attemptSummary;
+  const accuracy = attemptSummary ? Math.round(attemptSummary.acc * 100) : 0;
 
-  function goDoTest() {
-    router.push(href);
-  }
+  const href = `/${locale}/practice/${partKey}/${level}/${test}`;
+
+  const tone = TONE[level];
+
+  const levelLabel =
+    level === 1 ? "Beginner" : level === 2 ? "Intermediate" : "Advanced";
+
+  const bars = level; // 1..3
+
+  const lastAtLabel = useMemo(() => {
+    const iso = attemptSummary?.lastAt;
+    if (!iso) return "—";
+    try {
+      return new Intl.DateTimeFormat(locale || "vi-VN", {
+        dateStyle: "medium",
+      }).format(new Date(iso));
+    } catch {
+      return iso;
+    }
+  }, [attemptSummary?.lastAt, locale]);
+
+  const goDoTest = () => router.push(href);
 
   return (
     <div
-      role="button"
       onClick={goDoTest}
-      className="group relative block overflow-hidden rounded-2xl border border-zinc-300/50 bg-white/60 p-6 shadow-lg backdrop-blur-md transition-all duration-500 hover:shadow-2xl dark:border-zinc-700/50 dark:bg-zinc-800/50"
-    >
-      {/* shimmer */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-zinc-100/20 via-transparent to-zinc-300/10 opacity-60 transition-opacity duration-500 group-hover:opacity-80 dark:from-zinc-800/20 dark:to-zinc-950/10" />
-
-      {/* Ribbon ĐÃ LÀM */}
-      {done && (
-        <div className="absolute -right-9 top-5 z-20 rotate-45">
-          <div className="flex items-center gap-1 rounded-md bg-emerald-600 px-8 py-1 text-xs font-bold text-white shadow-md">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            <span>ĐÃ LÀM</span>
-          </div>
-        </div>
+      role="button"
+      tabIndex={0}
+      className={cn(
+        "group relative cursor-pointer rounded-2xl p-5",
+        "border bg-white/95 dark:bg-zinc-900/70 backdrop-blur-md",
+        "shadow-sm hover:shadow-xl transition-all duration-300",
+        "hover:-translate-y-[2px] hover:ring-2 hover:ring-zinc-900/10 dark:hover:ring-white/10",
+        "flex flex-col"
       )}
-
-      {/* Tiêu đề + level */}
-      <div className="relative z-10 flex flex-col gap-3">
-        <h3 className={`text-base sm:text-lg font-bold text-white px-3 py-1.5 rounded-md shadow-sm tracking-tight w-fit ${ribbonBg}`}>
-          Test {test}
-        </h3>
-
-        <div
-          className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 shadow-sm ring-1 w-fit border-white/40 backdrop-blur-sm ${d.bg} ${d.text} ${d.ring}`}
-          title={d.label}
-        >
-          <div className="flex items-end gap-0.5" aria-hidden>
-            {[1, 2, 3].map((i) => (
-              <span
-                key={i}
-                className={`h-3 w-1 rounded-sm bg-current/30 ${i <= d.bars ? "bg-current" : ""}`}
-              />
-            ))}
-          </div>
-          <span className="text-[11px] font-semibold tracking-wide uppercase">{d.label}</span>
+    >
+      {/* Header */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Target className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+          <h3 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            TEST {test}
+          </h3>
+          {done && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
         </div>
-      </div>
 
-      {/* Info hàng dưới */}
-      <div className="relative z-10 mt-4 flex items-center gap-4 text-sm font-medium tracking-wide text-zinc-700 dark:text-zinc-300">
-        <div className="flex items-center gap-1.5">
-          <ListChecks className="h-4 w-4" aria-hidden />
-          <span>{totalQuestions} câu</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Timer className="h-4 w-4" aria-hidden />
-          <span>{durationMin} phút</span>
-        </div>
-        {done && typeof attemptSummary?.acc === "number" && (
-          <div className="ml-auto text-xs text-zinc-600 dark:text-zinc-400">
-            Lần gần nhất: <b>{Math.round((attemptSummary.acc ?? 0) * 100)}%</b>
-          </div>
-        )}
-      </div>
-
-      {/* Footer: 2 nút cùng một hàng */}
-      <div className="relative z-10 mt-5 flex items-center justify-between">
-        {/* Nút làm bài / làm lại */}
-        <Link
-          href={href}
-          onClick={(e) => e.stopPropagation()}
-          className="inline-flex items-center gap-2 rounded-xl text-zinc-700 dark:text-zinc-300"
-        >
-          {done ? (
-            <>
-              <RotateCcw className="h-4 w-4" />
-              Làm lại
-            </>
-          ) : (
-            <>Làm bài ngay</>
+        <span
+          className={cn(
+            "inline-flex items-center gap-2 rounded-full px-3 py-1",
+            "text-xs font-semibold uppercase",
+            tone.soft,
+            tone.text,
+            "border",
+            tone.border
           )}
-        </Link>
+          title={levelLabel}
+        >
+          {/* Thanh độ cao 3 cột */}
+          {/* Thanh độ cao 3 cột */}
+          <span className="flex items-end gap-0.5" aria-hidden="true">
+            {[1, 2, 3].map((i) => {
+              const active = i <= bars;
+              // màu sáng theo level
+              const colorActive =
+                level === 1
+                  ? "bg-emerald-700"
+                  : level === 2
+                  ? "bg-sky-700"
+                  : "bg-violet-700";
+              const colorInactive = "bg-zinc-300 dark:bg-zinc-600";
 
-        {/* Nút xem lịch sử (chỉ khi đã làm) */}
-        {done ? (
-          <Link
-            href={historyHref}
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700"
-          >
-            <BarChart3 className="h-4 w-4" />
-            Xem lịch sử
-          </Link>
-        ) : (
-          <span className="text-xs text-zinc-400">Chưa có lịch sử</span>
+              return (
+                <span
+                  key={i}
+                  className={cn(
+                    "w-1.5 rounded-full transition-all duration-300",
+                    i === 1 ? "h-2.5" : i === 2 ? "h-3.5" : "h-5",
+                    active ? colorActive : colorInactive
+                  )}
+                />
+              );
+            })}
+          </span>
+          {levelLabel}
+        </span>
+      </div>
+
+      {/* Stats */}
+      <div className="flex flex-wrap gap-3 text-sm text-zinc-600 dark:text-zinc-400">
+        <span className="flex items-center gap-1.5">
+          <ListChecks className="w-4 h-4" /> {totalQuestions} câu hỏi
+        </span>
+        <span className="flex items-center gap-1.5">
+          <Timer className="w-4 h-4" /> {durationMin} phút
+        </span>
+        {done && (
+          <span className="flex items-center gap-1.5">
+            <CalendarDays className="w-4 h-4" /> {lastAtLabel}
+          </span>
         )}
       </div>
+
+      {/* Content area */}
+      <div className="min-h-[70px]">
+        {done ? (
+          <>
+            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-zinc-200/70 dark:bg-zinc-700/50">
+              <div
+                className={cn(
+                  "h-full",
+                  tone.grad,
+                  "transition-all duration-700"
+                )}
+                style={{ width: `${accuracy}%` }}
+              />
+            </div>
+
+            <div className="mt-3 flex items-center justify-between text-sm">
+              <span className="font-medium text-zinc-600 dark:text-zinc-400">
+                {attemptSummary!.correct}/{attemptSummary!.total} đúng
+              </span>
+              <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                {accuracy}%
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="mt-2 rounded-xl border border-zinc-200/50 bg-zinc-100/70 py-3 text-center text-sm text-zinc-500 dark:border-zinc-700/50 dark:bg-zinc-800/40 dark:text-zinc-400">
+            Chưa có lượt làm. Hãy bắt đầu để lưu lịch sử.
+          </div>
+        )}
+      </div>
+
+      {/* Footer luôn ở đáy */}
+      <div className="mt-auto pt-4">
+        <div className="flex items-center justify-between min-h-[48px]">
+          {!done ? (
+            <Link
+              href={href}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-zinc-900 to-black px-5 py-3 text-sm font-semibold text-white shadow transition-all hover:scale-105"
+            >
+              <Play className="w-4 h-4" />
+              Làm bài ngay
+            </Link>
+          ) : (
+            <div className="flex w-full justify-start gap-2">
+              <Link
+                href={href}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-2 rounded-xl py-2.5 px-4 text-sm font-semibold text-emerald-700 hover:bg-emerald-50/80 dark:text-emerald-300 dark:hover:bg-emerald-900/20"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Làm lại
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Light glow overlay */}
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
     </div>
   );
 }

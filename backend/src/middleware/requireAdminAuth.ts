@@ -11,7 +11,7 @@ export function requireAdminAuth(req: Request, res: Response, next: NextFunction
     }
 
     // Verify admin token
-    const decoded = jwt.verify(adminToken, process.env.JWT_SECRET || "fallback-secret") as any;
+    const decoded = jwt.verify(adminToken, process.env.ACCESS_TOKEN_SECRET || "access_secret_dev") as any;
     
     if (decoded.role !== "admin") {
       return res.status(403).json({ message: "Admin access required" });

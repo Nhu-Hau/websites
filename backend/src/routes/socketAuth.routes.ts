@@ -18,7 +18,7 @@ router.get("/token", requireAuth, async (req, res, next) => {
     // Tạo token cho Socket.IO
     const token = jwt.sign(
       { userId, role },
-      process.env.JWT_SECRET || "fallback-secret",
+      process.env.ACCESS_TOKEN_SECRET || "access_secret_dev",
       { expiresIn: "1h" } // Token ngắn hạn cho Socket.IO
     );
 
@@ -41,7 +41,7 @@ router.get("/admin-token", requireAdminAuth, async (req, res, next) => {
     // Tạo token cho Socket.IO
     const token = jwt.sign(
       { userId, role },
-      process.env.JWT_SECRET || "fallback-secret",
+      process.env.ACCESS_TOKEN_SECRET || "access_secret_dev",
       { expiresIn: "1h" } // Token ngắn hạn cho Socket.IO
     );
 

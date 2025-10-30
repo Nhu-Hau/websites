@@ -2,10 +2,8 @@
 import jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
 
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "access_secret_dev";
-const JWT_REFRESH_SECRET =
-  process.env.JWT_REFRESH_SECRET || "refresh_secret_dev";
 const ACCESS_SECRET = process.env.ACCESS_TOKEN_SECRET || "access_secret_dev";
+const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || "refresh_secret_dev";
 
 // Kiểu payload cho access token
 export type AccessPayload = { id: string; role: string };
@@ -17,11 +15,11 @@ export function signAccessToken(
   payload: AccessPayload,
   opts?: jwt.SignOptions
 ) {
-  return jwt.sign(payload, JWT_ACCESS_SECRET, { expiresIn: "15m", ...opts });
+  return jwt.sign(payload, ACCESS_SECRET, { expiresIn: "15m", ...opts });
 }
 
 export function verifyAccessToken(token: string) {
-  return jwt.verify(token, JWT_ACCESS_SECRET) as AccessPayload & jwt.JwtPayload;
+  return jwt.verify(token, ACCESS_SECRET) as AccessPayload & jwt.JwtPayload;
 }
 
 export function newJti() {
@@ -32,11 +30,11 @@ export function signRefreshToken(
   payload: RefreshPayload,
   opts?: jwt.SignOptions
 ) {
-  return jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn: "7d", ...opts });
+  return jwt.sign(payload, REFRESH_SECRET, { expiresIn: "7d", ...opts });
 }
 
 export function verifyRefreshToken(token: string) {
-  return jwt.verify(token, JWT_REFRESH_SECRET) as RefreshPayload &
+  return jwt.verify(token, REFRESH_SECRET) as RefreshPayload &
     jwt.JwtPayload;
 }
 export function signGoogleSignupToken(payload: {

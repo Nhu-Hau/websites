@@ -36,15 +36,17 @@ export function useAuthSubmit({ kind, url, t, onSuccess }: SubmitOpts) {
     setLoading(true);
 
     try {
-      const { ok, json } = await postJson(url, data);
-
-      if (!ok) {
-        toast.error(json?.message || "Đã xảy ra lỗi, vui lòng thử lại sau.");
-        return;
-      }
+      // Sử dụng postJson đúng cách, không destructure
+      const json = await postJson(url, data);
       onSuccess?.(json);
-    } catch (err) {
-      toast.error("Đã xảy ra lỗi, vui lòng thử lại sau.");
+    } catch (err: any) {
+      const message = err?.message;
+      // Nếu là lỗi email đã tồn tại thì báo lỗi dưới input email
+      if (message?.includes("Email này đã được sử dụng") || message?.includes("đã được sử dụng")) {
+        setErrors((e) => ({ ...e, email: message }));
+      } else {
+        toast.error(message || "Đã xảy ra lỗi, vui lòng thử lại sau.");
+      }
     } finally {
       setLoading(false);
     }

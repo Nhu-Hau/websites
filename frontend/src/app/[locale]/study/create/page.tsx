@@ -1,10 +1,11 @@
 'use client';
 import React from 'react';
-import { CreateStudyRoom } from '@/components/CreateStudyRoom';
+import { CreateStudyRoom } from '@/components/study/CreateStudyRoom';
 import { listStudyRooms, deleteStudyRoom } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { Trash2 } from 'lucide-react';
 
 export default function CreateStudyRoomPage() {
   const { user, loading } = useAuth();
@@ -14,10 +15,11 @@ export default function CreateStudyRoomPage() {
   const p = useParams<{ locale?: string }>();
   const prefix = p?.locale ? `/${p.locale}` : '';
 
-  const canManage = (user as any)?.role === 'admin' || (user as any)?.role === 'teacher';
+  // Tất cả user đều có thể tạo và xem phòng
+  const canDelete = (user as any)?.role === 'admin'; // Chỉ admin mới xóa được
 
   const reload = React.useCallback(async () => {
-    if (!user) return;
+    if (!user || !user.id || !user.name) return;
     try {
       setErr(null);
       const data = await listStudyRooms({ id: user.id, name: user.name, role: (user as any).role });
@@ -28,22 +30,29 @@ export default function CreateStudyRoomPage() {
   }, [user]);
 
   React.useEffect(() => {
-    if (user && canManage) reload();
-  }, [user, canManage, reload]);
+    if (user) reload(); // Tất cả user đều có thể xem danh sách
+  }, [user, reload]);
 
   async function onDelete(roomName: string) {
-    if (!user) return;
+    if (!user || !user.id || !user.name) return;
+    
+    // Xác nhận trước khi xóa
+    if (!confirm(`Bạn có chắc chắn muốn xóa phòng "${roomName}"? Hành động này không thể hoàn tác.`)) {
+      return;
+    }
+    
     setBusy(roomName);
     try {
       await deleteStudyRoom(roomName, { id: user.id, name: user.name, role: (user as any).role });
       await reload();
+    } catch (e: any) {
+      alert(e?.message || 'Không thể xóa phòng');
     } finally {
       setBusy(null);
     }
   }
 
   if (loading) return <div className="p-6">Loading…</div>;
-  if (!canManage) return <div className="p-6 text-gray-600">Chỉ admin/teacher.</div>;
 
   return (
     <div className="p-6 space-y-6">
@@ -65,9 +74,15 @@ export default function CreateStudyRoomPage() {
                 <div className="text-xs text-gray-500">Người đang online: {r.numParticipants}</div>
               </div>
               <div className="flex items-center gap-2">
-                <Link className="px-3 py-1 rounded bg-black text-white text-sm" href={`${prefix}/study/${r.roomName}`}>Mở</Link>
-                {(user as any)?.role === 'admin' ? (
-                  <button disabled={busy === r.roomName} onClick={() => onDelete(r.roomName)} className="px-3 py-1 rounded border text-sm disabled:opacity-50">
+                <Link className="px-3 py-1 rounded bg-black text-white text-sm hover:bg-gray-800 transition-colors" href={`${prefix}/study/${r.roomName}`}>Mở</Link>
+                {canDelete ? (
+                  <button 
+                    disabled={busy === r.roomName} 
+                    onClick={() => onDelete(r.roomName)} 
+                    className="px-3 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                    title="Xóa phòng (chỉ admin)"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
                     {busy === r.roomName ? 'Đang xoá…' : 'Xoá'}
                   </button>
                 ) : null}

@@ -31,7 +31,8 @@
     },
     "course": "Khoá học",
     "forum": "Cộng đồng",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "createStudyRoom": "Tạo phòng học"
   },
   "UserMenu": {
     "login": "Đăng nhập",

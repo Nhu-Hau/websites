@@ -47,11 +47,8 @@ export function MenuNav(): NavItemType[] {
     { label: t("course"), href: `/${locale}/courses` },
     { label: t("forum"), href: `/${locale}/community` },
     { label: t("dashboard"), href: `/${locale}/dashboard` },
+    { label: t("createStudyRoom"), href: `/${locale}/study/create` },
   ];
-
-  if (user?.role === "admin") {
-    items.push({ label: t("createStudyRoom", { default: "Create Room" } as any) as any, href: `/${locale}/study/create` });
-  }
 
   return items;
 }

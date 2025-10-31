@@ -4,7 +4,7 @@ import { StudyRoom } from '../models/StudyRoom';
 
 const TEN_MIN_MS = 10 * 60 * 1000;
 
-let timer: NodeJS.Timer | null = null;
+let timer: NodeJS.Timeout | null = null;
 
 export function startCleanupRooms() {
   if (timer) return; // idempotent
@@ -12,7 +12,7 @@ export function startCleanupRooms() {
   timer = setInterval(async () => {
     try {
       const [docs, activeRooms] = await Promise.all([
-        StudyRoom.find({ deletedAt: { $exists: false } }).lean(),
+        StudyRoom.find({}).lean(), // Không cần filter deletedAt nữa vì đã xóa thực sự
         lk.listRooms(),
       ]);
       const map = new Map(activeRooms.map((r: any) => [r.name, r]));
@@ -30,7 +30,9 @@ export function startCleanupRooms() {
           const emptyMs = now - new Date(d.emptySince).getTime();
           if (emptyMs > TEN_MIN_MS) {
             try { await lk.deleteRoom(d.roomName); } catch {}
-            await StudyRoom.updateOne({ roomName: d.roomName }, { $set: { deletedAt: new Date() } });
+            // Xóa thực sự khỏi MongoDB
+            await StudyRoom.deleteOne({ roomName: d.roomName });
+            console.log(`[cleanupRooms] Deleted room "${d.roomName}" after 10 minutes of being empty`);
           }
         } else {
           if (d.emptySince) {

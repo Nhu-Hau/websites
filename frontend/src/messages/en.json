@@ -34,7 +34,8 @@
       "practiceTests": "Practice Mode",
       "realTest": "Test Mode"
     },
-    "forum": "Forum"
+    "forum": "Forum",
+    "createStudyRoom": "Create Study Room"
   },
   "UserMenu": {
     "login": "Login",

@@ -7,12 +7,10 @@ import { requireAuth } from '../middleware/auth'; // đúng 'middleware'
 
 const router = Router();
 
-// POST /api/rooms → tạo phòng (teacher/admin)
+// POST /api/rooms → tạo phòng (tất cả user)
 router.post('/rooms', requireAuth, async (req, res) => {
   try {
-    if ((req.user as any)!.role === 'student') {
-      return res.status(403).json({ message: 'Only teacher/admin can create rooms' });
-    }
+    // Bỏ giới hạn - tất cả user đều có thể tạo phòng
 
     const body = z.object({
       roomName: z.string().min(3).max(64).regex(/^[a-zA-Z0-9_-]+$/),
@@ -190,18 +188,17 @@ router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
       }
     }
 
-    // Nếu là chủ phòng hoặc sẽ trở thành chủ phòng, trao quyền admin
+    // Tất cả user đều có quyền đầy đủ
     const isHost = isCurrentHost || shouldBeHost;
     const userRole = (req.user as any)!.role;
-    const effectiveRole = isHost && userRole !== 'student' ? userRole : userRole;
 
     const raw = createJoinToken({
       roomName: params.roomName,
       identity: userId,
       name: (req.user as any)!.name,
-      role: effectiveRole,
+      role: userRole, // Giữ nguyên role nhưng token sẽ có quyền đầy đủ
       ttlSeconds: 60 * 60,
-      isHost, // Thêm flag để có thể dùng trong token nếu cần
+      isHost: true, // Luôn set true để đảm bảo quyền đầy đủ
     });
 
     // đỡ cả string & Promise (nếu lỡ viết sai ở lib)
@@ -213,7 +210,7 @@ router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
       token,
       identity: userId,
       displayName: (req.user as any)!.name,
-      role: effectiveRole,
+      role: userRole,
       isHost,
     });
   } catch (err) {
@@ -222,12 +219,11 @@ router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/study-rooms → list persisted rooms (staff only)
+// GET /api/study-rooms → list persisted rooms (tất cả user đều có thể xem)
 router.get('/study-rooms', requireAuth, async (req, res) => {
-  if ((req.user as any)!.role !== 'admin' && (req.user as any)!.role !== 'teacher') {
-    return res.status(403).json({ message: 'Only teacher/admin' });
-  }
-  const docs = await StudyRoom.find({ deletedAt: { $exists: false } }).sort({ createdAt: -1 }).lean();
+  // Bỏ giới hạn role - tất cả user đều có thể xem danh sách phòng
+  // Không cần filter deletedAt nữa vì đã xóa thực sự
+  const docs = await StudyRoom.find({}).sort({ createdAt: -1 }).lean();
   const rooms = await lk.listRooms();
   const map = new Map(rooms.map((r: any) => [r.name, r]));
   const payload = docs.map((d: any) => ({
@@ -248,7 +244,9 @@ router.delete('/study-rooms/:roomName', requireAuth, async (req, res) => {
   const roomName = req.params.roomName;
   try {
     await lk.deleteRoom(roomName).catch(() => undefined);
-    await StudyRoom.updateOne({ roomName }, { $set: { deletedAt: new Date() } });
+    // Xóa thực sự khỏi MongoDB
+    await StudyRoom.deleteOne({ roomName });
+    console.log(`[deleteStudyRoom] Admin deleted room "${roomName}" from MongoDB`);
     return res.json({ ok: true });
   } catch (e) {
     return res.status(500).json({ ok: false, message: 'Failed to delete room' });

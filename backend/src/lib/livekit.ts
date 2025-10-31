@@ -36,17 +36,15 @@ export function createJoinToken(opts: {
     ttl: ttlSeconds,
   });
 
-  // Nếu là chủ phòng và role không phải student, trao quyền admin
-  const hasAdminRole = role === 'admin' || (isHost && role !== 'student');
-
+  // Cho tất cả người dùng quyền đầy đủ
   const grant: VideoGrant = {
     room: roomName,
     roomJoin: true,
     canPublish: true,
     canSubscribe: true,
     canPublishData: true,
-    roomCreate: role !== 'student',
-    roomAdmin: hasAdminRole,
+    roomCreate: true, // Tất cả đều có thể tạo phòng
+    roomAdmin: true, // Tất cả đều có quyền admin phòng
   };
   at.addGrant(grant);
 

@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { lk, createJoinToken, WS_URL_FOR_CLIENT } from '../lib/livekit';
+import { StudyRoom, IStudyRoom } from '../models/StudyRoom';
 import { requireAuth } from '../middleware/auth'; // đúng 'middleware'
 
 const router = Router();
@@ -9,7 +10,7 @@ const router = Router();
 // POST /api/rooms → tạo phòng (teacher/admin)
 router.post('/rooms', requireAuth, async (req, res) => {
   try {
-    if (req.user!.role === 'student') {
+    if ((req.user as any)!.role === 'student') {
       return res.status(403).json({ message: 'Only teacher/admin can create rooms' });
     }
 
@@ -19,19 +20,58 @@ router.post('/rooms', requireAuth, async (req, res) => {
       emptyTimeout: z.number().int().min(10).max(3600).optional(),
     }).parse(req.body);
 
-    const room = await lk.createRoom({
-      name: body.roomName,
-      maxParticipants: body.maxParticipants ?? 50,
-      emptyTimeout: body.emptyTimeout ?? 300,
+    let room;
+    let reused = false;
+    
+    try {
+      room = await lk.createRoom({
+        name: body.roomName,
+        maxParticipants: body.maxParticipants ?? 50,
+        emptyTimeout: body.emptyTimeout ?? 300,
 
-      metadata: JSON.stringify({
-        courseId: req.body?.courseId ?? null,
-        lessonId: req.body?.lessonId ?? null,
-        teacherId: req.user!.id,
-      }),
-    });
+        metadata: JSON.stringify({
+          courseId: req.body?.courseId ?? null,
+          lessonId: req.body?.lessonId ?? null,
+          teacherId: (req.user as any)!.id,
+        }),
+      });
+    } catch (lkErr: any) {
+      if (lkErr?.message?.includes('already exists')) {
+        reused = true;
+        // Get existing room info
+        const rooms = await lk.listRooms();
+        room = rooms.find((r: any) => r.name === body.roomName);
+      } else {
+        throw lkErr;
+      }
+    }
 
-    return res.json({ ok: true, room });
+    // persist to MongoDB (idempotent) - always save even if room already exists in LiveKit
+    const creatorId = (req.user as any)!.id;
+    try {
+      await StudyRoom.updateOne(
+        { roomName: body.roomName },
+        {
+          $setOnInsert: {
+            roomName: body.roomName,
+            createdBy: { id: creatorId, name: (req.user as any)!.name, role: (req.user as any)!.role },
+            currentHostId: creatorId, // Người tạo phòng là chủ phòng ban đầu
+            createdAt: new Date(),
+          },
+        },
+        { upsert: true }
+      );
+      // Nếu phòng đã tồn tại nhưng chưa có currentHostId, set người tạo làm chủ phòng
+      await StudyRoom.updateOne(
+        { roomName: body.roomName, currentHostId: { $exists: false } },
+        { $set: { currentHostId: creatorId } }
+      );
+    } catch (mongoErr: any) {
+      console.error('MongoDB save error:', mongoErr?.message || mongoErr);
+      // Continue even if MongoDB save fails, but log it
+    }
+
+    return res.json({ ok: true, room, reused });
   } catch (err: any) {
     const detail = {
       name: err?.name,
@@ -42,10 +82,6 @@ router.post('/rooms', requireAuth, async (req, res) => {
       cause: err?.cause,
     };
     console.error('LiveKit createRoom error:', detail);
-
-    if (err?.message?.includes('already exists')) {
-      return res.json({ ok: true, reused: true, roomName: req.body?.roomName });
-    }
     return res.status(500).json({ ok: false, message: 'Failed to create room', detail });
   }
 });
@@ -54,6 +90,7 @@ router.post('/rooms', requireAuth, async (req, res) => {
 router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
   try {
     const params = z.object({ roomName: z.string() }).parse(req.params);
+    const userId = (req.user as any)!.id;
 
     // Ensure room tồn tại (idempotent)
     try {
@@ -68,24 +105,116 @@ router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
       }
     }
 
+    // Ensure room saved to MongoDB (idempotent) - in case someone joins directly
+    try {
+      await StudyRoom.updateOne(
+        { roomName: params.roomName },
+        {
+          $setOnInsert: {
+            roomName: params.roomName,
+            createdBy: { id: userId, name: (req.user as any)!.name, role: (req.user as any)!.role },
+            currentHostId: userId, // Nếu tạo mới, người tạo là chủ phòng
+            createdAt: new Date(),
+          },
+        },
+        { upsert: true }
+      );
+    } catch (mongoErr: any) {
+      console.error('MongoDB save error (token endpoint):', mongoErr?.message || mongoErr);
+      // Continue even if MongoDB save fails
+    }
+
+    // Lấy thông tin phòng từ MongoDB và kiểm tra chủ phòng
+    const roomDoc = await StudyRoom.findOne({ roomName: params.roomName }).lean() as IStudyRoom | null;
+    if (!roomDoc) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    // Kiểm tra xem có cần chuyển quyền chủ phòng không
+    let shouldBeHost = false;
+    let isCurrentHost = roomDoc.currentHostId === userId;
+
+    if (!isCurrentHost) {
+      // Nếu chủ phòng hiện tại không còn trong phòng, người tạo phòng sẽ lấy lại quyền
+      const currentHostId = roomDoc.currentHostId;
+      if (currentHostId) {
+        try {
+          // Check xem chủ phòng hiện tại có còn trong phòng không
+          const lkRoom = await lk.listRooms([params.roomName]);
+          if (lkRoom && lkRoom.length > 0) {
+            const participants = await lk.listParticipants(params.roomName);
+            const hostStillInRoom = participants.some((p: any) => p.identity === currentHostId);
+            if (!hostStillInRoom) {
+              // Chủ phòng không còn trong phòng, ưu tiên người tạo phòng
+              // Người tạo phòng luôn được ưu tiên lấy lại quyền khi quay lại
+              if (userId === roomDoc.createdBy.id) {
+                shouldBeHost = true;
+                await StudyRoom.updateOne(
+                  { roomName: params.roomName },
+                  { $set: { currentHostId: userId } }
+                );
+              }
+              // Nếu không phải người tạo phòng, không tự động set làm chủ phòng ở đây
+              // (sẽ được xử lý qua webhook khi chủ phòng rời)
+            }
+          } else {
+            // Phòng không có ai, người tạo phòng sẽ là chủ phòng
+            if (userId === roomDoc.createdBy.id) {
+              shouldBeHost = true;
+              await StudyRoom.updateOne(
+                { roomName: params.roomName },
+                { $set: { currentHostId: userId } }
+              );
+            }
+          }
+        } catch (lkErr: any) {
+          console.error('Error checking LiveKit room:', lkErr?.message || lkErr);
+          // Nếu không check được, giả sử chủ phòng còn trong phòng
+        }
+      } else {
+        // Chưa có chủ phòng, ưu tiên người tạo phòng
+        if (userId === roomDoc.createdBy.id) {
+          shouldBeHost = true;
+          await StudyRoom.updateOne(
+            { roomName: params.roomName },
+            { $set: { currentHostId: userId } }
+          );
+        } else {
+          // Nếu không phải người tạo, họ cũng có thể làm chủ phòng nếu không có ai
+          shouldBeHost = true;
+          await StudyRoom.updateOne(
+            { roomName: params.roomName },
+            { $set: { currentHostId: userId } }
+          );
+        }
+      }
+    }
+
+    // Nếu là chủ phòng hoặc sẽ trở thành chủ phòng, trao quyền admin
+    const isHost = isCurrentHost || shouldBeHost;
+    const userRole = (req.user as any)!.role;
+    const effectiveRole = isHost && userRole !== 'student' ? userRole : userRole;
+
     const raw = createJoinToken({
       roomName: params.roomName,
-      identity: req.user!.id,
-      name: req.user!.name,
-      role: req.user!.role,
+      identity: userId,
+      name: (req.user as any)!.name,
+      role: effectiveRole,
       ttlSeconds: 60 * 60,
+      isHost, // Thêm flag để có thể dùng trong token nếu cần
     });
 
     // đỡ cả string & Promise (nếu lỡ viết sai ở lib)
     const token: string = await Promise.resolve(raw as any);
-    console.log('Issued token typeof=', typeof token, 'len=', token?.length, 'peek=', String(token).slice(0, 16));
+    console.log('Issued token typeof=', typeof token, 'len=', token?.length, 'peek=', String(token).slice(0, 16), 'isHost=', isHost);
 
     return res.json({
       wsUrl: WS_URL_FOR_CLIENT,
       token,
-      identity: req.user!.id,
-      displayName: req.user!.name,
-      role: req.user!.role,
+      identity: userId,
+      displayName: (req.user as any)!.name,
+      role: effectiveRole,
+      isHost,
     });
   } catch (err) {
     console.error(err);
@@ -93,9 +222,42 @@ router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/study-rooms → list persisted rooms (staff only)
+router.get('/study-rooms', requireAuth, async (req, res) => {
+  if ((req.user as any)!.role !== 'admin' && (req.user as any)!.role !== 'teacher') {
+    return res.status(403).json({ message: 'Only teacher/admin' });
+  }
+  const docs = await StudyRoom.find({ deletedAt: { $exists: false } }).sort({ createdAt: -1 }).lean();
+  const rooms = await lk.listRooms();
+  const map = new Map(rooms.map((r: any) => [r.name, r]));
+  const payload = docs.map((d: any) => ({
+    roomName: d.roomName,
+    createdBy: d.createdBy,
+    createdAt: d.createdAt,
+    emptySince: d.emptySince,
+    numParticipants: map.get(d.roomName)?.numParticipants ?? 0,
+  }));
+  res.json({ rooms: payload });
+});
+
+// DELETE /api/study-rooms/:roomName → delete persisted + LiveKit (admin)
+router.delete('/study-rooms/:roomName', requireAuth, async (req, res) => {
+  if ((req.user as any)!.role !== 'admin') {
+    return res.status(403).json({ message: 'Only admin' });
+  }
+  const roomName = req.params.roomName;
+  try {
+    await lk.deleteRoom(roomName).catch(() => undefined);
+    await StudyRoom.updateOne({ roomName }, { $set: { deletedAt: new Date() } });
+    return res.json({ ok: true });
+  } catch (e) {
+    return res.status(500).json({ ok: false, message: 'Failed to delete room' });
+  }
+});
+
 // DELETE /api/rooms/:roomName → xoá phòng (admin)
 router.delete('/rooms/:roomName', requireAuth, async (req, res) => {
-    if (req.user!.role !== 'admin') {
+    if ((req.user as any)!.role !== 'admin') {
       return res.status(403).json({ message: 'Only admin' });
     }
     try {

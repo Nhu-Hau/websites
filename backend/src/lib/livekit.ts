@@ -26,14 +26,18 @@ export function createJoinToken(opts: {
   name?: string;
   role: RoomRole;
   ttlSeconds?: number;
+  isHost?: boolean; // Nếu true, trao quyền roomAdmin (nếu role không phải student)
 }) {
-  const { roomName, identity, name, role, ttlSeconds = 3600 } = opts;
+  const { roomName, identity, name, role, ttlSeconds = 3600, isHost = false } = opts;
 
   const at = new AccessToken(LIVEKIT_API_KEY!, LIVEKIT_API_SECRET!, {
     identity,
     name,
     ttl: ttlSeconds,
   });
+
+  // Nếu là chủ phòng và role không phải student, trao quyền admin
+  const hasAdminRole = role === 'admin' || (isHost && role !== 'student');
 
   const grant: VideoGrant = {
     room: roomName,
@@ -42,7 +46,7 @@ export function createJoinToken(opts: {
     canSubscribe: true,
     canPublishData: true,
     roomCreate: role !== 'student',
-    roomAdmin: role === 'admin',
+    roomAdmin: hasAdminRole,
   };
   at.addGrant(grant);
 

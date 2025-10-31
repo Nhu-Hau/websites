@@ -26,18 +26,24 @@ export function apiBase() {
 
 // lib/api.ts (FE)
 export async function createRoom(roomName: string, user: {id: string; name: string; role: string}) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/rooms`, {
-  method: 'POST',
-  headers: {
-  'Content-Type': 'application/json',
-  'x-user-id': user.id,
-  'x-user-name': user.name,
-  'x-user-role': user.role,
-  },
-  body: JSON.stringify({ roomName }),
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:4000';
+  const res = await fetch(`${base}/api/rooms`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-user-id': user.id,
+      'x-user-name': user.name,
+      'x-user-role': user.role,
+    },
+    body: JSON.stringify({ roomName }),
   });
-  return res.json();
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to create room');
   }
+  return res.json();
+}
   
   
   export async function getJoinToken(roomName: string, user: {id: string; name: string; role: string}) {
@@ -53,3 +59,33 @@ export async function createRoom(roomName: string, user: {id: string; name: stri
   if (!res.ok) throw new Error('Cannot get token');
   return res.json();
   }
+
+export async function listStudyRooms(user: { id: string; name: string; role: string }) {
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:4000';
+  const res = await fetch(`${base}/api/study-rooms`, {
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-user-id': user.id,
+      'x-user-name': user.name,
+      'x-user-role': user.role,
+    },
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function deleteStudyRoom(roomName: string, user: { id: string; name: string; role: string }) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/study-rooms/${encodeURIComponent(roomName)}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-user-id': user.id,
+      'x-user-name': user.name,
+      'x-user-role': user.role,
+    },
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}

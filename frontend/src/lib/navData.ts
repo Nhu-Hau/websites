@@ -2,12 +2,14 @@
 "use client";
 import type { NavItemType } from "../types/navTypes";
 import { useTranslations, useLocale } from "next-intl";
+import { useAuth } from "@/context/AuthContext";
 
 export function MenuNav(): NavItemType[] {
   const t = useTranslations("nav");
   const locale = useLocale();
+  const { user } = useAuth();
 
-  return [
+  const items: NavItemType[] = [
     {
       label: t("practiceLR.title"),
       href: `/${locale}/practice/part.1`,
@@ -46,4 +48,10 @@ export function MenuNav(): NavItemType[] {
     { label: t("forum"), href: `/${locale}/community` },
     { label: t("dashboard"), href: `/${locale}/dashboard` },
   ];
+
+  if (user?.role === "admin") {
+    items.push({ label: t("createStudyRoom", { default: "Create Room" } as any) as any, href: `/${locale}/study/create` });
+  }
+
+  return items;
 }

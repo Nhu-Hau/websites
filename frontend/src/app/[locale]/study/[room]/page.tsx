@@ -1,9 +1,11 @@
+// D:\KLTN\websites\frontend\src\app\[locale]\study\[room]\page.tsx
 'use client';
 
-import { LiveKitRoom, VideoConference } from '@livekit/components-react';
+import { LiveKitRoom, VideoConference, useParticipants } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 type JoinResp = {
   wsUrl: string;
@@ -13,9 +15,19 @@ type JoinResp = {
   role: 'student' | 'teacher' | 'admin';
 };
 
+function ParticipantCount() {
+  const participants = useParticipants();
+  return (
+    <div className="absolute top-4 right-4 z-50 bg-black/70 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+      👥 {participants.length} người
+    </div>
+  );
+}
+
 export default function StudyRoomI18nPage() {
   const p = useParams<{ locale: string; room: string }>();
   const room = String(p?.room ?? '');
+  const { user } = useAuth();
 
   const [data, setData] = useState<JoinResp | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -32,9 +44,9 @@ export default function StudyRoomI18nPage() {
           method: 'POST',
           credentials: 'include',
           headers: {
-            'x-user-id': 'u777',
-            'x-user-name': 'Sang',
-            'x-user-role': 'student',
+            'x-user-id': user?.id || `guest-${crypto.randomUUID()}`,
+            'x-user-name': user?.name || 'Guest',
+            'x-user-role': (user?.role as any) || 'student',
           },
           signal: ac.signal,
         });
@@ -43,7 +55,7 @@ export default function StudyRoomI18nPage() {
           throw new Error(`${res.status} ${res.statusText}: ${txt || 'no body'}`);
         }
         const json: JoinResp = await res.json();
-        setData(json); // <-- QUAN TRỌNG
+        setData(json);
       } catch (e: any) {
         if (e?.name === 'AbortError') return;
         console.error('join error:', e);
@@ -52,24 +64,27 @@ export default function StudyRoomI18nPage() {
     })();
 
     return () => ac.abort();
-  }, [room]);
+  }, [room, user?.id, user?.name, user?.role]);
 
   if (!room) return null;
   if (err) return <div className="p-6 text-red-600">Lỗi: {err}</div>;
   if (!data) return <div className="p-6">Đang lấy token…</div>;
 
   return (
-    <LiveKitRoom
-      serverUrl={data.wsUrl}
-      token={data.token}
-      connect
-      video
-      audio
-      className="h-[100dvh]"
-      onDisconnected={() => console.log('disconnected')}
-    >
-      <VideoConference />
-    </LiveKitRoom>
+    <div className="pt-16 md:pt-20 min-h-[calc(100dvh-4rem)] md:min-h-[calc(100dvh-5rem)]">
+      <LiveKitRoom
+        serverUrl={data.wsUrl}
+        token={data.token}
+        connect
+        video
+        audio
+        className="relative h-full"
+        onDisconnected={() => console.log('disconnected')}
+      >
+        <ParticipantCount />
+        <VideoConference />
+      </LiveKitRoom>
+    </div>
   );
 }
 

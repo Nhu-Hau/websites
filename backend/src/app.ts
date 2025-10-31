@@ -29,6 +29,7 @@ import lkDiagRoutes from "./routes/livekit.diag.routes";         // /api/_lk/env
 import livekitWebhookRoutes from "./routes/livekit.webhook.routes";
 import roomsDebugRoutes from './routes/rooms.debug.routes';
 import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
+import { startCleanupRooms } from './jobs/cleanupRooms';
 
 const app = express();
 
@@ -89,6 +90,8 @@ app.use((err: any, _req: any, res: any, _next: any) => {
 
 export async function createServer() {
   await connectMongo();
+  // start background cleanup
+  startCleanupRooms();
   return app;
 }
 

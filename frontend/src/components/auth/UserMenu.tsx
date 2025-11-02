@@ -341,7 +341,7 @@ export default function UserMenu() {
               </div>
 
               {/* TOEIC */}
-              <div className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200">
+              {/* <div className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200">
                 <div className="flex items-center gap-3">
                   <Gauge className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
@@ -355,7 +355,7 @@ export default function UserMenu() {
                     / 990
                   </span>
                 </span>
-              </div>
+              </div> */}
 
               {/* Gợi ý theo phần */}
               <div className="mt-3 mb-1 px-3">

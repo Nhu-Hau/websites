@@ -4,7 +4,7 @@ import mongoose, { Types } from "mongoose";
 import { PracticeAttempt } from "../models/PracticeAttempt";
 import { User } from "../models/User";
 
-const PARTS_COLL = process.env.PARTS_COLL || "parts";
+const PARTS_COLL = process.env.PARTS_COLL || "practice_parts";
 const VALID_PARTS = new Set([
   "part.1",
   "part.2",

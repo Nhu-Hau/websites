@@ -1,10 +1,15 @@
+// backend/src/controllers/progress.controller.ts
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { PlacementAttempt } from "../models/PlacementAttempt";
+import { ProgressAttempt } from "../models/ProgressAttempt";
+import { PracticeAttempt } from "../models/PracticeAttempt";
 import { User } from "../models/User";
 
-const ITEMS_COLL = process.env.PLACEMENT_PARTS_COLL || "placement_parts";
-const STIMULI_COLL = process.env.PLACEMENT_STIMULI_COLL || "placement_stimuli";
+const ITEMS_COLL =
+  process.env.PROGRESS_PARTS_COLL ||
+  process.env.PROGRESS_ITEMS_COLL ||
+  "progress_parts";
+const STIMULI_COLL = process.env.PROGRESS_STIMULI_COLL || "progress_stimuli";
 
 const LISTENING = new Set(["part.1", "part.2", "part.3", "part.4"]);
 const READING = new Set(["part.5", "part.6", "part.7"]);
@@ -27,17 +32,26 @@ function predictToeic(listeningAcc: number, readingAcc: number) {
   return { overall, listening, reading };
 }
 
-/** NEW: GET /api/placement/paper
- * Optional query limit mỗi part: ?p1=4&p2=8&p3=9&p4=9&p5=10&p6=8&p7=7
- * Không truyền thì lấy toàn bộ mỗi part.
+/** GET /api/progress/paper
+ * Optional per-part limits: ?p1=4&p2=8&p3=9&p4=9&p5=10&p6=8&p7=7
+ * Không truyền => lấy tất cả mỗi part (theo order tăng).
  */
-export async function getPlacementPaper(req: Request, res: Response) {
+export async function getProgressPaper(req: Request, res: Response) {
   try {
     const db = mongoose.connection;
     const itemsCol = db.collection(ITEMS_COLL);
     const stimCol = db.collection(STIMULI_COLL);
 
-    const limits = {
+    const limits: Record<
+      | "part.1"
+      | "part.2"
+      | "part.3"
+      | "part.4"
+      | "part.5"
+      | "part.6"
+      | "part.7",
+      number
+    > = {
       "part.1": Number(req.query.p1 ?? 0),
       "part.2": Number(req.query.p2 ?? 0),
       "part.3": Number(req.query.p3 ?? 0),
@@ -47,9 +61,9 @@ export async function getPlacementPaper(req: Request, res: Response) {
       "part.7": Number(req.query.p7 ?? 0),
     };
 
-    const parts = Object.keys(limits);
+    const parts = Object.keys(limits) as (keyof typeof limits)[];
     let items: any[] = [];
-    for (const pk of parts as (keyof typeof limits)[]) {
+    for (const pk of parts) {
       const lim =
         Number.isFinite(limits[pk]) && limits[pk] > 0 ? limits[pk] : 0;
       const cur = itemsCol
@@ -75,18 +89,19 @@ export async function getPlacementPaper(req: Request, res: Response) {
           .find({ id: { $in: sids } }, { projection: { _id: 0 } })
           .toArray()
       : [];
+
     const stimulusMap: Record<string, any> = {};
     for (const s of stArr) stimulusMap[s.id] = s;
 
     return res.json({ items, stimulusMap });
   } catch (e) {
-    console.error("[getPlacementPaper] ERROR", e);
+    console.error("[getProgressPaper] ERROR", e);
     return res.status(500).json({ message: "Lỗi máy chủ" });
   }
 }
 
-/** SỬA: POST /api/placement/grade — KHÔNG yêu cầu testId */
-export async function gradePlacement(req: Request, res: Response) {
+/** POST /api/progress/grade  (tính điểm tạm, không lưu DB) */
+export async function gradeProgress(req: Request, res: Response) {
   try {
     const { answers, timeSec, allIds } = req.body as {
       answers?: Record<string, string>;
@@ -169,23 +184,16 @@ export async function gradePlacement(req: Request, res: Response) {
       ),
     });
   } catch (e) {
-    console.error("[gradePlacement] ERROR", e);
+    console.error("[gradeProgress] ERROR", e);
     return res.status(500).json({ message: "Lỗi máy chủ" });
   }
 }
 
-/** SỬA: POST /api/placement/submit — KHÔNG yêu cầu testId */
-export async function submitPlacement(req: Request, res: Response) {
+/** POST /api/progress/submit  (lưu kết quả) */
+export async function submitProgress(req: Request, res: Response) {
   try {
     const userId = (req as any).auth?.userId;
     if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
-
-    const existed = await PlacementAttempt.findOne({ userId }).lean();
-    if (existed) {
-      return res
-        .status(403)
-        .json({ message: "Bạn đã làm placement test, không thể làm lại." });
-    }
 
     const { answers, allIds, timeSec, startedAt, version } = req.body as {
       answers?: Record<string, string>;
@@ -262,9 +270,8 @@ export async function submitPlacement(req: Request, res: Response) {
       .sort((a, b) => a[1].acc - b[1].acc)
       .map(([k]) => k);
 
-    const attempt = await PlacementAttempt.create({
+    const attempt = await ProgressAttempt.create({
       userId,
-      testId: "paper_v1", // giữ field cho tiện filter/history, không phụ thuộc collection 'placements'
       total,
       correct,
       acc,
@@ -282,26 +289,18 @@ export async function submitPlacement(req: Request, res: Response) {
       version: version || "1.0.0",
     });
 
-    const partLevels: Record<string, 1 | 2 | 3> = {};
-    Object.entries(partStats).forEach(([k, s]) => {
-      partLevels[k] = accToLevel(s.acc);
-    });
-    const toeicPred = predicted;
-
-    await User.findByIdAndUpdate(
-      userId,
+    // Update profile: cập nhật toeicPred theo bài progress mới nhất
+    await User.updateOne(
+      { _id: userId },
       {
         $set: {
-          level,
-          levelUpdatedAt: new Date(),
-          levelSource: "placement",
-          lastPlacementAttemptId: attempt._id,
-          partLevels,
-          toeicPred,
+          toeicPred: predicted,
+          "progressMeta.lastAttemptAt": attempt.submittedAt,
+          "progressMeta.lastSuggestedAt": null, // reset gợi ý
+          updatedAt: new Date(),
         },
-      },
-      { new: false }
-    );
+      }
+    ).exec();
 
     return res.json({
       attemptId: String(attempt._id),
@@ -321,13 +320,13 @@ export async function submitPlacement(req: Request, res: Response) {
       ),
     });
   } catch (e) {
-    console.error("[submitPlacement] ERROR", e);
+    console.error("[submitProgress] ERROR", e);
     return res.status(500).json({ message: "Lỗi máy chủ" });
   }
 }
 
-// GET /api/placement/attempts?limit=10&page=1
-export async function getMyPlacementAttempts(req: Request, res: Response) {
+/** GET /api/progress/attempts?limit=10&page=1 */
+export async function getMyProgressAttempts(req: Request, res: Response) {
   try {
     const userId =
       (req as any).auth?.userId || (req.query.userId as string | undefined);
@@ -337,15 +336,15 @@ export async function getMyPlacementAttempts(req: Request, res: Response) {
     const page = Math.max(parseInt(String(req.query.page || 1)), 1);
 
     const [items, total] = await Promise.all([
-      PlacementAttempt.find({ userId })
+      ProgressAttempt.find({ userId })
         .sort({ submittedAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .select(
-          "_id testId level acc correct total listening reading submittedAt timeSec version"
+          "_id level acc correct total listening reading submittedAt timeSec version"
         )
         .lean(),
-      PlacementAttempt.countDocuments({ userId }),
+      ProgressAttempt.countDocuments({ userId }),
     ]);
 
     return res.json({
@@ -361,20 +360,17 @@ export async function getMyPlacementAttempts(req: Request, res: Response) {
   }
 }
 
-// GET /api/placement/attempts/:id
-export async function getPlacementAttemptById(req: Request, res: Response) {
+/** GET /api/progress/attempts/:id */
+export async function getProgressAttemptById(req: Request, res: Response) {
   try {
     const userId =
       (req as any).auth?.userId || (req.query.userId as string | undefined);
     if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
 
     const { id } = req.params;
-
-    // ⚠️ Dùng findById + exec(), KHÔNG dùng find()
-    const attempt = await PlacementAttempt.findById(id).exec();
+    const attempt = await ProgressAttempt.findById(id).exec();
     if (!attempt) return res.status(404).json({ message: "Không tìm thấy" });
 
-    // userId trong doc là ObjectId => so sánh string
     if (String(attempt.userId) !== String(userId)) {
       return res.status(403).json({ message: "Không có quyền truy cập" });
     }
@@ -386,8 +382,8 @@ export async function getPlacementAttemptById(req: Request, res: Response) {
   }
 }
 
-// controllers/placement.controller.ts
-export async function getPlacementAttemptItemsOrdered(
+/** GET /api/progress/attempts/:id/items  (khôi phục đề theo đúng thứ tự đã làm) */
+export async function getProgressAttemptItemsOrdered(
   req: Request,
   res: Response
 ) {
@@ -398,8 +394,7 @@ export async function getPlacementAttemptItemsOrdered(
     const { id } = req.params;
     const db = mongoose.connection;
 
-    // ⚠️ Dùng findById + select + exec(), KHÔNG lean để khỏi rớt kiểu
-    const attempt = await PlacementAttempt.findById(id)
+    const attempt = await ProgressAttempt.findById(id)
       .select("_id userId allIds")
       .exec();
 
@@ -411,10 +406,8 @@ export async function getPlacementAttemptItemsOrdered(
     const ids = Array.isArray(attempt.allIds) ? attempt.allIds : [];
     if (!ids.length) return res.json({ items: [], stimulusMap: {} });
 
-    const itemsCol = db.collection(process.env.ITEMS_COLL || "parts_placement");
-    const stimCol = db.collection(
-      process.env.STIMULI_COLL || "stimuli_placement"
-    );
+    const itemsCol = db.collection(ITEMS_COLL);
+    const stimCol = db.collection(STIMULI_COLL);
 
     const items = await itemsCol
       .aggregate([
@@ -440,6 +433,75 @@ export async function getPlacementAttemptItemsOrdered(
     return res.json({ items, stimulusMap });
   } catch (e) {
     console.error(e);
+    return res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+}
+
+function getEligibilityWindowMs() {
+  const minutesRaw = Number(process.env.PROGRESS_ELIGIBILITY_MINUTES);
+  const minutes =
+    Number.isFinite(minutesRaw) && minutesRaw > 0 ? minutesRaw : 5 * 24 * 60; // 5 ngày
+  return minutes * 60 * 1000;
+}
+
+export async function getProgressEligibility(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+    }
+
+    // Lấy lần progress gần nhất & lần practice đầu tiên
+    const [lastProgress, firstPractice] = await Promise.all([
+      ProgressAttempt.findOne({ userId })
+        .sort({ submittedAt: -1 })
+        .select({ submittedAt: 1, _id: 0 })
+        .lean<{ submittedAt?: Date }>(),
+      PracticeAttempt.findOne({ userId })
+        .sort({ createdAt: 1 })
+        .select({ createdAt: 1, _id: 0 })
+        .lean<{ createdAt?: Date }>(),
+    ]);
+
+    if (!firstPractice?.createdAt) {
+      return res.json({
+        eligible: false,
+        reason: "Chưa có lượt luyện tập nào",
+      });
+    }
+
+    const lastProgressAt = lastProgress?.submittedAt
+      ? new Date(lastProgress.submittedAt)
+      : null;
+
+    const firstPracticeAt = new Date(firstPractice.createdAt);
+    const anchor =
+      lastProgressAt && !isNaN(lastProgressAt.getTime())
+        ? lastProgressAt
+        : firstPracticeAt;
+
+    const practiceSinceCount = await PracticeAttempt.countDocuments({
+      userId,
+      createdAt: { $gt: anchor },
+    });
+
+    const WINDOW_MS = getEligibilityWindowMs();
+    const now = Date.now();
+    const delta = now - anchor.getTime();
+
+    const eligible = practiceSinceCount > 0 && delta >= WINDOW_MS;
+    const nextEligibleAt = new Date(anchor.getTime() + WINDOW_MS);
+
+    return res.json({
+      eligible,
+      practiceSinceCount,
+      since: anchor.toISOString(),
+      windowMinutes: WINDOW_MS / 60_000,
+      nextEligibleAt: nextEligibleAt.toISOString(),
+      remainingMs: Math.max(0, nextEligibleAt.getTime() - now),
+    });
+  } catch (e) {
+    console.error("[getProgressEligibility] ERROR", e);
     return res.status(500).json({ message: "Lỗi máy chủ" });
   }
 }

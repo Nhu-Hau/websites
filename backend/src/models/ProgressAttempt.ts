@@ -1,4 +1,5 @@
-import { Schema, Types, Document } from "mongoose";
+// backend/src/models/ProgressAttempt.ts
+import { Schema, Types } from "mongoose";
 import { mongoose } from "../lib/mongoose";
 
 mongoose.pluralize(null);
@@ -14,12 +15,13 @@ const ItemResultSchema = new Schema(
   { _id: false }
 );
 
-const PlacementAttemptSchema = new Schema(
+const ProgressAttemptSchema = new Schema(
   {
     userId: { type: Types.ObjectId, ref: "User", required: true, index: true },
     total: { type: Number, required: true },
     correct: { type: Number, required: true },
     acc: { type: Number, required: true },
+
     listening: {
       total: { type: Number, required: true },
       correct: { type: Number, required: true },
@@ -30,17 +32,22 @@ const PlacementAttemptSchema = new Schema(
       correct: { type: Number, required: true },
       acc: { type: Number, required: true },
     },
+
     level: { type: Number, required: true, enum: [1, 2, 3] },
     items: { type: [ItemResultSchema], default: [] },
-    test: { type: Number, default: null, index: true },
+
     predicted: {
       overall: { type: Number },
       listening: { type: Number },
       reading: { type: Number },
     },
+
     partStats: { type: Schema.Types.Mixed },
     weakParts: [String],
+
+    /** để reconstruct màn review theo đúng thứ tự đã làm */
     allIds: { type: [String], default: [] },
+
     timeSec: { type: Number, default: 0 },
     startedAt: { type: Date },
     submittedAt: { type: Date, default: Date.now },
@@ -48,22 +55,18 @@ const PlacementAttemptSchema = new Schema(
   },
   {
     timestamps: true,
-    collection: "placement_attempts",
+    collection: "progress_attempts",
   }
 );
 
-PlacementAttemptSchema.index({ userId: 1, submittedAt: -1 });
+ProgressAttemptSchema.index({ userId: 1, submittedAt: -1 });
 
-export const PlacementAttempt =
-  mongoose.models.PlacementAttempt ||
-  mongoose.model(
-    "PlacementAttempt",
-    PlacementAttemptSchema,
-    "placement_attempts"
-  );
+export const ProgressAttempt =
+  mongoose.models.ProgressAttempt ||
+  mongoose.model("ProgressAttempt", ProgressAttemptSchema, "progress_attempts");
 
-if (PlacementAttempt.collection.collectionName !== "placement_attempts") {
+if (ProgressAttempt.collection.collectionName !== "progress_attempts") {
   throw new Error(
-    `PlacementAttempt bound to wrong collection: ${PlacementAttempt.collection.collectionName}`
+    `ProgressAttempt bound to wrong collection: ${ProgressAttempt.collection.collectionName}`
   );
 }

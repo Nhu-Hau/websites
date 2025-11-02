@@ -191,6 +191,10 @@ router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
     // Tất cả user đều có quyền đầy đủ
     const isHost = isCurrentHost || shouldBeHost;
     const userRole = (req.user as any)!.role;
+    
+    // Xác định房主的 identity (sau khi可能已经更新)
+    const updatedRoomDoc = await StudyRoom.findOne({ roomName: params.roomName }).lean() as IStudyRoom | null;
+    const hostIdentity = updatedRoomDoc?.currentHostId || roomDoc.currentHostId || userId;
 
     const raw = createJoinToken({
       roomName: params.roomName,
@@ -212,6 +216,7 @@ router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
       displayName: (req.user as any)!.name,
       role: userRole,
       isHost,
+      hostIdentity, // 返回房主的 identity
     });
   } catch (err) {
     console.error(err);

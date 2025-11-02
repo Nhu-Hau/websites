@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import PlacementAttempt from "../models/PlacementAttempt";
+import { PlacementAttempt } from "../models/PlacementAttempt";
 import { User } from "../models/User";
 
-const ITEMS_COLL = process.env.ITEMS_COLL || "parts_placement";
-const STIMULI_COLL = process.env.STIMULI_COLL || "stimuli_placement";
+const ITEMS_COLL = process.env.PLACEMENT_PARTS_COLL || "placement_parts";
+const STIMULI_COLL = process.env.PLACEMENT_STIMULI_COLL || "placement_stimuli";
+
+const LISTENING = new Set(["part.1", "part.2", "part.3", "part.4"]);
+const READING = new Set(["part.5", "part.6", "part.7"]);
 
 function accToLevel(acc: number): 1 | 2 | 3 {
   if (acc >= 0.7) return 3;
@@ -24,164 +27,73 @@ function predictToeic(listeningAcc: number, readingAcc: number) {
   return { overall, listening, reading };
 }
 
-// GET /api/placement/test
-export async function getPlacementTest(req: Request, res: Response) {
-  const db = mongoose.connection;
-  const def = await db.collection("placements").findOne({});
-  if (!def) return res.status(404).json({ message: "Chưa có placement test" });
-  return res.json(def);
-}
-
-// POST /api/placement/items
-export async function getPlacementItems(req: Request, res: Response) {
-  const { ids } = req.body as { ids?: string[] };
-  if (!ids?.length) return res.status(400).json({ message: "Thiếu ids" });
-
-  const db = mongoose.connection;
-  const itemsCol = db.collection(ITEMS_COLL);
-  const stimCol = db.collection(STIMULI_COLL);
-
-  const itemsArr = await itemsCol
-    .find({ id: { $in: ids } }, { projection: { _id: 0 } })
-    .toArray();
-
-  const byId: Record<string, any> = {};
-  for (const it of itemsArr) byId[it.id] = it;
-  const items = ids.map((id) => byId[id]).filter(Boolean);
-
-  const sids = Array.from(
-    new Set(items.map((it) => it.stimulusId).filter(Boolean))
-  );
-  const stArr = await stimCol
-    .find({ id: { $in: sids } }, { projection: { _id: 0 } })
-    .toArray();
-
-  const stimulusMap: Record<string, any> = {};
-  for (const s of stArr) stimulusMap[s.id] = s;
-
-  return res.json({ items, stimulusMap });
-}
-
-// POST /api/placement/grade  (chấm tạm – không lưu DB)
-export async function gradePlacement(req: Request, res: Response) {
-  const { testId, answers, timeSec, allIds } = req.body as {
-    testId?: string;
-    answers?: Record<string, string>;
-    timeSec?: number;
-    allIds?: string[];
-  };
-  if (!testId || !answers) {
-    return res.status(400).json({ message: "Thiếu dữ liệu" });
-  }
-
-  const db = mongoose.connection;
-  const itemsCol = db.collection(ITEMS_COLL);
-  const ids =
-    Array.isArray(allIds) && allIds.length ? allIds : Object.keys(answers);
-
-  const items = await itemsCol
-    .find(
-      { id: { $in: ids } },
-      { projection: { _id: 0, id: 1, part: 1, answer: 1 } }
-    )
-    .toArray();
-
-  let total = items.length,
-    correct = 0,
-    L = 0,
-    Lc = 0,
-    R = 0,
-    Rc = 0;
-
-  // thống kê theo Part
-  type PartStat = { total: number; correct: number; acc: number };
-  const partStats: Record<string, PartStat> = {};
-
-  for (const it of items) {
-    const picked = answers[it.id] ?? null;
-    const ok = picked !== null && picked === it.answer;
-    if (ok) correct++;
-
-    const isListening = ["part.1", "part.2", "part.3", "part.4"].includes(
-      it.part
-    );
-    if (isListening) {
-      L++;
-      if (ok) Lc++;
-    } else {
-      R++;
-      if (ok) Rc++;
-    }
-
-    if (!partStats[it.part])
-      partStats[it.part] = { total: 0, correct: 0, acc: 0 };
-    partStats[it.part].total += 1;
-    if (ok) partStats[it.part].correct += 1;
-  }
-
-  for (const k of Object.keys(partStats)) {
-    const s = partStats[k];
-    s.acc = s.total ? s.correct / s.total : 0;
-  }
-
-  const acc = total ? correct / total : 0;
-  const level = accToLevel(acc);
-
-  const listening = { total: L, correct: Lc, acc: L ? Lc / L : 0 };
-  const reading = { total: R, correct: Rc, acc: R ? Rc / R : 0 };
-
-  // điểm ước lượng
-  const predicted = predictToeic(listening.acc, reading.acc);
-
-  // part yếu (mặc định < 60%)
-  const WEAK_THRESH = 0.6;
-  const weakParts = Object.entries(partStats)
-    .filter(([, s]) => s.acc < WEAK_THRESH)
-    .sort((a, b) => a[1].acc - b[1].acc)
-    .map(([k]) => k);
-
-  return res.json({
-    total,
-    correct,
-    acc,
-    listening,
-    reading,
-    timeSec: timeSec || 0,
-    level,
-    predicted, // NEW
-    partStats, // NEW
-    weakParts, // NEW
-    answersMap: items.reduce(
-      (m, it) => ((m[it.id] = { correctAnswer: it.answer }), m),
-      {} as Record<string, { correctAnswer: string }>
-    ),
-  });
-}
-
-export async function submitPlacement(req: Request, res: Response) {
+/** NEW: GET /api/placement/paper
+ * Optional query limit mỗi part: ?p1=4&p2=8&p3=9&p4=9&p5=10&p6=8&p7=7
+ * Không truyền thì lấy toàn bộ mỗi part.
+ */
+export async function getPlacementPaper(req: Request, res: Response) {
   try {
-    const userId = (req as any).auth?.userId;
-    if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+    const db = mongoose.connection;
+    const itemsCol = db.collection(ITEMS_COLL);
+    const stimCol = db.collection(STIMULI_COLL);
 
-    // không cho làm lại
-    const existed = await PlacementAttempt.findOne({ userId });
-    if (existed) {
-      return res
-        .status(403)
-        .json({ message: "Bạn đã làm placement test, không thể làm lại." });
+    const limits = {
+      "part.1": Number(req.query.p1 ?? 0),
+      "part.2": Number(req.query.p2 ?? 0),
+      "part.3": Number(req.query.p3 ?? 0),
+      "part.4": Number(req.query.p4 ?? 0),
+      "part.5": Number(req.query.p5 ?? 0),
+      "part.6": Number(req.query.p6 ?? 0),
+      "part.7": Number(req.query.p7 ?? 0),
+    };
+
+    const parts = Object.keys(limits);
+    let items: any[] = [];
+    for (const pk of parts as (keyof typeof limits)[]) {
+      const lim =
+        Number.isFinite(limits[pk]) && limits[pk] > 0 ? limits[pk] : 0;
+      const cur = itemsCol
+        .find({ part: pk }, { projection: { _id: 0 } })
+        .sort({ order: 1, id: 1 });
+      items = items.concat(
+        lim > 0 ? await cur.limit(lim).toArray() : await cur.toArray()
+      );
     }
 
-    const { testId, answers, allIds, timeSec, startedAt, version } =
-      req.body as {
-        testId?: string;
-        answers?: Record<string, string>;
-        allIds?: string[];
-        timeSec?: number;
-        startedAt?: string;
-        version?: string;
-      };
+    items.sort((a, b) => {
+      const ao = a?.order ?? null,
+        bo = b?.order ?? null;
+      if (ao != null && bo != null) return ao - bo;
+      return String(a.id || "").localeCompare(String(b.id || ""));
+    });
 
-    if (!testId || !answers || !allIds?.length) {
+    const sids = Array.from(
+      new Set(items.map((it: any) => it.stimulusId).filter(Boolean))
+    );
+    const stArr = sids.length
+      ? await stimCol
+          .find({ id: { $in: sids } }, { projection: { _id: 0 } })
+          .toArray()
+      : [];
+    const stimulusMap: Record<string, any> = {};
+    for (const s of stArr) stimulusMap[s.id] = s;
+
+    return res.json({ items, stimulusMap });
+  } catch (e) {
+    console.error("[getPlacementPaper] ERROR", e);
+    return res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+}
+
+/** SỬA: POST /api/placement/grade — KHÔNG yêu cầu testId */
+export async function gradePlacement(req: Request, res: Response) {
+  try {
+    const { answers, timeSec, allIds } = req.body as {
+      answers?: Record<string, string>;
+      timeSec?: number;
+      allIds?: string[];
+    };
+    if (!answers || !allIds?.length) {
       return res.status(400).json({ message: "Thiếu dữ liệu" });
     }
 
@@ -201,16 +113,116 @@ export async function submitPlacement(req: Request, res: Response) {
       Lc = 0,
       R = 0,
       Rc = 0;
+    type PartStat = { total: number; correct: number; acc: number };
+    const partStats: Record<string, PartStat> = {};
 
+    for (const it of items) {
+      const picked = answers[it.id] ?? null;
+      const ok = picked !== null && picked === it.answer;
+      if (ok) correct++;
+
+      const isL = LISTENING.has(it.part);
+      if (isL) {
+        L++;
+        if (ok) Lc++;
+      } else {
+        R++;
+        if (ok) Rc++;
+      }
+
+      if (!partStats[it.part])
+        partStats[it.part] = { total: 0, correct: 0, acc: 0 };
+      partStats[it.part].total += 1;
+      if (ok) partStats[it.part].correct += 1;
+    }
+    Object.keys(partStats).forEach((k) => {
+      const s = partStats[k];
+      s.acc = s.total ? s.correct / s.total : 0;
+    });
+
+    const acc = total ? correct / total : 0;
+    const level = accToLevel(acc);
+    const listening = { total: L, correct: Lc, acc: L ? Lc / L : 0 };
+    const reading = { total: R, correct: Rc, acc: R ? Rc / R : 0 };
+    const predicted = predictToeic(listening.acc, reading.acc);
+
+    const WEAK_THRESH = 0.6;
+    const weakParts = Object.entries(partStats)
+      .filter(([, s]) => s.acc < WEAK_THRESH)
+      .sort((a, b) => a[1].acc - b[1].acc)
+      .map(([k]) => k);
+
+    return res.json({
+      total,
+      correct,
+      acc,
+      listening,
+      reading,
+      timeSec: timeSec || 0,
+      level,
+      predicted,
+      partStats,
+      weakParts,
+      answersMap: items.reduce(
+        (m, it) => ((m[it.id] = { correctAnswer: it.answer }), m),
+        {} as Record<string, { correctAnswer: string }>
+      ),
+    });
+  } catch (e) {
+    console.error("[gradePlacement] ERROR", e);
+    return res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+}
+
+/** SỬA: POST /api/placement/submit — KHÔNG yêu cầu testId */
+export async function submitPlacement(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+
+    const existed = await PlacementAttempt.findOne({ userId }).lean();
+    if (existed) {
+      return res
+        .status(403)
+        .json({ message: "Bạn đã làm placement test, không thể làm lại." });
+    }
+
+    const { answers, allIds, timeSec, startedAt, version } = req.body as {
+      answers?: Record<string, string>;
+      allIds?: string[];
+      timeSec?: number;
+      startedAt?: string;
+      version?: string;
+    };
+    if (!answers || !allIds?.length) {
+      return res.status(400).json({ message: "Thiếu dữ liệu" });
+    }
+
+    const db = mongoose.connection;
+    const itemsCol = db.collection(ITEMS_COLL);
+
+    const items = await itemsCol
+      .find(
+        { id: { $in: allIds } },
+        { projection: { _id: 0, id: 1, part: 1, answer: 1 } }
+      )
+      .toArray();
+
+    let total = items.length,
+      correct = 0,
+      L = 0,
+      Lc = 0,
+      R = 0,
+      Rc = 0;
     type PartStat = { total: number; correct: number; acc: number };
     const partStats: Record<string, PartStat> = {};
 
     const itemResults = items.map((it) => {
       const picked = answers[it.id] ?? null;
       const ok = picked !== null && picked === it.answer;
-
       if (ok) correct++;
-      const isL = ["part.1", "part.2", "part.3", "part.4"].includes(it.part);
+
+      const isL = LISTENING.has(it.part);
       if (isL) {
         L++;
         if (ok) Lc++;
@@ -233,7 +245,6 @@ export async function submitPlacement(req: Request, res: Response) {
       };
     });
 
-    // tính acc từng part
     Object.keys(partStats).forEach((k) => {
       const s = partStats[k];
       s.acc = s.total ? s.correct / s.total : 0;
@@ -241,10 +252,8 @@ export async function submitPlacement(req: Request, res: Response) {
 
     const acc = total ? correct / total : 0;
     const level = accToLevel(acc);
-
     const listening = { total: L, correct: Lc, acc: L ? Lc / L : 0 };
     const reading = { total: R, correct: Rc, acc: R ? Rc / R : 0 };
-
     const predicted = predictToeic(listening.acc, reading.acc);
 
     const WEAK_THRESH = 0.6;
@@ -253,10 +262,9 @@ export async function submitPlacement(req: Request, res: Response) {
       .sort((a, b) => a[1].acc - b[1].acc)
       .map(([k]) => k);
 
-    // Lưu Attempt
     const attempt = await PlacementAttempt.create({
       userId,
-      testId,
+      testId: "paper_v1", // giữ field cho tiện filter/history, không phụ thuộc collection 'placements'
       total,
       correct,
       acc,
@@ -274,12 +282,11 @@ export async function submitPlacement(req: Request, res: Response) {
       version: version || "1.0.0",
     });
 
-    // === NEW: tính partLevels & toeicPred để lưu vào User ===
     const partLevels: Record<string, 1 | 2 | 3> = {};
     Object.entries(partStats).forEach(([k, s]) => {
       partLevels[k] = accToLevel(s.acc);
     });
-    const toeicPred = predicted; // {overall,listening,reading}
+    const toeicPred = predicted;
 
     await User.findByIdAndUpdate(
       userId,
@@ -289,15 +296,15 @@ export async function submitPlacement(req: Request, res: Response) {
           levelUpdatedAt: new Date(),
           levelSource: "placement",
           lastPlacementAttemptId: attempt._id,
-          partLevels, // NEW
-          toeicPred, // NEW
+          partLevels,
+          toeicPred,
         },
       },
       { new: false }
     );
 
     return res.json({
-      attemptId: attempt._id.toString(),
+      attemptId: String(attempt._id),
       total,
       correct,
       acc,
@@ -308,13 +315,13 @@ export async function submitPlacement(req: Request, res: Response) {
       predicted,
       partStats,
       weakParts,
-      answersMap: itemResults.reduce((m, r) => {
-        m[r.id] = { correctAnswer: r.correctAnswer };
-        return m;
-      }, {} as Record<string, { correctAnswer: string }>),
+      answersMap: itemResults.reduce(
+        (m, r) => ((m[r.id] = { correctAnswer: r.correctAnswer }), m),
+        {} as Record<string, { correctAnswer: string }>
+      ),
     });
   } catch (e) {
-    console.error(e);
+    console.error("[submitPlacement] ERROR", e);
     return res.status(500).json({ message: "Lỗi máy chủ" });
   }
 }
@@ -362,14 +369,17 @@ export async function getPlacementAttemptById(req: Request, res: Response) {
     if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
 
     const { id } = req.params;
-    const attempt = await PlacementAttempt.findById(id).lean();
+
+    // ⚠️ Dùng findById + exec(), KHÔNG dùng find()
+    const attempt = await PlacementAttempt.findById(id).exec();
     if (!attempt) return res.status(404).json({ message: "Không tìm thấy" });
 
+    // userId trong doc là ObjectId => so sánh string
     if (String(attempt.userId) !== String(userId)) {
       return res.status(403).json({ message: "Không có quyền truy cập" });
     }
 
-    return res.json(attempt);
+    return res.json(attempt.toObject());
   } catch (e) {
     console.error(e);
     return res.status(500).json({ message: "Lỗi máy chủ" });
@@ -388,18 +398,19 @@ export async function getPlacementAttemptItemsOrdered(
     const { id } = req.params;
     const db = mongoose.connection;
 
+    // ⚠️ Dùng findById + select + exec(), KHÔNG lean để khỏi rớt kiểu
     const attempt = await PlacementAttempt.findById(id)
       .select("_id userId allIds")
-      .lean();
+      .exec();
 
     if (!attempt) return res.status(404).json({ message: "Không tìm thấy" });
-    if (String(attempt.userId) !== String(userId))
+    if (String(attempt.userId) !== String(userId)) {
       return res.status(403).json({ message: "Không có quyền truy cập" });
+    }
 
-    const ids: string[] = Array.isArray(attempt.allIds) ? attempt.allIds : [];
+    const ids = Array.isArray(attempt.allIds) ? attempt.allIds : [];
     if (!ids.length) return res.json({ items: [], stimulusMap: {} });
 
-    // Lấy items và sort theo vị trí trong ids (server-side)
     const itemsCol = db.collection(process.env.ITEMS_COLL || "parts_placement");
     const stimCol = db.collection(
       process.env.STIMULI_COLL || "stimuli_placement"
@@ -414,7 +425,6 @@ export async function getPlacementAttemptItemsOrdered(
       ])
       .toArray();
 
-    // Map stimulus ids
     const sids = Array.from(
       new Set(items.map((it: any) => it.stimulusId).filter(Boolean))
     );
@@ -425,7 +435,7 @@ export async function getPlacementAttemptItemsOrdered(
       : [];
 
     const stimulusMap: Record<string, any> = {};
-    stArr.forEach((s: any) => (stimulusMap[s.id] = s));
+    for (const s of stArr) stimulusMap[s.id] = s;
 
     return res.json({ items, stimulusMap });
   } catch (e) {

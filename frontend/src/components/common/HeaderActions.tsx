@@ -9,6 +9,8 @@ import { useLocaleSwitch } from "@/hooks/useLocaleSwitch";
 import useClickOutside from "@/hooks/useClickOutside";
 import { useTheme } from "@/context/ThemeContext";
 import { useNotifications } from "@/hooks/useNotifications";
+import ProgressEligibilityWatcher from "@/components/progress/ProgressEligibility";
+import PracticeInactivityWatcher from "../placement/PracticeInactivity";
 
 /* ================= LanguageSwitcher ================= */
 export function LanguageSwitcher() {
@@ -27,7 +29,6 @@ export function LanguageSwitcher() {
         aria-label="Chọn ngôn ngữ"
         onClick={() => setOpen((prev) => !prev)}
         className="p-2 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900 focus:outline-none transition duration-300 hover:scale-105 text-gray-800 dark:text-gray-100"
-        // Chỉ gắn tooltip khi KHÔNG mở dropdown
         {...(!open
           ? {
               "data-tooltip-id": "language-tooltip",
@@ -80,7 +81,6 @@ export function LanguageSwitcher() {
         </div>
       )}
 
-      {/* Tooltip: chỉ render khi KHÔNG mở dropdown */}
       {!open && (
         <Tooltip
           id="language-tooltip"
@@ -96,7 +96,6 @@ export function LanguageSwitcher() {
 }
 
 /* ================= Notification ================= */
-
 export function Notification() {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -158,10 +157,8 @@ export function Notification() {
               {items.map((n) => (
                 <li key={n.id}>
                   <Link
-                    href={n.link}
-                    onClick={() =>
-                      setOpen(false)
-                    } /* Thêm dòng này để đóng dropdown khi click link */
+                    href={n.link || "#"}
+                    onClick={() => setOpen(false)}
                     className={`block p-3 rounded-lg transition-colors duration-200 ${
                       n.read
                         ? "bg-zinc-50 dark:bg-zinc-800 hover:bg-sky-100 dark:hover:bg-sky-900"
@@ -208,7 +205,6 @@ export function ThemeToggle() {
         onClick={(e) => {
           e.stopPropagation();
           setTheme(theme === "light" ? "dark" : "light");
-          // Không cần hideAll: tooltip sẽ ẩn ngay sau khi rời hover
         }}
         className="p-2 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900 focus:outline-none transition duration-300 hover:scale-105 text-gray-800 dark:text-gray-100"
         data-tooltip-id="theme-tooltip"
@@ -239,6 +235,9 @@ export function ThemeToggle() {
 export default function HeaderActions() {
   return (
     <div className="flex items-center">
+      {/* Watcher âm thầm kiểm tra eligibility để đẩy thông báo & corner toast */}
+      <ProgressEligibilityWatcher />
+      <PracticeInactivityWatcher/>
       <ThemeToggle />
       <LanguageSwitcher />
       <Notification />

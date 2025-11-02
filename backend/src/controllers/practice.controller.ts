@@ -4,7 +4,7 @@ import mongoose, { Types } from "mongoose";
 import { PracticeAttempt } from "../models/PracticeAttempt";
 import { User } from "../models/User";
 
-const PARTS_COLL = process.env.PARTS_COLL || "parts";
+const PARTS_COLL = process.env.PARTS_COLL || "practice_parts";
 const VALID_PARTS = new Set([
   "part.1",
   "part.2",
@@ -29,7 +29,6 @@ function levelFromAcc(acc: number): 1 | 2 | 3 {
 }
 
 /* ========= NEW: type lý do ========= */
-/* ========= NEW: type lý do ========= */
 type LevelReason = { rule: "promote" | "demote" | "keep"; detail: string };
 
 /** Quyết định level mới theo rule:
@@ -43,8 +42,11 @@ async function decideNewLevel(
   curLevel: 1 | 2 | 3
 ): Promise<{ decided: 1 | 2 | 3; reason: LevelReason }> {
   // Mốc thời gian từ khi level hiện tại bắt đầu có hiệu lực
-  const userDoc = await User.findById(userId).select({ partLevelsMeta: 1 }).lean();
-  const since: Date | undefined = (userDoc as any)?.partLevelsMeta?.[partKey]?.lastChangedAt;
+  const userDoc = await User.findById(userId)
+    .select({ partLevelsMeta: 1 })
+    .lean();
+  const since: Date | undefined = (userDoc as any)?.partLevelsMeta?.[partKey]
+    ?.lastChangedAt;
 
   // PROMOTE base: 3 lần gần nhất (không retake), đúng level, sau mốc
   const promoteBase = await PracticeAttempt.find({
@@ -104,7 +106,9 @@ async function decideNewLevel(
         decided: (curLevel + 1) as 1 | 2 | 3,
         reason: {
           rule: "promote",
-          detail: `Ba lần gần nhất (không tính retake) trung bình ≥70% (≈ ${Math.round(avg * 100)}%).`,
+          detail: `Ba lần gần nhất (không tính retake) trung bình ≥70% (≈ ${Math.round(
+            avg * 100
+          )}%).`,
         },
       };
     }
@@ -133,7 +137,7 @@ export async function submitPracticePart(req: Request, res: Response) {
       timeSec?: number;
     };
 
-    // Validate inputs
+    // Validate
     if (!VALID_PARTS.has(String(partKey)))
       return res.status(400).json({ message: "partKey không hợp lệ" });
     if (![1, 2, 3].includes(Number(level)))
@@ -144,7 +148,7 @@ export async function submitPracticePart(req: Request, res: Response) {
     const db = mongoose.connection;
     const itemsCol = db.collection(PARTS_COLL);
 
-    // Load items đúng part+level(+test nếu có)
+    // Load items đúng part + level (+ test nếu có)
     const items = await itemsCol
       .find(
         {
@@ -163,7 +167,7 @@ export async function submitPracticePart(req: Request, res: Response) {
         .json({ message: "Không tìm thấy câu hỏi cho part/level/test này" });
     }
 
-    // Đánh dấu retake — nếu đã từng làm TEST này ở cùng part/level
+    // Retake?
     let isRetake = false;
     if (Number.isInteger(Number(test))) {
       const prev = await PracticeAttempt.findOne({
@@ -190,15 +194,6 @@ export async function submitPracticePart(req: Request, res: Response) {
     }
     const acc = total ? correct / total : 0;
 
-    // Ước lượng TOEIC minh hoạ theo part đơn lẻ
-    const rawL = acc * 495;
-    const rawR = 0;
-    const predicted = {
-      listening: toToeicStep5(rawL, 5, 495),
-      reading: toToeicStep5(rawR, 5, 495),
-      overall: toToeicStep5(rawL + rawR, 10, 990),
-    };
-
     // Lưu attempt
     const attempt = await PracticeAttempt.create({
       userId,
@@ -214,67 +209,95 @@ export async function submitPracticePart(req: Request, res: Response) {
       isRetake,
     });
 
-    // Lấy level hiện tại từ user — hỗ trợ cả 2 kiểu lưu (sai và đúng), rồi normalize
+    // Lấy level hiện tại của user và chuẩn hoá cấu trúc partLevels
     const userDoc = (await User.findById(userId).lean()) as {
       partLevels?: Record<string, any>;
     } | null;
-    const plRaw = (userDoc?.partLevels ?? {}) as any;
 
+    const plRaw = (userDoc?.partLevels ?? {}) as any;
     const num = String(partKey).split(".")[1]; // "1".."7"
     const curFromNested = plRaw?.part?.[num];
     const curFromDot = plRaw?.[partKey];
-    let curLevel = ([1, 2, 3].includes(curFromNested)
-      ? curFromNested
-      : [1, 2, 3].includes(curFromDot)
-      ? curFromDot
-      : levelFromAcc(acc)) as 1 | 2 | 3;
+    const curLevel = (
+      [1, 2, 3].includes(curFromNested)
+        ? curFromNested
+        : [1, 2, 3].includes(curFromDot)
+        ? curFromDot
+        : levelFromAcc(acc)
+    ) as 1 | 2 | 3;
 
-    // Quyết định level mới theo rule (dùng mốc lastChangedAt)
+    // Quyết định level mới (không đổi nếu là retake)
     const decision = await decideNewLevel(
       new Types.ObjectId(String(userId)),
       String(partKey),
       curLevel
     );
-    let decided = curLevel;
-    let reason: LevelReason = decision.reason;
-
-    // Retake thì không đổi level
-    if (!isRetake) decided = decision.decided;
-
+    const decided = !isRetake ? decision.decided : curLevel;
     const levelChanged = decided !== curLevel;
-    const now = new Date();
 
-    // toeicPred giữ theo bài vừa làm
-    const nextToeic = {
-      overall: predicted.overall,
-      listening: predicted.listening,
-      reading: predicted.reading,
-    };
-
-    // === Normalize partLevels rồi ghi đè (xoá hẳn các key sai như "part.1")
+    // Chuẩn hoá partLevels về dạng { part: { "1": 1|2|3, ... } }
     const normalized: Record<string, any> = { part: {} };
-    for (const p of ["part.1", "part.2", "part.3", "part.4", "part.5", "part.6", "part.7"]) {
+    for (const p of [
+      "part.1",
+      "part.2",
+      "part.3",
+      "part.4",
+      "part.5",
+      "part.6",
+      "part.7",
+    ]) {
       const n = p.split(".")[1];
       const fromDot2 = plRaw?.[p];
       const fromNested2 = plRaw?.part?.[n];
       if ([1, 2, 3].includes(fromDot2)) normalized.part[n] = fromDot2;
-      else if ([1, 2, 3].includes(fromNested2)) normalized.part[n] = fromNested2;
+      else if ([1, 2, 3].includes(fromNested2))
+        normalized.part[n] = fromNested2;
     }
-    // cập nhật phần vừa quyết định
     normalized.part[num] = decided;
 
-    // Ghi đè object chuẩn + meta mốc thời gian nếu có đổi level
-    await User.updateOne(
-      { _id: userId },
-      {
-        $set: {
-          partLevels: normalized,
-          toeicPred: nextToeic,
-          updatedAt: now,
-          ...(levelChanged ? { [`partLevelsMeta.${partKey}.lastChangedAt`]: now } : {}),
-        },
-      }
-    );
+    const now = new Date();
+
+    // ⬇️ CẬP NHẬT USER: CHỈ update level/meta, KHÔNG chạm toeicPred
+    const setPayload: any = {
+      partLevels: normalized,
+      updatedAt: now,
+    };
+    if (levelChanged) {
+      setPayload[`partLevelsMeta.${partKey}.lastChangedAt`] = now;
+    }
+    await User.updateOne({ _id: userId }, { $set: setPayload }).exec();
+
+    // Đọc toeicPred hiện tại trong DB để trả về FE (giữ nguyên, không đổi)
+    const u = await User.findById(userId)
+      .select({ toeicPred: 1 })
+      .lean<{
+        toeicPred?: { overall?: number; listening?: number; reading?: number };
+      } | null>()
+      .exec();
+
+    const predicted = {
+      overall: Math.min(
+        990,
+        Math.max(
+          10,
+          Math.round(((u?.toeicPred?.overall ?? 10) as number) / 5) * 5
+        )
+      ),
+      listening: Math.min(
+        495,
+        Math.max(
+          5,
+          Math.round(((u?.toeicPred?.listening ?? 5) as number) / 5) * 5
+        )
+      ),
+      reading: Math.min(
+        495,
+        Math.max(
+          5,
+          Math.round(((u?.toeicPred?.reading ?? 5) as number) / 5) * 5
+        )
+      ),
+    };
 
     return res.json({
       total,
@@ -285,8 +308,8 @@ export async function submitPracticePart(req: Request, res: Response) {
       isRetake,
       recommended: {
         newLevelForThisPart: decided,
-        predicted: nextToeic,
-        reason,
+        predicted, // điểm hiện tại trong DB (không bị luyện part làm thay đổi)
+        reason: decision.reason,
       },
       savedAttemptId: attempt._id,
     });
@@ -399,6 +422,113 @@ export async function getPracticeAttemptById(req: Request, res: Response) {
     return res.json(att);
   } catch (e) {
     console.error("[getPracticeAttemptById] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+function getInactivityWindowMs() {
+  const daysRaw = Number(process.env.PRACTICE_INACTIVITY_DAYS);
+  const days = Number.isFinite(daysRaw) && daysRaw > 0 ? daysRaw : 3;
+  return days * 24 * 60 * 60 * 1000;
+}
+
+function getNudgeCooldownMs() {
+  const hoursRaw = Number(process.env.PRACTICE_NUDGE_COOLDOWN_HOURS);
+  const hours = Number.isFinite(hoursRaw) && hoursRaw > 0 ? hoursRaw : 24;
+  return hours * 60 * 60 * 1000;
+}
+
+/** GET /api/practice/inactivity — không luyện tập quá N ngày thì nhắc practice */
+export async function getPracticeInactivity(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+
+    const [lastPractice, me] = await Promise.all([
+      PracticeAttempt.findOne({ userId })
+        .sort({ createdAt: -1 })
+        .select({ createdAt: 1, _id: 0 })
+        .lean<{ createdAt?: Date }>(),
+      User.findById(userId)
+        .select({ "practiceMeta.lastInactivityNudgedAt": 1 })
+        .lean<{ practiceMeta?: { lastInactivityNudgedAt?: Date } } | null>(),
+    ]);
+
+    const now = Date.now();
+    const THRESH_MS = getInactivityWindowMs();
+    const COOLDOWN_MS = getNudgeCooldownMs();
+
+    const lastNudgeAt = me?.practiceMeta?.lastInactivityNudgedAt
+      ? new Date(me.practiceMeta.lastInactivityNudgedAt)
+      : null;
+    const nudgedRecently =
+      lastNudgeAt != null && now - lastNudgeAt.getTime() < COOLDOWN_MS;
+
+    if (!lastPractice?.createdAt) {
+      // Chưa từng làm ⇒ coi như inactive & có thể nudge nếu không vướng cooldown
+      const shouldNudge = !nudgedRecently;
+      return res.json({
+        inactive: true,
+        shouldNudge,
+        reason: "no_practice_yet",
+        lastPracticeAt: null,
+        thresholdMs: THRESH_MS,
+        cooldownMs: COOLDOWN_MS,
+        lastNudgedAt: lastNudgeAt ? lastNudgeAt.toISOString() : null,
+        nextNudgeAt: nudgedRecently
+          ? new Date(lastNudgeAt!.getTime() + COOLDOWN_MS).toISOString()
+          : new Date(now).toISOString(),
+        remainingMs: null,
+      });
+    }
+
+    const lastAt = new Date(lastPractice.createdAt);
+    const inactive = now - lastAt.getTime() >= THRESH_MS;
+    const shouldNudge = inactive && !nudgedRecently;
+
+    return res.json({
+      inactive,
+      shouldNudge,
+      reason: inactive ? "exceed_threshold" : "ok",
+      lastPracticeAt: lastAt.toISOString(),
+      thresholdMs: THRESH_MS,
+      cooldownMs: COOLDOWN_MS,
+      lastNudgedAt: lastNudgeAt ? lastNudgeAt.toISOString() : null,
+      nextNudgeAt: shouldNudge
+        ? new Date(now).toISOString()
+        : new Date(
+            Math.max(
+              lastAt.getTime() + THRESH_MS, // khi đủ ngưỡng
+              (lastNudgeAt?.getTime() || 0) + COOLDOWN_MS // sau cooldown
+            )
+          ).toISOString(),
+      remainingMs: Math.max(0, lastAt.getTime() + THRESH_MS - now),
+    });
+  } catch (e) {
+    console.error("[getPracticeInactivity] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+/** POST /api/practice/inactivity/ack — ghi nhận đã hiển thị nhắc nhở practice */
+export async function ackPracticeInactivity(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+
+    await User.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          "practiceMeta.lastInactivityNudgedAt": new Date(),
+          updatedAt: new Date(),
+        },
+      }
+    ).exec();
+
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error("[ackPracticeInactivity] ERROR", e);
     return res.status(500).json({ message: "Server error" });
   }
 }

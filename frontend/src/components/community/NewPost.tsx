@@ -44,7 +44,10 @@ export default function NewPost() {
         });
         if (!res.ok) continue;
         const data = await res.json();
-        setAttachments(prev => [...prev, { type: data.type, url: data.url, name: data.name, size: data.size }]);
+        setAttachments((prev) => [
+          ...prev,
+          { type: data.type, url: data.url, name: data.name, size: data.size },
+        ]);
       }
       toast.success("Đã tải lên tệp!");
     } catch {
@@ -55,7 +58,7 @@ export default function NewPost() {
   };
 
   const removeAttachment = (i: number) => {
-    setAttachments(prev => prev.filter((_, idx) => idx !== i));
+    setAttachments((prev) => prev.filter((_, idx) => idx !== i));
     toast.info("Đã xóa tệp");
   };
 
@@ -96,10 +99,12 @@ export default function NewPost() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+    <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-32">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 sm:p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Tạo bài viết mới</h2>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-5 sm:p-6">
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
+            Tạo bài viết mới
+          </h2>
 
           <div className="space-y-4">
             <textarea
@@ -116,10 +121,10 @@ export default function NewPost() {
               onCompositionStart={() => setIsComposing(true)}
               onCompositionEnd={() => setIsComposing(false)}
               placeholder="Chia sẻ kinh nghiệm, tips, tài liệu..."
-              className="w-full min-h-32 max-h-60 resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition"
+              className="w-full min-h-32 max-h-60 resize-none rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3 text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition"
               rows={6}
             />
-            <div className="text-right text-xs text-gray-500 dark:text-gray-400">
+            <div className="text-right text-xs text-zinc-500 dark:text-zinc-400">
               {content.length}/{maxChars}
             </div>
 
@@ -128,14 +133,20 @@ export default function NewPost() {
                 {attachments.map((a, i) => (
                   <div
                     key={i}
-                    className="relative group rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden"
+                    className="relative group rounded-lg border border-zinc-300 dark:border-zinc-700 overflow-hidden"
                   >
                     {a.type === "image" ? (
-                      <img src={fullUrl(a.url)} alt="" className="h-28 w-36 object-cover" />
+                      <img
+                        src={fullUrl(a.url)}
+                        alt=""
+                        className="h-28 w-36 object-cover"
+                      />
                     ) : (
-                      <div className="p-3 bg-gray-50 dark:bg-gray-700 flex items-center gap-2">
-                        <Paperclip className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm truncate max-w-32">{a.name || "Tệp"}</span>
+                      <div className="p-3 bg-zinc-50 dark:bg-zinc-800 flex items-center gap-2">
+                        <Paperclip className="h-4 w-4 text-zinc-500" />
+                        <span className="text-sm truncate max-w-32">
+                          {a.name || "Tệp"}
+                        </span>
                       </div>
                     )}
                     <button
@@ -160,14 +171,16 @@ export default function NewPost() {
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="p-3 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition disabled:opacity-50"
+                className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition disabled:opacity-50"
               >
-                <Paperclip className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                <Paperclip className="h-5 w-5 text-zinc-600 dark:text-zinc-300" />
               </button>
               <button
                 onClick={submit}
-                disabled={uploading || (!content.trim() && attachments.length === 0)}
-                className="ml-auto px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium transition flex items-center gap-2"
+                disabled={
+                  uploading || (!content.trim() && attachments.length === 0)
+                }
+                className="ml-auto px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:bg-zinc-400 disabled:cursor-not-allowed text-white font-medium transition flex items-center gap-2"
               >
                 {uploading ? "Đang tải..." : "Đăng bài"}
                 <Send className="h-4 w-4" />

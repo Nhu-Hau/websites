@@ -151,7 +151,7 @@ export default function CommunityPage() {
   const showBottomPager = total >= 4;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-9">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-32">
       <main className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
         <div className="space-y-6">
           {posts.map((p: any) => (
@@ -165,12 +165,13 @@ export default function CommunityPage() {
           ))}
 
           {loading && (
-            <div className="flex justify-center text-sm xs:text-base text-gray-500 dark:text-gray-400 animate-pulse py-8">
+            <div className="flex justify-center text-sm xs:text-base text-zinc-500 dark:text-zinc-400 animate-pulse py-8">
               Đang tải…
             </div>
           )}
+
           {!loading && total === 0 && (
-            <div className="text-center text-sm xs:text-base text-gray-500 dark:text-gray-400 py-12">
+            <div className="text-center text-sm xs:text-base text-zinc-500 dark:text-zinc-400 py-12">
               Chưa có bài viết.
             </div>
           )}

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -63,7 +64,10 @@ function fmtSize(bytes?: number): string {
 export default function PostDetail({ postId }: { postId: string }) {
   const router = useRouter();
   const pathname = usePathname();
-  const locale = React.useMemo(() => pathname.split("/")[1] || "vi", [pathname]);
+  const locale = React.useMemo(
+    () => pathname.split("/")[1] || "vi",
+    [pathname]
+  );
 
   const [post, setPost] = React.useState<any>(null);
   const [comments, setComments] = React.useState<CommunityComment[]>([]);
@@ -81,10 +85,13 @@ export default function PostDetail({ postId }: { postId: string }) {
     loadingRef.current = true;
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/community/posts/${postId}?page=1&limit=50`, {
-        credentials: "include",
-        cache: "no-store",
-      });
+      const res = await fetch(
+        `${API_BASE}/api/community/posts/${postId}?page=1&limit=50`,
+        {
+          credentials: "include",
+          cache: "no-store",
+        }
+      );
       if (!res.ok) throw new Error("Không tải được bài viết");
       const data = await res.json();
       setPost(data.post);
@@ -106,25 +113,38 @@ export default function PostDetail({ postId }: { postId: string }) {
     const room = `post:${postId}`;
     socket.emit("join", { room });
 
-    const handleLike = (data: { postId: string; likesCount: number; liked?: boolean }) => {
+    const handleLike = (data: {
+      postId: string;
+      likesCount: number;
+      liked?: boolean;
+    }) => {
       if (data.postId === postId) {
-        setPost((p: any) => p ? { ...p, likesCount: data.likesCount, liked: data.liked } : p);
+        setPost((p: any) =>
+          p ? { ...p, likesCount: data.likesCount, liked: data.liked } : p
+        );
       }
     };
 
     const handleNewComment = (data: { postId: string; comment: any }) => {
       if (data.postId !== postId || !data.comment) return;
       setComments((prev) => {
-        if (prev.some(c => c._id === data.comment._id)) return prev;
+        if (prev.some((c) => c._id === data.comment._id)) return prev;
         return [...prev, data.comment];
       });
-      setPost((p: any) => p ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p);
+      setPost((p: any) =>
+        p ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p
+      );
     };
 
-    const handleCommentDeleted = (data: { postId: string; commentId: string }) => {
+    const handleCommentDeleted = (data: {
+      postId: string;
+      commentId: string;
+    }) => {
       if (data.postId !== postId) return;
-      setComments(prev => prev.filter(c => c._id !== data.commentId));
-      setPost((p: any) => p ? { ...p, commentsCount: Math.max(0, (p.commentsCount || 0) - 1) } : p);
+      setComments((prev) => prev.filter((c) => c._id !== data.commentId));
+      setPost((p: any) =>
+        p ? { ...p, commentsCount: Math.max(0, (p.commentsCount || 0) - 1) } : p
+      );
     };
 
     const handlePostDeleted = (data: { postId: string }) => {
@@ -147,13 +167,20 @@ export default function PostDetail({ postId }: { postId: string }) {
 
   const toggleLike = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/community/posts/${postId}/like`, {
-        method: "POST",
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${API_BASE}/api/community/posts/${postId}/like`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setPost((p: any) => ({ ...p, liked: data.liked, likesCount: data.likesCount }));
+      setPost((p: any) => ({
+        ...p,
+        liked: data.liked,
+        likesCount: data.likesCount,
+      }));
     } catch {
       toast.error("Không thể thích bài viết");
     }
@@ -171,13 +198,16 @@ export default function PostDetail({ postId }: { postId: string }) {
         });
         if (!res.ok) continue;
         const data = await res.json();
-        setCmtAttaches(prev => [...prev, { type: data.type, url: data.url, name: data.name, size: data.size }]);
+        setCmtAttaches((prev) => [
+          ...prev,
+          { type: data.type, url: data.url, name: data.name, size: data.size },
+        ]);
       } catch {}
     }
   };
 
   const removeAttachment = (index: number) => {
-    setCmtAttaches(prev => prev.filter((_, i) => i !== index));
+    setCmtAttaches((prev) => prev.filter((_, i) => i !== index));
   };
 
   const submitComment = async () => {
@@ -190,16 +220,26 @@ export default function PostDetail({ postId }: { postId: string }) {
 
     submittingRef.current = true;
     try {
-      const res = await fetch(`${API_BASE}/api/community/posts/${postId}/comments`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: content || "", attachments: cmtAttaches }),
-      });
+      const res = await fetch(
+        `${API_BASE}/api/community/posts/${postId}/comments`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: content || "",
+            attachments: cmtAttaches,
+          }),
+        }
+      );
       if (!res.ok) throw new Error("Gửi bình luận thất bại");
       const comment = await res.json();
-      setComments(prev => prev.some(c => c._id === comment._id) ? prev : [...prev, comment]);
-      setPost((p: any) => p ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p);
+      setComments((prev) =>
+        prev.some((c) => c._id === comment._id) ? prev : [...prev, comment]
+      );
+      setPost((p: any) =>
+        p ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p
+      );
       setCmtInput("");
       setCmtAttaches([]);
       toast.success("Đã gửi bình luận!");
@@ -212,14 +252,20 @@ export default function PostDetail({ postId }: { postId: string }) {
 
   const deletePost = async () => {
     if (!confirm("Xóa bài viết này?")) return;
-    const res = await fetch(`${API_BASE}/api/community/posts/${postId}`, { method: "DELETE", credentials: "include" });
+    const res = await fetch(`${API_BASE}/api/community/posts/${postId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
     if (res.ok) router.push(`/${locale}/community`);
     else toast.error("Xóa thất bại");
   };
 
   const deleteComment = async (commentId: string) => {
     if (!confirm("Xóa bình luận này?")) return;
-    const res = await fetch(`${API_BASE}/api/community/comments/${commentId}`, { method: "DELETE", credentials: "include" });
+    const res = await fetch(`${API_BASE}/api/community/comments/${commentId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
     if (res.ok) loadPost();
     else toast.error("Xóa bình luận thất bại");
   };
@@ -236,7 +282,7 @@ export default function PostDetail({ postId }: { postId: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="mx-auto max-w-5xl px-4 py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-48"></div>
@@ -251,19 +297,19 @@ export default function PostDetail({ postId }: { postId: string }) {
   if (!post) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-32">
       <main className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
-        <article className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+        <article className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg overflow-hidden">
           {/* Header */}
-          <div className="p-5 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-5 sm:p-6 border-b border-zinc-200 dark:border-zinc-700">
             <div className="flex items-start gap-3">
               <Avatar url={post.user?.picture} name={post.user?.name} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 truncate">
                     {post.user?.name || "Người dùng"}
                   </h3>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">
                     {new Date(post.createdAt).toLocaleString("vi-VN")}
                   </span>
                   {post.canDelete && (
@@ -275,7 +321,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                     </button>
                   )}
                 </div>
-                <p className="mt-2 text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
+                <p className="mt-2 text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap break-words">
                   {post.content}
                 </p>
               </div>
@@ -284,7 +330,7 @@ export default function PostDetail({ postId }: { postId: string }) {
 
           {/* Attachments */}
           {post.attachments?.length > 0 && (
-            <div className="p-5 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-5 sm:p-6 border-b border-zinc-200 dark:border-zinc-700">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {post.attachments.map((a: any, i: number) => (
                   <a
@@ -292,15 +338,15 @@ export default function PostDetail({ postId }: { postId: string }) {
                     href={a.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="group flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+                    className="group flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition"
                   >
                     <AttachmentIcon type={a.type} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50 truncate">
                         {a.name || "Tệp đính kèm"}
                       </p>
                       {a.size && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
                           {fmtSize(a.size)}
                         </p>
                       )}
@@ -312,25 +358,27 @@ export default function PostDetail({ postId }: { postId: string }) {
           )}
 
           {/* Actions */}
-          <div className="p-4 sm:p-5 flex items-center gap-3 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-4 sm:p-5 flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-700">
             <button
               onClick={toggleLike}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 post.liked
                   ? "bg-red-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  : "bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600"
               }`}
             >
-              <Heart className={`h-4 w-4 ${post.liked ? "fill-current" : ""}`} />
+              <Heart
+                className={`h-4 w-4 ${post.liked ? "fill-current" : ""}`}
+              />
               {post.likesCount}
             </button>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200">
               <MessageCircle className="h-4 w-4" />
               {post.commentsCount}
             </div>
             <button
               onClick={sharePost}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition ml-auto"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition ml-auto"
             >
               <Share2 className="h-4 w-4" />
               Chia sẻ
@@ -339,25 +387,29 @@ export default function PostDetail({ postId }: { postId: string }) {
 
           {/* Comments */}
           <div className="p-5 sm:p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Bình luận</h3>
+            <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
+              Bình luận
+            </h3>
 
             <div className="space-y-4 mb-6">
               {comments.length === 0 ? (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-6">Chưa có bình luận nào.</p>
+                <p className="text-zinc-500 dark:text-zinc-400 text-center py-6">
+                  Chưa có bình luận nào.
+                </p>
               ) : (
                 comments.map((c: any) => (
                   <div
                     key={c._id}
-                    className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 border border-gray-200 dark:border-gray-600"
+                    className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 border border-zinc-200 dark:border-zinc-600"
                   >
                     <div className="flex items-start gap-3">
                       <Avatar url={c.user?.picture} name={c.user?.name} />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900 dark:text-white">
+                          <span className="font-medium text-zinc-900 dark:text-zinc-50">
                             {c.user?.name || "Người dùng"}
                           </span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-zinc-500 dark:text-zinc-400">
                             {new Date(c.createdAt).toLocaleString("vi-VN")}
                           </span>
                           {c.canDelete && (
@@ -370,7 +422,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                           )}
                         </div>
                         {c.content && (
-                          <p className="mt-1 text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
+                          <p className="mt-1 text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap break-words">
                             {c.content}
                           </p>
                         )}
@@ -382,11 +434,17 @@ export default function PostDetail({ postId }: { postId: string }) {
                                 href={a.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="flex items-center gap-2 p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition text-sm"
+                                className="flex items-center gap-2 p-2 rounded-lg border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-600 transition text-sm"
                               >
                                 <AttachmentIcon type={a.type} />
-                                <span className="truncate max-w-40">{a.name || "Tệp"}</span>
-                                {a.size && <span className="text-xs text-gray-500">{fmtSize(a.size)}</span>}
+                                <span className="truncate max-w-40">
+                                  {a.name || "Tệp"}
+                                </span>
+                                {a.size && (
+                                  <span className="text-xs text-zinc-500">
+                                    {fmtSize(a.size)}
+                                  </span>
+                                )}
                               </a>
                             ))}
                           </div>
@@ -405,14 +463,20 @@ export default function PostDetail({ postId }: { postId: string }) {
                   {cmtAttaches.map((a, i) => (
                     <div
                       key={i}
-                      className="relative group rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden"
+                      className="relative group rounded-lg border border-zinc-300 dark:border-zinc-600 overflow-hidden"
                     >
                       {a.type === "image" ? (
-                        <img src={a.url} alt="" className="h-24 w-32 object-cover" />
+                        <img
+                          src={a.url}
+                          alt=""
+                          className="h-24 w-32 object-cover"
+                        />
                       ) : (
-                        <div className="p-3 bg-gray-50 dark:bg-gray-700 flex items-center gap-2">
+                        <div className="p-3 bg-zinc-50 dark:bg-zinc-700 flex items-center gap-2">
                           <AttachmentIcon type={a.type} />
-                          <span className="text-sm truncate max-w-32">{a.name || "Tệp"}</span>
+                          <span className="text-sm truncate max-w-32">
+                            {a.name || "Tệp"}
+                          </span>
                         </div>
                       )}
                       <button
@@ -443,7 +507,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                     }
                   }}
                   placeholder="Viết bình luận..."
-                  className="flex-1 min-h-12 max-h-40 resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition"
+                  className="flex-1 min-h-12 max-h-40 resize-none rounded-xl border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-4 py-3 text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition"
                   rows={1}
                 />
                 <input
@@ -451,18 +515,20 @@ export default function PostDetail({ postId }: { postId: string }) {
                   multiple
                   hidden
                   ref={fileInputRef}
-                  onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                  onChange={(e) =>
+                    e.target.files && handleFileUpload(e.target.files)
+                  }
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-3 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                  className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition"
                 >
-                  <Paperclip className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                  <Paperclip className="h-5 w-5 text-zinc-600 dark:text-zinc-300" />
                 </button>
                 <button
                   onClick={submitComment}
                   disabled={!cmtInput.trim() && cmtAttaches.length === 0}
-                  className="px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium transition"
+                  className="px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:bg-zinc-400 disabled:cursor-not-allowed text-white font-medium transition"
                 >
                   Gửi
                 </button>

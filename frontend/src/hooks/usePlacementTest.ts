@@ -8,27 +8,26 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
 
-type TestDef = {
-  testId: string;
-  sections: {
-    parts: Record<string, string[]>;
-  }[];
+export type UsePlacementTestReturn = {
+  items: Item[];
+  stimulusMap: Record<string, Stimulus>;
+  answers: Record<string, ChoiceId>;
+  setAnswers: React.Dispatch<React.SetStateAction<Record<string, ChoiceId>>>;
+  resp: GradeResp | null;
+  setResp: React.Dispatch<React.SetStateAction<GradeResp | null>>;
+  timeSec: number;
+  setTimeSec: React.Dispatch<React.SetStateAction<number>>;
+  showDetails: boolean;
+  setShowDetails: React.Dispatch<React.SetStateAction<boolean>>;
+  loading: boolean;
+  submit: () => Promise<void>;
+  total: number;
+  answered: number;
+  started: boolean;
+  setStarted: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const levelLabel: Record<1 | 2 | 3, string> = {
-  1: "Level 1 - Cơ bản",
-  2: "Level 2 - Trung cấp",
-  3: "Level 3 - Khá",
-};
-
-const levelToastClass: Record<1 | 2 | 3, string> = {
-  1: "border-emerald-300 bg-emerald-50 text-emerald-700",
-  2: "border-blue-300 bg-blue-50 text-blue-700",
-  3: "border-violet-300 bg-violet-50 text-violet-700",
-};
-
-export function usePlacementTest() {
-  const [def, setDef] = useState<TestDef | null>(null);
+export function usePlacementTest(): UsePlacementTestReturn {
   const [items, setItems] = useState<Item[]>([]);
   const [stimulusMap, setStimulusMap] = useState<Record<string, Stimulus>>({});
   const [answers, setAnswers] = useState<Record<string, ChoiceId>>({});
@@ -38,40 +37,28 @@ export function usePlacementTest() {
   const [loading, setLoading] = useState(true);
   const [started, setStarted] = useState(false);
 
-  const { refresh } = useAuth(); // để cập nhật user.level trên UI ngay sau submit
+  const { refresh } = useAuth();
 
-  // Timer (tăng khi chưa có resp)
+  // timer
   useEffect(() => {
     if (resp) return;
     const id = setInterval(() => setTimeSec((t) => t + 1), 1000);
     return () => clearInterval(id);
   }, [resp]);
 
-  // Load định nghĩa test + items
+  // load paper trực tiếp
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         setLoading(true);
-        const td: TestDef = await fetch("/api/placement/test", {
+        const data = await fetch("/api/placement/paper", {
           credentials: "include",
           cache: "no-store",
-        }).then((r) => r.json());
-        if (!mounted) return;
-        setDef(td);
-
-        const ids: string[] = [];
-        for (const sec of td.sections) {
-          const partArrays = Object.values(sec.parts) as string[][];
-          for (const arr of partArrays) ids.push(...arr);
-        }
-
-        const data = await fetch("/api/placement/items", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ ids }),
-        }).then((r) => r.json());
+        }).then((r) => {
+          if (!r.ok) throw new Error("paper_not_found");
+          return r.json();
+        });
 
         let its: Item[] = data.items || [];
         its = its.sort((a, b) => {
@@ -85,42 +72,37 @@ export function usePlacementTest() {
         setItems(its);
         setStimulusMap(data.stimulusMap || {});
       } catch (e) {
-        console.error("Load placement failed", e);
+        console.error("Load placement paper failed", e);
         toast.error("Không tải được đề kiểm tra");
       } finally {
         if (mounted) setLoading(false);
       }
     })();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   const total = items.length;
   const answered = useMemo(() => Object.keys(answers).length, [answers]);
 
   async function submit() {
-    if (!def) return;
-
     const res = await fetch("/api/placement/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({
-        testId: def.testId,
         answers,
         timeSec,
-        allIds: items.map((it) => it.id), // chấm cả câu bỏ trống
+        allIds: items.map((it) => it.id),
       }),
     });
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      if (res.status === 401) {
-        toast.error("Vui lòng đăng nhập trước khi nộp bài");
-      } else {
-        toast.error(err?.message || "Nộp bài thất bại");
-      }
+      toast.error(
+        res.status === 401
+          ? "Vui lòng đăng nhập trước khi nộp bài"
+          : err?.message || "Nộp bài thất bại"
+      );
       return;
     }
 
@@ -128,54 +110,36 @@ export function usePlacementTest() {
     setResp(r);
     setShowDetails(false);
 
-    // đảm bảo level nằm trong 1..3
-    const level = Math.max(1, Math.min(3, Math.round(r.level as number | undefined as any || 1))) as 1 | 2 | 3;
-
-    toast.success(
-      `Bạn đã đạt ${levelLabel[level]} (${Math.round(r.acc * 100)}% chính xác)`,
-      {
-        classNames: {
-          toast: `border ${levelToastClass[level]}`,
-        },
-        duration: 8000, // 👈 giữ 8 giây
+    const est = (r as any)?.predicted?.overall ?? null;
+    const acc = Math.round((r as any)?.acc * 100);
+    if (est != null) {
+      toast.success(`TOEIC ước lượng: ${est} điểm (${acc}% chính xác)`, {
+        classNames: { toast: "border border-blue-300 bg-blue-50 text-blue-700 font-semibold" },
+        duration: 3500,
+      });
+      if (est >= 800) {
+        confetti({ particleCount: 120, spread: 70, startVelocity: 26, origin: { y: 0.3 } });
       }
-    );
-
-    // Confetti nhẹ chỉ khi đạt top level (3)
-    if (level === 3) {
-      confetti({
-        particleCount: 160,
-        spread: 80,
-        startVelocity: 28,
-        origin: { y: 0.3 },
+    } else {
+      toast.success(`Hoàn thành bài kiểm tra (${acc}% chính xác)`, {
+        classNames: { toast: "border border-blue-300 bg-blue-50 text-blue-700 font-semibold" },
       });
     }
 
-    // Cập nhật user trong context (để menu hiển thị level mới)
-    try {
-      await refresh();
-    } catch {
-      // ignore
-    }
+    try { await refresh(); } catch {}
   }
 
   return {
-    def,
     items,
     stimulusMap,
-    answers,
-    setAnswers,
-    resp,
-    setResp,
-    timeSec,
-    setTimeSec,
-    showDetails,
-    setShowDetails,
+    answers, setAnswers,
+    resp, setResp,
+    timeSec, setTimeSec,
+    showDetails, setShowDetails,
     loading,
     submit,
     total,
     answered,
-    started,
-    setStarted,
+    started, setStarted,
   };
 }

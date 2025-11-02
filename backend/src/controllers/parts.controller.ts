@@ -2,8 +2,8 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 
-const PARTS_COLL = process.env.PARTS_COLL || "parts";
-const STIMULI_COLL = process.env.STIMULI_COLL || "stimuli";
+const PARTS_COLL = process.env.PARTS_COLL || "practice_parts";
+const STIMULI_COLL = process.env.STIMULI_COLL || "practice_stimuli";
 
 /** GET /api/parts/:partKey/tests?level=1
  *  -> trả về danh sách test khả dụng cho part + level (ví dụ: [1,2,3])

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React from "react";
-import Link from "next/link";
 import {
   FiShield,
   FiPlayCircle,
@@ -13,8 +12,9 @@ import {
 } from "react-icons/fi";
 import { toast, Toaster } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { useBasePrefix } from "@/hooks/useBasePrefix";
+import { useRouter } from "next/navigation";
 
-// Cấu hình toast (chuẩn màu web: xanh lá - đỏ - xanh dương)
 const customToast = {
   success: (message: string, options?: any) => toast.success(message, options),
   error: (message: string, options?: any) => toast.error(message, options),
@@ -86,12 +86,17 @@ function PlacementModal({
             <span className="font-bold">55 câu</span>
           </p>
           <p className="leading-relaxed">
-            Gồm cả <strong>Listening & Reading</strong> (đề rút gọn, mô phỏng cấu trúc thi thật).
+            Gồm cả <strong>Listening & Reading</strong> (đề rút gọn, mô phỏng
+            cấu trúc thi thật).
           </p>
           <p className="leading-relaxed">
             Hoàn thành <strong>Mini TOEIC 55 câu</strong>, hệ thống sẽ ước lượng{" "}
-            <strong>điểm TOEIC (0–990)</strong> và xếp bạn vào <strong>Level 1–4</strong>, kèm gợi ý{" "}
-            <strong className="text-sky-600 dark:text-sky-400">lộ trình học phù hợp</strong>.
+            <strong>điểm TOEIC (0–990)</strong> và xếp bạn vào{" "}
+            <strong>Level 1–3</strong>, kèm gợi ý{" "}
+            <strong className="text-sky-600 dark:text-sky-400">
+              lộ trình học phù hợp
+            </strong>
+            .
           </p>
         </div>
 
@@ -126,6 +131,8 @@ export default function Hero() {
   const [openPrompt, setOpenPrompt] = React.useState(false);
   const [checking, setChecking] = React.useState(false);
   const { user } = useAuth();
+  const base = useBasePrefix("vi");
+  const router = useRouter();
 
   React.useEffect(() => {
     try {
@@ -158,7 +165,13 @@ export default function Hero() {
     } catch {}
 
     if (!user) {
-      customToast.error("Vui lòng đăng nhập để làm Mini TOEIC 55 câu");
+      // ✅ push sang trang đăng nhập nếu chưa đăng nhập
+      customToast.error("Vui lòng đăng nhập để làm Mini TOEIC 55 câu", {
+        duration: 2500,
+      });
+      setTimeout(() => {
+        router.push(`${base}/auth/login`);
+      }, 1000);
       return;
     }
 
@@ -175,7 +188,7 @@ export default function Hero() {
             duration: 3000,
             action: {
               label: "Đăng nhập lại",
-              onClick: () => (window.location.href = "/auth/login"),
+              onClick: () => router.push(`${base}/auth/login`),
             },
           });
         } else {
@@ -194,11 +207,8 @@ export default function Hero() {
           action: {
             label: firstId ? "Xem kết quả" : "Xem lịch sử",
             onClick: () => {
-              if (firstId) {
-                window.location.href = `/placement/result/${firstId}`;
-              } else {
-                window.location.href = `/placement/history`;
-              }
+              if (firstId) router.push(`${base}/placement/result/${firstId}`);
+              else router.push(`${base}/placement/history`);
             },
           },
         });
@@ -210,7 +220,7 @@ export default function Hero() {
       });
 
       setTimeout(() => {
-        window.location.href = "/placement";
+        router.push(`${base}/placement`);
       }, 2600);
     } catch {
       customToast.error("Không kiểm tra được trạng thái bài kiểm tra");
@@ -218,7 +228,7 @@ export default function Hero() {
       setChecking(false);
       setOpenPrompt(false);
     }
-  }, [user, checking]);
+  }, [user, checking, router, base]);
 
   return (
     <>
@@ -226,7 +236,6 @@ export default function Hero() {
       <Toaster
         position="top-center"
         richColors
-        closeButton
         toastOptions={{
           classNames: {
             toast:
@@ -252,24 +261,26 @@ export default function Hero() {
           loading={checking}
         />
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1350px] px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 pt-20 pb-10 lg:gap-16">
-            <div className="text-center lg:text-left">
+            <div className="text-left">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-sky-700 backdrop-blur-sm dark:border-sky-800/50 dark:bg-zinc-800/80 dark:text-sky-400">
                 <FiShield className="text-lg" /> Cấu trúc bám sát đề thi thật
               </div>
 
-              <h1 className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-bold tracking-tight dark:from-zinc-100 dark:to-zinc-300 sm:text-5xl lg:text-6xl">
+              <h1 className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text dark:bg-none dark:text-white text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
                 Xác định trình độ trong{" "}
                 <span className="text-sky-600 dark:text-sky-400">35 phút</span>
               </h1>
 
               <p className="mt-6 max-w-3xl text-base leading-7 text-slate-600 dark:text-zinc-400 lg:text-lg">
-                Bài <strong>Mini TOEIC 55 câu</strong> (Listening & Reading) giúp bạn ước lượng{" "}
-                <strong>điểm TOEIC (0–990)</strong>, xếp <strong>Level 1–3</strong> và đề xuất{" "}
+                Bài <strong>Mini TOEIC 55 câu</strong> (Listening & Reading)
+                giúp bạn ước lượng <strong>điểm TOEIC (0–990)</strong>, xếp{" "}
+                <strong>Level 1–3</strong> và đề xuất{" "}
                 <strong className="text-sky-600 dark:text-sky-400">
                   lộ trình học cá nhân hóa
-                </strong>.
+                </strong>
+                .
               </p>
 
               <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
@@ -286,18 +297,31 @@ export default function Hero() {
                   {checking ? "Đang kiểm tra..." : "Làm Placement Test"}
                 </button>
 
-                <Link
-                  href="/"
+                <button
+                  onClick={() => router.push(`${base}/practice/part.1?level=1`)}
                   className="inline-flex items-center gap-2.5 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-base font-medium text-slate-800 transition-all hover:bg-slate-50 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
                 >
-                  Xem bộ đề <FiArrowRight className="transition-transform group-hover:translate-x-1" />
-                </Link>
+                  Xem bộ đề{" "}
+                  <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+                </button>
               </div>
 
               <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
-                <Stat number="55 câu" label="Số lượng câu hỏi" icon={<FiCheckCircle />} />
-                <Stat number="35 phút" label="Thời gian làm bài" icon={<FiClock />} />
-                <Stat number="0–990" label="Điểm TOEIC ước lượng" icon={<FiTarget />} />
+                <Stat
+                  number="55 câu"
+                  label="Số lượng câu hỏi"
+                  icon={<FiCheckCircle />}
+                />
+                <Stat
+                  number="35 phút"
+                  label="Thời gian làm bài"
+                  icon={<FiClock />}
+                />
+                <Stat
+                  number="0–990"
+                  label="Điểm TOEIC ước lượng"
+                  icon={<FiTarget />}
+                />
               </div>
 
               <p className="mt-6 text-center text-xs text-slate-500 dark:text-zinc-500 lg:text-left">

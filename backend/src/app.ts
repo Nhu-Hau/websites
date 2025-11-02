@@ -19,16 +19,19 @@ import adminAuthRoutes from "./routes/adminAuth.routes";
 import socketAuthRoutes from "./routes/socketAuth.routes";
 import practiceRoutes from "./routes/practice.routes";
 import communityRoutes from "./routes/community.routes";
+import notificationRoutes from "./routes/notification.routes";
+import path from "path";
 import paymentsRoutes from "./routes/payments.routes";
 
 // LiveKit routes
-import studyRoomsRoutes from "./routes/studyRooms.routes";       // POST /api/rooms, POST /api/rooms/:room/token
-import roomsAdminRoutes from "./routes/rooms.admin.routes";      // GET /api/rooms, participants, kick, mute
-import lkDiagRoutes from "./routes/livekit.diag.routes";         // /api/_lk/env, /api/_lk/ping
+import studyRoomsRoutes from "./routes/studyRooms.routes"; // POST /api/rooms, POST /api/rooms/:room/token
+import roomsAdminRoutes from "./routes/rooms.admin.routes"; // GET /api/rooms, participants, kick, mute
+import lkDiagRoutes from "./routes/livekit.diag.routes"; // /api/_lk/env, /api/_lk/ping
 import livekitWebhookRoutes from "./routes/livekit.webhook.routes";
-import roomsDebugRoutes from './routes/rooms.debug.routes';
+import roomsDebugRoutes from "./routes/rooms.debug.routes";
 import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
-import { startCleanupRooms } from './jobs/cleanupRooms';
+import progressRoutes from "./routes/progress.routes";
+import { startCleanupRooms } from "./jobs/cleanupRooms";
 
 const app = express();
 
@@ -44,14 +47,19 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     // thêm demo headers để FE gọi được /token khi chưa có auth thật
-    allowedHeaders: ["Content-Type", "Authorization", "x-user-id", "x-user-name", "x-user-role"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "x-user-id",
+      "x-user-name",
+      "x-user-role",
+    ],
   })
 );
 app.use(morgan("dev"));
 
 initPassport();
 app.use(passport.initialize());
-
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 // ============ App routes ============
@@ -63,16 +71,21 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin-chat", adminChatRoutes);
 app.use("/api/admin-auth", adminAuthRoutes);
 app.use("/api/socket-auth", socketAuthRoutes);
-app.use("/api/practice", practiceRoutes);   // sửa: mount đúng prefix /api/practice
+app.use("/api/practice", practiceRoutes);
+app.use("/api/practice", practiceRoutes); // sửa: mount đúng prefix /api/practice
 app.use("/api/community", communityRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
+app.use("/api/account", authRoutes);
+app.use("/api/progress", progressRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/payments", paymentsRoutes);
 
 // ============ LiveKit routes ============
-app.use("/api", studyRoomsRoutes);        // => POST /api/rooms, POST /api/rooms/:room/token
-app.use("/api", roomsAdminRoutes);        // => GET /api/rooms, ...
-app.use("/api", lkDiagRoutes);            // => /api/_lk/env, /api/_lk/ping
-app.use("/api", livekitWebhookRoutes);    // => /api/livekit/webhook
-app.use('/api', roomsDebugRoutes);
+app.use("/api", studyRoomsRoutes); // => POST /api/rooms, POST /api/rooms/:room/token
+app.use("/api", roomsAdminRoutes); // => GET /api/rooms, ...
+app.use("/api", lkDiagRoutes); // => /api/_lk/env, /api/_lk/ping
+app.use("/api", livekitWebhookRoutes); // => /api/livekit/webhook
+app.use("/api", roomsDebugRoutes);
 // static
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 app.use(UPLOADS_ROUTE, express.static(UPLOADS_DIR));

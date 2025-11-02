@@ -10,12 +10,11 @@ export default function MobileNav({ open, menuRef }: MobileNavProps) {
   return (
     <div
       ref={menuRef}
-      aria-label={open ? "Close menu" : "Open menu"}
-      className={`lg:hidden overflow-hidden transition-[max-height] duration-300 ease-out ${
-        open ? "max-h-[26rem]" : "max-h-0"
-      }`}
+      aria-label={open ? "Đóng menu" : "Mở menu"}
+      className={`lg:hidden overflow-hidden transition-[max-height] duration-300 ease-out
+                  ${open ? "max-h-[30rem]" : "max-h-0"}`}
     >
-      <div className="px-4 pb-4 pt-2 sm:px-6">
+      <div className="px-3 xs:px-4 pb-3 xs:pb-4 pt-1.5 xs:pt-2">
         <NavMenu />
       </div>
     </div>

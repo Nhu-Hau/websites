@@ -14,9 +14,9 @@ import {
   emitCommunityNewComment,
   emitCommunityNewPost,
   emitCommunityPostDeleted,
-  emitNotifyUser,
   emitCommunityCommentDeleted,
 } from "../lib/socket";
+import { notifyUser } from "../services/notify.service";
 
 function getIO(): SocketIOServer | null {
   return (global as any).io || null;
@@ -476,7 +476,8 @@ export async function addComment(req: Request, res: Response) {
       const actorName = withUser?.user?.name || "Ai đó";
       for (const uid of recipients) {
         const isOwner = String(uid) === String(post.userId);
-        emitNotifyUser(io, uid, {
+        await notifyUser(io, {
+          userId: uid,
           type: "comment",
           message: isOwner
             ? `${actorName} đã bình luận vào bài viết của bạn`
@@ -527,7 +528,8 @@ export async function toggleLike(req: Request, res: Response) {
       if (String(post.userId) !== String(userId) && !wasLiked) {
         const liker =
           (await mongoose.model("User").findById(userId))?.name || "Ai đó";
-        emitNotifyUser(io, String(post.userId), {
+        await notifyUser(io, {
+          userId: String(post.userId),
           type: "like",
           message: `${liker} đã thích bài viết của bạn`,
           link: `/community/post/${postId}`,

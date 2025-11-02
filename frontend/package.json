@@ -13,7 +13,7 @@
     "@livekit/components-react": "^2.9.15",
     "@livekit/components-styles": "^1.1.6",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "canvas-confetti": "^1.9.3",
+    "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.0",
     "highlight.js": "^11.11.1",
     "i": "^0.3.7",

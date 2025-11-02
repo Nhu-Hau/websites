@@ -166,18 +166,18 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
   return (
     <article
       onClick={() => router.push(`/community/post/${post._id}`)}
-      className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-200/60 dark:border-gray-700/60 transition-all hover:shadow-xl cursor-pointer"
+      className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg overflow-hidden border border-zinc-200/60 dark:border-zinc-700/60 transition-all hover:shadow-xl cursor-pointer"
     >
       {/* Header */}
-      <div className="p-5 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-5 sm:p-6 border-b border-zinc-200 dark:border-zinc-700">
         <div className="flex items-start gap-3">
           <Avatar name={post.user?.name} url={post.user?.picture} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+              <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 truncate">
                 {post.user?.name || "Người dùng"}
               </h3>
-              <time className="text-sm text-gray-500 dark:text-gray-400">
+              <time className="text-sm text-zinc-500 dark:text-zinc-400">
                 {new Date(post.createdAt).toLocaleString("vi-VN")}
               </time>
               {post.canDelete && (
@@ -190,7 +190,7 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
               )}
             </div>
             {post.content && (
-              <p className="mt-2 text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
+              <p className="mt-2 text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap break-words">
                 {post.content}
               </p>
             )}
@@ -200,7 +200,7 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
 
       {/* Attachments */}
       {post.attachments?.length ? (
-        <div className="p-5 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-5 sm:p-6 border-b border-zinc-200 dark:border-zinc-700">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {post.attachments.map((a: Attachment, idx: number) => (
               <a
@@ -209,15 +209,15 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
                 target="_blank"
                 rel="noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="group flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+                className="group flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition"
               >
                 <AttachmentIcon type={a.type} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50 truncate">
                     {a.name ?? a.url}
                   </p>
                   {a.size && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
                       {fmtSize(a.size)}
                     </p>
                   )}
@@ -236,7 +236,7 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
           className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
             liked
               ? "bg-red-500 text-white"
-              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
+              : "bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600"
           }`}
         >
           <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
@@ -245,7 +245,7 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
 
         <div
           aria-label="Số bình luận"
-          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
+          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200"
         >
           <MessageCircle className="h-4 w-4" />
           {post.commentsCount}
@@ -253,7 +253,7 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
 
         <button
           onClick={sharePost}
-          className="ml-auto flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+          className="ml-auto flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition"
         >
           <Share2 className="h-4 w-4" />
           Chia sẻ

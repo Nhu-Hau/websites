@@ -4,7 +4,6 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-import path from "path";
 
 import { connectMongo } from "./lib/mongoose";
 import passport, { initPassport } from "./lib/passport";

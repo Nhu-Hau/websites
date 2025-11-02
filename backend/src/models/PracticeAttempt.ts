@@ -52,7 +52,7 @@ PracticeAttemptSchema.index({
 export const PracticeAttempt =
   mongoose.models.PracticeAttempt ||
   mongoose.model<IPracticeAttempt>(
-    "PracticeAttempt",
+    "Practice_Attempt",
     PracticeAttemptSchema,
-    "practiceattempts"
+    "practice_attempts"
   );

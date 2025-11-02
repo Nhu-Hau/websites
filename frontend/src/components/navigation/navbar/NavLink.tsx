@@ -22,19 +22,18 @@ export default function NavLink({ href, children, className }: NavLinkProps) {
       href={href}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "relative block text-black dark:text-white transition-colors group",
-        isActive && "text-tealCustom",
+        "relative inline-block text-zinc-700 dark:text-zinc-300 transition-all duration-300 group",
+        "hover:text-amber-600 dark:hover:text-amber-400 hover:scale-105",
+        isActive && "text-amber-600 dark:text-amber-400",
         className
       )}
     >
-      <span>{children}</span>
-      {/* after: tạo border-bottom và animate khi hover */}
+      <span className="relative z-10">{children}</span>
       <span
         className={cn(
-          "pointer-events-none absolute bottom-0 left-0 h-0.5 bg-tealCustom",
-          "w-0 transition-all duration-300 ease-out",
+          "absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-amber-600 to-amber-500 rounded-full transition-all duration-300 ease-out",
           "group-hover:w-full",
-          isActive && "w-full" // giữ gạch chân nếu đang active
+          isActive && "w-full"
         )}
       />
     </Link>

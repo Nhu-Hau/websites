@@ -11,7 +11,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.7",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "canvas-confetti": "^1.9.3",
+    "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.0",
     "framer-motion": "^12.23.24",
     "highlight.js": "^11.11.1",

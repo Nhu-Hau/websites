@@ -5,26 +5,26 @@ import SectionHeader from "./SectionHeader";
 export default function Testimonials() {
   const items = [
     {
-      avatar: "https://images.unsplash.com/photo-1502685104226-ee32379fefbe",
-      name: "Minh Anh",
-      score: "+165 điểm",
+      avatar: "https://images.unsplash.com/photo-1607746882042-944635dfe10e",
+      name: "Ngọc Hân",
+      score: "+180 điểm",
       quote:
-        "Luyện đề theo điểm yếu rất hiệu quả. Sau 6 tuần mình tăng từ 605 lên 770.",
+        "Sau bài placement test, hệ thống gợi ý level cho từng part — mình yếu Part 2 và 3 nên tập trung luyện ở đó. Cực kỳ hiệu quả!",
     },
     {
       avatar:
-        "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg",
-      name: "Quốc Huy",
-      score: "+210 điểm",
+        "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg",
+      name: "Trung Kiên",
+      score: "+200 điểm",
       quote:
-        "Giao diện như phòng thi, chấm nhanh – báo cáo chi tiết nên biết ngay cần sửa gì.",
+        "Web chia level rõ ràng, luyện đúng khả năng nên không bị nản. Sau 1 tháng mình tăng điểm Listening rõ rệt.",
     },
     {
-      avatar: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
-      name: "Lan Phương",
-      score: "+190 điểm",
+      avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36",
+      name: "Mai Linh",
+      score: "+165 điểm",
       quote:
-        "Kho đề cập nhật thường xuyên, lời giải rõ ràng. Mình recommend cho bạn bè hết!",
+        "Mỗi part đều có đề cập nhật, lời giải chi tiết và báo cáo tiến bộ sau từng buổi luyện. Mình cảm giác như được kèm riêng vậy!",
     },
   ];
 

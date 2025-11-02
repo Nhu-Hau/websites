@@ -41,7 +41,6 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 initPassport();
 app.use(passport.initialize());
-
 app.get("/health", (_req, res) => res.json({ ok: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);

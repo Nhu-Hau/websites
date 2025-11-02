@@ -12,7 +12,7 @@ export default async function CommunityPage({
   const { locale } = await params;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+    <div className="min-h-screen w-full bg-gradient-to-b dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 transition-colors duration-300">
       <Header locale={locale} active="community" />
       <CommunityComponent />
     </div>

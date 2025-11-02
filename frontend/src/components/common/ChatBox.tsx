@@ -1,7 +1,16 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 "use client";
-
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { FiMessageSquare, FiX, FiSend, FiTrash2 } from "react-icons/fi";
+import {
+  FiMessageSquare,
+  FiX,
+  FiSend,
+  FiTrash2,
+  FiClock,
+  FiCopy,
+  FiAlertCircle,
+} from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
 import { useTranslations } from "next-intl";
 import useClickOutside from "@/hooks/useClickOutside";
@@ -308,191 +317,300 @@ export default function ChatBox() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Action Button (giữ nguyên) */}
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? t("closeChat") : t("openChat")}
-        className="fixed bottom-5 right-5 z-[60] h-14 w-14 rounded-full
-          bg-gradient-to-tr from-sky-500 to-indigo-500 text-white
-          shadow-lg shadow-blue-500/30 hover:scale-105 active:scale-95 transition
-          dark:from-sky-500 dark:to-indigo-500"
+        className="fixed bottom-6 right-6 z-[70] flex h-14 w-14 items-center justify-center 
+      rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white
+      shadow-xl shadow-indigo-500/30 ring-4 ring-white/20
+      hover:scale-110 active:scale-95 transition-all duration-200
+      focus:outline-none focus:ring-4 focus:ring-sky-400/50
+      dark:from-sky-500 dark:to-indigo-500"
       >
-        {open ? (
-          <FiX className="mx-auto h-6 w-6" />
-        ) : (
-          <FiMessageSquare className="mx-auto h-6 w-6" />
-        )}
+        <motion.div
+          animate={{ rotate: open ? 90 : 0 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
+          {open ? (
+            <FiX className="h-6 w-6" />
+          ) : (
+            <FiMessageSquare className="h-6 w-6" />
+          )}
+        </motion.div>
       </button>
 
-      {/* Panel */}
-      <div
+      {/* Chat Panel */}
+      <motion.div
         ref={wrapperRef}
-        className={`fixed bottom-24 right-5 z-[59] w-[92vw] max-w-sm
-          transition-all duration-200 ${
-            open
-              ? "opacity-100 translate-y-0"
-              : "pointer-events-none opacity-0 translate-y-2"
-          }`}
+        initial={false}
+        animate={{
+          opacity: open ? 1 : 0,
+          y: open ? 0 : 16,
+          scale: open ? 1 : 0.95,
+        }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className={`fixed bottom-44 sm:bottom-4 right-4 sm:right-[6.5rem] z-[60]
+                    w-[calc(100vw-2rem)] sm:w-[28rem] md:w-[32rem]
+        ${open ? "pointer-events-auto" : "pointer-events-none"}`}
       >
-        <div className="overflow-hidden rounded-2xl border border-gray-200/70 bg-white/90 backdrop-blur shadow-2xl dark:bg-zinc-900/90 dark:border-gray-700">
+        <div
+          className="overflow-hidden rounded-3xl border border-white/20 
+        bg-white/85 backdrop-blur-xl shadow-2xl
+        dark:bg-zinc-900/90 dark:border-zinc-700/50"
+        >
           {/* Header */}
           <div
-            className="relative flex items-center justify-between px-4 py-3
-              bg-gradient-to-r from-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800
-              border-b border-gray-200/70 dark:border-gray-700"
+            className="relative flex items-center justify-between
+            px-4 xs:px-5 py-3.5 xs:py-4
+            bg-gradient-to-r from-gray-50/80 to-white/60
+            dark:from-zinc-900 dark:to-zinc-800/80
+            border-b border-gray-200/50 dark:border-zinc-700"
           >
-            <div className="flex items-center gap-2">
-              <span
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl
-                  bg-gradient-to-tr from-indigo-600 to-sky-600 text-white
-                  shadow-sm dark:from-indigo-500 dark:to-sky-500"
-              >
-                <FaGraduationCap className="h-5 w-5" />
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div
+                  className="h-10 w-10 xs:h-11 xs:w-11 rounded-2xl
+                  bg-gradient-to-tr from-indigo-600 to-sky-600 p-px shadow-lg"
+                >
+                  <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white dark:bg-zinc-900">
+                    <FaGraduationCap className="h-5 w-5 text-indigo-600 dark:text-sky-400" />
+                  </div>
+                </div>
+                <span
+                  className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full 
+                bg-green-500 border-2 border-white dark:border-zinc-900"
+                />
+              </div>
+
               <div className="leading-tight">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">
                   {t("title")}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-[11px] xs:text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                   {t("subtitle")}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
-              {/* Đã bỏ nút "+" tạo chat mới */}
+            <div className="flex items-center gap-1.5">
               {messages.length > 0 && (
                 <button
                   onClick={clearChat}
-                  className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700
-                    focus:outline-none focus:ring-2 focus:ring-blue-400
-                    dark:text-gray-400 dark:hover:bg-zinc-800 dark:hover:text-gray-200"
-                  aria-label="Clear chat"
-                  title="Clear chat (tạo phiên mới)"
+                  className="group rounded-xl p-2 xs:p-2.5 text-gray-500 hover:bg-red-50 hover:text-red-600
+                focus:outline-none focus:ring-2 focus:ring-red-400 transition
+                dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                  aria-label="Xóa cuộc trò chuyện"
                 >
-                  <FiTrash2 className="h-5 w-5" />
+                  <FiTrash2 className="h-4 w-4 xs:h-4.5 xs:w-4.5 transition group-hover:scale-110" />
                 </button>
               )}
               <button
                 onClick={() => setOpen(false)}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700
-                  focus:outline-none focus:ring-2 focus:ring-blue-400
-                  dark:text-gray-400 dark:hover:bg-zinc-800 dark:hover:text-gray-200"
+                className="rounded-xl p-2 xs:p-2.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700
+              focus:outline-none focus:ring-2 focus:ring-gray-400 transition
+              dark:text-gray-400 dark:hover:bg-zinc-800 dark:hover:text-gray-200"
                 aria-label={t("close")}
               >
-                <FiX className="h-5 w-5" />
+                <FiX className="h-4 w-4 xs:h-4.5 xs:w-4.5" />
               </button>
             </div>
           </div>
 
-          {/* Error Message */}
+          {/* Error */}
           {error && (
-            <div className="px-3 py-2 bg-red-50 border-b border-red-200 dark:bg-red-900/20 dark:border-red-800">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            </div>
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mx-3 mt-3 rounded-xl bg-red-50/80 border border-red-200/50 
+            px-3 py-2.5 backdrop-blur-sm dark:bg-red-900/20 dark:border-red-800/50"
+            >
+              <p className="text-sm font-medium text-red-700 dark:text-red-300 flex items-center gap-2">
+                <FiAlertCircle className="h-4 w-4" />
+                {error}
+              </p>
+            </motion.div>
           )}
 
           {/* Messages */}
           <div
             ref={listRef}
-            className="max-h-[26rem] min-h-[14rem] overflow-y-auto
-              px-3 py-3 space-y-3 bg-white/70 dark:bg-zinc-900/70"
+            className="px-3 xs:px-4 py-4 space-y-4
+            max-h-[65vh] xs:max-h-[70vh] sm:max-h-[60vh]
+            min-h-[38vh] xs:min-h-[40vh]
+            overflow-y-auto
+            bg-gradient-to-b from-transparent to-gray-50/30
+            dark:from-transparent dark:to-zinc-900/50"
           >
             {messages.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                {user ? t("empty") : "Vui lòng đăng nhập để sử dụng chat"}
+              <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                <div
+                  className="h-16 w-16 rounded-full bg-gradient-to-tr from-sky-100 to-indigo-100 
+                dark:from-sky-900/50 dark:to-indigo-900/50 flex items-center justify-center mb-4"
+                >
+                  <FiMessageSquare className="h-8 w-8 text-sky-600 dark:text-sky-400" />
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                  {user
+                    ? t("empty")
+                    : "Vui lòng đăng nhập để bắt đầu trò chuyện"}
+                </p>
               </div>
             ) : (
-              messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`flex ${
-                    m.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm ${
-                      m.role === "user"
-                        ? "bg-gradient-to-tr from-sky-600 to-indigo-500 text-white dark:from-sky-500 dark:to-indigo-400"
-                        : "bg-gray-100 text-gray-900 dark:bg-zinc-800 dark:text-gray-100"
+              <AnimatePresence>
+                {messages.map((m) => (
+                  <motion.div
+                    key={m.id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className={`flex ${
+                      m.role === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
-                    {m.role === "assistant" && (
-                      <div className="mb-1 inline-flex items-center gap-1 text-[11px] opacity-80">
-                        <FaGraduationCap className="h-3.5 w-3.5" />
-                        <span>{t("ai")}</span>
-                      </div>
-                    )}
-                    <MessageContent
-                      content={m.content}
-                      role={m.role}
-                      pending={m.pending}
-                    />
                     <div
-                      className={`mt-1 text-[10px] ${
+                      className={`group relative
+                      max-w-[86%] xs:max-w-[82%] sm:max-w-[80%]
+                      rounded-2xl px-4 py-3 text-sm shadow-md transition-all ${
                         m.role === "user"
-                          ? "text-white/80"
-                          : "text-gray-500 dark:text-gray-400"
+                          ? "bg-gradient-to-tr from-sky-600 to-indigo-600 text-white rounded-tr-sm"
+                          : "bg-white text-gray-800 dark:bg-zinc-800 dark:text-gray-100 rounded-tl-sm"
                       }`}
                     >
-                      {m.at
-                        ? new Date(m.at).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : ""}
+                      {m.role === "assistant" && (
+                        <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-75">
+                          <FaGraduationCap className="h-3.5 w-3.5" />
+                          <span className="font-medium">{t("ai")}</span>
+                        </div>
+                      )}
+
+                      <MessageContent
+                        content={m.content}
+                        role={m.role}
+                        pending={m.pending}
+                      />
+
+                      <div
+                        className={`mt-2 text-[10px] font-medium flex items-center gap-1.5 ${
+                          m.role === "user"
+                            ? "text-white/70"
+                            : "text-gray-400 dark:text-gray-500"
+                        }`}
+                      >
+                        <FiClock className="h-3 w-3" />
+                        {m.at
+                          ? new Date(m.at).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "Đang gửi..."}
+                      </div>
+
+                      {/* Copy (assistant only) */}
+                      {m.role === "assistant" && !m.pending && (
+                        <button
+                          onClick={() =>
+                            navigator.clipboard.writeText(m.content)
+                          }
+                          className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 
+                          p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow-md
+                          transition hover:scale-110 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                          aria-label="Sao chép"
+                        >
+                          <FiCopy className="h-3.5 w-3.5 text-gray-600 dark:text-gray-300" />
+                        </button>
+                      )}
                     </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            )}
+
+            {/* Typing */}
+            {sending && (
+              <div className="flex justify-start">
+                <div className="flex items-center gap-2 rounded-2xl bg-gray-100 dark:bg-zinc-800 px-4 py-3">
+                  <div className="flex space-x-1">
+                    <span
+                      className="h-2 w-2 rounded-full bg-gray-400 animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <span
+                      className="h-2 w-2 rounded-full bg-gray-400 animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <span
+                      className="h-2 w-2 rounded-full bg-gray-400 animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
                   </div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    AI đang suy nghĩ...
+                  </span>
                 </div>
-              ))
+              </div>
             )}
           </div>
 
           {/* Input */}
-          <div className="border-t border-gray-200/70 p-3 dark:border-gray-700">
-            <div className="flex items-center gap-2">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder={
-                  user ? t("placeholder") : "Vui lòng đăng nhập để sử dụng chat"
-                }
-                disabled={!user}
-                rows={2}
-                className="flex-1 resize-none rounded-xl border border-gray-300 bg-white/90 px-3 py-2 text-base sm:text-sm text-gray-900
-                  placeholder:text-gray-400 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-600
-                  max-h-48 min-h-[3.5rem] dark:border-gray-700 dark:bg-zinc-900/70 dark:text-gray-100
-                  dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-900/40
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              />
+          <div className="border-t border-gray-200/60 dark:border-zinc-700/60 p-4 bg-white/70 dark:bg-zinc-900/70">
+            <div className="flex items-end gap-3">
+              <div className="flex-1 relative">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={onKeyDown}
+                  placeholder={user ? t("placeholder") : "Đăng nhập để chat..."}
+                  disabled={!user || sending}
+                  rows={1}
+                  className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 
+                  px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400
+                  focus:border-sky-500 focus:ring-4 focus:ring-sky-500/20
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  transition-all duration-200 outline-none
+                  dark:border-zinc-600 dark:bg-zinc-800/70 dark:text-gray-100
+                  dark:placeholder:text-gray-500 dark:focus:border-sky-400"
+                  style={{ minHeight: "52px", maxHeight: "120px" }}
+                />
+                <div className="absolute right-3 bottom-3 text-xs text-gray-400">
+                  {input.length}/2000
+                </div>
+              </div>
 
               <button
                 onClick={send}
-                disabled={sending || input.trim().length === 0 || !user}
-                className="inline-flex h-10 shrink-0 items-center justify-center gap-2
-                  rounded-xl bg-sky-600 px-3 text-sm font-medium text-white
-                  shadow-sm transition enabled:hover:bg-sky-700
-                  enabled:focus:outline-none enabled:focus:ring-2 enabled:focus:ring-sky-400
-                  disabled:opacity-50 dark:bg-sky-500 dark:enabled:hover:bg-sky-600"
+                disabled={sending || !input.trim() || !user}
+                className="group relative flex h-12 w-12 shrink-0 items-center justify-center 
+                rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white
+                shadow-lg shadow-sky-500/30 transition-all
+                enabled:hover:scale-110 enabled:hover:shadow-xl
+                enabled:focus:outline-none enabled:focus:ring-4 enabled:focus:ring-sky-400/50
+                disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {sending ? (
-                  <span className="inline-flex items-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
-                    {t("sending")}
-                  </span>
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
                 ) : (
-                  <>
-                    <FiSend className="h-4 w-4" />
-                    {t("send")}
-                  </>
+                  <FiSend className="h-5 w-5 transition group-enabled:group-hover:translate-x-0.5" />
                 )}
               </button>
             </div>
+
+            {!user && (
+              <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+                <a href="/login" className="text-sky-600 hover:underline">
+                  Đăng nhập
+                </a>{" "}
+                để sử dụng
+              </p>
+            )}
           </div>
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }

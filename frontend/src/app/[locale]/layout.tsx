@@ -1,18 +1,15 @@
 // app/[locale]/layout.tsx
-import Header from "../../components/common/Header";
-import Footer from "../../components/common/Footer";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/routing";
 import { cookies } from "next/headers";
 import { ThemeProvider } from "../../context/ThemeContext";
-import ChatBox from "../../components/common/ChatBox";
-import AdminChatBox from "../../components/common/AdminChatBox";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "sonner";
 import { ToastContainer } from "react-toastify";
 import CornerToast from "@/components/common/CornerToast";
 import SocketBridge from "@/components/common/SocketBridge";
+import LayoutClient from "./layoutClient";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -23,10 +20,9 @@ export default async function LocaleLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+  params: { locale: string };
 }) {
-  const { locale } = await params;
-
+  const { locale } = params;
   if (!hasLocale(routing.locales, locale)) notFound();
 
   const theme =
@@ -36,15 +32,11 @@ export default async function LocaleLayout({
     <ThemeProvider defaultTheme={theme}>
       <NextIntlClientProvider locale={locale}>
         <AuthProvider>
-            <Header />
-            <main>{children}</main>
-            <ChatBox />
-            <AdminChatBox />
-            <Footer />
-            <Toaster richColors position="top-center" />
+          <LayoutClient>{children}</LayoutClient>
+          <Toaster richColors position="top-center" />
         </AuthProvider>
       </NextIntlClientProvider>
-      <ToastContainer /* ... */ />
+      <ToastContainer />
       <CornerToast />
       <SocketBridge />
     </ThemeProvider>

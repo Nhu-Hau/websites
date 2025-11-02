@@ -49,4 +49,4 @@ const PlacementAttemptSchema = new Schema(
 
 PlacementAttemptSchema.index({ userId: 1, submittedAt: -1 });
 
-export default mongoose.model("PlacementAttempt", PlacementAttemptSchema);
+export default mongoose.model("Placement_Attempt", PlacementAttemptSchema);

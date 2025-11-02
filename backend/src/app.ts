@@ -51,6 +51,7 @@ app.use(
       "Authorization",
       "x-user-id",
       "x-user-name",
+      "x-user-name-encoded", // For base64 encoded names
       "x-user-role",
     ],
   })

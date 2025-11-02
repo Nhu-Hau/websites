@@ -7,14 +7,6 @@ export interface AuthUser {
   role: 'admin' | 'teacher' | 'student';
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: AuthUser;
-    }
-  }
-}
-
 /**
  * Demo auth (dev):
  * Lấy user từ header x-user-id / x-user-name / x-user-role
@@ -22,8 +14,17 @@ declare global {
  */
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const id = req.header('x-user-id');
-  const name = req.header('x-user-name') || 'Guest';
+  let name = req.header('x-user-name') || 'Guest';
   const role = (req.header('x-user-role') as AuthUser['role']) || 'student';
+
+  // Decode base64 encoded name if present
+  if (req.header('x-user-name-encoded') === 'base64' && name && name !== 'Guest') {
+    try {
+      name = Buffer.from(name, 'base64').toString('utf8');
+    } catch (e) {
+      console.warn('Failed to decode base64 name, using as-is:', e);
+    }
+  }
 
   if (!id) return res.status(401).json({ message: 'Unauthorized' });
 

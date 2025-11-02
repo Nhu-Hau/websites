@@ -163,12 +163,23 @@ export default function StudyRoomI18nPage() {
     (async () => {
       try {
         const base = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, '') || '';
+        // Encode user name to base64 to handle non-ISO-8859-1 characters
+        const userName = user?.name || 'Guest';
+        let encodedName: string;
+        try {
+          encodedName = btoa(unescape(encodeURIComponent(userName)));
+        } catch (e) {
+          console.warn('Failed to encode name, using fallback:', e);
+          encodedName = btoa(userName);
+        }
+        
         const res = await fetch(`${base}/api/rooms/${room}/token`, {
           method: 'POST',
           credentials: 'include',
           headers: {
             'x-user-id': user?.id || `guest-${crypto.randomUUID()}`,
-            'x-user-name': user?.name || 'Guest',
+            'x-user-name': encodedName,
+            'x-user-name-encoded': 'base64', // Flag to indicate encoding
             'x-user-role': (user?.role as any) || 'student',
           },
           signal: ac.signal,

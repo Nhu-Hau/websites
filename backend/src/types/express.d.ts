@@ -7,5 +7,10 @@ declare module "express-serve-static-core" {
       userId: string;
       role: string;
     };
+    user?: {
+      id: string;
+      name: string;
+      role: 'admin' | 'teacher' | 'student';
+    };
   }
 }

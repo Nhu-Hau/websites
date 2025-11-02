@@ -19,6 +19,19 @@ export const lk = new RoomServiceClient(REST_HOST, LIVEKIT_API_KEY!, LIVEKIT_API
 
 export type RoomRole = 'admin' | 'teacher' | 'student';
 
+/**
+ * Sanitize name to ensure it's safe for LiveKit (remove/replace problematic characters)
+ * LiveKit should handle UTF-8, but we ensure no control characters or overly long names
+ */
+function sanitizeName(name?: string): string | undefined {
+  if (!name) return undefined;
+  // Remove control characters and limit length
+  // LiveKit JWT can handle UTF-8, so we just ensure no control chars
+  return name
+    .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
+    .slice(0, 100); // Limit length to 100 chars
+}
+
 // KHÔNG async — toJwt() là sync và trả STRING
 export function createJoinToken(opts: {
   roomName: string;
@@ -32,7 +45,7 @@ export function createJoinToken(opts: {
 
   const at = new AccessToken(LIVEKIT_API_KEY!, LIVEKIT_API_SECRET!, {
     identity,
-    name,
+    name: sanitizeName(name),
     ttl: ttlSeconds,
   });
 

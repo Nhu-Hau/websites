@@ -50,11 +50,26 @@ export async function delJson<T = any>(pathOrUrl: string, init?: RequestInit) {
   return json;
 }
 
+// Helper function to encode name for headers (browser-safe)
+function encodeNameForHeader(name: string): string {
+  // Always use browser API - this code only runs in browser/client
+  try {
+    return btoa(unescape(encodeURIComponent(name)));
+  } catch (e) {
+    // Fallback: if encoding fails, use a safe ASCII representation
+    console.warn('Failed to encode name, using fallback:', e);
+    return btoa(name || 'Guest');
+  }
+}
+
 /** Demo headers để test nhanh auth qua x-user-* (dev) */
 export function demoUserHeaders(u: { id: string; name?: string; role?: 'admin'|'teacher'|'student' }) {
+  const name = u.name ?? 'Guest';
+  const encodedName = encodeNameForHeader(name);
   return {
     'x-user-id': u.id,
-    'x-user-name': u.name ?? 'Guest',
+    'x-user-name': encodedName,
+    'x-user-name-encoded': 'base64',
     'x-user-role': u.role ?? 'student',
   };
 }

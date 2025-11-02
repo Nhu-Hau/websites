@@ -24,35 +24,64 @@ export function apiBase() {
   return raw.replace(/\/$/, "");
 }
 
+// Helper function to encode name for headers (browser-safe)
+function encodeNameForHeader(name: string): string {
+  // Always use browser API - this code only runs in browser/client
+  try {
+    return btoa(unescape(encodeURIComponent(name)));
+  } catch (e) {
+    // Fallback: if encoding fails, use a safe ASCII representation
+    console.warn('Failed to encode name, using fallback:', e);
+    return btoa(name || 'Guest');
+  }
+}
+
 // lib/api.ts (FE)
 export async function createRoom(roomName: string, user: {id: string; name: string; role: string}) {
   const base = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:4000';
-  const res = await fetch(`${base}/api/rooms`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-user-id': user.id,
-      'x-user-name': user.name,
-      'x-user-role': user.role,
-    },
-    body: JSON.stringify({ roomName }),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || 'Failed to create room');
+  const encodedName = encodeNameForHeader(user.name);
+  
+  const url = `${base}/api/rooms`;
+  
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': user.id,
+        'x-user-name': encodedName,
+        'x-user-name-encoded': 'base64',
+        'x-user-role': user.role,
+      },
+      body: JSON.stringify({ roomName }),
+    });
+    
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || `Failed to create room: ${res.status} ${res.statusText}`);
+    }
+    
+    return res.json();
+  } catch (error: any) {
+    // Re-throw with more context if it's a network error
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new Error(`Network error: Cannot connect to ${url}. Please check if the server is running and CORS is configured correctly.`);
+    }
+    throw error;
   }
-  return res.json();
 }
   
   
   export async function getJoinToken(roomName: string, user: {id: string; name: string; role: string}) {
+  const encodedName = encodeNameForHeader(user.name);
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/rooms/${roomName}/token`, {
   method: 'POST',
   headers: {
   'Content-Type': 'application/json',
   'x-user-id': user.id,
-  'x-user-name': user.name,
+  'x-user-name': encodedName,
+  'x-user-name-encoded': 'base64',
   'x-user-role': user.role,
   },
   });
@@ -62,12 +91,14 @@ export async function createRoom(roomName: string, user: {id: string; name: stri
 
 export async function listStudyRooms(user: { id: string; name: string; role: string }) {
   const base = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:4000';
+  const encodedName = encodeNameForHeader(user.name);
   const res = await fetch(`${base}/api/study-rooms`, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       'x-user-id': user.id,
-      'x-user-name': user.name,
+      'x-user-name': encodedName,
+      'x-user-name-encoded': 'base64',
       'x-user-role': user.role,
     },
   });
@@ -76,13 +107,15 @@ export async function listStudyRooms(user: { id: string; name: string; role: str
 }
 
 export async function deleteStudyRoom(roomName: string, user: { id: string; name: string; role: string }) {
+  const encodedName = encodeNameForHeader(user.name);
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/study-rooms/${encodeURIComponent(roomName)}`, {
     method: 'DELETE',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       'x-user-id': user.id,
-      'x-user-name': user.name,
+      'x-user-name': encodedName,
+      'x-user-name-encoded': 'base64',
       'x-user-role': user.role,
     },
   });

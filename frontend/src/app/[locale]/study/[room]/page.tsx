@@ -25,7 +25,7 @@ type JoinResp = {
   displayName: string;
   role: 'student' | 'teacher' | 'admin';
   isHost?: boolean;
-  hostIdentity?: string; // 房主的 identity
+  hostIdentity?: string; // identity của chủ phòng
 };
 
 function ParticipantCount() {
@@ -37,14 +37,14 @@ function ParticipantCount() {
   );
 }
 
-// 组件：显示房主视频
+// Component: Hiển thị video chủ phòng
 function HostVideo({ hostIdentity }: { hostIdentity: string }) {
   const participants = useParticipants();
   const { localParticipant } = useLocalParticipant();
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   
-  // 找到房主（优先本地参与者如果是房主，否则找远程参与者）
+  // Tìm chủ phòng (ưu tiên người tham gia cục bộ nếu là chủ phòng, nếu không thì tìm người tham gia từ xa)
   const hostParticipant = useMemo(() => {
     if (localParticipant.identity === hostIdentity) {
       return localParticipant;
@@ -52,13 +52,13 @@ function HostVideo({ hostIdentity }: { hostIdentity: string }) {
     return participants.find((p) => p.identity === hostIdentity);
   }, [participants, hostIdentity, localParticipant]);
 
-  // 获取房主的视频轨道
+  // Lấy video track của chủ phòng
   const videoTracks = useTracks(
     [Track.Source.Camera],
     { onlySubscribed: false }
   );
 
-  // 获取房主的音频轨道
+  // Lấy audio track của chủ phòng
   const audioTracks = useTracks(
     [Track.Source.Microphone],
     { onlySubscribed: false }
@@ -67,7 +67,7 @@ function HostVideo({ hostIdentity }: { hostIdentity: string }) {
   const videoTrack = videoTracks.find((track) => track.participant?.identity === hostIdentity);
   const audioTrack = audioTracks.find((track) => track.participant?.identity === hostIdentity);
 
-  // 使用 useEffect 来管理视频轨道的附加和清理
+  // Sử dụng useEffect để quản lý việc attach và cleanup video track
   useEffect(() => {
     const videoEl = videoRef.current;
     if (!videoEl || !videoTrack?.publication?.track) return;
@@ -79,7 +79,7 @@ function HostVideo({ hostIdentity }: { hostIdentity: string }) {
     };
   }, [videoTrack]);
 
-  // 使用 useEffect 来管理音频轨道的附加和清理
+  // Sử dụng useEffect để quản lý việc attach và cleanup audio track
   useEffect(() => {
     const audioEl = audioRef.current;
     if (!audioEl || !audioTrack?.publication?.track) return;
@@ -103,7 +103,7 @@ function HostVideo({ hostIdentity }: { hostIdentity: string }) {
 
   return (
     <div className="relative w-full h-full flex items-center justify-center bg-black">
-      {/* 音频元素，用于播放房主的音频 */}
+      {/* Element audio để phát âm thanh của chủ phòng */}
       {audioTrack?.publication?.track && (
         <audio
           ref={audioRef}
@@ -132,7 +132,7 @@ function HostVideo({ hostIdentity }: { hostIdentity: string }) {
   );
 }
 
-// 组件：房主控制栏
+// Component: Thanh điều khiển của chủ phòng
 function HostControls({ isHost }: { isHost: boolean }) {
   if (!isHost) {
     return null;
@@ -194,7 +194,7 @@ export default function StudyRoomI18nPage() {
   if (!data) return <div className="p-6">Đang lấy token…</div>;
 
   const isHost = data.isHost ?? false;
-  const hostIdentity = data.hostIdentity || data.identity; // 使用后端返回的 hostIdentity，如果没有则使用当前用户的 identity
+  const hostIdentity = data.hostIdentity || data.identity; // Sử dụng hostIdentity từ backend trả về, nếu không có thì sử dụng identity của người dùng hiện tại
 
   return (
     <div className="pt-16 md:pt-20 min-h-[calc(100dvh-4rem)] md:min-h-[calc(100dvh-5rem)]">
@@ -202,8 +202,8 @@ export default function StudyRoomI18nPage() {
         serverUrl={data.wsUrl}
         token={data.token}
         connect
-        video={isHost} // 只有房主才开启视频
-        audio={isHost} // 只有房主才开启音频
+        video={isHost} // Chỉ chủ phòng mới bật video
+        audio={isHost} // Chỉ chủ phòng mới bật audio
         className="relative h-full"
         onDisconnected={() => console.log('disconnected')}
       >

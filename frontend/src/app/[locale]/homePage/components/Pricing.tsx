@@ -1,17 +1,60 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SectionHeader from "./SectionHeader";
 import { FiCheck } from "react-icons/fi";
+import { apiBase, apiPost } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Pricing() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+
+  const handleUpgrade = async () => {
+    // Kiểm tra đăng nhập
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+
+    // Kiểm tra đã là premium
+    if (user.access === "premium") {
+      alert("Bạn đã là thành viên Premium!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await apiPost<{
+        data: { checkoutUrl: string; qrCode?: string; orderCode: number };
+      }>(`${apiBase()}/api/payments/create`);
+
+      if (response.data?.checkoutUrl) {
+        // Chuyển hướng đến trang thanh toán PayOS
+        window.location.href = response.data.checkoutUrl;
+      } else {
+        throw new Error("Không thể tạo link thanh toán");
+      }
+    } catch (error: any) {
+      console.error("Error creating payment:", error);
+      alert(error.message || "Có lỗi xảy ra khi tạo link thanh toán");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const tiers = [
     {
       name: "Miễn phí",
       price: "0đ",
       features: ["20 bài luyện/tháng", "Mini test", "Báo cáo cơ bản"],
       cta: "Dùng thử",
-      href: "/signup",
+      href: "/auth/register",
       popular: false,
+      onClick: undefined,
     },
     {
       name: "Pro",
@@ -22,9 +65,11 @@ export default function Pricing() {
         "Phân tích lỗi nâng cao",
         "Lộ trình cá nhân hoá",
       ],
-      cta: "Nâng cấp",
-      href: "/pricing#pro",
+      cta: loading ? "Đang xử lý..." : user?.access === "premium" ? "Đã nâng cấp" : "Nâng cấp",
+      href: "#",
       popular: true,
+      onClick: handleUpgrade,
+      disabled: user?.access === "premium" || loading,
     },
   ];
   return (
@@ -66,16 +111,30 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Link
-                href={t.href}
-                className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                  t.popular
-                    ? "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-                    : "border border-slate-300 text-slate-800 hover:bg-slate-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-700"
-                }`}
-              >
-                {t.cta}
-              </Link>
+              {t.onClick ? (
+                <button
+                  onClick={t.onClick}
+                  disabled={t.disabled}
+                  className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                    t.popular
+                      ? "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+                      : "border border-slate-300 text-slate-800 hover:bg-slate-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                  }`}
+                >
+                  {t.cta}
+                </button>
+              ) : (
+                <Link
+                  href={t.href}
+                  className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                    t.popular
+                      ? "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+                      : "border border-slate-300 text-slate-800 hover:bg-slate-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                  }`}
+                >
+                  {t.cta}
+                </Link>
+              )}
             </div>
           ))}
         </div>

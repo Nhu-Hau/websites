@@ -44,7 +44,6 @@ export function MenuNav(): NavItemType[] {
         },
       ],
     },
-    { label: t("course"), href: `/${locale}/courses` },
     { label: t("forum"), href: `/${locale}/community` },
     { label: t("dashboard"), href: `/${locale}/dashboard` },
     { label: t("createStudyRoom"), href: `/${locale}/study/create` },

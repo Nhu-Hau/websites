@@ -83,6 +83,7 @@ export default function Header() {
                 alt="Logo"
                 width={60}
                 height={60}
+                style={{ aspectRatio: "1/1" }}
                 className="object-contain rounded-full"
                 priority
               />

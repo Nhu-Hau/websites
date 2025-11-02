@@ -18,9 +18,8 @@ import adminChatRoutes from "./routes/adminChat.routes";
 import adminAuthRoutes from "./routes/adminAuth.routes";
 import socketAuthRoutes from "./routes/socketAuth.routes";
 import practiceRoutes from "./routes/practice.routes";
-import coursesRoutes from "./routes/courses.routes";
-import paymentsRoutes from "./routes/payments.routes";
 import communityRoutes from "./routes/community.routes";
+import paymentsRoutes from "./routes/payments.routes";
 
 // LiveKit routes
 import studyRoomsRoutes from "./routes/studyRooms.routes";       // POST /api/rooms, POST /api/rooms/:room/token
@@ -65,9 +64,8 @@ app.use("/api/admin-chat", adminChatRoutes);
 app.use("/api/admin-auth", adminAuthRoutes);
 app.use("/api/socket-auth", socketAuthRoutes);
 app.use("/api/practice", practiceRoutes);   // sửa: mount đúng prefix /api/practice
-app.use("/api/courses", coursesRoutes);
-app.use("/api/payments", paymentsRoutes);
 app.use("/api/community", communityRoutes);
+app.use("/api/payments", paymentsRoutes);
 
 // ============ LiveKit routes ============
 app.use("/api", studyRoomsRoutes);        // => POST /api/rooms, POST /api/rooms/:room/token

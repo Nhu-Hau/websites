@@ -1,36 +1,71 @@
-import mongoose, { Schema, Types, Document } from "mongoose";
+// backend/src/models/Payment.ts
+import mongoose, { Schema, Document, Types } from "mongoose";
 
-export type PaymentStatus = "pending" | "paid" | "expired" | "cancelled";
+export enum PaymentStatus {
+  PENDING = "pending",
+  PAID = "paid",
+  CANCELLED = "cancelled",
+  EXPIRED = "expired",
+}
 
-export interface IPaymentOrder extends Document {
+export interface IPayment extends Document {
+  _id: Types.ObjectId;
   userId: Types.ObjectId;
-  courseSlug?: string | null;     // mua khóa lẻ
-  kind: "course" | "premium";
-  amount: number;
-  currency: "VND";
-  memo: string;
+  orderCode: number; // PayOS orderCode
+  amount: number; // Số tiền (VND)
+  description: string;
   status: PaymentStatus;
-  expiresAt?: Date | null;
-  paidAt?: Date | null;
+  payOSTransactionId?: string;
+  payOSCheckoutUrl?: string;
+  payOSQrCode?: string;
+  cancelUrl?: string;
+  returnUrl?: string;
+  paidAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const PaymentOrderSchema = new Schema<IPaymentOrder>(
+const paymentSchema = new Schema<IPayment>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    courseSlug: { type: String, default: null },
-    kind: { type: String, enum: ["course", "premium"], required: true },
-    amount: { type: Number, required: true },
-    currency: { type: String, enum: ["VND"], default: "VND" },
-    memo: { type: String, required: true },
-    status: { type: String, enum: ["pending", "paid", "expired", "cancelled"], default: "pending", index: true },
-    expiresAt: { type: Date, default: null },
-    paidAt: { type: Date, default: null },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    orderCode: {
+      type: Number,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: Object.values(PaymentStatus),
+      default: PaymentStatus.PENDING,
+      index: true,
+    },
+    payOSTransactionId: String,
+    payOSCheckoutUrl: String,
+    payOSQrCode: String,
+    cancelUrl: String,
+    returnUrl: String,
+    paidAt: Date,
   },
   { timestamps: true, versionKey: false }
 );
 
-export const PaymentOrder =
-  mongoose.models.PaymentOrder ||
-  mongoose.model<IPaymentOrder>("PaymentOrder", PaymentOrderSchema);
+// Index để tìm payment theo userId và status
+paymentSchema.index({ userId: 1, status: 1 });
+
+export const Payment =
+  mongoose.models.Payment || mongoose.model<IPayment>("Payment", paymentSchema);
+

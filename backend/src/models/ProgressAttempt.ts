@@ -55,7 +55,7 @@ const ProgressAttemptSchema = new Schema(
   },
   {
     timestamps: true,
-    collection: "progress_attempts",
+    collection: "progressattempts",
   }
 );
 
@@ -63,9 +63,9 @@ ProgressAttemptSchema.index({ userId: 1, submittedAt: -1 });
 
 export const ProgressAttempt =
   mongoose.models.ProgressAttempt ||
-  mongoose.model("ProgressAttempt", ProgressAttemptSchema, "progress_attempts");
+  mongoose.model("ProgressAttempt", ProgressAttemptSchema, "progressattempts");
 
-if (ProgressAttempt.collection.collectionName !== "progress_attempts") {
+if (ProgressAttempt.collection.collectionName !== "progressattempts") {
   throw new Error(
     `ProgressAttempt bound to wrong collection: ${ProgressAttempt.collection.collectionName}`
   );

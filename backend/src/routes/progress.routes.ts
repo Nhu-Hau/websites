@@ -9,6 +9,7 @@ import {
   getProgressAttemptById,
   getProgressAttemptItemsOrdered,
   getProgressEligibility,
+  ackProgressEligibility, 
 } from "../controllers/progress.controller";
 
 const router = Router();
@@ -23,5 +24,6 @@ router.get("/attempts/:id", requireAuth, getProgressAttemptById);
 router.get("/attempts/:id/items", requireAuth, getProgressAttemptItemsOrdered);
 
 router.get("/eligibility", requireAuth, getProgressEligibility);
+router.post("/eligibility/ack", requireAuth, ackProgressEligibility);
 
 export default router;

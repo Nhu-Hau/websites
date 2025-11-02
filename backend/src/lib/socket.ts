@@ -1,4 +1,3 @@
-// backend/src/lib/socket.ts
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { Server as HTTPServer } from "http";
 
@@ -41,6 +40,7 @@ export function setupSocketIO(server: HTTPServer) {
       }
     });
   });
+
   (global as any).io = io;
   return io;
 }
@@ -62,7 +62,10 @@ export function emitCommunityNewComment(
 }
 
 export function emitCommunityLike(
-io: SocketIOServer, postId: string, payload: { likesCount: number; liked: boolean; userId?: string; }, p0?: boolean) {
+  io: SocketIOServer,
+  postId: string,
+  payload: { likesCount: number; liked: boolean; userId?: string }
+) {
   io.to(`post:${postId}`).emit("community:like-updated", {
     postId,
     ...payload,
@@ -93,12 +96,15 @@ export function emitCommunityCommentDeleted(
     .emit("community:comment-deleted", { postId, commentId });
 }
 
+/* ============ Emit helpers (notifications) ============ */
+type AllowedNotifyType = "like" | "comment" | "progress";
+
 export function emitNotifyUser(
   io: SocketIOServer,
   userId: string,
-  data: { message: string; link: string; type: "like" | "comment"; meta?: any }
+  data: { message: string; link: string; type: AllowedNotifyType; meta?: any }
 ) {
-  const id = `${Date.now()}_${Math.random().toString(36).slice(2)}`; // 🔒 1 id cho cả 2 emit
+  const id = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
   // dropdown ở Header
   io.to(`user:${userId}`).emit("notify:user", {
@@ -108,13 +114,30 @@ export function emitNotifyUser(
     type: data.type,
     createdAt: new Date().toISOString(),
     read: false,
+    extra: data.meta || undefined,
   });
 
-  // corner toast góc phải
+  // corner toast (FE có thể dùng hoặc bỏ qua — tuỳ hook hiện tại)
   io.to(`user:${userId}`).emit("corner-toast", {
     id,
-    title: data.type === "comment" ? "Bình luận mới" : "Lượt thích mới",
+    title:
+      data.type === "comment"
+        ? "Bình luận mới"
+        : data.type === "like"
+        ? "Lượt thích mới"
+        : "Gợi ý làm Progress Test",
     message: data.message,
     link: data.link,
   });
+}
+
+// Sugar cho progress
+export function emitNotifyProgress(
+  io: SocketIOServer,
+  userId: string,
+  message: string,
+  link: string,
+  meta?: any
+) {
+  return emitNotifyUser(io, userId, { type: "progress", message, link, meta });
 }

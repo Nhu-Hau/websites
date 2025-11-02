@@ -35,7 +35,7 @@ const PracticeAttemptSchema = new Schema<IPracticeAttempt>(
   {
     timestamps: true,
     versionKey: false,
-    collection: "practice_attempts",
+    collection: "practiceattempts",
     minimize: false,
   }
 );
@@ -44,4 +44,4 @@ PracticeAttemptSchema.index({ userId: 1, partKey: 1, level: 1, test: 1, createdA
 
 export const PracticeAttempt =
   mongoose.models.PracticeAttempt ||
-  mongoose.model("PracticeAttempt", PracticeAttemptSchema, "practice_attempts");
+  mongoose.model("PracticeAttempt", PracticeAttemptSchema, "practiceattempts");

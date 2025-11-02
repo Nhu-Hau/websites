@@ -440,33 +440,48 @@ export async function getProgressAttemptItemsOrdered(
 function getEligibilityWindowMs() {
   const minutesRaw = Number(process.env.PROGRESS_ELIGIBILITY_MINUTES);
   const minutes =
-    Number.isFinite(minutesRaw) && minutesRaw > 0 ? minutesRaw : 5 * 24 * 60; // 5 ngày
+    Number.isFinite(minutesRaw) && minutesRaw > 0 ? minutesRaw : 5 * 24 * 60; // mặc định 5 ngày
   return minutes * 60 * 1000;
 }
 
+/**
+ * Logic:
+ *  - Phải có practice.
+ *  - Nếu CHƯA từng progress: mốc = lastPractice (gần nhất). Đủ cửa sổ => eligible.
+ *  - Nếu ĐÃ từng progress: bắt buộc có practice SAU lần progress gần nhất.
+ *      + mốc = lastPractice SAU progress (gần nhất).
+ *      + đủ cửa sổ => eligible.
+ */
 export async function getProgressEligibility(req: Request, res: Response) {
   try {
     const userId = (req as any).auth?.userId;
-    if (!userId) {
-      return res.status(401).json({ message: "Bạn chưa đăng nhập" });
-    }
+    if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
 
-    // Lấy lần progress gần nhất & lần practice đầu tiên
-    const [lastProgress, firstPractice] = await Promise.all([
+    const me = await User.findById(userId)
+      .select("progressMeta")
+      .lean<{ progressMeta?: any }>();
+
+    // Lấy progress gần nhất & practice gần nhất
+    const [lastProgress, lastPracticeOverall] = await Promise.all([
       ProgressAttempt.findOne({ userId })
         .sort({ submittedAt: -1 })
         .select({ submittedAt: 1, _id: 0 })
         .lean<{ submittedAt?: Date }>(),
       PracticeAttempt.findOne({ userId })
-        .sort({ createdAt: 1 })
+        .sort({ createdAt: -1 })
         .select({ createdAt: 1, _id: 0 })
         .lean<{ createdAt?: Date }>(),
     ]);
 
-    if (!firstPractice?.createdAt) {
+    // Không có practice => không nhắc progress
+    if (!lastPracticeOverall?.createdAt) {
       return res.json({
         eligible: false,
-        reason: "Chưa có lượt luyện tập nào",
+        reason: "no_practice_yet",
+        nextEligibleAt: null,
+        remainingMs: null,
+        windowMinutes: getEligibilityWindowMs() / 60_000,
+        suggestedAt: me?.progressMeta?.lastSuggestedAt ?? null,
       });
     }
 
@@ -474,34 +489,75 @@ export async function getProgressEligibility(req: Request, res: Response) {
       ? new Date(lastProgress.submittedAt)
       : null;
 
-    const firstPracticeAt = new Date(firstPractice.createdAt);
-    const anchor =
-      lastProgressAt && !isNaN(lastProgressAt.getTime())
-        ? lastProgressAt
-        : firstPracticeAt;
+    let anchorPractice: Date | null = null;
 
-    const practiceSinceCount = await PracticeAttempt.countDocuments({
-      userId,
-      createdAt: { $gt: anchor },
-    });
+    if (!lastProgressAt) {
+      // Chưa từng progress → mốc = lần practice gần nhất
+      anchorPractice = new Date(lastPracticeOverall.createdAt);
+    } else {
+      // Đã có progress → phải có practice sau progress, mốc = practice gần nhất SAU progress
+      const lastPracticeAfterProgress = await PracticeAttempt.findOne({
+        userId,
+        createdAt: { $gt: lastProgressAt },
+      })
+        .sort({ createdAt: -1 })
+        .select({ createdAt: 1, _id: 0 })
+        .lean<{ createdAt?: Date }>();
+
+      if (!lastPracticeAfterProgress?.createdAt) {
+        // Chưa có practice sau progress → chưa được nhắc
+        return res.json({
+          eligible: false,
+          reason: "no_practice_after_progress",
+          nextEligibleAt: null,
+          remainingMs: null,
+          windowMinutes: getEligibilityWindowMs() / 60_000,
+          suggestedAt: me?.progressMeta?.lastSuggestedAt ?? null,
+        });
+      }
+
+      anchorPractice = new Date(lastPracticeAfterProgress.createdAt);
+    }
 
     const WINDOW_MS = getEligibilityWindowMs();
+    const nextEligibleAt = new Date(anchorPractice.getTime() + WINDOW_MS);
     const now = Date.now();
-    const delta = now - anchor.getTime();
-
-    const eligible = practiceSinceCount > 0 && delta >= WINDOW_MS;
-    const nextEligibleAt = new Date(anchor.getTime() + WINDOW_MS);
+    const eligible = now >= nextEligibleAt.getTime();
 
     return res.json({
       eligible,
-      practiceSinceCount,
-      since: anchor.toISOString(),
+      reason: eligible ? "ok" : "waiting_window",
+      since: anchorPractice.toISOString(),
       windowMinutes: WINDOW_MS / 60_000,
       nextEligibleAt: nextEligibleAt.toISOString(),
       remainingMs: Math.max(0, nextEligibleAt.getTime() - now),
+      suggestedAt: me?.progressMeta?.lastSuggestedAt ?? null,
     });
   } catch (e) {
     console.error("[getProgressEligibility] ERROR", e);
+    return res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+}
+
+/** POST /api/progress/eligibility/ack  — ghi nhận đã hiển thị gợi ý ở phía client */
+export async function ackProgressEligibility(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+
+    await User.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          "progressMeta.lastSuggestedAt": new Date(),
+          updatedAt: new Date(),
+        },
+      }
+    ).exec();
+
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error("[ackProgressEligibility] ERROR", e);
     return res.status(500).json({ message: "Lỗi máy chủ" });
   }
 }

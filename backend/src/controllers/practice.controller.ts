@@ -425,3 +425,110 @@ export async function getPracticeAttemptById(req: Request, res: Response) {
     return res.status(500).json({ message: "Server error" });
   }
 }
+
+function getInactivityWindowMs() {
+  const daysRaw = Number(process.env.PRACTICE_INACTIVITY_DAYS);
+  const days = Number.isFinite(daysRaw) && daysRaw > 0 ? daysRaw : 3;
+  return days * 24 * 60 * 60 * 1000;
+}
+
+function getNudgeCooldownMs() {
+  const hoursRaw = Number(process.env.PRACTICE_NUDGE_COOLDOWN_HOURS);
+  const hours = Number.isFinite(hoursRaw) && hoursRaw > 0 ? hoursRaw : 24;
+  return hours * 60 * 60 * 1000;
+}
+
+/** GET /api/practice/inactivity — không luyện tập quá N ngày thì nhắc practice */
+export async function getPracticeInactivity(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+
+    const [lastPractice, me] = await Promise.all([
+      PracticeAttempt.findOne({ userId })
+        .sort({ createdAt: -1 })
+        .select({ createdAt: 1, _id: 0 })
+        .lean<{ createdAt?: Date }>(),
+      User.findById(userId)
+        .select({ "practiceMeta.lastInactivityNudgedAt": 1 })
+        .lean<{ practiceMeta?: { lastInactivityNudgedAt?: Date } } | null>(),
+    ]);
+
+    const now = Date.now();
+    const THRESH_MS = getInactivityWindowMs();
+    const COOLDOWN_MS = getNudgeCooldownMs();
+
+    const lastNudgeAt = me?.practiceMeta?.lastInactivityNudgedAt
+      ? new Date(me.practiceMeta.lastInactivityNudgedAt)
+      : null;
+    const nudgedRecently =
+      lastNudgeAt != null && now - lastNudgeAt.getTime() < COOLDOWN_MS;
+
+    if (!lastPractice?.createdAt) {
+      // Chưa từng làm ⇒ coi như inactive & có thể nudge nếu không vướng cooldown
+      const shouldNudge = !nudgedRecently;
+      return res.json({
+        inactive: true,
+        shouldNudge,
+        reason: "no_practice_yet",
+        lastPracticeAt: null,
+        thresholdMs: THRESH_MS,
+        cooldownMs: COOLDOWN_MS,
+        lastNudgedAt: lastNudgeAt ? lastNudgeAt.toISOString() : null,
+        nextNudgeAt: nudgedRecently
+          ? new Date(lastNudgeAt!.getTime() + COOLDOWN_MS).toISOString()
+          : new Date(now).toISOString(),
+        remainingMs: null,
+      });
+    }
+
+    const lastAt = new Date(lastPractice.createdAt);
+    const inactive = now - lastAt.getTime() >= THRESH_MS;
+    const shouldNudge = inactive && !nudgedRecently;
+
+    return res.json({
+      inactive,
+      shouldNudge,
+      reason: inactive ? "exceed_threshold" : "ok",
+      lastPracticeAt: lastAt.toISOString(),
+      thresholdMs: THRESH_MS,
+      cooldownMs: COOLDOWN_MS,
+      lastNudgedAt: lastNudgeAt ? lastNudgeAt.toISOString() : null,
+      nextNudgeAt: shouldNudge
+        ? new Date(now).toISOString()
+        : new Date(
+            Math.max(
+              lastAt.getTime() + THRESH_MS, // khi đủ ngưỡng
+              (lastNudgeAt?.getTime() || 0) + COOLDOWN_MS // sau cooldown
+            )
+          ).toISOString(),
+      remainingMs: Math.max(0, lastAt.getTime() + THRESH_MS - now),
+    });
+  } catch (e) {
+    console.error("[getPracticeInactivity] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+/** POST /api/practice/inactivity/ack — ghi nhận đã hiển thị nhắc nhở practice */
+export async function ackPracticeInactivity(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+
+    await User.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          "practiceMeta.lastInactivityNudgedAt": new Date(),
+          updatedAt: new Date(),
+        },
+      }
+    ).exec();
+
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error("[ackPracticeInactivity] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}

@@ -48,7 +48,7 @@ const PlacementAttemptSchema = new Schema(
   },
   {
     timestamps: true,
-    collection: "placement_attempts",
+    collection: "placementattempts",
   }
 );
 
@@ -59,10 +59,10 @@ export const PlacementAttempt =
   mongoose.model(
     "PlacementAttempt",
     PlacementAttemptSchema,
-    "placement_attempts"
+    "placementattempts"
   );
 
-if (PlacementAttempt.collection.collectionName !== "placement_attempts") {
+if (PlacementAttempt.collection.collectionName !== "placementattempts") {
   throw new Error(
     `PlacementAttempt bound to wrong collection: ${PlacementAttempt.collection.collectionName}`
   );

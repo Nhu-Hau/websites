@@ -34,7 +34,8 @@ export function signRefreshToken(
 }
 
 export function verifyRefreshToken(token: string) {
-  return jwt.verify(token, REFRESH_SECRET) as RefreshPayload & jwt.JwtPayload;
+  return jwt.verify(token, REFRESH_SECRET) as RefreshPayload &
+    jwt.JwtPayload;
 }
 export function signGoogleSignupToken(payload: {
   email: string;

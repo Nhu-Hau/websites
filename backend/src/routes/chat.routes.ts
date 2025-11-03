@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ChatMessage } from "../models/ChatMessage";
+import { ChatMessage, IChatMessage } from "../models/ChatMessage";
 import { requireAuth } from "../middleware/requireAuth";
 import { chatService } from "../services/chat.service";
 
@@ -63,7 +63,13 @@ router.post("/send", requireAuth, async (req, res, next) => {
       .lean();
 
     // Đảo ngược để có thứ tự đúng
-    const contextMessages = recentMessages.reverse();
+    const contextMessages = recentMessages.reverse().map(msg => ({
+      role: msg.role,
+      content: msg.content,
+      userId: msg.userId,
+      sessionId: msg.sessionId,
+      createdAt: msg.createdAt
+    })) as Partial<IChatMessage>[];
 
     // Gọi AI service để tạo phản hồi
     const aiResponse = await chatService.generateResponse(contextMessages);

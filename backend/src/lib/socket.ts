@@ -141,3 +141,24 @@ export function emitNotifyProgress(
 ) {
   return emitNotifyUser(io, userId, { type: "progress", message, link, meta });
 }
+
+/* ============ Emit helpers (admin chat) ============ */
+export function emitNewMessage(
+  io: SocketIOServer,
+  sessionId: string,
+  data: { message: any; type: string }
+) {
+  io.to(`admin-chat:${sessionId}`).emit("admin-chat:new-message", data);
+}
+
+export function emitAdminMessage(
+  io: SocketIOServer,
+  sessionId: string,
+  data: { message: any; type: string }
+) {
+  io.to(`admin-chat:${sessionId}`).emit("admin-chat:admin-message", data);
+}
+
+export function emitConversationUpdate(io: SocketIOServer, sessionId: string) {
+  io.to("admin").emit("admin-chat:conversation-updated", { sessionId });
+}

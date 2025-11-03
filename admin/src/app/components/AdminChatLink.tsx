@@ -18,7 +18,7 @@ export default function AdminChatLink() {
       
       if (data?.data) {
         // Tính tổng unread count từ tất cả conversations
-        const totalUnread = (data.data || []).reduce((sum: number, conv: any) => 
+        const totalUnread = (data.data || []).reduce((sum: number, conv: { unreadCount?: number }) => 
           sum + (conv.unreadCount || 0), 0
         );
         setUnreadCount(totalUnread);
@@ -68,7 +68,7 @@ export default function AdminChatLink() {
     // Join admin room để nhận tin nhắn
     socket.emit("admin:join-conversation", "admin");
 
-    const handleNewMessage = (data: any) => {
+    const handleNewMessage = (data: { message?: { role?: string } }) => {
       console.log("Admin navigation received new-message:", data);
       if (data.message && data.message.role === 'user') {
         console.log("Admin navigation: Incrementing unread count");
@@ -79,8 +79,8 @@ export default function AdminChatLink() {
       }
     };
 
-    const handleConversationUpdate = (data: any) => {
-      console.log("Admin navigation received conversation-updated:", data);
+    const handleConversationUpdate = (_data: unknown) => {
+      console.log("Admin navigation received conversation-updated:", _data);
       // Reload unread count when conversation is updated
       loadUnreadCount();
     };

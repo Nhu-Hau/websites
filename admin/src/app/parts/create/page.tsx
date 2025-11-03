@@ -198,8 +198,9 @@ export default function CreateTestPage() {
       const result = await adminUploadStimulusMedia(file);
       handleUpdateStimulusMedia(index, type === 'image' ? 'image' : 'audio', result.url);
       alert(`Upload ${type} thành công!`);
-    } catch (e: any) {
-      alert(e?.message || `Upload ${type} thất bại`);
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : `Upload ${type} thất bại`;
+      alert(errorMessage);
     } finally {
       setUploading({ type: null, index: -1 });
     }
@@ -220,7 +221,7 @@ export default function CreateTestPage() {
 
     setBusy(true);
     try {
-      const requestBody: any = {
+      const requestBody = {
         part: form.part,
         level: parseInt(form.level),
         test: parseInt(form.test),
@@ -230,33 +231,38 @@ export default function CreateTestPage() {
           level: parseInt(form.level),
           test: parseInt(form.test),
           stimulusId: item.stimulusId,
-          stem: item.stem || null,
-          explain: item.explain || null,
+          stem: item.stem || undefined,
+          explain: item.explain || undefined,
           answer: item.answer,
           order: idx,
           choices: item.choices.map(choice => ({
             id: choice.id,
-            text: choice.text || null,
+            text: choice.text || undefined,
           })),
         })),
+        ...(form.stimuli.length > 0 && {
+          stimuli: form.stimuli.map((stimulus) => ({
+            id: stimulus.id,
+            part: form.part,
+            level: parseInt(form.level),
+            test: parseInt(form.test),
+            media: {
+              image: stimulus.media.image || null,
+              audio: stimulus.media.audio || '',
+              script: stimulus.media.script || '',
+              explain: stimulus.media.explain || '',
+            },
+          })),
+        }),
       };
-
-      if (form.stimuli.length > 0) {
-        requestBody.stimuli = form.stimuli.map((stimulus) => ({
-          id: stimulus.id,
-          part: form.part,
-          level: parseInt(form.level),
-          test: parseInt(form.test),
-          media: stimulus.media,
-        }));
-      }
 
       await adminCreateTest(requestBody);
 
       alert("Tạo test thành công!");
       router.push("/parts");
-    } catch (e: any) {
-      alert(e?.message || "Lỗi tạo test");
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : "Lỗi tạo test";
+      alert(errorMessage);
     } finally {
       setBusy(false);
     }
@@ -435,7 +441,7 @@ export default function CreateTestPage() {
               {form.items.length === 0 && (
                 <div className="text-center py-12 text-zinc-400 border-2 border-dashed rounded-lg">
                   <p className="mb-3">Chưa có items</p>
-                  <p className="text-sm">Click "Thêm Item" ở trên để bắt đầu</p>
+                  <p className="text-sm">Click &quot;Thêm Item&quot; ở trên để bắt đầu</p>
                 </div>
               )}
             </div>
@@ -569,7 +575,7 @@ export default function CreateTestPage() {
               {form.stimuli.length === 0 && (
                 <div className="text-center py-12 text-zinc-400 border-2 border-dashed rounded-lg">
                   <p className="mb-3">Chưa có stimuli</p>
-                  <p className="text-sm">Click "Thêm Stimulus" ở trên để bắt đầu</p>
+                  <p className="text-sm">Click &quot;Thêm Stimulus&quot; ở trên để bắt đầu</p>
                 </div>
               )}
 

@@ -77,7 +77,7 @@ router.post('/livekit/webhook', async (req, res) => {
         // Xử lý chuyển quyền chủ phòng nếu người rời là chủ phòng hiện tại
         try {
           const roomDoc = await StudyRoom.findOne({ roomName: room.name }).lean();
-          if (roomDoc && roomDoc.currentHostId === participant.identity) {
+          if (roomDoc && !Array.isArray(roomDoc) && roomDoc.currentHostId === participant.identity) {
             // Chủ phòng đã rời, tìm người tiếp theo
             let newHostId: string | null = null;
 
@@ -87,8 +87,8 @@ router.post('/livekit/webhook', async (req, res) => {
               
               if (participants && participants.length > 0) {
                 // Ưu tiên người tạo phòng nếu họ còn trong phòng
-                const creatorInRoom = participants.find((p: any) => p.identity === roomDoc.createdBy.id);
-                if (creatorInRoom) {
+                const creatorInRoom = participants.find((p: any) => p.identity === roomDoc.createdBy?.id);
+                if (creatorInRoom && roomDoc.createdBy) {
                   newHostId = roomDoc.createdBy.id;
                 } else {
                   // Nếu người tạo phòng không còn, chọn người join sớm nhất

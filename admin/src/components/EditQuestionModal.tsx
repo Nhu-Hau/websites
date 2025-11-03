@@ -27,14 +27,14 @@ export default function EditQuestionModal({ item, isOpen, onClose, onUpdate }: E
         id: item.id,
         stem: item.stem || "",
         answer: item.answer,
-        explain: item.explain || "",
+        explain: (item as { explain?: string }).explain || "",
         stimulusId: item.stimulusId || "",
-        choices: item.choices || [],
+        choices: ((item as { choices?: unknown }).choices as { id: string; text: string | null }[]) || [],
       });
     }
   }, [item]);
 
-  const handleUpdateField = (field: string, value: any) => {
+  const handleUpdateField = (field: string, value: unknown) => {
     setForm({ ...form, [field]: value });
   };
 
@@ -51,17 +51,18 @@ export default function EditQuestionModal({ item, isOpen, onClose, onUpdate }: E
 
     try {
       await adminUpdatePart(item.id, {
-        stem: form.stem || null,
+        stem: form.stem || undefined,
         answer: form.answer,
-        explain: form.explain || null,
-        stimulusId: form.stimulusId || null,
+        explain: form.explain || undefined,
+        stimulusId: form.stimulusId || undefined,
         choices: form.choices,
-      });
+      } as Partial<AdminPart>);
       alert("Cập nhật câu hỏi thành công!");
       onUpdate();
       onClose();
-    } catch (e: any) {
-      alert(e?.message || "Lỗi cập nhật câu hỏi");
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : "Lỗi cập nhật câu hỏi";
+      alert(errorMessage);
     }
   };
 

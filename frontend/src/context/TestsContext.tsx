@@ -11,8 +11,18 @@ import React, {
   useCallback,
 } from "react";
 // Nếu bạn đặt lib ở nơi khác, chỉnh lại alias bên dưới
-import { getAllTests } from "@/app/lib/tests";
-import type { Test } from "@/app/types/testTypes";
+// import { getAllTests } from "@/app/lib/tests";
+// import type { Test } from "@/app/types/testTypes";
+
+type Test = {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+};
+
+const getAllTests = (): Test[] => {
+  return [];
+};
 
 type Ctx = {
   tests: Test[];

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { adminListUsers, adminUpdateUser, adminDeleteUser, AdminUser } from "@/lib/apiClient";
 
 export default function UsersPage() {
@@ -72,8 +73,8 @@ export default function UsersPage() {
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Quản lý người dùng</h1>
         <nav className="flex items-center gap-2 text-sm">
-          <a className="px-3 py-1.5 rounded border" href="/users">Users</a>
-          <a className="px-3 py-1.5 rounded border" href="/">Trang chủ</a>
+          <Link className="px-3 py-1.5 rounded border" href="/users">Users</Link>
+          <Link className="px-3 py-1.5 rounded border" href="/">Trang chủ</Link>
         </nav>
       </header>
 

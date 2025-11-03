@@ -142,7 +142,7 @@ Quy tắc:
   private getDemoResponse(messages: Partial<IChatMessage>[]): string {
     if (!this.isEnglishRelated(messages)) return ChatService.OUT_OF_SCOPE;
 
-    const lastRaw = (messages.at(-1)?.content ?? "").toString();
+    const lastRaw = (messages[messages.length - 1]?.content ?? "").toString();
     const last = lastRaw.toLowerCase();
 
     // Nhận diện nhanh các lỗi phổ biến để minh họa (vd: "he are students")

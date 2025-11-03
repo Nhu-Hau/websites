@@ -20,14 +20,15 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
   async function onCreate() {
     setLoading(true);
     try {
-      const u = { id: authUser?.id || `guest-${crypto.randomUUID()}`, name: authUser?.name || 'Guest', role: (authUser?.role as any) || 'teacher' };
+      const u = { id: authUser?.id || `guest-${crypto.randomUUID()}`, name: authUser?.name || 'Guest', role: (authUser?.role as string) || 'teacher' };
       await createRoom(room, u);
       onCreated?.(); // Trigger reload if callback provided
       const localePrefix = params?.locale ? `/${params.locale}` : '';
       router.push(`${localePrefix}/study/${room}`);
-    } catch (e: any) {
+    } catch (e) {
       console.error('Create room error:', e);
-      alert(e?.message || 'Không thể tạo phòng');
+      const errorMessage = e instanceof Error ? e.message : 'Không thể tạo phòng';
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

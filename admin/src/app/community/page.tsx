@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { 
   adminListCommunityPosts, 
   adminDeleteCommunityPost,
@@ -135,9 +136,9 @@ export default function CommunityPage() {
             + Tạo bài viết
           </button>
           <nav className="flex items-center gap-2 text-sm">
-            <a className="px-3 py-1.5 rounded border" href="/users">Users</a>
-            <a className="px-3 py-1.5 rounded border" href="/community">Community</a>
-            <a className="px-3 py-1.5 rounded border" href="/">Trang chủ</a>
+            <Link className="px-3 py-1.5 rounded border" href="/users">Users</Link>
+            <Link className="px-3 py-1.5 rounded border" href="/community">Community</Link>
+            <Link className="px-3 py-1.5 rounded border" href="/">Trang chủ</Link>
           </nav>
         </div>
       </header>

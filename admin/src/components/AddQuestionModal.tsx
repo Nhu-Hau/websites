@@ -50,7 +50,7 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
     }
   }, [isOpen, initialForm]);
 
-  const handleUpdateField = (field: string, value: any) => {
+  const handleUpdateField = (field: string, value: unknown) => {
     setForm({ ...form, [field]: value });
   };
 
@@ -77,10 +77,9 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
         test,
         stem: form.stem || undefined,
         answer: form.answer,
-        explain: form.explain || undefined,
         stimulusId: form.stimulusId || undefined,
-        choices: form.choices as any,
-      } as any);
+        choices: form.choices,
+      } as AdminPart);
       alert("Tạo câu hỏi thành công!");
       onSuccess();
       onClose();
@@ -98,8 +97,9 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
           { id: "D", text: "" },
         ],
       });
-    } catch (e: any) {
-      alert(e?.message || "Lỗi tạo câu hỏi");
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : "Lỗi tạo câu hỏi";
+      alert(errorMessage);
     }
   };
 

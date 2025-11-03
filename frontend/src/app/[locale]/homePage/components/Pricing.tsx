@@ -38,9 +38,10 @@ export default function Pricing() {
       } else {
         throw new Error("Không thể tạo link thanh toán");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error creating payment:", error);
-      alert(error.message || "Có lỗi xảy ra khi tạo link thanh toán");
+      const errorMessage = error instanceof Error ? error.message : "Có lỗi xảy ra khi tạo link thanh toán";
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

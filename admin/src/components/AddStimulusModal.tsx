@@ -56,8 +56,9 @@ export default function AddStimulusModal({ isOpen, onClose, onSuccess, part, lev
       const result = await adminUploadStimulusMedia(file);
       handleUpdateMedia(type === 'image' ? 'image' : 'audio', result.url);
       alert(`Upload ${type} thành công!`);
-    } catch (e: any) {
-      alert(e?.message || `Upload ${type} thất bại`);
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : `Upload ${type} thất bại`;
+      alert(errorMessage);
     } finally {
       setUploading({ type: null, uploading: false });
     }
@@ -97,8 +98,9 @@ export default function AddStimulusModal({ isOpen, onClose, onSuccess, part, lev
           explain: "",
         },
       });
-    } catch (e: any) {
-      alert(e?.message || "Lỗi tạo stimulus");
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : "Lỗi tạo stimulus";
+      alert(errorMessage);
     }
   };
 

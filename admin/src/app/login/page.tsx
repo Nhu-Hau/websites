@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
         return;
       }
       router.replace("/users");
-    } catch (e: any) {
+    } catch {
       setError("Lỗi kết nối máy chủ");
     } finally {
       setBusy(false);

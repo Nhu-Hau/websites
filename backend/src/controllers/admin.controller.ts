@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { User } from "../models/User";
-import PlacementAttempt from "../models/PlacementAttempt";
+import { PlacementAttempt } from "../models/PlacementAttempt";
 
 export async function listUsers(req: Request, res: Response) {
   try {

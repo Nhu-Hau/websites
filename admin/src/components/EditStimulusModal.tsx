@@ -50,8 +50,9 @@ export default function EditStimulusModal({ stimulus, isOpen, onClose, onUpdate 
       const result = await adminUploadStimulusMedia(file);
       handleUpdateMedia(type === 'image' ? 'image' : 'audio', result.url);
       alert(`Upload ${type} thành công!`);
-    } catch (e: any) {
-      alert(e?.message || `Upload ${type} thất bại`);
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : `Upload ${type} thất bại`;
+      alert(errorMessage);
     } finally {
       setUploading({ type: null, uploading: false });
     }
@@ -71,8 +72,9 @@ export default function EditStimulusModal({ stimulus, isOpen, onClose, onUpdate 
       alert("Cập nhật stimulus thành công!");
       onUpdate();
       onClose();
-    } catch (e: any) {
-      alert(e?.message || "Lỗi cập nhật stimulus");
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : "Lỗi cập nhật stimulus";
+      alert(errorMessage);
     }
   };
 

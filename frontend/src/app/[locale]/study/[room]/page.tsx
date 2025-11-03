@@ -5,7 +5,6 @@ import {
   LiveKitRoom,
   useParticipants,
   useLocalParticipant,
-  ParticipantTile,
   ControlBar,
   DisconnectButton,
   TrackToggle,
@@ -15,7 +14,7 @@ import '@livekit/components-styles';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import type { Participant, TrackPublication } from 'livekit-client';
+// Đã loại bỏ các kiểu Participant và TrackPublication vì không sử dụng
 import { Track } from 'livekit-client';
 
 type JoinResp = {
@@ -163,7 +162,7 @@ export default function StudyRoomI18nPage() {
     (async () => {
       try {
         const base = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, '') || '';
-        // Encode user name to base64 to handle non-ISO-8859-1 characters
+        // Mã hóa tên người dùng sang base64 để xử lý các ký tự không phải ISO-8859-1
         const userName = user?.name || 'Guest';
         let encodedName: string;
         try {
@@ -179,8 +178,8 @@ export default function StudyRoomI18nPage() {
           headers: {
             'x-user-id': user?.id || `guest-${crypto.randomUUID()}`,
             'x-user-name': encodedName,
-            'x-user-name-encoded': 'base64', // Flag to indicate encoding
-            'x-user-role': (user?.role as any) || 'student',
+            'x-user-name-encoded': 'base64', // Cờ để chỉ định mã hóa
+            'x-user-role': (user?.role as string) || 'student',
           },
           signal: ac.signal,
         });
@@ -190,10 +189,11 @@ export default function StudyRoomI18nPage() {
         }
         const json: JoinResp = await res.json();
         setData(json);
-      } catch (e: any) {
-        if (e?.name === 'AbortError') return;
+      } catch (e) {
+        if (e instanceof Error && e.name === 'AbortError') return;
         console.error('join error:', e);
-        setErr(e.message || 'Cannot get token');
+        const errorMessage = e instanceof Error ? e.message : 'Cannot get token';
+        setErr(errorMessage);
       }
     })();
 

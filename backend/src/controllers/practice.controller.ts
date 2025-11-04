@@ -15,11 +15,6 @@ const VALID_PARTS = new Set([
   "part.7",
 ]);
 
-/** Làm tròn TOEIC theo bội số 5, khoá min/max */
-function toToeicStep5(raw: number, min: number, max: number) {
-  const rounded = Math.round(raw / 5) * 5;
-  return Math.min(max, Math.max(min, rounded));
-}
 
 /** Tính level “thô” để fallback lần đầu (1..3) */
 function levelFromAcc(acc: number): 1 | 2 | 3 {

@@ -71,8 +71,10 @@ router.post("/send", requireAuth, async (req, res, next) => {
       createdAt: msg.createdAt
     })) as Partial<IChatMessage>[];
 
-    // Gọi AI service để tạo phản hồi
-    const aiResponse = await chatService.generateResponse(contextMessages);
+    // Gọi AI service để tạo phản hồi (có cá nhân hóa theo userId)
+    console.log(`[ChatRoutes] Generating response for userId: ${userId}, sessionId: ${sessionId}, messageCount: ${contextMessages.length}`);
+    const aiResponse = await chatService.generateResponse(contextMessages, userId);
+    console.log(`[ChatRoutes] AI response received, length: ${aiResponse.length}`);
 
     // Lưu phản hồi của AI
     const assistantMessage = new ChatMessage({

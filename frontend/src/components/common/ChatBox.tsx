@@ -236,15 +236,22 @@ export default function ChatBox() {
     ]);
 
     try {
-      const { ok, json } = await postJson("/api/chat/send", {
+      const json = await postJson("/api/chat/send", {
         message: text,
         sessionId,
       });
 
-      if (!ok || !json?.data)
-        throw new Error(json?.message || "Failed to send message");
+      if (!json?.data) {
+        console.error("[ChatBox] Response không có data field:", json);
+        throw new Error(json?.message || "Failed to send message: No data in response");
+      }
 
       const { userMessage, assistantMessage } = json.data;
+      
+      if (!userMessage || !assistantMessage) {
+        console.error("[ChatBox] Response thiếu userMessage hoặc assistantMessage:", { userMessage, assistantMessage });
+        throw new Error("Invalid response format");
+      }
 
       // 2) Thay bubble tạm bằng dữ liệu thật từ server
       setMessages((prev) =>
@@ -602,7 +609,7 @@ export default function ChatBox() {
 
             {!user && (
               <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-                <a href="/login" className="text-sky-600 hover:underline">
+                <a href="/auth/login" className="text-sky-600 hover:underline">
                   Đăng nhập
                 </a>{" "}
                 để sử dụng

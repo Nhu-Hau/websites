@@ -11,6 +11,9 @@ import {
   Tooltip as ChartTooltip,
   ResponsiveContainer,
   CartesianGrid,
+  Legend,
+  BarChart,
+  Bar,
 } from "recharts";
 import {
   Gauge,
@@ -27,6 +30,7 @@ import {
 import { toast } from "sonner";
 import { useBasePrefix } from "@/hooks/useBasePrefix";
 
+/* ===================== Types ===================== */
 type Lvl = 1 | 2 | 3;
 type PartKey =
   | "part.1"
@@ -37,6 +41,7 @@ type PartKey =
   | "part.6"
   | "part.7";
 
+/** Practice */
 type PracticeAttemptDoc = {
   _id: string;
   partKey: string;
@@ -44,13 +49,12 @@ type PracticeAttemptDoc = {
   test?: number | null;
   total: number;
   correct: number;
-  acc: number;
+  acc: number; // 0..1
   timeSec: number;
   createdAt?: string;
   submittedAt?: string;
   isRetake?: boolean;
 };
-
 type PracticeHistoryResp = {
   page: number;
   limit: number;
@@ -58,6 +62,39 @@ type PracticeHistoryResp = {
   items: PracticeAttemptDoc[];
 };
 
+/** Placement (lịch sử attempt tóm tắt) */
+type PlacementAttemptLite = {
+  _id: string;
+  submittedAt: string;
+  listening?: { acc?: number; total?: number; correct?: number };
+  reading?: { acc?: number; total?: number; correct?: number };
+  predicted?: { overall?: number; listening?: number; reading?: number }; // điểm 5-step (nếu BE lưu)
+  partStats?: Record<string, { total: number; correct: number; acc: number }>;
+};
+type PlacementHistoryResp = {
+  page: number;
+  limit: number;
+  total: number;
+  items: PlacementAttemptLite[];
+};
+
+/** Progress (lịch sử attempt tóm tắt) */
+type ProgressAttempt = {
+  _id: string;
+  submittedAt: string;
+  listening?: { acc?: number; total?: number; correct?: number };
+  reading?: { acc?: number; total?: number; correct?: number };
+  predicted?: { overall?: number; listening?: number; reading?: number }; // điểm 5-step
+  partStats?: Record<string, { total: number; correct: number; acc: number }>;
+};
+type ProgressHistoryResp = {
+  page: number;
+  limit: number;
+  total: number;
+  items: ProgressAttempt[];
+};
+
+/** User */
 type UserMe = {
   _id?: string;
   id?: string;
@@ -75,6 +112,7 @@ type UserMe = {
   } | null;
 };
 
+/* ===================== Constants & helpers ===================== */
 const PARTS: PartKey[] = [
   "part.1",
   "part.2",
@@ -84,6 +122,7 @@ const PARTS: PartKey[] = [
   "part.6",
   "part.7",
 ];
+
 const PART_LABEL: Record<PartKey, string> = {
   "part.1": "Part 1",
   "part.2": "Part 2",
@@ -105,7 +144,7 @@ function normalizePartLevels(raw: any): Partial<Record<PartKey, Lvl>> {
     let v: any = raw[p];
     if (v == null && raw.part && typeof raw.part === "object")
       v = raw.part[num];
-    if (v == null && raw[num] != null) v = raw[num];
+    if (v == null && (raw as any)[num] != null) v = (raw as any)[num];
     const n = Number(v);
     if (n === 1 || n === 2 || n === 3) out[p] = n as Lvl;
   }
@@ -128,17 +167,30 @@ function pickUserFromMe(json: any): UserMe | null {
   return null;
 }
 
+/* ===================== Component ===================== */
 export default function Dashboard() {
   const basePrefix = useBasePrefix("vi");
 
   const [, setLoading] = React.useState(true);
+
+  // levels + TOEIC dự báo từ user
   const [levels, setLevels] = React.useState<Partial<Record<PartKey, Lvl>>>({});
   const [toeicOverall, setToeicOverall] = React.useState<number | null>(null);
+
+  // practice history (để vẽ line theo part)
   const [practiceHist, setPracticeHist] = React.useState<PracticeAttemptDoc[]>(
     []
   );
+
+  // placement & progress history (để gộp vào Assessment)
+  const [placementHist, setPlacementHist] = React.useState<
+    PlacementAttemptLite[]
+  >([]);
+  const [progressHist, setProgressHist] = React.useState<ProgressAttempt[]>([]);
+
   const [selectedPart, setSelectedPart] = React.useState<PartKey>("part.1");
 
+  /* ====== fetchers ====== */
   const fetchMe = React.useCallback(async () => {
     const rMe = await fetch("/api/auth/me", {
       credentials: "include",
@@ -167,12 +219,45 @@ export default function Dashboard() {
     setPracticeHist(jPh.items || []);
   }, []);
 
+  const fetchPlacementHist = React.useCallback(async () => {
+    // nếu BE của bạn khác path, đổi URL tương ứng
+    const r = await fetch("/api/placement/attempts?limit=10&page=1", {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (!r.ok) {
+      setPlacementHist([]);
+      return;
+    }
+    const j: PlacementHistoryResp = await r.json();
+    setPlacementHist(j.items || []);
+  }, []);
+
+  const fetchProgressHist = React.useCallback(async () => {
+    // nếu BE của bạn khác path, đổi URL tương ứng
+    const r = await fetch("/api/progress/attempts?limit=10&page=1", {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (!r.ok) {
+      setProgressHist([]);
+      return;
+    }
+    const j: ProgressHistoryResp = await r.json();
+    setProgressHist(j.items || []);
+  }, []);
+
   React.useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         setLoading(true);
-        await Promise.all([fetchMe(), fetchPracticeHist()]);
+        await Promise.all([
+          fetchMe(),
+          fetchPracticeHist(),
+          fetchPlacementHist(),
+          fetchProgressHist(),
+        ]);
       } catch (e) {
         console.error(e);
         toast.error("Không tải được dữ liệu dashboard");
@@ -180,26 +265,31 @@ export default function Dashboard() {
         if (mounted) setLoading(false);
       }
     })();
+
     const onVis = () => {
       if (document.visibilityState === "visible") {
         fetchMe();
         fetchPracticeHist();
+        fetchPlacementHist();
+        fetchProgressHist();
       }
     };
     document.addEventListener("visibilitychange", onVis);
+
     const onPracticeUpdated = () => {
       fetchMe();
       fetchPracticeHist();
     };
     window.addEventListener("practice:updated", onPracticeUpdated as any);
+
     return () => {
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("practice:updated", onPracticeUpdated as any);
       mounted = false;
     };
-  }, [fetchMe, fetchPracticeHist]);
+  }, [fetchMe, fetchPracticeHist, fetchPlacementHist, fetchProgressHist]);
 
-  /* ---------- Accuracy theo từng part ---------- */
+  /* ---------- Line theo từng Part (từ practice) ---------- */
   const lineByPart = React.useMemo(() => {
     const map: Record<
       PartKey,
@@ -262,6 +352,94 @@ export default function Dashboard() {
     return map;
   }, [practiceHist]);
 
+  /* ---------- Assessment (Placement + Progress) ---------- */
+  type AssessmentPoint = {
+    at: string; // label thời gian
+    Listening: number; // %
+    Reading: number; // %
+    Overall: number; // %
+    kind: "placement" | "progress";
+    ts: number; // timestamp để sort ổn định
+    _id: string;
+  };
+
+  const assessmentLineData: AssessmentPoint[] = React.useMemo(() => {
+    const toPctFromPred = (l5?: number, r5?: number) => {
+      const l = Math.max(0, Math.min(100, Math.round(((l5 ?? 0) / 495) * 100)));
+      const r = Math.max(0, Math.min(100, Math.round(((r5 ?? 0) / 495) * 100)));
+      const overall = Math.round((l + r) / 2);
+      return { l, r, overall };
+    };
+    const clampPct = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
+
+    const placement = [...placementHist].map((x) => {
+      const ts = new Date(x.submittedAt).getTime();
+      // ưu tiên predicted nếu có
+      if (x.predicted?.listening != null || x.predicted?.reading != null) {
+        const { l, r, overall } = toPctFromPred(
+          x.predicted?.listening,
+          x.predicted?.reading
+        );
+        return {
+          _id: x._id,
+          at: fmtTimeLabel(x.submittedAt),
+          Listening: l,
+          Reading: r,
+          Overall: overall,
+          kind: "placement" as const,
+          ts,
+        };
+      }
+      // fallback từ acc
+      const l = clampPct((x.listening?.acc ?? 0) * 100);
+      const r = clampPct((x.reading?.acc ?? 0) * 100);
+      const overall = Math.round((l + r) / 2);
+      return {
+        _id: x._id,
+        at: fmtTimeLabel(x.submittedAt),
+        Listening: l,
+        Reading: r,
+        Overall: overall,
+        kind: "placement" as const,
+        ts,
+      };
+    });
+
+    const progress = [...progressHist].map((x) => {
+      const ts = new Date(x.submittedAt).getTime();
+      if (x.predicted?.listening != null || x.predicted?.reading != null) {
+        const { l, r, overall } = toPctFromPred(
+          x.predicted?.listening,
+          x.predicted?.reading
+        );
+        return {
+          _id: x._id,
+          at: fmtTimeLabel(x.submittedAt),
+          Listening: l,
+          Reading: r,
+          Overall: overall,
+          kind: "progress" as const,
+          ts,
+        };
+      }
+      const l = clampPct((x.listening?.acc ?? 0) * 100);
+      const r = clampPct((x.reading?.acc ?? 0) * 100);
+      const overall = Math.round((l + r) / 2);
+      return {
+        _id: x._id,
+        at: fmtTimeLabel(x.submittedAt),
+        Listening: l,
+        Reading: r,
+        Overall: overall,
+        kind: "progress" as const,
+        ts,
+      };
+    });
+
+    return [...placement, ...progress].sort((a, b) => a.ts - b.ts);
+  }, [placementHist, progressHist]);
+
+  /* ===================== Render ===================== */
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900 pt-16">
       <div className="max-w-[1350px] mx-auto px-4 py-8">
@@ -317,163 +495,410 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* Charts - Tiến bộ luyện tập */}
-        <section className="rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-indigo-900/30 dark:to-blue-900/30">
-                <BarChart3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        {/* ====== Grid 2 cột: Practice progress (trái) + Assessment (phải) ====== */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Charts - Tiến bộ luyện tập theo PART */}
+          <section className="rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-indigo-900/30 dark:to-blue-900/30">
+                  <BarChart3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                  Tiến bộ luyện tập
+                </h2>
               </div>
-              <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
-                Tiến bộ luyện tập
-              </h2>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                Đơn vị: %
+              </div>
             </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-              Đơn vị: %
-            </div>
-          </div>
 
-          <div className="flex flex-wrap gap-2 mb-5">
-            {PARTS.map((p) => {
-              const isSel = selectedPart === p;
-              return (
-                <button
-                  key={p}
-                  onClick={() => setSelectedPart(p)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border
+            <div className="flex flex-wrap gap-2 mb-5">
+              {PARTS.map((p) => {
+                const isSel = selectedPart === p;
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setSelectedPart(p)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border
                      ${
                        isSel
                          ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-indigo-600 shadow-sm"
                          : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
                      }`}
-                >
-                  {PART_LABEL[p]}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="relative">
-            {lineByPart[selectedPart]?.length > 0 ? (
-              <div style={{ width: "100%", height: 260 }} className="mt-2">
-                <ResponsiveContainer>
-                  <LineChart
-                    data={lineByPart[selectedPart]}
-                    margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                   >
-                    <CartesianGrid
-                      strokeDasharray="4 4"
-                      stroke="#e5e7eb"
-                      className="dark:stroke-zinc-700 opacity-40"
-                    />
-                    <XAxis
-                      dataKey="at"
-                      interval="preserveStartEnd"
-                      stroke="#d1d5db"
-                      className="dark:stroke-zinc-600"
-                      tick={{
-                        fill: "#6b7280",
-                        fontSize: 11,
-                        className: "dark:fill-zinc-400",
-                      }}
-                      axisLine={{
-                        stroke: "#d1d5db",
-                        className: "dark:stroke-zinc-600",
-                      }}
-                      tickLine={{
-                        stroke: "#d1d5db",
-                        className: "dark:stroke-zinc-600",
-                      }}
-                    />
-                    <YAxis
-                      domain={[0, 100]}
-                      stroke="#d1d5db"
-                      className="dark:stroke-zinc-600"
-                      tick={{
-                        fill: "#6b7280",
-                        fontSize: 11,
-                        className: "dark:fill-zinc-400",
-                      }}
-                      axisLine={{
-                        stroke: "#d1d5db",
-                        className: "dark:stroke-zinc-600",
-                      }}
-                      tickLine={{
-                        stroke: "#d1d5db",
-                        className: "dark:stroke-zinc-600",
-                      }}
-                      ticks={[0, 25, 50, 75, 100]}
-                    />
-                    <ChartTooltip
-                      contentStyle={{
-                        backgroundColor: "#ffffff",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: "12px",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                        padding: "8px 12px",
-                      }}
-                      labelStyle={{
-                        color: "#6b7280",
-                        fontWeight: 600,
-                        fontSize: 12,
-                      }}
-                      itemStyle={{ color: "#6366f1", fontWeight: 500 }}
-                      cursor={{
-                        stroke: "#d1d5db",
-                        strokeWidth: 1,
-                        strokeDasharray: "5 5",
-                      }}
-                      formatter={(value: number) => `${Math.round(value)}%`}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="acc"
-                      stroke="#6366f1"
-                      strokeWidth={2.5}
-                      dot={{
-                        r: 4,
-                        stroke: "#6366f1",
-                        strokeWidth: 2,
-                        fill: "#fff",
-                        className: "drop-shadow-sm",
-                      }}
-                      activeDot={{
-                        r: 6,
-                        stroke: "#6366f1",
-                        strokeWidth: 2,
-                        fill: "#fff",
-                      }}
-                      animationDuration={800}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="h-64 flex flex-col items-center justify-center text-center p-6">
-                <div className="p-4 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-3">
-                  <BarChart3 className="w-8 h-8 text-zinc-400 dark:text-zinc-600" />
-                </div>
-                <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                  Chưa có dữ liệu
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
-                  Luyện tập để theo dõi tiến bộ!
-                </p>
-              </div>
-            )}
-          </div>
+                    {PART_LABEL[p]}
+                  </button>
+                );
+              })}
+            </div>
 
-          <div className="mt-4 flex items-center justify-center gap-6 text-xs text-zinc-500 dark:text-zinc-400">
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-indigo-500" />
-              <span>Accuracy (%)</span>
+            <div className="relative">
+              {lineByPart[selectedPart]?.length > 0 ? (
+                <div style={{ width: "100%", height: 260 }} className="mt-2">
+                  <ResponsiveContainer>
+                    <LineChart
+                      data={lineByPart[selectedPart]}
+                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="4 4"
+                        stroke="#e5e7eb"
+                        className="dark:stroke-zinc-700 opacity-40"
+                      />
+                      <XAxis
+                        dataKey="at"
+                        interval="preserveStartEnd"
+                        stroke="#d1d5db"
+                        tick={{
+                          fill: "#6b7280",
+                          fontSize: 11,
+                        }}
+                        axisLine={{ stroke: "#d1d5db" }}
+                        tickLine={{ stroke: "#d1d5db" }}
+                      />
+                      <YAxis
+                        domain={[0, 100]}
+                        stroke="#d1d5db"
+                        tick={{
+                          fill: "#6b7280",
+                          fontSize: 11,
+                        }}
+                        axisLine={{ stroke: "#d1d5db" }}
+                        tickLine={{ stroke: "#d1d5db" }}
+                        ticks={[0, 25, 50, 75, 100]}
+                      />
+                      <ChartTooltip
+                        contentStyle={{
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "12px",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                          padding: "8px 12px",
+                        }}
+                        labelStyle={{
+                          color: "#6b7280",
+                          fontWeight: 600,
+                          fontSize: 12,
+                        }}
+                        itemStyle={{ color: "#6366f1", fontWeight: 500 }}
+                        cursor={{
+                          stroke: "#d1d5db",
+                          strokeWidth: 1,
+                          strokeDasharray: "5 5",
+                        }}
+                        formatter={(value: number) => `${Math.round(value)}%`}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="acc"
+                        stroke="#6366f1"
+                        strokeWidth={2.5}
+                        dot={{
+                          r: 4,
+                          stroke: "#6366f1",
+                          strokeWidth: 2,
+                          fill: "#fff",
+                        }}
+                        activeDot={{
+                          r: 6,
+                          stroke: "#6366f1",
+                          strokeWidth: 2,
+                          fill: "#fff",
+                        }}
+                        animationDuration={800}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-64 flex flex-col items-center justify-center text-center p-6">
+                  <div className="p-4 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-3">
+                    <BarChart3 className="w-8 h-8 text-zinc-400 dark:text-zinc-600" />
+                  </div>
+                  <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                    Chưa có dữ liệu
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                    Luyện tập để theo dõi tiến bộ!
+                  </p>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-0.5 bg-zinc-300 dark:bg-zinc-700" />
-              <span>Đường xu hướng</span>
+
+            <div className="mt-4 flex items-center justify-center gap-6 text-xs text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-indigo-500" />
+                <span>Accuracy (%)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-0.5 bg-zinc-300 dark:bg-zinc-700" />
+                <span>Đường xu hướng</span>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+
+          {/* Assessment (Placement + Progress) */}
+          <section className="rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+            <div className="flex items-center justify-between gap-3 mb-6">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30">
+                  <Gauge className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                  Assessment
+                </h2>
+              </div>
+              <div className="flex items-center gap-3 text-xs">
+                <Link
+                  href={`${basePrefix}/placement/result/last`}
+                  className="underline text-violet-600 dark:text-violet-400 hover:opacity-80"
+                >
+                  Kết quả Placement gần nhất
+                </Link>
+                <Link
+                  href={`${basePrefix}/progress`}
+                  className="underline text-emerald-600 dark:text-emerald-400 hover:opacity-80"
+                >
+                  Làm Progress Test
+                </Link>
+              </div>
+            </div>
+
+            {/* Line: lịch sử L/R/Overall gộp */}
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-2">
+                Lịch sử điểm (%) – gộp Placement & Progress
+              </p>
+              {assessmentLineData.length ? (
+                <div style={{ width: "100%", height: 220 }}>
+                  <ResponsiveContainer>
+                    <LineChart
+                      data={assessmentLineData}
+                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="4 4"
+                        stroke="#e5e7eb"
+                        className="dark:stroke-zinc-700 opacity-40"
+                      />
+                      <XAxis
+                        dataKey="at"
+                        interval="preserveStartEnd"
+                        stroke="#d1d5db"
+                        tick={{ fill: "#6b7280", fontSize: 11 }}
+                        axisLine={{ stroke: "#d1d5db" }}
+                        tickLine={{ stroke: "#d1d5db" }}
+                      />
+                      <YAxis
+                        domain={[0, 100]}
+                        ticks={[0, 25, 50, 75, 100]}
+                        stroke="#d1d5db"
+                        tick={{ fill: "#6b7280", fontSize: 11 }}
+                        axisLine={{ stroke: "#d1d5db" }}
+                        tickLine={{ stroke: "#d1d5db" }}
+                      />
+                      <ChartTooltip
+                        contentStyle={{
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "12px",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                          padding: "8px 12px",
+                        }}
+                        labelStyle={{
+                          color: "#6b7280",
+                          fontWeight: 600,
+                          fontSize: 12,
+                        }}
+                        formatter={(value: number, name: string, props: any) => {
+                          const kind =
+                            props?.payload?.kind === "progress"
+                              ? "Progress"
+                              : "Placement";
+                          return [`${Math.round(value)}%`, `${name} • ${kind}`];
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      {/* Listening */}
+                      <Line
+                        type="monotone"
+                        dataKey="Listening"
+                        stroke="#10b981"
+                        strokeWidth={2}
+                        dot={(props: any) => {
+                          const kind = props?.payload?.kind;
+                          const stroke = kind === "progress" ? "#059669" : "#0ea5e9";
+                          return (
+                            <circle
+                              cx={props.cx}
+                              cy={props.cy}
+                              r={3.5}
+                              stroke={stroke}
+                              strokeWidth={2}
+                              fill="#fff"
+                            />
+                          );
+                        }}
+                        activeDot={{ r: 5, strokeWidth: 2, fill: "#fff" }}
+                        animationDuration={600}
+                      />
+                      {/* Reading */}
+                      <Line
+                        type="monotone"
+                        dataKey="Reading"
+                        stroke="#f59e0b"
+                        strokeWidth={2}
+                        dot={(props: any) => {
+                          const kind = props?.payload?.kind;
+                          const stroke = kind === "progress" ? "#d97706" : "#f59e0b";
+                          return (
+                            <circle
+                              cx={props.cx}
+                              cy={props.cy}
+                              r={3.5}
+                              stroke={stroke}
+                              strokeWidth={2}
+                              fill="#fff"
+                            />
+                          );
+                        }}
+                        activeDot={{ r: 5, strokeWidth: 2, fill: "#fff" }}
+                        animationDuration={600}
+                      />
+                      {/* Overall */}
+                      <Line
+                        type="monotone"
+                        dataKey="Overall"
+                        stroke="#6366f1"
+                        strokeWidth={2}
+                        dot={(props: any) => {
+                          const kind = props?.payload?.kind;
+                          const stroke = kind === "progress" ? "#22c55e" : "#6366f1";
+                          return (
+                            <circle
+                              cx={props.cx}
+                              cy={props.cy}
+                              r={3.5}
+                              stroke={stroke}
+                              strokeWidth={2}
+                              fill="#fff"
+                            />
+                          );
+                        }}
+                        activeDot={{ r: 5, strokeWidth: 2, fill: "#fff" }}
+                        animationDuration={600}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-48 flex flex-col items-center justify-center text-center p-6">
+                  <div className="p-3 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-2">
+                    <Gauge className="w-6 h-6 text-zinc-400 dark:text-zinc-600" />
+                  </div>
+                  <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                    Chưa có dữ liệu Assessment
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                    Hãy làm Placement/Progress để xem biểu đồ này.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Bar: % theo Part của lần gần nhất (có partStats) */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                  Phân bố theo 7 Part (lần gần nhất)
+                </p>
+                <span className="text-[11px] text-zinc-500">Đơn vị: %</span>
+              </div>
+              {(() => {
+                const latest = [...placementHist, ...progressHist]
+                  .filter((x: any) => x?.partStats)
+                  .sort(
+                    (a: any, b: any) =>
+                      new Date(b.submittedAt).getTime() -
+                      new Date(a.submittedAt).getTime()
+                  )[0] as
+                  | {
+                      partStats?: Record<
+                        string,
+                        { total: number; correct: number; acc: number }
+                      >;
+                    }
+                  | undefined;
+
+                const data = PARTS.map((p) => {
+                  const stat = latest?.partStats?.[p];
+                  return {
+                    part: PART_LABEL[p],
+                    acc: stat ? Math.round((stat.acc || 0) * 100) : 0,
+                  };
+                });
+
+                return latest ? (
+                  <div style={{ width: "100%", height: 200 }}>
+                    <ResponsiveContainer>
+                      <BarChart
+                        data={data}
+                        margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="4 4"
+                          stroke="#e5e7eb"
+                          className="dark:stroke-zinc-700 opacity-40"
+                        />
+                        <XAxis
+                          dataKey="part"
+                          stroke="#d1d5db"
+                          tick={{ fill: "#6b7280", fontSize: 11 }}
+                          axisLine={{ stroke: "#d1d5db" }}
+                          tickLine={{ stroke: "#d1d5db" }}
+                        />
+                        <YAxis
+                          domain={[0, 100]}
+                          ticks={[0, 20, 40, 60, 80, 100]}
+                          stroke="#d1d5db"
+                          tick={{ fill: "#6b7280", fontSize: 11 }}
+                          axisLine={{ stroke: "#d1d5db" }}
+                          tickLine={{ stroke: "#d1d5db" }}
+                        />
+                        <ChartTooltip
+                          contentStyle={{
+                            backgroundColor: "#ffffff",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: "12px",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                            padding: "8px 12px",
+                          }}
+                          formatter={(value: number) => `${Math.round(value)}%`}
+                          labelStyle={{
+                            color: "#6b7280",
+                            fontWeight: 600,
+                            fontSize: 12,
+                          }}
+                        />
+                        <Bar
+                          dataKey="acc"
+                          name="Accuracy"
+                          fill="#8b5cf6"
+                          radius={[6, 6, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-44 flex items-center justify-center text-zinc-500 dark:text-zinc-400 text-sm">
+                    Không có thống kê theo Part cho lần gần nhất.
+                  </div>
+                );
+              })()}
+            </div>
+          </section>
+        </div>
 
         {/* 7 Parts Summary */}
         <section className="rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
@@ -602,17 +1027,17 @@ export default function Dashboard() {
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
                           isFinite
-                            ? lastAcc >= 80
+                            ? lastAcc! >= 80
                               ? "bg-emerald-500"
-                              : lastAcc >= 60
+                              : lastAcc! >= 60
                               ? "bg-sky-500"
-                              : lastAcc >= 40
+                              : lastAcc! >= 40
                               ? "bg-amber-500"
                               : "bg-red-500"
                             : "bg-zinc-400"
                         }`}
                         style={{
-                          width: isFinite ? `${Math.min(lastAcc, 100)}%` : "0%",
+                          width: isFinite ? `${Math.min(lastAcc!, 100)}%` : "0%",
                         }}
                       />
                     </div>

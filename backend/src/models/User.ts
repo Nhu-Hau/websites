@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 import bcrypt from "bcrypt";
 
 // ====== Kiểu dùng trong app ======
-export type Role = "user" | "admin";
+export type Role = "user" | "admin" | "teacher";
 export type Access = "free" | "premium";
 export type Lvl = 1 | 2 | 3;
 
@@ -82,7 +82,7 @@ const userSchema = new Schema<IUser>(
 
     password: { type: String, required: true },
 
-    role: { type: String, enum: ["user", "admin"], default: "user" },
+    role: { type: String, enum: ["user", "admin", "teacher"], default: "user" },
 
     access: {
       type: String,

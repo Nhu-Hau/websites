@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { ChatMessage, IChatMessage } from "../models/ChatMessage";
 import { requireAuth } from "../middleware/requireAuth";
+import { requirePremium } from "../middleware/requirePremium";
 import { chatService } from "../services/chat.service";
 
 const router = Router();
 
 // GET /api/chat/history/:sessionId - Lấy lịch sử chat
-router.get("/history/:sessionId", requireAuth, async (req, res, next) => {
+router.get("/history/:sessionId", requireAuth, requirePremium, async (req, res, next) => {
   try {
     const { sessionId } = req.params;
     const userId = req.auth?.userId;
@@ -29,7 +30,7 @@ router.get("/history/:sessionId", requireAuth, async (req, res, next) => {
 });
 
 // POST /api/chat/send - Gửi tin nhắn và nhận phản hồi từ AI
-router.post("/send", requireAuth, async (req, res, next) => {
+router.post("/send", requireAuth, requirePremium, async (req, res, next) => {
   try {
     const { message, sessionId } = req.body;
     const userId = req.auth?.userId;
@@ -97,7 +98,7 @@ router.post("/send", requireAuth, async (req, res, next) => {
 });
 
 // GET /api/chat/sessions - Lấy danh sách các session chat
-router.get("/sessions", requireAuth, async (req, res, next) => {
+router.get("/sessions", requireAuth, requirePremium, async (req, res, next) => {
   try {
     const userId = req.auth?.userId;
 
@@ -126,7 +127,7 @@ router.get("/sessions", requireAuth, async (req, res, next) => {
 });
 
 // DELETE /api/chat/clear/:sessionId - Xóa tất cả messages trong session
-router.delete("/clear/:sessionId", requireAuth, async (req, res, next) => {
+router.delete("/clear/:sessionId", requireAuth, requirePremium, async (req, res, next) => {
   try {
     const { sessionId } = req.params;
     const userId = req.auth?.userId;

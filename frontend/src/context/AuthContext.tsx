@@ -8,7 +8,7 @@ export type User = {
   id: string;
   email: string;
   name?: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "teacher";
   access: "free" | "premium";
   level: 1 | 2 | 3;
   levelUpdatedAt?: string | null;

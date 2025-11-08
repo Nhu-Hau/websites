@@ -3,7 +3,7 @@
 
 import { io, Socket } from "socket.io-client";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 // Singleton socket — mọi nơi import sẽ dùng CÙNG 1 socket
 let socket: Socket | null = null;

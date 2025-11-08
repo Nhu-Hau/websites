@@ -9,7 +9,7 @@ import type { CommunityPost } from "@/types/community";
 import { toast } from "react-toastify";
 import { getSocket } from "@/lib/socket";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 const PAGE_SIZE = 5;
 
 export default function CommunityPage() {

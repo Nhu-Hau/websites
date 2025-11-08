@@ -41,14 +41,14 @@ export async function updateUser(req: Request, res: Response) {
     const { id } = req.params as { id: string };
     const { name, role, access, level } = req.body as {
       name?: string;
-      role?: "user" | "admin";
+      role?: "user" | "admin" | "teacher";
       access?: "free" | "premium";
       level?: 1 | 2 | 3;
     };
 
     const allowed: any = {};
     if (typeof name === "string" && name.trim()) allowed.name = name.trim();
-    if (role === "user" || role === "admin") allowed.role = role;
+    if (role === "user" || role === "admin" || role === "teacher") allowed.role = role;
     if (access === "free" || access === "premium") allowed.access = access;
     if ([1, 2, 3].includes(Number(level))) allowed.level = Number(level);
 

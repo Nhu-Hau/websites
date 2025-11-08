@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { useBasePrefix } from "@/hooks/useBasePrefix"; // 👈 THÊM
 
 /* ================= Types ================= */
-type Role = "user" | "admin";
+type Role = "user" | "admin" | "teacher";
 type Access = "free" | "premium";
 type Lvl = 1 | 2 | 3;
 type PartKey =
@@ -310,10 +310,12 @@ export default function UserMenu() {
                   className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold border ${
                     userRole === "admin"
                       ? "border-purple-300 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700"
+                      : userRole === "teacher"
+                      ? "border-blue-300 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
                       : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300 dark:border-zinc-700"
                   }`}
                 >
-                  {userRole === "admin" ? "Quản trị" : "Người dùng"}
+                  {userRole === "admin" ? "Quản trị" : userRole === "teacher" ? "Giáo viên" : "Người dùng"}
                 </span>
               </div>
 

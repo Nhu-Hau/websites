@@ -3,7 +3,14 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { FiX, FiSend, FiTrash2, FiCopy, FiClock, FiAlertCircle } from "react-icons/fi";
+import {
+  FiX,
+  FiSend,
+  FiTrash2,
+  FiCopy,
+  FiClock,
+  FiAlertCircle,
+} from "react-icons/fi";
 import { FaUserTie } from "react-icons/fa";
 import useClickOutside from "@/hooks/useClickOutside";
 import { useAuth } from "@/context/AuthContext";
@@ -33,7 +40,8 @@ function MessageContent({
   role: "user" | "admin";
   pending?: boolean;
 }) {
-  if (role === "user") return <div className="whitespace-pre-wrap">{content}</div>;
+  if (role === "user")
+    return <div className="whitespace-pre-wrap">{content}</div>;
   if (pending) {
     return (
       <div className="flex items-center gap-2 text-sm opacity-80">
@@ -64,13 +72,17 @@ export default function AdminChatBox() {
 
   const [sessionId, setSessionId] = useState<string>(() => {
     if (typeof window !== "undefined") {
-      const key = `adminChatSessionId_${typeof window !== "undefined" ? (window as any).__userId || "anonymous" : "anonymous"}`;
+      const key = `adminChatSessionId_${
+        typeof window !== "undefined"
+          ? (window as any).__userId || "anonymous"
+          : "anonymous"
+      }`;
       const stored = localStorage.getItem(key);
       if (stored) return stored;
     }
-    const sid = `admin_session_${(user?.id || "anonymous")}_${Date.now()}_${Math.random()
-      .toString(36)
-      .slice(2)}`;
+    const sid = `admin_session_${
+      user?.id || "anonymous"
+    }_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     if (typeof window !== "undefined") {
       const userKey = `adminChatSessionId_${user?.id || "anonymous"}`;
       localStorage.setItem(userKey, sid);
@@ -86,13 +98,14 @@ export default function AdminChatBox() {
   // Đồng bộ sessionId khi user thay đổi
   useEffect(() => {
     const key = getSessionKey();
-    const stored = typeof window !== "undefined" ? localStorage.getItem(key) : null;
+    const stored =
+      typeof window !== "undefined" ? localStorage.getItem(key) : null;
     if (stored) {
       setSessionId(stored);
     } else {
-      const sid = `admin_session_${user?.id || "anonymous"}_${Date.now()}_${Math.random()
-        .toString(36)
-        .slice(2)}`;
+      const sid = `admin_session_${
+        user?.id || "anonymous"
+      }_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       if (typeof window !== "undefined") localStorage.setItem(key, sid);
       setSessionId(sid);
     }
@@ -101,8 +114,20 @@ export default function AdminChatBox() {
   // Load lịch sử
   const loadChatHistory = useCallback(async () => {
     try {
-      if (!user || !sessionId) return;
-      const response = await fetch(`/api/admin-chat/history/${sessionId}`, { credentials: "include" });
+      if (!user || !sessionId || user.access !== "premium") return;
+      const response = await fetch(`/api/admin-chat/history/${sessionId}`, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        if (response.status === 403) {
+          const errorData = await response.json();
+          if (errorData.code === "PREMIUM_REQUIRED") {
+            setError("Chức năng chat với Admin chỉ dành cho tài khoản Premium.");
+            return;
+          }
+        }
+        throw new Error("Failed to load chat history");
+      }
       const data = await response.json();
 
       const formatted: Msg[] = Array.isArray(data?.data)
@@ -115,7 +140,9 @@ export default function AdminChatBox() {
         : [];
 
       // de-dupe by id
-      const unique = formatted.filter((m, i, arr) => i === arr.findIndex((x) => x.id === m.id));
+      const unique = formatted.filter(
+        (m, i, arr) => i === arr.findIndex((x) => x.id === m.id)
+      );
       setMessages(unique);
     } catch (err) {
       console.error("Failed to load admin chat history:", err);
@@ -125,11 +152,22 @@ export default function AdminChatBox() {
   // Load unread
   const loadUnreadCount = useCallback(async () => {
     try {
-      if (!user) return;
-      const response = await fetch(`/api/admin-chat/sessions`, { credentials: "include" });
+      if (!user || user.access !== "premium") return;
+      const response = await fetch(`/api/admin-chat/sessions`, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        if (response.status === 403) {
+          return; // Premium required, không load unread
+        }
+        throw new Error("Failed to load unread count");
+      }
       const data = await response.json();
       const total = Array.isArray(data?.data)
-        ? data.data.reduce((sum: number, s: any) => sum + (s.unreadCount || 0), 0)
+        ? data.data.reduce(
+            (sum: number, s: any) => sum + (s.unreadCount || 0),
+            0
+          )
         : 0;
       setUnreadCount(total);
     } catch (err) {
@@ -142,7 +180,7 @@ export default function AdminChatBox() {
   }, [loadUnreadCount, user]);
 
   useEffect(() => {
-    if (user && open) loadChatHistory();
+    if (user && user.access === "premium" && open) loadChatHistory();
   }, [user, open, loadChatHistory]);
 
   // Socket realtime
@@ -160,7 +198,9 @@ export default function AdminChatBox() {
         content: msg.content,
         at: msg.createdAt ? new Date(msg.createdAt).getTime() : Date.now(),
       };
-      setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+      setMessages((prev) =>
+        prev.some((x) => x.id === m.id) ? prev : [...prev, m]
+      );
     };
 
     const onAdminMessage = (data: any) => {
@@ -172,7 +212,9 @@ export default function AdminChatBox() {
         content: msg.content,
         at: msg.createdAt ? new Date(msg.createdAt).getTime() : Date.now(),
       };
-      setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+      setMessages((prev) =>
+        prev.some((x) => x.id === m.id) ? prev : [...prev, m]
+      );
       if (!open) setUnreadCount((c) => c + 1);
     };
 
@@ -209,6 +251,12 @@ export default function AdminChatBox() {
   const send = async () => {
     const text = input.trim();
     if (!text || sending || !user) return;
+    
+    // Kiểm tra premium access
+    if (user.access !== "premium") {
+      setError("Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.");
+      return;
+    }
 
     setError(null);
     setInput("");
@@ -227,8 +275,16 @@ export default function AdminChatBox() {
     ]);
 
     try {
-      const { ok, json } = await postJson("/api/admin-chat/send", { message: text, sessionId });
-      if (!ok || !json?.data?.message) throw new Error(json?.message || "Failed to send message");
+      const json = await postJson("/api/admin-chat/send", {
+        message: text,
+        sessionId,
+      });
+      if (!json?.data?.message) {
+        console.error("[AdminChatBox] Response không có data.message:", json);
+        throw new Error(
+          json?.message || "Failed to send message: No data in response"
+        );
+      }
       const { message } = json.data;
 
       setMessages((prev) =>
@@ -248,7 +304,8 @@ export default function AdminChatBox() {
               return {
                 ...m,
                 pending: false,
-                content: "Admin sẽ trả lời sớm nhất có thể. Cảm ơn bạn đã liên hệ!",
+                content:
+                  "Admin sẽ trả lời sớm nhất có thể. Cảm ơn bạn đã liên hệ!",
               };
             }
             return m;
@@ -258,12 +315,26 @@ export default function AdminChatBox() {
       );
     } catch (err: any) {
       console.error("Failed to send message:", err);
-      setError(err?.message || "Có lỗi xảy ra khi gửi tin nhắn");
+      const errorMessage = err?.message || "Có lỗi xảy ra khi gửi tin nhắn";
+      const errorCode = err?.code || "";
+      const errorStatus = err?.status || 0;
+      
+      // Kiểm tra nếu lỗi là do không có premium
+      if (errorCode === "PREMIUM_REQUIRED" || errorStatus === 403 || errorMessage.includes("Premium") || errorMessage.includes("premium")) {
+        setError("Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.");
+      } else {
+        setError(errorMessage);
+      }
 
       setMessages((prev) =>
         prev.map((m) =>
           m.id === tempAdminId
-            ? { ...m, pending: false, content: "Admin sẽ trả lời sớm nhất có thể. Cảm ơn bạn đã liên hệ!" }
+            ? {
+                ...m,
+                pending: false,
+                content:
+                  "Admin sẽ trả lời sớm nhất có thể. Cảm ơn bạn đã liên hệ!",
+              }
             : m
         )
       );
@@ -283,13 +354,18 @@ export default function AdminChatBox() {
   const clearChat = async () => {
     if (!user) return;
     try {
-      await fetch(`/api/admin-chat/clear/${sessionId}`, { method: "DELETE", credentials: "include" });
+      await fetch(`/api/admin-chat/clear/${sessionId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
     } catch (err) {
       console.error("Failed to clear admin chat on server:", err);
     } finally {
       setMessages([]);
       setError(null);
-      const newId = `admin_session_${user?.id || "anonymous"}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const newId = `admin_session_${
+        user?.id || "anonymous"
+      }_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       const key = getSessionKey();
       localStorage.setItem(key, newId); // ✅ Đúng key theo user
       setSessionId(newId);
@@ -314,8 +390,15 @@ export default function AdminChatBox() {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
         >
-          <motion.div animate={{ rotate: open ? 90 : 0 }} transition={{ type: "spring", stiffness: 300 }}>
-            {open ? <FiX className="h-6 w-6" /> : <FaUserTie className="h-6 w-6" />}
+          <motion.div
+            animate={{ rotate: open ? 90 : 0 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            {open ? (
+              <FiX className="h-6 w-6" />
+            ) : (
+              <FaUserTie className="h-6 w-6" />
+            )}
           </motion.div>
         </motion.button>
 
@@ -339,7 +422,11 @@ export default function AdminChatBox() {
       <motion.div
         ref={wrapperRef}
         initial={false}
-        animate={{ opacity: open ? 1 : 0, y: open ? 0 : 20, scale: open ? 1 : 0.96 }}
+        animate={{
+          opacity: open ? 1 : 0,
+          y: open ? 0 : 20,
+          scale: open ? 1 : 0.96,
+        }}
         transition={{ duration: 0.22, ease: "easeOut" }}
         className={`fixed bottom-44 sm:bottom-4 right-4 sm:right-[6.5rem] z-[60]
                     w-[calc(100vw-2rem)] sm:w-[28rem] md:w-[32rem]
@@ -358,7 +445,9 @@ export default function AdminChatBox() {
                 <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-orange-500 border-2 border-white dark:border-zinc-900 animate-pulse" />
               </div>
               <div className="leading-tight">
-                <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Chat với Admin</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+                  Chat với Admin
+                </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
                   Hỗ trợ trực tiếp
@@ -414,7 +503,11 @@ export default function AdminChatBox() {
                   <FaUserTie className="h-8 w-8 text-orange-600 dark:text-orange-400" />
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
-                  {user ? "Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với admin." : "Vui lòng đăng nhập để sử dụng chat admin"}
+                  {!user
+                    ? "Vui lòng đăng nhập để sử dụng chat admin"
+                    : user.access !== "premium"
+                    ? "Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
+                    : "Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với admin."}
                 </p>
               </div>
             ) : (
@@ -427,7 +520,9 @@ export default function AdminChatBox() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 300 }}
-                    className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                    className={`flex ${
+                      m.role === "user" ? "justify-end" : "justify-start"
+                    }`}
                   >
                     <div
                       className={`group relative max-w-[82%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-md transition-all ${
@@ -443,23 +538,34 @@ export default function AdminChatBox() {
                         </div>
                       )}
 
-                      <MessageContent content={m.content} role={m.role} pending={m.pending} />
+                      <MessageContent
+                        content={m.content}
+                        role={m.role}
+                        pending={m.pending}
+                      />
 
                       <div
                         className={`mt-2 text-[10px] font-medium flex items-center gap-1.5 ${
-                          m.role === "user" ? "text-white/70" : "text-gray-400 dark:text-gray-500"
+                          m.role === "user"
+                            ? "text-white/70"
+                            : "text-gray-400 dark:text-gray-500"
                         }`}
                       >
                         <FiClock className="h-3 w-3" />
                         {m.at
-                          ? new Date(m.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                          ? new Date(m.at).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
                           : "Đang gửi..."}
                       </div>
 
                       {/* Copy (admin only) */}
                       {m.role === "admin" && !m.pending && (
                         <button
-                          onClick={() => navigator.clipboard.writeText(m.content)}
+                          onClick={() =>
+                            navigator.clipboard.writeText(m.content)
+                          }
                           className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow-md transition hover:scale-110 focus:outline-none focus:ring-2 focus:ring-orange-400"
                           aria-label="Sao chép tin nhắn"
                         >
@@ -476,11 +582,22 @@ export default function AdminChatBox() {
               <div className="flex justify-start">
                 <div className="flex items-center gap-2 rounded-2xl bg-gray-100 dark:bg-zinc-800 px-4 py-3">
                   <div className="flex space-x-1">
-                    <span className="h-2 w-2 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="h-2 w-2 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="h-2 w-2 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <span
+                      className="h-2 w-2 rounded-full bg-orange-500 animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <span
+                      className="h-2 w-2 rounded-full bg-orange-500 animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <span
+                      className="h-2 w-2 rounded-full bg-orange-500 animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
                   </div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Admin đang nhập...</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    Admin đang nhập...
+                  </span>
                 </div>
               </div>
             )}
@@ -495,19 +612,27 @@ export default function AdminChatBox() {
                   value={input}
                   onChange={(e) => setInput(e.target.value.slice(0, maxLen))}
                   onKeyDown={onKeyDown}
-                  placeholder={user ? "Nhập tin nhắn cho admin..." : "Đăng nhập để chat..."}
-                  disabled={!user || sending}
+                  placeholder={
+                    !user
+                      ? "Đăng nhập để chat..."
+                      : user.access !== "premium"
+                      ? "Cần tài khoản Premium để sử dụng..."
+                      : "Nhập tin nhắn cho admin..."
+                  }
+                  disabled={!user || sending || (user?.access !== "premium")}
                   rows={1}
                   maxLength={maxLen}
                   className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 outline-none dark:border-zinc-600 dark:bg-zinc-800/70 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-orange-400"
                   style={{ minHeight: "52px", maxHeight: "120px" }}
                 />
-                <div className="absolute right-3 bottom-3 text-xs text-gray-400">{input.length}/{maxLen}</div>
+                <div className="absolute right-3 bottom-3 text-xs text-gray-400">
+                  {input.length}/{maxLen}
+                </div>
               </div>
 
               <button
                 onClick={send}
-                disabled={sending || !input.trim() || !user}
+                disabled={sending || !input.trim() || !user || (user?.access !== "premium")}
                 className="group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-600 to-orange-500 text-white shadow-lg shadow-orange-500/30 transition-all enabled:hover:scale-110 enabled:hover:shadow-xl enabled:focus:outline-none enabled:focus:ring-4 enabled:focus:ring-orange-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {sending ? (
@@ -520,7 +645,18 @@ export default function AdminChatBox() {
 
             {!user && (
               <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-                <a href="/login" className="text-orange-600 hover:underline">Đăng nhập</a> để chat với admin
+                <a href="/login" className="text-orange-600 hover:underline">
+                  Đăng nhập
+                </a>{" "}
+                để chat với admin
+              </p>
+            )}
+            {user && user.access !== "premium" && (
+              <p className="mt-2 text-center text-xs text-orange-600 dark:text-orange-400">
+                <a href="/account" className="hover:underline font-medium">
+                  Nâng cấp lên Premium
+                </a>{" "}
+                để sử dụng chat với Admin
               </p>
             )}
           </div>

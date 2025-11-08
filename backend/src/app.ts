@@ -36,7 +36,6 @@ const app = express();
 
 const FRONTEND_ORIGIN = process.env.CLIENT_URL || "http://localhost:3000";
 const ADMIN_ORIGIN = process.env.ADMIN_URL || "http://localhost:3001";
-
 app.use(helmet());
 app.use(cookieParser());
 app.use(express.json({ limit: "2mb" }));
@@ -72,7 +71,6 @@ app.use("/api/admin-chat", adminChatRoutes);
 app.use("/api/admin-auth", adminAuthRoutes);
 app.use("/api/socket-auth", socketAuthRoutes);
 app.use("/api/practice", practiceRoutes);
-app.use("/api/practice", practiceRoutes); // sửa: mount đúng prefix /api/practice
 app.use("/api/community", communityRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 app.use("/api/account", authRoutes);

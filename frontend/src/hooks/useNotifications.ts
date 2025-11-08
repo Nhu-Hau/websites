@@ -14,7 +14,7 @@ export type RealtimeNotification = {
   // có thể có meta nếu cần
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 const MAX_ITEMS = 50;
 const TTL_HOURS = 72;
 

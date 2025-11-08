@@ -21,6 +21,9 @@ export interface IPayment extends Document {
   cancelUrl?: string;
   returnUrl?: string;
   paidAt?: Date;
+  promoCode?: string | null;
+  amountBefore?: number | null;
+  amountAfter?: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -68,4 +71,3 @@ paymentSchema.index({ userId: 1, status: 1 });
 
 export const Payment =
   mongoose.models.Payment || mongoose.model<IPayment>("Payment", paymentSchema);
-

@@ -163,10 +163,20 @@ export default function ChatBox() {
   // Load chat history when component mounts / session changes
   const loadChatHistory = useCallback(async () => {
     try {
-      if (!user) return;
+      if (!user || user.access !== "premium") return;
       const response = await fetch(`/api/chat/history/${sessionId}`, {
         credentials: "include",
       });
+      if (!response.ok) {
+        if (response.status === 403) {
+          const errorData = await response.json();
+          if (errorData.code === "PREMIUM_REQUIRED") {
+            setError("Chức năng chat với AI chỉ dành cho tài khoản Premium.");
+            return;
+          }
+        }
+        throw new Error("Failed to load chat history");
+      }
       const data = await response.json();
 
       if (data?.data) {
@@ -193,7 +203,7 @@ export default function ChatBox() {
   }, [sessionId, user]);
 
   useEffect(() => {
-    if (user && open) {
+    if (user && user.access === "premium" && open) {
       loadChatHistory();
     }
   }, [user, open, loadChatHistory]);
@@ -209,6 +219,12 @@ export default function ChatBox() {
   const send = async () => {
     const text = input.trim();
     if (!text || sending || !user) return;
+    
+    // Kiểm tra premium access
+    if (user.access !== "premium") {
+      setError("Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.");
+      return;
+    }
 
     setError(null);
 
@@ -277,7 +293,26 @@ export default function ChatBox() {
       );
     } catch (err: unknown) {
       console.error("Failed to send message:", err);
-      setError((err as Error).message || "Có lỗi xảy ra khi gửi tin nhắn");
+      let errorMessage = "Có lỗi xảy ra khi gửi tin nhắn";
+      let errorCode = "";
+      
+      // Kiểm tra error code từ response
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        errorCode = (err as any)?.code || "";
+        
+        // Kiểm tra nếu status là 403 (Forbidden)
+        if ((err as any)?.status === 403) {
+          errorCode = errorCode || "PREMIUM_REQUIRED";
+        }
+      }
+      
+      // Kiểm tra nếu lỗi là do không có premium
+      if (errorCode === "PREMIUM_REQUIRED" || errorMessage.includes("Premium") || errorMessage.includes("premium")) {
+        setError("Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.");
+      } else {
+        setError(errorMessage);
+      }
 
       // Chuyển bubble pending thành trả lời demo
       setMessages((prev) =>
@@ -460,9 +495,11 @@ export default function ChatBox() {
                   <FiMessageSquare className="h-8 w-8 text-sky-600 dark:text-sky-400" />
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
-                  {user
-                    ? t("empty")
-                    : "Vui lòng đăng nhập để bắt đầu trò chuyện"}
+                  {!user
+                    ? "Vui lòng đăng nhập để bắt đầu trò chuyện"
+                    : user.access !== "premium"
+                    ? "Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
+                    : t("empty")}
                 </p>
               </div>
             ) : (
@@ -572,8 +609,14 @@ export default function ChatBox() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={onKeyDown}
-                  placeholder={user ? t("placeholder") : "Đăng nhập để chat..."}
-                  disabled={!user || sending}
+                  placeholder={
+                    !user
+                      ? "Đăng nhập để chat..."
+                      : user.access !== "premium"
+                      ? "Cần tài khoản Premium để sử dụng..."
+                      : t("placeholder")
+                  }
+                  disabled={!user || sending || (user?.access !== "premium")}
                   rows={1}
                   className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 
                   px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400
@@ -591,7 +634,7 @@ export default function ChatBox() {
 
               <button
                 onClick={send}
-                disabled={sending || !input.trim() || !user}
+                disabled={sending || !input.trim() || !user || (user?.access !== "premium")}
                 className="group relative flex h-12 w-12 shrink-0 items-center justify-center 
                 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white
                 shadow-lg shadow-sky-500/30 transition-all
@@ -613,6 +656,14 @@ export default function ChatBox() {
                   Đăng nhập
                 </a>{" "}
                 để sử dụng
+              </p>
+            )}
+            {user && user.access !== "premium" && (
+              <p className="mt-2 text-center text-xs text-orange-600 dark:text-orange-400">
+                <a href="/account" className="hover:underline font-medium">
+                  Nâng cấp lên Premium
+                </a>{" "}
+                để sử dụng chat với AI
               </p>
             )}
           </div>

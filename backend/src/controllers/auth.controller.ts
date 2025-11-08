@@ -5,7 +5,12 @@ import { User, IUser } from "../models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { extractKeyFromUrl, safeDeleteS3, BUCKET, uploadBufferToS3 } from "../lib/s3";
+import {
+  extractKeyFromUrl,
+  safeDeleteS3,
+  BUCKET,
+  uploadBufferToS3,
+} from "../lib/s3";
 import {
   toSafeUser,
   issueAndStoreTokens,
@@ -13,8 +18,8 @@ import {
   clearAuthCookies,
   refreshAccessToken,
 } from "../services/auth.service";
-import { signGoogleSignupToken, verifyGoogleSignupToken } from "../lib/jwt";
-import { signupCookieName, signupCookieOpts } from "../config/cookies";
+import { signGoogleSignupToken, verifyGoogleSignupToken, verifyRefreshToken, newJti, signRefreshToken } from "../lib/jwt";
+import { signupCookieName, signupCookieOpts, refreshCookieName, refreshCookieOpts } from "../config/cookies";
 import { ResetTokenModel } from "../models/ResetToken";
 import { sendMail } from "../lib/mailer";
 import { PasswordCodeModel } from "../models/PasswordCode";
@@ -123,19 +128,39 @@ export function logout(_req: Request, res: Response) {
 // POST /auth/refresh
 export async function refresh(req: Request, res: Response) {
   try {
-    const rt = req.cookies?.refresh_token;
+    const rt = req.cookies?.[refreshCookieName]; // ví dụ 'refresh_token'
     if (!rt) return res.status(401).json({ message: "Không có refresh token" });
 
-    const userId = (req as any).auth?.userId ?? null;
-    const user = userId ? await User.findById(userId) : null;
+    // LẤY userId từ refresh token (KHÔNG dùng req.auth)
+    const payload = verifyRefreshToken(rt); // { id, role, jti, iat, exp, ... }
+
+    const user = await User.findById(payload.id);
     if (!user)
       return res.status(401).json({ message: "Người dùng không hợp lệ" });
 
+    // So khớp jti với hash đã lưu + ký lại access token
     const access = await refreshAccessToken(rt, user);
-    setAuthCookies(res, access);
+
+    // Tuỳ chọn: "sliding session" – nếu refresh sắp hết hạn, phát refresh mới
+    let nextRefresh: string | undefined;
+    const msLeft = (user.refreshTokenExp?.getTime() ?? 0) - Date.now();
+    const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+    if (msLeft > 0 && msLeft < SEVEN_DAYS) {
+      const jti = newJti();
+      nextRefresh = signRefreshToken({ id: user.id, role: user.role, jti });
+
+      user.refreshTokenHash = await bcrypt.hash(jti, 10);
+      user.refreshTokenExp = new Date(
+        Date.now() + (refreshCookieOpts.maxAge || 0)
+      );
+      await user.save();
+    }
+
+    // Set lại cookie access (và refresh nếu có xoay vòng)
+    setAuthCookies(res, access, nextRefresh);
 
     return res.status(200).json({ message: "Cấp mới access token thành công" });
-  } catch (e) {
+  } catch {
     return res
       .status(401)
       .json({ message: "Refresh token không hợp lệ hoặc đã hết hạn" });

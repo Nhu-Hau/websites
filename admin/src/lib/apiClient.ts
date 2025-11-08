@@ -5,7 +5,7 @@ export type AdminUser = {
   _id: string;
   name: string;
   email: string;
-  role: 'user'|'admin';
+  role: 'user'|'admin'|'teacher';
   access: 'free'|'premium';
   level: 1|2|3;
   createdAt?: string;

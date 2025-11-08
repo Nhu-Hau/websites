@@ -48,7 +48,14 @@ export default function UsersPage() {
   React.useEffect(() => { if (me?.role === 'admin') void load(); }, [me, load]);
 
   const onToggleRole = async (u: AdminUser) => {
-    const newRole = u.role === "admin" ? "user" : "admin";
+    let newRole: "user" | "admin" | "teacher";
+    if (u.role === "admin") {
+      newRole = "user";
+    } else if (u.role === "teacher") {
+      newRole = "admin";
+    } else {
+      newRole = "teacher";
+    }
     await adminUpdateUser(u._id, { role: newRole });
     void load();
   };
@@ -89,6 +96,7 @@ export default function UsersPage() {
             <option value="">Tất cả</option>
             <option value="user">User</option>
             <option value="admin">Admin</option>
+            <option value="teacher">Teacher</option>
           </select>
         </div>
         <div className="flex flex-col">

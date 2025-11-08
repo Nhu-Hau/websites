@@ -3,14 +3,15 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { lk, createJoinToken, WS_URL_FOR_CLIENT } from '../lib/livekit';
 import { StudyRoom, IStudyRoom } from '../models/StudyRoom';
-import { requireAuth } from '../middleware/auth'; // đúng 'middleware'
+import { User } from '../models/User';
+import { requireAuth } from '../middleware/requireAuth';
+import { requireTeacherOrAdmin } from '../middleware/requireTeacherOrAdmin';
 
 const router = Router();
 
-// POST /api/rooms → tạo phòng (tất cả user)
-router.post('/rooms', requireAuth, async (req, res) => {
+// POST /api/rooms → tạo phòng (chỉ teacher và admin)
+router.post('/rooms', requireAuth, requireTeacherOrAdmin, async (req, res) => {
   try {
-    // Bỏ giới hạn - tất cả user đều có thể tạo phòng
 
     const body = z.object({
       roomName: z.string().min(3).max(64).regex(/^[a-zA-Z0-9_-]+$/),
@@ -30,7 +31,7 @@ router.post('/rooms', requireAuth, async (req, res) => {
         metadata: JSON.stringify({
           courseId: req.body?.courseId ?? null,
           lessonId: req.body?.lessonId ?? null,
-          teacherId: (req.user as any)!.id,
+          teacherId: (req as any).auth?.userId,
         }),
       });
     } catch (lkErr: any) {
@@ -45,14 +46,25 @@ router.post('/rooms', requireAuth, async (req, res) => {
     }
 
     // persist to MongoDB (idempotent) - always save even if room already exists in LiveKit
-    const creatorId = (req.user as any)!.id;
+    const userId = (req as any).auth?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    // Lấy thông tin user để có name và role
+    const user = await User.findById(userId).select("name role").lean();
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    const creatorId = userId;
     try {
       await StudyRoom.updateOne(
         { roomName: body.roomName },
         {
           $setOnInsert: {
             roomName: body.roomName,
-            createdBy: { id: creatorId, name: (req.user as any)!.name, role: (req.user as any)!.role },
+            createdBy: { id: creatorId, name: user.name, role: user.role },
             currentHostId: creatorId, // Người tạo phòng là chủ phòng ban đầu
             createdAt: new Date(),
           },
@@ -88,7 +100,16 @@ router.post('/rooms', requireAuth, async (req, res) => {
 router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
   try {
     const params = z.object({ roomName: z.string() }).parse(req.params);
-    const userId = (req.user as any)!.id;
+    const userId = (req as any).auth?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    // Lấy thông tin user
+    const user = await User.findById(userId).select("name role").lean();
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     // Ensure room tồn tại (idempotent)
     try {
@@ -110,7 +131,7 @@ router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
         {
           $setOnInsert: {
             roomName: params.roomName,
-            createdBy: { id: userId, name: (req.user as any)!.name, role: (req.user as any)!.role },
+            createdBy: { id: userId, name: user.name, role: user.role },
             currentHostId: userId, // Nếu tạo mới, người tạo là chủ phòng
             createdAt: new Date(),
           },
@@ -190,7 +211,7 @@ router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
 
     // Tất cả user đều có quyền đầy đủ
     const isHost = isCurrentHost || shouldBeHost;
-    const userRole = (req.user as any)!.role;
+    const userRole = user.role;
     
     // Xác định房主的 identity (sau khi可能已经更新)
     const updatedRoomDoc = await StudyRoom.findOne({ roomName: params.roomName }).lean() as IStudyRoom | null;
@@ -199,8 +220,8 @@ router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
     const raw = createJoinToken({
       roomName: params.roomName,
       identity: userId,
-      name: (req.user as any)!.name,
-      role: userRole, // Giữ nguyên role nhưng token sẽ có quyền đầy đủ
+      name: user.name,
+      role: userRole as 'admin' | 'teacher' | 'student', // Giữ nguyên role nhưng token sẽ có quyền đầy đủ
       ttlSeconds: 60 * 60,
       isHost: true, // Luôn set true để đảm bảo quyền đầy đủ
     });
@@ -213,7 +234,7 @@ router.post('/rooms/:roomName/token', requireAuth, async (req, res) => {
       wsUrl: WS_URL_FOR_CLIENT,
       token,
       identity: userId,
-      displayName: (req.user as any)!.name,
+      displayName: user.name,
       role: userRole,
       isHost,
       hostIdentity, // 返回房主的 identity
@@ -243,7 +264,13 @@ router.get('/study-rooms', requireAuth, async (req, res) => {
 
 // DELETE /api/study-rooms/:roomName → delete persisted + LiveKit (admin)
 router.delete('/study-rooms/:roomName', requireAuth, async (req, res) => {
-  if ((req.user as any)!.role !== 'admin') {
+  const userId = (req as any).auth?.userId;
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  const user = await User.findById(userId).select("role").lean();
+  if (!user || user.role !== 'admin') {
     return res.status(403).json({ message: 'Only admin' });
   }
   const roomName = req.params.roomName;
@@ -260,7 +287,13 @@ router.delete('/study-rooms/:roomName', requireAuth, async (req, res) => {
 
 // DELETE /api/rooms/:roomName → xoá phòng (admin)
 router.delete('/rooms/:roomName', requireAuth, async (req, res) => {
-    if ((req.user as any)!.role !== 'admin') {
+    const userId = (req as any).auth?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    const user = await User.findById(userId).select("role").lean();
+    if (!user || user.role !== 'admin') {
       return res.status(403).json({ message: 'Only admin' });
     }
     try {

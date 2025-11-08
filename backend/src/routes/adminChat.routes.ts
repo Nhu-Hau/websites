@@ -3,12 +3,13 @@ import { AdminChatMessage } from "../models/AdminChatMessage";
 import { User } from "../models/User";
 import { requireAuth } from "../middleware/requireAuth";
 import { requireAdminAuth } from "../middleware/requireAdminAuth";
+import { requirePremium } from "../middleware/requirePremium";
 import { emitNewMessage, emitAdminMessage, emitConversationUpdate } from "../lib/socket";
 
 const router = express.Router();
 
 // POST /api/admin-chat/send - User gửi tin nhắn cho admin
-router.post("/send", requireAuth, async (req, res, next) => {
+router.post("/send", requireAuth, requirePremium, async (req, res, next) => {
   try {
     const { message, sessionId } = req.body;
     const userId = req.auth?.userId;
@@ -66,7 +67,7 @@ router.post("/send", requireAuth, async (req, res, next) => {
 });
 
 // GET /api/admin-chat/history/:sessionId - Lấy lịch sử chat với admin
-router.get("/history/:sessionId", requireAuth, async (req, res, next) => {
+router.get("/history/:sessionId", requireAuth, requirePremium, async (req, res, next) => {
   try {
     const { sessionId } = req.params;
     const userId = req.auth?.userId;
@@ -110,7 +111,7 @@ router.get("/history/:sessionId", requireAuth, async (req, res, next) => {
 });
 
 // GET /api/admin-chat/sessions - Lấy danh sách session chat của user
-router.get("/sessions", requireAuth, async (req, res, next) => {
+router.get("/sessions", requireAuth, requirePremium, async (req, res, next) => {
   try {
     const userId = req.auth?.userId;
 
@@ -150,7 +151,7 @@ router.get("/sessions", requireAuth, async (req, res, next) => {
 });
 
 // DELETE /api/admin-chat/clear/:sessionId - Xóa session chat
-router.delete("/clear/:sessionId", requireAuth, async (req, res, next) => {
+router.delete("/clear/:sessionId", requireAuth, requirePremium, async (req, res, next) => {
   try {
     const { sessionId } = req.params;
     const userId = req.auth?.userId;

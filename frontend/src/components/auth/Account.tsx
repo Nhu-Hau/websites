@@ -30,7 +30,7 @@ import Cropper from "react-easy-crop";
 import { useBasePrefix } from "@/hooks/useBasePrefix";
 
 /* ================= Types ================= */
-type Role = "user" | "admin";
+type Role = "user" | "admin" | "teacher";
 type Access = "free" | "premium";
 type Lvl = 1 | 2 | 3;
 type PartKey =
@@ -460,7 +460,7 @@ export default function Account() {
               {/* Role */}
               <span className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs capitalize border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                {user.role === "admin" ? "Admin" : "User"}
+                {user.role === "admin" ? "Admin" : user.role === "teacher" ? "Teacher" : "User"}
               </span>
 
               {/* Access */}

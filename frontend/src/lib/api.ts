@@ -37,10 +37,8 @@ function encodeNameForHeader(name: string): string {
 }
 
 // lib/api.ts (FE)
-export async function createRoom(roomName: string, user: {id: string; name: string; role: string}) {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:4000';
-  const encodedName = encodeNameForHeader(user.name);
-  
+export async function createRoom(roomName: string, user: {id: string; name: string; role: string}): Promise<{ ok: boolean; room: any; reused: boolean }> {
+  const base = apiBase();
   const url = `${base}/api/rooms`;
   
   try {
@@ -49,17 +47,27 @@ export async function createRoom(roomName: string, user: {id: string; name: stri
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'x-user-id': user.id,
-        'x-user-name': encodedName,
-        'x-user-name-encoded': 'base64',
-        'x-user-role': user.role,
       },
       body: JSON.stringify({ roomName }),
     });
     
     if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new Error(text || `Failed to create room: ${res.status} ${res.statusText}`);
+      let errorMessage = `Failed to create room: ${res.status} ${res.statusText}`;
+      let errorCode = '';
+      
+      try {
+        const errorData = await res.json();
+        errorMessage = errorData.message || errorMessage;
+        errorCode = errorData.code || '';
+      } catch {
+        const text = await res.text().catch(() => '');
+        if (text) errorMessage = text;
+      }
+      
+      const error = new Error(errorMessage);
+      (error as any).code = errorCode;
+      (error as any).status = res.status;
+      throw error;
     }
     
     return res.json();

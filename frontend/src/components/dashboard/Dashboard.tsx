@@ -101,7 +101,7 @@ type UserMe = {
   name?: string;
   email?: string;
   access?: "free" | "premium";
-  role?: "user" | "admin";
+  role?: "user" | "admin" | "teacher";
   picture?: string;
   level?: Lvl;
   partLevels?: any;
@@ -711,7 +711,11 @@ export default function Dashboard() {
                           fontWeight: 600,
                           fontSize: 12,
                         }}
-                        formatter={(value: number, name: string, props: any) => {
+                        formatter={(
+                          value: number,
+                          name: string,
+                          props: any
+                        ) => {
                           const kind =
                             props?.payload?.kind === "progress"
                               ? "Progress"
@@ -728,7 +732,8 @@ export default function Dashboard() {
                         strokeWidth={2}
                         dot={(props: any) => {
                           const kind = props?.payload?.kind;
-                          const stroke = kind === "progress" ? "#059669" : "#0ea5e9";
+                          const stroke =
+                            kind === "progress" ? "#059669" : "#0ea5e9";
                           return (
                             <circle
                               cx={props.cx}
@@ -751,7 +756,8 @@ export default function Dashboard() {
                         strokeWidth={2}
                         dot={(props: any) => {
                           const kind = props?.payload?.kind;
-                          const stroke = kind === "progress" ? "#d97706" : "#f59e0b";
+                          const stroke =
+                            kind === "progress" ? "#d97706" : "#f59e0b";
                           return (
                             <circle
                               cx={props.cx}
@@ -774,7 +780,8 @@ export default function Dashboard() {
                         strokeWidth={2}
                         dot={(props: any) => {
                           const kind = props?.payload?.kind;
-                          const stroke = kind === "progress" ? "#22c55e" : "#6366f1";
+                          const stroke =
+                            kind === "progress" ? "#22c55e" : "#6366f1";
                           return (
                             <circle
                               cx={props.cx}
@@ -1037,7 +1044,9 @@ export default function Dashboard() {
                             : "bg-zinc-400"
                         }`}
                         style={{
-                          width: isFinite ? `${Math.min(lastAcc!, 100)}%` : "0%",
+                          width: isFinite
+                            ? `${Math.min(lastAcc!, 100)}%`
+                            : "0%",
                         }}
                       />
                     </div>

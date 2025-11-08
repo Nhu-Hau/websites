@@ -34,8 +34,13 @@ export async function postJson<T = any>(pathOrUrl: string, data?: any, init?: Re
     body: data != null ? JSON.stringify(data) : undefined,
     ...init,
   });
-  const json = (await parseMaybeJson(res)) as T & { message?: string };
-  if (!res.ok) throw new Error(json?.message || `POST ${res.status} ${res.statusText}`);
+  const json = (await parseMaybeJson(res)) as T & { message?: string; code?: string };
+  if (!res.ok) {
+    const error = new Error(json?.message || `POST ${res.status} ${res.statusText}`);
+    (error as any).code = json?.code;
+    (error as any).status = res.status;
+    throw error;
+  }
   return json;
 }
 

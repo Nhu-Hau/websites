@@ -75,12 +75,12 @@ async function validatePromoInternal(codeRaw: string, userId: string) {
       promoCode: promo.code,
       status: PaymentStatus.PAID,
     });
-    if (usedByMe >= promo.perUserLimit) {
-      return {
-        ok: false as const,
-        message: "Bạn đã dùng mã này đủ số lần cho phép",
-      };
-    }
+    // if (usedByMe >= promo.perUserLimit) {
+    //   return {
+    //     ok: false as const,
+    //     message: "Bạn đã dùng mã này đủ số lần cho phép",
+    //   };
+    // }
   }
 
   const baseAmount = promo.baseAmount || BASE_PRICE;

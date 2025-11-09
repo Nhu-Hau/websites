@@ -23,7 +23,7 @@ interface CreateStudyRoomProps {
   onCreated?: () => void;
 }
 
-type Role = "student" | "teacher" | "admin";
+type Role = "user" | "teacher" | "admin";
 
 function slugifyRoom(input: string): string {
   return input
@@ -40,14 +40,7 @@ function slugifyRoom(input: string): string {
 
 function randomSuggestion(): string {
   const n = Math.floor(1000 + Math.random() * 9000);
-  const pool = [
-    "toeic",
-    "study",
-    "practice",
-    "listening",
-    "reading",
-    "grammar",
-  ];
+  const pool = ["toeic", "study", "practice", "listening", "reading", "grammar"];
   const pick = pool[Math.floor(Math.random() * pool.length)];
   return `${pick}-room-${n}`;
 }
@@ -75,6 +68,10 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
   const basePrefix = useBasePrefix("vi");
   const { user: authUser, loading: authLoading } = useAuth();
 
+  const role: Role = (authUser?.role as Role) || "user"; // đồng bộ với trang list
+  const displayName = authUser?.name || "Guest";
+  const userId = authUser?.id || `guest-${crypto.randomUUID()}`;
+
   const fieldId = useId();
   const helpId = `${fieldId}-help`;
   const errId = `${fieldId}-err`;
@@ -84,12 +81,7 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
   const errorMsg = useMemo(() => validateRoom(finalSlug), [finalSlug]);
   const isValid = !errorMsg && finalSlug.length >= 3;
 
-  const role: Role = (authUser?.role as Role) || "user";
-  const displayName = authUser?.name || "Guest";
-  const userId = authUser?.id || `guest-${crypto.randomUUID()}`;
-  
-  // Kiểm tra quyền tạo phòng
-  const canCreateRoom = authUser?.role === "teacher" || authUser?.role === "admin";
+  const canCreateRoom = role === "teacher" || role === "admin";
 
   const quickUseSuggestion = useCallback(() => {
     const sug = slugifyRoom(randomSuggestion());
@@ -98,14 +90,11 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
     toast.success("Đã gợi ý tên phòng!", { duration: 1500 });
   }, []);
 
-  const onInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const raw = e.target.value;
-      setInput(raw);
-      setRoom(slugifyRoom(raw));
-    },
-    []
-  );
+  const onInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setInput(raw);
+    setRoom(slugifyRoom(raw));
+  }, []);
 
   const copySlug = useCallback(() => {
     if (!finalSlug) return;
@@ -120,11 +109,10 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
       toast.error(errorMsg || "Tên phòng không hợp lệ");
       return;
     }
-    
-    // Kiểm tra quyền: chỉ teacher và admin mới được tạo phòng
-    if (authUser?.role !== "teacher" && authUser?.role !== "admin") {
+    if (!canCreateRoom) {
       toast.error("Bạn không có quyền tạo phòng học", {
-        description: "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
+        description:
+          "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
       });
       return;
     }
@@ -134,28 +122,25 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
       const u = { id: userId, name: displayName, role };
       await createRoom(finalSlug, u);
       onCreated?.();
-
       toast.success("Phòng đã được tạo!", {
         description: "Đang chuyển đến phòng học…",
-        duration: 2000,
+        duration: 1800,
       });
-
       router.push(`${basePrefix}/study/${finalSlug}`);
     } catch (e: any) {
       const message = e?.message || "Không thể tạo phòng. Vui lòng thử lại.";
       const errorCode = e?.code || "";
       const errorStatus = e?.status || 0;
-      
-      // Kiểm tra nếu lỗi là do không có quyền
+
       if (
         errorCode === "TEACHER_OR_ADMIN_REQUIRED" ||
         errorStatus === 403 ||
         message.includes("teacher") ||
-        message.includes("admin") ||
-        message.includes("Only teachers and admins")
+        message.includes("admin")
       ) {
         toast.error("Bạn không có quyền tạo phòng học", {
-          description: "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
+          description:
+            "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
         });
       } else {
         toast.error("Tạo phòng thất bại", { description: message });
@@ -163,18 +148,7 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
     } finally {
       setLoading(false);
     }
-  }, [
-    finalSlug,
-    isValid,
-    errorMsg,
-    userId,
-    displayName,
-    role,
-    authUser,
-    onCreated,
-    router,
-    basePrefix,
-  ]);
+  }, [finalSlug, isValid, errorMsg, userId, displayName, role, canCreateRoom, onCreated, router, basePrefix]);
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -186,7 +160,7 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
     [loading, authLoading, isValid, onCreate]
   );
 
-  // Nếu không có quyền tạo phòng, hiển thị thông báo
+  // Nếu chưa đăng nhập
   if (!authUser) {
     return (
       <div className="w-full mx-auto">
@@ -204,7 +178,8 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
       </div>
     );
   }
-  
+
+  // Không có quyền
   if (!canCreateRoom) {
     return (
       <div className="w-full mx-auto">
@@ -215,11 +190,11 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
               Không có quyền tạo phòng
             </h3>
           </div>
-          <p className="text-sm text-red-800 dark:text-red-300 mb-4">
-            Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream. Vai trò hiện tại của bạn: <span className="font-semibold capitalize">{authUser.role}</span>
+          <p className="text-sm text-red-800 dark:text-red-300 mb-1">
+            Vai trò hiện tại của bạn: <span className="font-semibold capitalize">{role}</span>.
           </p>
           <p className="text-xs text-red-700 dark:text-red-400">
-            Nếu bạn là giáo viên nhưng chưa có quyền, vui lòng liên hệ với quản trị viên để được cấp quyền.
+            Nếu bạn là giáo viên nhưng chưa có quyền, vui lòng liên hệ quản trị viên để được cấp quyền.
           </p>
         </div>
       </div>
@@ -261,7 +236,7 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
               value={input}
               onChange={onInputChange}
               onKeyDown={onKeyDown}
-              placeholder="Ví dụ: lớp ôn Part 5 tối T2"
+              placeholder=""
               className={cn(
                 "w-full rounded-xl border px-4 py-3 text-sm font-medium outline-none transition-all duration-300",
                 "bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm",
@@ -285,6 +260,7 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
                     onClick={copySlug}
                     className="group flex items-center gap-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
                     title="Sao chép tên phòng"
+                    type="button"
                   >
                     {copied ? (
                       <Check className="h-3 w-3 text-emerald-600" />
@@ -312,10 +288,7 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
           {isValid ? (
             <>
               <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-              <p
-                id={helpId}
-                className="text-xs text-zinc-600 dark:text-zinc-400"
-              >
+              <p id={helpId} className="text-xs text-zinc-600 dark:text-zinc-400">
                 Tên hợp lệ! Nhấn{" "}
                 <kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-[10px] font-mono">
                   Enter
@@ -344,6 +317,7 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
                 ? "bg-zinc-400 dark:bg-zinc-600 cursor-not-allowed opacity-70"
                 : "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 hover:shadow-lg hover:scale-[1.02]"
             )}
+            type="button"
           >
             {loading ? (
               <>

@@ -4,10 +4,8 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-
 import { connectMongo } from "./lib/mongoose";
 import passport, { initPassport } from "./lib/passport";
-
 import authRoutes from "./routes/auth.routes";
 import chatRoutes from "./routes/chat.routes";
 import placementRoutes from "./routes/placement.routes";
@@ -21,17 +19,9 @@ import communityRoutes from "./routes/community.routes";
 import notificationRoutes from "./routes/notification.routes";
 import path from "path";
 import paymentsRoutes from "./routes/payments.routes";
-
-// LiveKit routes
-import studyRoomsRoutes from "./routes/studyRooms.routes"; // POST /api/rooms, POST /api/rooms/:room/token
-import roomsAdminRoutes from "./routes/rooms.admin.routes"; // GET /api/rooms, participants, kick, mute
-import lkDiagRoutes from "./routes/livekit.diag.routes"; // /api/_lk/env, /api/_lk/ping
-import livekitWebhookRoutes from "./routes/livekit.webhook.routes";
-import roomsDebugRoutes from "./routes/rooms.debug.routes";
 import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
-import progressRoutes from "./routes/progress.routes";
 import { startCleanupRooms } from "./jobs/cleanupRooms";
-
+import studyroomroutes from "./routes/studyrooms.routes"
 const app = express();
 
 const FRONTEND_ORIGIN = process.env.CLIENT_URL || "http://localhost:3000";
@@ -74,16 +64,9 @@ app.use("/api/practice", practiceRoutes);
 app.use("/api/community", communityRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 app.use("/api/account", authRoutes);
-app.use("/api/progress", progressRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payments", paymentsRoutes);
-
-// ============ LiveKit routes ============
-app.use("/api", studyRoomsRoutes); // => POST /api/rooms, POST /api/rooms/:room/token
-app.use("/api", roomsAdminRoutes); // => GET /api/rooms, ...
-app.use("/api", lkDiagRoutes); // => /api/_lk/env, /api/_lk/ping
-app.use("/api", livekitWebhookRoutes); // => /api/livekit/webhook
-app.use("/api", roomsDebugRoutes);
+app.use("/api", studyroomroutes);
 // static
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 app.use(UPLOADS_ROUTE, express.static(UPLOADS_DIR));

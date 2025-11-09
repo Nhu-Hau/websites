@@ -15,7 +15,8 @@ export function signAccessToken(
   payload: AccessPayload,
   opts?: jwt.SignOptions
 ) {
-  return jwt.sign(payload, ACCESS_SECRET, { expiresIn: "15m", ...opts });
+  // Tăng thời gian hết hạn lên 30 phút để giảm tần suất refresh
+  return jwt.sign(payload, ACCESS_SECRET, { expiresIn: "30m", ...opts });
 }
 
 export function verifyAccessToken(token: string) {

@@ -2,7 +2,7 @@
 import { lk } from '../lib/livekit';
 import { StudyRoom } from '../models/StudyRoom';
 
-const TEN_MIN_MS = 10 * 60 * 1000;
+const FIVE_MIN_MS = 5 * 60 * 1000; // 5 phút không có ai thì xóa phòng
 
 let timer: NodeJS.Timeout | null = null;
 
@@ -28,16 +28,21 @@ export function startCleanupRooms() {
             continue;
           }
           const emptyMs = now - new Date(d.emptySince).getTime();
-          if (emptyMs > TEN_MIN_MS) {
+          if (emptyMs > FIVE_MIN_MS) {
             try { await lk.deleteRoom(d.roomName); } catch {}
             // Xóa thực sự khỏi MongoDB
             await StudyRoom.deleteOne({ roomName: d.roomName });
-            console.log(`[cleanupRooms] Deleted room "${d.roomName}" after 10 minutes of being empty`);
+            console.log(`[cleanupRooms] Deleted room "${d.roomName}" after 5 minutes of being empty`);
           }
         } else {
-          if (d.emptySince) {
-            await StudyRoom.updateOne({ roomName: d.roomName }, { $unset: { emptySince: 1 } });
-          }
+          // Có người trong phòng, cập nhật lastActivityAt và xóa emptySince
+          await StudyRoom.updateOne(
+            { roomName: d.roomName },
+            { 
+              $set: { lastActivityAt: new Date() },
+              $unset: { emptySince: 1 }
+            }
+          );
         }
       }
     } catch (e) {

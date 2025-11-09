@@ -74,7 +74,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function refresh() {
     try {
-      await fetchMe();
+      // Thử refresh token trước nếu /auth/me fail
+      try {
+        await fetchMe();
+      } catch (e: any) {
+        if (String(e?.message) === "401" || String(e?.message) === "403") {
+          // Token hết hạn, thử refresh
+          const refreshRes = await fetch("/api/auth/refresh", {
+            method: "POST",
+            credentials: "include",
+          });
+          if (refreshRes.ok) {
+            // Refresh thành công, thử lại fetchMe
+            await fetchMe();
+          } else {
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+      }
     } catch {
       setUser(null);
     }
@@ -102,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           await fetchMe();
         } catch (e: any) {
-          if (String(e?.message) === "401") {
+          if (String(e?.message) === "401" || String(e?.message) === "403") {
             const r = await fetch("/api/auth/refresh", {
               method: "POST",
               credentials: "include",
@@ -121,6 +140,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
     };
   }, []);
+
+  // Auto-refresh token trước khi hết hạn (mỗi 25 phút, token có 30 phút)
+  useEffect(() => {
+    if (!user) return;
+    
+    const interval = setInterval(async () => {
+      try {
+        // Refresh token trước khi hết hạn
+        const refreshRes = await fetch("/api/auth/refresh", {
+          method: "POST",
+          credentials: "include",
+        });
+        if (refreshRes.ok) {
+          // Refresh thành công, cập nhật user info
+          await fetchMe();
+        }
+      } catch (e) {
+        console.warn("Auto-refresh token failed:", e);
+      }
+    }, 25 * 60 * 1000); // Mỗi 25 phút
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Lắng nghe các tín hiệu để luôn cập nhật không cần reload
   useEffect(() => {

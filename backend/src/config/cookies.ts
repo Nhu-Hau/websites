@@ -19,7 +19,7 @@ export const accessCookieOpts: CookieOptions = {
   secure: isProd ? true : false,
   sameSite: isProd ? "none" : "lax",
   path: "/",
-  maxAge: 15 * 60 * 1000,
+  maxAge: 30 * 60 * 1000, // 30 phút để khớp với token expiration
 };
 
 export const refreshCookieOpts: CookieOptions = {

@@ -8,6 +8,7 @@ export interface IStudyRoom {
   createdAt: Date;
   emptySince?: Date; // when detected 0 participants; used for cleanup
   deletedAt?: Date;
+  lastActivityAt?: Date; // Thời gian hoạt động cuối cùng (có người vào phòng)
 }
 
 const StudyRoomSchema = new Schema<IStudyRoom>(
@@ -22,6 +23,7 @@ const StudyRoomSchema = new Schema<IStudyRoom>(
     createdAt: { type: Date, required: true, default: () => new Date() },
     emptySince: { type: Date },
     deletedAt: { type: Date },
+    lastActivityAt: { type: Date }, // Thời gian hoạt động cuối cùng
   },
   { timestamps: true }
 );

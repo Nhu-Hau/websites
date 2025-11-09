@@ -56,15 +56,15 @@ export function extractKeyFromUrl(bucket: string, url: string): string | null {
 
     // CloudFront/domain khác: cố gắng lấy phần sau bucket name hoặc common prefixes
     // Path có thể là: <bucket>/<key> hoặc chỉ <key>
-    
+
     // Thử các prefix phổ biến
     const prefixesToTry = [
-      PREFIX,              // community/
-      "Upload/",           // Upload/ (cho stimuli media)
-      "parts/",            // parts/
-      "stimuli/",          // stimuli/
+      PREFIX, // community/
+      "Upload/", // Upload/ (cho stimuli media)
+      "parts/", // parts/
+      "stimuli/", // stimuli/
     ];
-    
+
     for (const prefix of prefixesToTry) {
       const idx = path.indexOf(prefix);
       if (idx >= 0) {
@@ -76,7 +76,9 @@ export function extractKeyFromUrl(bucket: string, url: string): string | null {
     const bucketName = decodeURIComponent(bucket);
     const bucketIdx = path.indexOf(bucketName);
     if (bucketIdx >= 0) {
-      const afterBucket = path.slice(bucketIdx + bucketName.length).replace(/^\/+/, "");
+      const afterBucket = path
+        .slice(bucketIdx + bucketName.length)
+        .replace(/^\/+/, "");
       if (afterBucket) {
         return decodeURIComponent(afterBucket);
       }

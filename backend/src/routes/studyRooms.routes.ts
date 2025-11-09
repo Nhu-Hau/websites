@@ -39,7 +39,6 @@ router.get("/rooms/:roomName/comments", requireAuth, ctrl.listComments);
 router.post(
   "/rooms/:roomName/documents",
   requireAuth,
-  requireTeacherOrAdmin,
   ...ctrl.uploadRoomDocument
 );
 router.get("/rooms/:roomName/documents", requireAuth, ctrl.listRoomDocuments);
@@ -52,7 +51,6 @@ router.get(
 router.delete(
   "/rooms/:roomName/documents/:docId",
   requireAuth,
-  requireTeacherOrAdmin,
   ctrl.deleteRoomDocument
 );
 

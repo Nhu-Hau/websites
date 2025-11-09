@@ -78,14 +78,12 @@ export async function issueJoinToken(req: Request, res: Response) {
     const { roomName } = req.params;
     const userId = (req as any).auth?.userId as string;
 
-    const user = await User.findById(userId)
-      .select("name role access")
-      .lean<{
-        _id: string;
-        name: string;
-        role: "student" | "teacher" | "admin";
-        access?: string;
-      } | null>();
+    const user = await User.findById(userId).select("name role access").lean<{
+      _id: string;
+      name: string;
+      role: "student" | "teacher" | "admin";
+      access?: string;
+    } | null>();
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -164,7 +162,12 @@ export async function deleteStudyRoom(req: Request, res: Response) {
       await lk.deleteRoom(roomName);
     } catch (e: any) {
       // bỏ qua 404
-      if (!(e?.status === 404 || /not found|does not exist/i.test(e?.message || ""))) {
+      if (
+        !(
+          e?.status === 404 ||
+          /not found|does not exist/i.test(e?.message || "")
+        )
+      ) {
         console.warn("[deleteStudyRoom] LiveKit delete warn:", e?.message || e);
       }
     }
@@ -173,7 +176,9 @@ export async function deleteStudyRoom(req: Request, res: Response) {
     const docs = await RoomDocument.find({ roomName }).select("fileKey").lean();
     for (const d of docs) {
       if (d.fileKey) {
-        try { await safeDeleteS3(d.fileKey); } catch {}
+        try {
+          await safeDeleteS3(d.fileKey);
+        } catch {}
       }
     }
 
@@ -190,7 +195,10 @@ export async function deleteStudyRoom(req: Request, res: Response) {
       RoomSession.deleteMany({ roomName }),
     ]);
 
-    return res.json({ ok: true, message: "Đã xoá phòng và tài nguyên liên quan" });
+    return res.json({
+      ok: true,
+      message: "Đã xoá phòng và tài nguyên liên quan",
+    });
   } catch (err: any) {
     console.error("[deleteStudyRoom] error:", err?.message || err);
     return res.status(500).json({ ok: false, message: "Xoá phòng thất bại" });
@@ -314,9 +322,19 @@ export const uploadRoomDocument = [
       if (!file) return res.status(400).json({ message: "Thiếu file" });
 
       const user = await User.findById(userId)
-        .select("name role")
+        .select("name role access")
         .lean<IUserSlim | null>();
       if (!user) return res.status(404).json({ message: "User not found" });
+
+      const canUpload =
+        user.role === "teacher" ||
+        user.role === "admin" ||
+        user.access === "premium";
+      if (!canUpload) {
+        return res
+          .status(403)
+          .json({ message: "Chỉ teacher/admin hoặc Premium mới được upload" });
+      }
 
       const { url, key } = await uploadBufferToS3({
         buffer: file.buffer,
@@ -335,6 +353,7 @@ export const uploadRoomDocument = [
         fileSize: file.size,
         mimeType: file.mimetype,
       });
+
       res.json({ document: doc.toObject() });
     } catch {
       res.status(500).json({ message: "Lỗi upload" });
@@ -352,9 +371,30 @@ export async function listRoomDocuments(req: Request, res: Response) {
 
 export async function downloadRoomDocument(req: Request, res: Response) {
   const { roomName, docId } = req.params;
+
+  const userId = (req as any).auth?.userId as string | undefined;
+  if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+  const user = await User.findById(userId)
+    .select("role access")
+    .lean<IUserSlim | null>();
+  if (!user) return res.status(404).json({ message: "User not found" });
+
   const doc: any = await RoomDocument.findOne({ _id: docId, roomName }).lean();
   if (!doc) return res.status(404).json({ message: "Không tồn tại" });
-  res.json({ downloadUrl: doc.fileUrl });
+
+  const canDownload =
+    user.role === "teacher" ||
+    user.role === "admin" ||
+    user.access === "premium";
+  if (!canDownload) {
+    return res
+      .status(403)
+      .json({ message: "Chỉ Premium hoặc Teacher/Admin mới được download" });
+  }
+
+  res.setHeader("Cache-Control", "no-store");
+  return res.redirect(302, doc.fileUrl);
 }
 
 export async function deleteRoomDocument(req: Request, res: Response) {

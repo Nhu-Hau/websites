@@ -42,6 +42,10 @@ export interface IUser extends Document {
   levelUpdatedAt?: Date | null;
   levelSource?: "manual" | "placement" | null;
   lastPlacementAttemptId?: Types.ObjectId | null;
+  emailVerified?: boolean;
+  loginAttempts?: number;
+  isLocked?: boolean;
+  lockedUntil?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 
@@ -121,6 +125,11 @@ const userSchema = new Schema<IUser>(
       ref: "PlacementAttempt",
       default: null,
     },
+
+    emailVerified: { type: Boolean, default: false },
+    loginAttempts: { type: Number, default: 0 },
+    isLocked: { type: Boolean, default: false },
+    lockedUntil: { type: Date, default: null },
   },
   { timestamps: true, versionKey: false }
 );

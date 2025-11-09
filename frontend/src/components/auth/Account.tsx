@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import Cropper from "react-easy-crop";
 import { useBasePrefix } from "@/hooks/useBasePrefix";
+import Swal from "sweetalert2";
 
 /* ================= Types ================= */
 type Role = "user" | "admin" | "teacher";
@@ -374,7 +375,16 @@ export default function Account() {
       toast.error("Bạn chưa có ảnh đại diện");
       return;
     }
-    if (!confirm("Bạn có chắc muốn xoá ảnh đại diện không?")) return;
+    const result = await Swal.fire({
+      title: "Xóa ảnh đại diện?",
+      text: "Bạn có chắc muốn xoá ảnh đại diện không?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
 
     try {
       setDeleting(true);

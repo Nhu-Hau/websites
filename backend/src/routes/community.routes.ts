@@ -12,6 +12,7 @@ import {
   deletePost,
   deleteComment,
   uploadAttachment,
+  reportPost,
 } from "../controllers/community.controller";
 
 const router = Router();
@@ -27,6 +28,7 @@ router.get("/posts/:postId", attachAuthIfPresent, getPost);
 router.post("/posts", requireAuth, createPost);
 router.delete("/posts/:postId", requireAuth, deletePost);
 router.post("/posts/:postId/like", requireAuth, toggleLike);
+router.post("/posts/:postId/report", requireAuth, reportPost);
 router.post("/posts/:postId/comments", requireAuth, addComment);
 router.delete("/comments/:commentId", requireAuth, deleteComment);
 export default router;

@@ -14,9 +14,11 @@ import {
   Trash2,
   Share2,
   User as UserIcon,
+  Flag,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import type { CommunityPost } from "@/types/community";
+import Swal from "sweetalert2";
 
 type Props = {
   post: CommunityPost & { user?: any; liked?: boolean; canDelete?: boolean };
@@ -73,6 +75,8 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
     Number(post.likesCount) || 0
   );
   const actingRef = React.useRef(false); // chặn double click/lag
+  const [reporting, setReporting] = React.useState(false);
+  const [reportedOnce, setReportedOnce] = React.useState(false);
 
   // chỉ sync số & màu từ props khi socket/parent cập nhật
   React.useEffect(() => {
@@ -136,9 +140,55 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
     }
   }
 
+  async function reportPost() {
+    const result = await Swal.fire({
+      title: "Báo cáo bài viết?",
+      text: "Bạn có chắc muốn báo cáo bài viết này không?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Báo cáo",
+      cancelButtonText: "Hủy",
+    });
+
+    if (!result.isConfirmed) return;
+
+    setReporting(true);
+    try {
+      const r = await fetch(
+        `${apiBase}/api/community/posts/${post._id}/report`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+      const j = await r.json().catch(() => ({}));
+
+      if (r.ok) {
+        toast.success(j.message || "Đã báo cáo bài viết");
+        setReportedOnce(true); // khoá nút (tuỳ thích)
+        onChanged(); // refresh danh sách (ẩn bài nếu đạt ngưỡng)
+      } else {
+        toast.error(j.message || "Không thể báo cáo bài viết");
+      }
+    } catch {
+      toast.error("Lỗi khi gửi báo cáo");
+    } finally {
+      setReporting(false);
+    }
+  }
+
   async function deletePost(e: React.MouseEvent) {
     e.stopPropagation();
-    if (!confirm("Bạn có chắc muốn xoá bài viết này?")) return;
+    const result = await Swal.fire({
+      title: "Xóa bài viết?",
+      text: "Bạn có chắc muốn xoá bài viết này?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
     try {
       const r = await fetch(`${apiBase}/api/community/posts/${post._id}`, {
         method: "DELETE",
@@ -229,7 +279,9 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
       ) : null}
 
       {/* Actions */}
+      {/* Actions */}
       <div className="p-4 sm:p-5 flex items-center gap-3">
+        {/* Like */}
         <button
           onClick={toggleLike}
           aria-label={liked ? "Bỏ thích" : "Thích"}
@@ -243,6 +295,7 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
           {likesCount}
         </button>
 
+        {/* Comment count */}
         <div
           aria-label="Số bình luận"
           className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200"
@@ -251,6 +304,26 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
           {post.commentsCount}
         </div>
 
+        {/* Báo cáo — ẩn với bài của chính mình */}
+        {!post.canDelete && (
+          <button
+            onClick={reportPost}
+            disabled={reporting || reportedOnce}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition
+        ${
+          reporting || reportedOnce
+            ? "bg-zinc-100 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed"
+            : "bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600"
+        }`}
+            title={reportedOnce ? "Bạn đã báo cáo bài này" : "Báo cáo bài viết"}
+            aria-label="Báo cáo bài viết"
+          >
+            <Flag className="h-4 w-4 text-rose-500" />
+            Báo cáo
+          </button>
+        )}
+
+        {/* Share */}
         <button
           onClick={sharePost}
           className="ml-auto flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition"

@@ -22,6 +22,7 @@ import EditStimulusModal from "@/components/EditStimulusModal";
 import EditQuestionModal from "@/components/EditQuestionModal";
 import AddQuestionModal from "@/components/AddQuestionModal";
 import AddStimulusModal from "@/components/AddStimulusModal";
+import Swal from "sweetalert2";
 
 export default function PartsPage() {
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
@@ -126,7 +127,16 @@ export default function PartsPage() {
   }, [me, load, loadStats]);
 
   const handleDelete = async (item: AdminPart) => {
-    if (!confirm(`Xóa item ${item.id}?`)) return;
+    const result = await Swal.fire({
+      title: "Xóa item?",
+      text: `Xóa item ${item.id}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
     try {
       await adminDeletePart(item.id);
       const key = Object.entries(testItems).find(([_, items]) => 
@@ -160,7 +170,16 @@ export default function PartsPage() {
 
   const handleDeleteTest = async (test: AdminTest, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm(`Xóa toàn bộ test ${test.part} - Level ${test.level} - Test ${test.test}? (${test.itemCount} câu hỏi sẽ bị xóa)`)) return;
+    const result = await Swal.fire({
+      title: "Xóa test?",
+      text: `Xóa toàn bộ test ${test.part} - Level ${test.level} - Test ${test.test}? (${test.itemCount} câu hỏi sẽ bị xóa)`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
     try {
       await adminDeleteTest({
         part: test.part,
@@ -335,7 +354,16 @@ export default function PartsPage() {
                               <button
                                 onClick={async (e) => {
                                   e.stopPropagation();
-                                  if (confirm(`Xóa stimulus ${stimulus.id}?`)) {
+                                  const result = await Swal.fire({
+                                    title: "Xóa stimulus?",
+                                    text: `Xóa stimulus ${stimulus.id}?`,
+                                    icon: "warning",
+                                    showCancelButton: true,
+                                    confirmButtonText: "Xóa",
+                                    cancelButtonText: "Hủy",
+                                    confirmButtonColor: "#ef4444",
+                                  });
+                                  if (result.isConfirmed) {
                                     try {
                                       await adminDeleteStimulus(stimulus.id);
                                       alert("Đã xóa stimulus thành công");

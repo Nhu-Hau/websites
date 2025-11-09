@@ -179,6 +179,51 @@ export default function RegisterForm() {
           <FieldError message={errors.confirm} />
         </div>
 
+        <div className="space-y-2">
+          <label
+            htmlFor="verificationCode"
+            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          >
+            Mã xác thực email
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="verificationCode"
+              name="verificationCode"
+              type="text"
+              required
+              maxLength={6}
+              className="flex-1 rounded-xl border border-zinc-300 dark:border-zinc-700 
+                 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm"
+              placeholder="Nhập mã 6 số"
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                const email = (
+                  document.getElementById("email") as HTMLInputElement
+                )?.value;
+                if (!email) return toast.error("Vui lòng nhập email trước");
+                const res = await fetch(
+                  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/send-verification-code`,
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email }),
+                  }
+                );
+                const data = await res.json();
+                if (res.ok) toast.success(data.message);
+                else toast.error(data.message);
+              }}
+              className="px-4 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-medium
+                 hover:bg-sky-700 transition"
+            >
+              Gửi mã
+            </button>
+          </div>
+        </div>
+
         {/* Submit Button */}
         <button
           type="submit"

@@ -18,6 +18,7 @@ import {
   Share2,
 } from "lucide-react";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 import type { CommunityComment } from "@/types/community";
 import { getSocket } from "@/lib/socket";
 
@@ -251,7 +252,16 @@ export default function PostDetail({ postId }: { postId: string }) {
   };
 
   const deletePost = async () => {
-    if (!confirm("Xóa bài viết này?")) return;
+    const result = await Swal.fire({
+      title: "Xóa bài viết?",
+      text: "Xóa bài viết này?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
     const res = await fetch(`${API_BASE}/api/community/posts/${postId}`, {
       method: "DELETE",
       credentials: "include",
@@ -261,7 +271,16 @@ export default function PostDetail({ postId }: { postId: string }) {
   };
 
   const deleteComment = async (commentId: string) => {
-    if (!confirm("Xóa bình luận này?")) return;
+    const result = await Swal.fire({
+      title: "Xóa bình luận?",
+      text: "Xóa bình luận này?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
     const res = await fetch(`${API_BASE}/api/community/comments/${commentId}`, {
       method: "DELETE",
       credentials: "include",

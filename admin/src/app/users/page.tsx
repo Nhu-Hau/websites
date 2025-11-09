@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Swal from "sweetalert2";
 import { adminListUsers, adminUpdateUser, adminDeleteUser, AdminUser } from "@/lib/apiClient";
 
 export default function UsersPage() {
@@ -67,7 +68,16 @@ export default function UsersPage() {
   };
 
   const onDelete = async (u: AdminUser) => {
-    if (!confirm(`Xóa người dùng ${u.email}?`)) return;
+    const result = await Swal.fire({
+      title: "Xóa người dùng?",
+      text: `Xóa người dùng ${u.email}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
     await adminDeleteUser(u._id);
     void load();
   };

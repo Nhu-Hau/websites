@@ -23,6 +23,7 @@ import { signupCookieName, signupCookieOpts, refreshCookieName, refreshCookieOpt
 import { ResetTokenModel } from "../models/ResetToken";
 import { sendMail } from "../lib/mailer";
 import { PasswordCodeModel } from "../models/PasswordCode";
+import { EmailVerificationCodeModel } from "../models/EmailVerificationCode";
 
 const RESET_SECRET = process.env.RESET_SECRET!;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
@@ -167,19 +168,93 @@ export async function refresh(req: Request, res: Response) {
   }
 }
 
-// POST /auth/register
+// POST /auth/send-verification-code - Gửi mã xác thực email
+export async function sendVerificationCode(req: Request, res: Response) {
+  try {
+    const { email } = req.body;
+    if (!email)
+      return res.status(400).json({ message: "Vui lòng nhập email" });
+
+    // Kiểm tra email đã được sử dụng chưa
+    if (await User.findOne({ email }))
+      return res.status(409).json({ message: "Email này đã được sử dụng" });
+
+    // Tạo mã xác thực 6 số
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const codeHash = await bcrypt.hash(code, 10);
+
+    // Xóa các mã cũ chưa dùng cho email này
+    await EmailVerificationCodeModel.deleteMany({ email, used: false });
+
+    // Lưu mã mới (hiệu lực 10 phút)
+    await EmailVerificationCodeModel.create({
+      email,
+      codeHash,
+      used: false,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    });
+
+    // Gửi email
+    await sendMail({
+      to: email,
+      subject: "Mã xác thực đăng ký tài khoản",
+      html: `
+        <p>Chào bạn,</p>
+        <p>Mã xác thực đăng ký tài khoản của bạn là:</p>
+        <p style="font-size:20px;font-weight:700;letter-spacing:3px">${code}</p>
+        <p>Mã này có hiệu lực trong 10 phút.</p>
+      `,
+    });
+
+    return res.json({
+      message: "Mã xác thực đã được gửi đến email của bạn",
+    });
+  } catch (e) {
+    console.error("[sendVerificationCode] ERROR", e);
+    return res.status(500).json({ message: "Lỗi khi gửi mã xác thực" });
+  }
+}
+
 // POST /auth/register
 export async function register(req: Request, res: Response) {
   try {
-    const { name, email, password, level } = req.body;
+    const { name, email, password, level, verificationCode } = req.body;
     if (!name || !email || !password)
       return res
         .status(400)
         .json({ message: "Vui lòng điền đủ các trường bắt buộc" });
 
+    if (!verificationCode)
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập mã xác thực email" });
+
+    // Kiểm tra email đã được sử dụng chưa
     if (await User.findOne({ email }))
       return res.status(409).json({ message: "Email này đã được sử dụng" });
 
+    // Kiểm tra mã xác thực
+    const codeEntry = await EmailVerificationCodeModel.findOne({
+      email,
+      used: false,
+    });
+    if (!codeEntry)
+      return res
+        .status(400)
+        .json({ message: "Mã xác thực không hợp lệ hoặc đã hết hạn" });
+
+    if (codeEntry.expiresAt.getTime() < Date.now())
+      return res.status(400).json({ message: "Mã xác thực đã hết hạn" });
+
+    const codeValid = await bcrypt.compare(verificationCode, codeEntry.codeHash);
+    if (!codeValid)
+      return res.status(400).json({ message: "Mã xác thực không đúng" });
+
+    // Đánh dấu mã đã sử dụng
+    codeEntry.used = true;
+    await codeEntry.save();
+
+    // Tạo tài khoản
     const user: IUser = await User.create({
       name,
       email,
@@ -187,6 +262,7 @@ export async function register(req: Request, res: Response) {
       role: "user",
       access: "free",
       level: level ?? 1,
+      emailVerified: true,
     });
 
     const { access, refresh } = await issueAndStoreTokens(user);
@@ -197,6 +273,7 @@ export async function register(req: Request, res: Response) {
       message: "Đăng ký tài khoản thành công",
     });
   } catch (e) {
+    console.error("[register] ERROR", e);
     return res.status(500).json({ message: "Lỗi khi đăng ký tài khoản" });
   }
 }
@@ -214,14 +291,59 @@ export async function login(req: Request, res: Response) {
       return res.status(404).json({ message: "Bạn chưa có tài khoản" });
     }
 
-    // Nếu có người dùng nhưng mật khẩu không đúng, trả về thông báo "Email hoặc mật khẩu không chính xác"
-    if (!(await user.comparePassword(password))) {
-      return res
-        .status(401)
-        .json({ message: "Email hoặc mật khẩu không chính xác" });
+    // Kiểm tra tài khoản có bị khóa không
+    if (user.isLocked && user.lockedUntil) {
+      const now = new Date();
+      if (user.lockedUntil > now) {
+        const minutesLeft = Math.ceil(
+          (user.lockedUntil.getTime() - now.getTime()) / (1000 * 60)
+        );
+        return res.status(403).json({
+          message: `Tài khoản của bạn đã bị khóa do nhập sai mật khẩu quá nhiều lần. Vui lòng liên hệ admin. Thời gian khóa còn lại: ${minutesLeft} phút.`,
+        });
+      } else {
+        // Hết thời gian khóa, tự động mở khóa
+        user.isLocked = false;
+        user.lockedUntil = null;
+        user.loginAttempts = 0;
+        await user.save();
+      }
     }
 
-    // Nếu người dùng tồn tại và mật khẩu chính xác, cấp token và lưu cookies
+    // Kiểm tra mật khẩu
+    const passwordValid = await user.comparePassword(password);
+    if (!passwordValid) {
+      // Tăng số lần đăng nhập sai
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+      const MAX_ATTEMPTS = 5;
+      const LOCK_DURATION_MINUTES = 30;
+
+      if (user.loginAttempts >= MAX_ATTEMPTS) {
+        // Khóa tài khoản
+        user.isLocked = true;
+        user.lockedUntil = new Date(
+          Date.now() + LOCK_DURATION_MINUTES * 60 * 1000
+        );
+        await user.save();
+
+        return res.status(403).json({
+          message: `Bạn đã nhập sai mật khẩu quá nhiều lần. Tài khoản đã bị khóa trong ${LOCK_DURATION_MINUTES} phút. Vui lòng liên hệ admin qua Zalo: 0833115510 để được hỗ trợ mở khóa.`,
+        });
+      }
+
+      await user.save();
+      return res.status(401).json({
+        message: `Email hoặc mật khẩu không chính xác. Bạn còn ${MAX_ATTEMPTS - user.loginAttempts} lần thử.`,
+      });
+    }
+
+    // Đăng nhập thành công - reset số lần đăng nhập sai
+    user.loginAttempts = 0;
+    user.isLocked = false;
+    user.lockedUntil = null;
+    await user.save();
+
+    // Cấp token và lưu cookies
     const { access, refresh } = await issueAndStoreTokens(user);
     setAuthCookies(res, access, refresh);
 
@@ -230,6 +352,7 @@ export async function login(req: Request, res: Response) {
       message: "Đăng nhập thành công",
     });
   } catch (e) {
+    console.error("[login] ERROR", e);
     return res.status(500).json({ message: "Lỗi khi đăng nhập" });
   }
 }

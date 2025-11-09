@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Swal from "sweetalert2";
 import { 
   adminListCommunityPosts, 
   adminDeleteCommunityPost,
@@ -108,13 +109,31 @@ export default function CommunityPage() {
   };
 
   const onDeletePost = async (item: AdminCommunityPost) => {
-    if (!confirm(`Xóa bài viết của ${item.user?.name || 'người dùng'}?`)) return;
+    const result = await Swal.fire({
+      title: "Xóa bài viết?",
+      text: `Xóa bài viết của ${item.user?.name || 'người dùng'}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
     await adminDeleteCommunityPost(item._id);
     void load();
   };
 
   const onDeleteComment = async (item: AdminCommunityComment) => {
-    if (!confirm(`Xóa bình luận của ${item.user?.name || 'người dùng'}?`)) return;
+    const result = await Swal.fire({
+      title: "Xóa bình luận?",
+      text: `Xóa bình luận của ${item.user?.name || 'người dùng'}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
     await adminDeleteCommunityComment(item._id);
     void load();
   };

@@ -16,6 +16,9 @@ export interface ICommunityPost extends Document {
   likedBy: Types.ObjectId[];
   likesCount: number;
   commentsCount: number;
+  reports: Types.ObjectId[];
+  reportsCount: number;
+  isHidden: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +43,9 @@ const CommunityPostSchema = new Schema<ICommunityPost>(
     likedBy: { type: [Schema.Types.ObjectId], ref: "User", default: [], index: true },
     likesCount: { type: Number, default: 0 },
     commentsCount: { type: Number, default: 0 },
+    reports: { type: [Schema.Types.ObjectId], ref: "User", default: [], index: true },
+    reportsCount: { type: Number, default: 0 },
+    isHidden: { type: Boolean, default: false, index: true },
   },
   { timestamps: true, versionKey: false }
 );

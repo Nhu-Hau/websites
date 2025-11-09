@@ -75,6 +75,7 @@ export async function listPosts(req: Request, res: Response) {
 
     const [items, total] = await Promise.all([
       CommunityPost.aggregate([
+        { $match: { isHidden: false } }, // Chỉ lấy bài không bị ẩn
         { $sort: { createdAt: -1 } },
         { $skip: skip },
         { $limit: limit },
@@ -95,7 +96,7 @@ export async function listPosts(req: Request, res: Response) {
           },
         },
       ]),
-      CommunityPost.countDocuments({}),
+      CommunityPost.countDocuments({ isHidden: false }),
     ]);
 
     // trong listPosts, thay đoạn return out = items.map(...)
@@ -202,7 +203,7 @@ export async function getPost(req: Request, res: Response) {
     console.log("[getPost] Fetching post:", postId, "for userId:", userId);
 
     const [postAgg] = await CommunityPost.aggregate([
-      { $match: { _id: oid(postId) } },
+      { $match: { _id: oid(postId), isHidden: false } }, // Chỉ lấy bài không bị ẩn
       {
         $lookup: {
           from: "users",
@@ -541,6 +542,61 @@ export async function toggleLike(req: Request, res: Response) {
     return res.json(payload);
   } catch (e) {
     console.error("[toggleLike] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+/** Report post */
+export async function reportPost(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const { postId } = req.params;
+    if (!mongoose.isValidObjectId(postId))
+      return res.status(400).json({ message: "postId không hợp lệ" });
+
+    const post = await CommunityPost.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post không tồn tại" });
+
+    const uid = oid(userId);
+
+    // Kiểm tra người dùng đã report bài này chưa
+    const alreadyReported = post.reports.some(
+      (x: any) => String(x) === String(uid)
+    );
+    if (alreadyReported) {
+      return res
+        .status(400)
+        .json({ message: "Bạn đã báo cáo bài viết này rồi" });
+    }
+
+    // Thêm report
+    post.reports.push(uid);
+    post.reportsCount = (post.reportsCount || 0) + 1;
+    await post.save();
+
+    // Kiểm tra nếu số lượng report vượt quá ngưỡng (ví dụ: 5 reports) thì tự động ẩn
+    const REPORT_THRESHOLD = 5;
+    if (post.reportsCount >= REPORT_THRESHOLD && !post.isHidden) {
+      post.isHidden = true;
+      await post.save();
+
+      return res.json({
+        message:
+          "Báo cáo thành công. Bài viết đã bị ẩn do nhận quá nhiều báo cáo.",
+        reportsCount: post.reportsCount,
+        isHidden: true,
+      });
+    }
+
+    return res.json({
+      message: "Báo cáo thành công",
+      reportsCount: post.reportsCount,
+      isHidden: post.isHidden,
+    });
+  } catch (e) {
+    console.error("[reportPost] ERROR", e);
     return res.status(500).json({ message: "Server error" });
   }
 }

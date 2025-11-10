@@ -21,6 +21,7 @@ import paymentsRoutes from "./routes/payments.routes";
 import socketAuthRoutes from "./routes/socketAuth.routes";
 import studyroomRoutes from "./routes/studyrooms.routes";
 import progressRoutes from "./routes/progress.routes";
+import dashboardRoutes from "./routes/dashboard.routes";
 
 import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
 
@@ -29,7 +30,7 @@ const app = express();
 //SECURITY & BASICS
 
 app.set("etag", false); // disable ETag nếu không cần
-app.use(helmet());      // các header bảo mật
+app.use(helmet()); // các header bảo mật
 app.use(cookieParser());
 app.use(express.json({ limit: "2mb" })); // parse body JSON
 
@@ -94,6 +95,9 @@ app.use("/api/socket-auth", socketAuthRoutes);
 
 // Progress
 app.use("/api/progress", progressRoutes);
+
+// Dashboard
+app.use("/api/dashboard", dashboardRoutes);
 
 //404 CHO API (tuỳ chọn)
 app.use((req, res, next) => {

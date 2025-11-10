@@ -15,4 +15,5 @@ export interface GradeResp {
   predicted?: { overall: number; listening: number; reading: number };
   partStats?: Record<string, { total: number; correct: number; acc: number }>;
   weakParts?: string[];
+  attemptId?: string; // ID của attempt đã lưu
 }

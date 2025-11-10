@@ -2,12 +2,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import type { Item, Stimulus, ChoiceId } from "@/types/tests";
 import type { GradeResp } from "@/types/placement"; // dùng lại type kết quả
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
+import { useAutoSave } from "./useAutoSave";
 
 export type UseProgressTestReturn = {
   items: Item[];
@@ -39,6 +40,7 @@ export function useProgressTest(): UseProgressTestReturn {
   const [loading, setLoading] = useState(true);
   const [started, setStarted] = useState(false);
   const [version, setVersion] = useState<number | null>(null);
+  const restoredFromDefaultRef = useRef(false);
 
   const { refresh } = useAuth();
 
@@ -88,6 +90,90 @@ export function useProgressTest(): UseProgressTestReturn {
 
   const total = items.length;
   const answered = useMemo(() => Object.keys(answers).length, [answers]);
+
+  // Auto-save: khôi phục dữ liệu (thử từ cả "default" và version key)
+  const handleRestore = useCallback(
+    (data: {
+      answers: Record<string, ChoiceId>;
+      timeSec: number;
+      started: boolean;
+    }) => {
+      // Khôi phục nếu có answers hoặc đã started
+      if (
+        (data.answers && Object.keys(data.answers).length > 0) ||
+        data.started
+      ) {
+        if (data.answers && Object.keys(data.answers).length > 0) {
+          setAnswers(data.answers);
+        }
+        setTimeSec(data.timeSec);
+        if (data.started) {
+          setStarted(true);
+        }
+        toast.info("Đã khôi phục dữ liệu bài làm trước đó", {
+          duration: 3000,
+        });
+      }
+    },
+    []
+  );
+
+  // Auto-save: sử dụng hook (chỉ khôi phục sau khi version đã load)
+  const testId = version ? `v${version}` : "default";
+  // Chỉ khôi phục khi đã có version và items
+  const shouldRestore = version !== null && items.length > 0;
+
+  // Thử khôi phục từ key "default" nếu version mới load (chỉ một lần)
+  useEffect(() => {
+    if (!shouldRestore || resp || !version || restoredFromDefaultRef.current)
+      return;
+
+    try {
+      const defaultKey = "test_autosave_progress_default";
+      const saved = localStorage.getItem(defaultKey);
+      if (!saved) {
+        restoredFromDefaultRef.current = true;
+        return;
+      }
+
+      const data = JSON.parse(saved);
+      const now = Date.now();
+      const maxAge = 24 * 60 * 60 * 1000;
+      if (now - data.timestamp > maxAge) {
+        localStorage.removeItem(defaultKey);
+        restoredFromDefaultRef.current = true;
+        return;
+      }
+
+      // Nếu có dữ liệu từ "default", khôi phục và xóa key cũ (khôi phục nếu có answers hoặc đã started)
+      if (
+        (data.answers && Object.keys(data.answers).length > 0) ||
+        data.started
+      ) {
+        handleRestore({
+          answers: data.answers || {},
+          timeSec: data.timeSec || 0,
+          started: data.started || false,
+        });
+        localStorage.removeItem(defaultKey); // Xóa key cũ sau khi khôi phục
+      }
+      restoredFromDefaultRef.current = true;
+    } catch (e) {
+      console.error("Failed to restore from default key:", e);
+      restoredFromDefaultRef.current = true;
+    }
+  }, [version, shouldRestore, resp, handleRestore]);
+
+  useAutoSave(
+    "progress",
+    testId,
+    answers,
+    timeSec,
+    started,
+    resp,
+    handleRestore,
+    shouldRestore
+  );
 
   // submit
   async function submit() {
@@ -143,6 +229,13 @@ export function useProgressTest(): UseProgressTestReturn {
             "border border-blue-300 bg-blue-50 text-blue-700 font-semibold",
         },
       });
+    }
+
+    // Dispatch event để ChatBox tự động refresh và hiển thị Learning Insight
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("test-submitted", { detail: { type: "progress" } })
+      );
     }
 
     try {

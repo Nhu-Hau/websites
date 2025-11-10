@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import mongoose, { Types } from "mongoose";
 import { PracticeAttempt } from "../models/PracticeAttempt";
 import { User } from "../models/User";
+import { chatService } from "../services/chat.service";
 
 const PARTS_COLL = process.env.PARTS_COLL || "practice_parts";
 const VALID_PARTS = new Set([

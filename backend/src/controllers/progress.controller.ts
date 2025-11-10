@@ -6,6 +6,7 @@ import { PracticeAttempt } from "../models/PracticeAttempt";
 import { User } from "../models/User";
 import { accessCookieName } from "../config/cookies";
 import { verifyAccessToken } from "../lib/jwt";
+import { chatService } from "../services/chat.service";
 
 const ITEMS_COLL =
   process.env.PROGRESS_PARTS_COLL ||
@@ -21,16 +22,22 @@ function accToLevel(acc: number): 1 | 2 | 3 {
   if (acc >= 0.55) return 2;
   return 1;
 }
+// Hàm làm tròn chia hết cho 5 (cho listening/reading: 5-495)
+function round5_495(n: number): number {
+  return Math.min(495, Math.max(5, Math.round(n / 5) * 5));
+}
+
+// Hàm làm tròn chia hết cho 5 (cho overall: 10-990)
+function round5_990(n: number): number {
+  return Math.min(990, Math.max(10, Math.round(n / 5) * 5));
+}
+
 function predictToeic(listeningAcc: number, readingAcc: number) {
-  const listening = Math.max(
-    0,
-    Math.min(495, Math.round((listeningAcc || 0) * 495))
-  );
-  const reading = Math.max(
-    0,
-    Math.min(495, Math.round((readingAcc || 0) * 495))
-  );
-  const overall = listening + reading;
+  const listeningRaw = (listeningAcc || 0) * 495;
+  const readingRaw = (readingAcc || 0) * 495;
+  const listening = round5_495(listeningRaw);
+  const reading = round5_495(readingRaw);
+  const overall = round5_990(listening + reading);
   return { overall, listening, reading };
 }
 
@@ -375,6 +382,16 @@ export async function submitProgress(req: Request, res: Response) {
         },
       }
     ).exec();
+
+    // Tự động gửi Learning Insight vào chat (chạy async, không block response)
+    chatService.generateLearningInsight(
+      String(userId),
+      "progress",
+      String(attempt._id),
+      "default"
+    ).catch((err) => {
+      console.error("[submitProgress] Error generating Learning Insight:", err);
+    });
 
     return res.json({
       attemptId: String(attempt._id),

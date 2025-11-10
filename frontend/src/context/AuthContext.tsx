@@ -59,57 +59,118 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User>(null);
   const [loading, setLoading] = useState(true);
 
-  async function fetchMe() {
-    const res = await fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error(String(res.status));
-    const profile = await res.json();
-    const u =
-      (profile && typeof profile === "object" && (profile.user || profile.data)) ||
-      profile;
-    setUser(u ?? null);
+  // Cache để tránh fetch quá nhiều lần trong thời gian ngắn
+  const fetchMeCache = useRef<{ data: User; timestamp: number } | null>(null);
+  const CACHE_DURATION = 1000; // 1 giây cache
+
+  async function fetchMe(skipCache = false) {
+    // Kiểm tra cache
+    if (!skipCache && fetchMeCache.current) {
+      const age = Date.now() - fetchMeCache.current.timestamp;
+      if (age < CACHE_DURATION) {
+        setUser(fetchMeCache.current.data);
+        return;
+      }
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // Timeout 5s
+
+    try {
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      
+      if (!res.ok) throw new Error(String(res.status));
+      const profile = await res.json();
+      const u =
+        (profile && typeof profile === "object" && (profile.user || profile.data)) ||
+        profile;
+      const userData = u ?? null;
+      
+      // Lưu cache
+      fetchMeCache.current = { data: userData, timestamp: Date.now() };
+      setUser(userData);
+    } catch (e: any) {
+      clearTimeout(timeoutId);
+      if (e.name === "AbortError") {
+        // Timeout - không set user null, giữ nguyên state
+        return;
+      }
+      throw e;
+    }
   }
 
   async function refresh() {
     try {
-      // Thử refresh token trước nếu /auth/me fail
+      // Thử fetchMe trước (có cache nên nhanh)
       try {
         await fetchMe();
       } catch (e: any) {
-        if (String(e?.message) === "401" || String(e?.message) === "403") {
-          // Token hết hạn, thử refresh
-          const refreshRes = await fetch("/api/auth/refresh", {
-            method: "POST",
-            credentials: "include",
-          });
-          if (refreshRes.ok) {
-            // Refresh thành công, thử lại fetchMe
-            await fetchMe();
-          } else {
-            setUser(null);
+        const status = String(e?.message);
+        if (status === "401" || status === "403") {
+          // Token hết hạn, refresh ngay lập tức
+          const refreshController = new AbortController();
+          const refreshTimeout = setTimeout(() => refreshController.abort(), 3000); // Timeout 3s cho refresh
+          
+          try {
+            const refreshRes = await fetch("/api/auth/refresh", {
+              method: "POST",
+              credentials: "include",
+              signal: refreshController.signal,
+            });
+            clearTimeout(refreshTimeout);
+            
+            if (refreshRes.ok) {
+              // Refresh thành công, fetchMe lại (skip cache)
+              await fetchMe(true);
+            } else {
+              setUser(null);
+              fetchMeCache.current = null;
+            }
+          } catch (refreshErr: any) {
+            clearTimeout(refreshTimeout);
+            if (refreshErr.name !== "AbortError") {
+              setUser(null);
+              fetchMeCache.current = null;
+            }
           }
         } else {
           setUser(null);
+          fetchMeCache.current = null;
         }
       }
     } catch {
       setUser(null);
+      fetchMeCache.current = null;
     }
   }
 
   const refreshTimer = useRef<number | null>(null);
+  const isRefreshing = useRef(false);
+  
   const debouncedRefresh = useMemo(
     () =>
       function () {
+        // Tránh refresh đồng thời
+        if (isRefreshing.current) return;
+        
         if (refreshTimer.current) {
           window.clearTimeout(refreshTimer.current);
         }
-        refreshTimer.current = window.setTimeout(() => {
-          refresh();
-          refreshTimer.current = null;
-        }, 200); // debounce 200ms
+        refreshTimer.current = window.setTimeout(async () => {
+          if (isRefreshing.current) return;
+          isRefreshing.current = true;
+          try {
+            await refresh();
+          } finally {
+            isRefreshing.current = false;
+            refreshTimer.current = null;
+          }
+        }, 100); // Giảm debounce xuống 100ms để nhanh hơn
       },
     []
   );
@@ -122,14 +183,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await fetchMe();
         } catch (e: any) {
           if (String(e?.message) === "401" || String(e?.message) === "403") {
-            const r = await fetch("/api/auth/refresh", {
-              method: "POST",
-              credentials: "include",
-            });
-            if (r.ok) await fetchMe();
-            else setUser(null);
+            const refreshController = new AbortController();
+            const refreshTimeout = setTimeout(() => refreshController.abort(), 3000);
+            
+            try {
+              const r = await fetch("/api/auth/refresh", {
+                method: "POST",
+                credentials: "include",
+                signal: refreshController.signal,
+              });
+              clearTimeout(refreshTimeout);
+              
+              if (r.ok) {
+                await fetchMe(true);
+              } else {
+                setUser(null);
+                fetchMeCache.current = null;
+              }
+            } catch (refreshErr: any) {
+              clearTimeout(refreshTimeout);
+              if (refreshErr.name !== "AbortError") {
+                setUser(null);
+                fetchMeCache.current = null;
+              }
+            }
           } else {
             setUser(null);
+            fetchMeCache.current = null;
           }
         }
       } finally {
@@ -146,17 +226,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     
     const interval = setInterval(async () => {
+      if (isRefreshing.current) return;
+      
       try {
-        // Refresh token trước khi hết hạn
-        const refreshRes = await fetch("/api/auth/refresh", {
-          method: "POST",
-          credentials: "include",
-        });
-        if (refreshRes.ok) {
-          // Refresh thành công, cập nhật user info
-          await fetchMe();
+        isRefreshing.current = true;
+        const refreshController = new AbortController();
+        const refreshTimeout = setTimeout(() => refreshController.abort(), 3000);
+        
+        try {
+          // Refresh token trước khi hết hạn
+          const refreshRes = await fetch("/api/auth/refresh", {
+            method: "POST",
+            credentials: "include",
+            signal: refreshController.signal,
+          });
+          clearTimeout(refreshTimeout);
+          
+          if (refreshRes.ok) {
+            // Refresh thành công, cập nhật user info (skip cache)
+            await fetchMe(true);
+          }
+        } catch (e: any) {
+          clearTimeout(refreshTimeout);
+          if (e.name !== "AbortError") {
+            console.warn("Auto-refresh token failed:", e);
+          }
+        } finally {
+          isRefreshing.current = false;
         }
       } catch (e) {
+        isRefreshing.current = false;
         console.warn("Auto-refresh token failed:", e);
       }
     }, 25 * 60 * 1000); // Mỗi 25 phút
@@ -224,6 +323,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     } catch {}
     setUser(null);
+    fetchMeCache.current = null;
     announceUserChanged();
   }
 

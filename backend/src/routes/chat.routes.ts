@@ -150,4 +150,145 @@ router.delete("/clear/:sessionId", requireAuth, requirePremium, async (req, res,
   }
 });
 
+// POST /api/chat/insight/practice/:attemptId - Tạo Learning Insight cho practice test
+router.post("/insight/practice/:attemptId", requireAuth, requirePremium, async (req, res, next) => {
+  try {
+    const { attemptId } = req.params;
+    const userId = req.auth?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Generate Learning Insight và lưu vào chat
+    await chatService.generateLearningInsight(
+      String(userId),
+      "practice",
+      attemptId,
+      "default"
+    );
+
+    // Lấy message mới nhất (Learning Insight vừa tạo)
+    const messages = await ChatMessage.find({
+      userId,
+      sessionId: "default",
+    })
+      .sort({ createdAt: -1 })
+      .limit(1)
+      .lean();
+
+    if (messages.length > 0 && messages[0].role === "assistant") {
+      res.json({
+        data: {
+          insight: messages[0].content,
+          messageId: messages[0]._id,
+        },
+      });
+    } else {
+      res.json({
+        data: {
+          insight: null,
+          messageId: null,
+        },
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/chat/insight/placement/:attemptId - Tạo Learning Insight cho placement test
+router.post("/insight/placement/:attemptId", requireAuth, requirePremium, async (req, res, next) => {
+  try {
+    const { attemptId } = req.params;
+    const userId = req.auth?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Generate Learning Insight và lưu vào chat
+    await chatService.generateLearningInsight(
+      String(userId),
+      "placement",
+      attemptId,
+      "default"
+    );
+
+    // Lấy message mới nhất (Learning Insight vừa tạo)
+    const messages = await ChatMessage.find({
+      userId,
+      sessionId: "default",
+    })
+      .sort({ createdAt: -1 })
+      .limit(1)
+      .lean();
+
+    if (messages.length > 0 && messages[0].role === "assistant") {
+      res.json({
+        data: {
+          insight: messages[0].content,
+          messageId: messages[0]._id,
+        },
+      });
+    } else {
+      res.json({
+        data: {
+          insight: null,
+          messageId: null,
+        },
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/chat/insight/progress/:attemptId - Tạo Learning Insight cho progress test
+router.post("/insight/progress/:attemptId", requireAuth, requirePremium, async (req, res, next) => {
+  try {
+    const { attemptId } = req.params;
+    const userId = req.auth?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Generate Learning Insight và lưu vào chat
+    await chatService.generateLearningInsight(
+      String(userId),
+      "progress",
+      attemptId,
+      "default"
+    );
+
+    // Lấy message mới nhất (Learning Insight vừa tạo)
+    const messages = await ChatMessage.find({
+      userId,
+      sessionId: "default",
+    })
+      .sort({ createdAt: -1 })
+      .limit(1)
+      .lean();
+
+    if (messages.length > 0 && messages[0].role === "assistant") {
+      res.json({
+        data: {
+          insight: messages[0].content,
+          messageId: messages[0]._id,
+        },
+      });
+    } else {
+      res.json({
+        data: {
+          insight: null,
+          messageId: null,
+        },
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

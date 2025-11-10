@@ -12,8 +12,6 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   Legend,
-  BarChart,
-  Bar,
 } from "recharts";
 import {
   Gauge,
@@ -29,6 +27,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useBasePrefix } from "@/hooks/useBasePrefix";
+import ActivityHeatmap from "./ActivityHeatmap";
+import GoalProgress from "./GoalProgress";
 
 /* ===================== Types ===================== */
 type Lvl = 1 | 2 | 3;
@@ -167,6 +167,24 @@ function pickUserFromMe(json: any): UserMe | null {
   return null;
 }
 
+function getLastDecisionForPart(part: string) {
+  try {
+    const raw = localStorage.getItem(`toeic:lastDecision:${part}`);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    // tùy chọn: chỉ coi là còn hiệu lực trong 48h
+    if (Date.now() - (obj.ts || 0) > 48 * 3600 * 1000) return null;
+    return obj as {
+      from: Lvl;
+      to: Lvl;
+      rule: "promote" | "demote" | "keep";
+      ts: number;
+    };
+  } catch {
+    return null;
+  }
+}
+
 /* ===================== Component ===================== */
 export default function Dashboard() {
   const basePrefix = useBasePrefix("vi");
@@ -293,7 +311,14 @@ export default function Dashboard() {
   const lineByPart = React.useMemo(() => {
     const map: Record<
       PartKey,
-      { at: string; acc: number; level: Lvl; test?: number | null }[]
+      {
+        at: string;
+        acc: number;
+        level: Lvl;
+        test?: number | null;
+        movingAvg?: number;
+        isRetake?: boolean;
+      }[]
     > = {
       "part.1": [],
       "part.2": [],
@@ -303,21 +328,43 @@ export default function Dashboard() {
       "part.6": [],
       "part.7": [],
     };
+
+    // Sắp xếp theo thời gian (bao gồm cả retake)
     const arr = [...practiceHist].sort((a, b) => {
       const ta = new Date(a.submittedAt || a.createdAt || 0).getTime();
       const tb = new Date(b.submittedAt || b.createdAt || 0).getTime();
       return ta - tb;
     });
-    for (const a of arr) {
-      const p = a.partKey as PartKey;
-      if (!map[p]) continue;
-      const at = fmtTimeLabel(a.submittedAt || a.createdAt || "");
-      map[p].push({
-        at,
-        acc: Math.round((a.acc ?? 0) * 1000) / 10,
-        level: a.level as Lvl,
-        test: a.test,
-      });
+
+    // Tính moving average (window size = 3)
+    const windowSize = 3;
+    for (const p of PARTS) {
+      const partData = arr.filter((a) => a.partKey === p);
+      for (let i = 0; i < partData.length; i++) {
+        const a = partData[i];
+        const at = fmtTimeLabel(a.submittedAt || a.createdAt || "");
+        const acc = Math.round((a.acc ?? 0) * 1000) / 10;
+
+        // Tính moving average từ các điểm trước đó
+        let movingAvg: number | undefined = undefined;
+        if (i >= windowSize - 1) {
+          const window = partData.slice(i - windowSize + 1, i + 1);
+          const sum = window.reduce(
+            (sum, item) => sum + (item.acc ?? 0) * 100,
+            0
+          );
+          movingAvg = Math.round((sum / window.length) * 10) / 10;
+        }
+
+        map[p].push({
+          at,
+          acc,
+          level: a.level as Lvl,
+          test: a.test,
+          movingAvg,
+          isRetake: a.isRetake ?? false,
+        });
+      }
     }
     return map;
   }, [practiceHist]);
@@ -355,45 +402,66 @@ export default function Dashboard() {
   /* ---------- Assessment (Placement + Progress) ---------- */
   type AssessmentPoint = {
     at: string; // label thời gian
-    Listening: number; // %
-    Reading: number; // %
-    Overall: number; // %
+    Listening: number; // Điểm TOEIC (5-495)
+    Reading: number; // Điểm TOEIC (5-495)
+    Overall: number; // Điểm TOEIC (10-990)
     kind: "placement" | "progress";
     ts: number; // timestamp để sort ổn định
     _id: string;
   };
 
   const assessmentLineData: AssessmentPoint[] = React.useMemo(() => {
-    const toPctFromPred = (l5?: number, r5?: number) => {
-      const l = Math.max(0, Math.min(100, Math.round(((l5 ?? 0) / 495) * 100)));
-      const r = Math.max(0, Math.min(100, Math.round(((r5 ?? 0) / 495) * 100)));
-      const overall = Math.round((l + r) / 2);
-      return { l, r, overall };
+    // Hàm round điểm về bước 5 cho listening/reading (5-495)
+    const round5_495 = (n: number) => {
+      return Math.min(495, Math.max(5, Math.round(n / 5) * 5));
     };
-    const clampPct = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
+
+    // Chuyển từ predicted TOEIC score sang điểm thực tế (đã được round 5-step)
+    const toToeicScore = (l5?: number, r5?: number) => {
+      // Nếu có predicted, dùng trực tiếp và round về bước 5
+      const l = l5 != null ? round5_495(Math.max(5, Math.min(495, l5))) : null;
+      const r = r5 != null ? round5_495(Math.max(5, Math.min(495, r5))) : null;
+
+      // Nếu cả hai đều null, return null để fallback
+      if (l == null && r == null) return { l: null, r: null, overall: null };
+
+      // Tính overall từ listening và reading
+      const overall = (l ?? 0) + (r ?? 0);
+      return {
+        l: l ?? 0,
+        r: r ?? 0,
+        overall: overall > 0 ? round5_990(overall) : 0,
+      };
+    };
+
+    // Tính điểm TOEIC từ accuracy (fallback)
+    const accToToeic = (acc: number) => {
+      const score = Math.round(acc * 495);
+      return round5_495(Math.max(5, Math.min(495, score)));
+    };
 
     const placement = [...placementHist].map((x) => {
       const ts = new Date(x.submittedAt).getTime();
-      // ưu tiên predicted nếu có
+      // Ưu tiên predicted nếu có
       if (x.predicted?.listening != null || x.predicted?.reading != null) {
-        const { l, r, overall } = toPctFromPred(
+        const { l, r, overall } = toToeicScore(
           x.predicted?.listening,
           x.predicted?.reading
         );
         return {
           _id: x._id,
           at: fmtTimeLabel(x.submittedAt),
-          Listening: l,
-          Reading: r,
-          Overall: overall,
+          Listening: l ?? 0,
+          Reading: r ?? 0,
+          Overall: overall ?? 0,
           kind: "placement" as const,
           ts,
         };
       }
-      // fallback từ acc
-      const l = clampPct((x.listening?.acc ?? 0) * 100);
-      const r = clampPct((x.reading?.acc ?? 0) * 100);
-      const overall = Math.round((l + r) / 2);
+      // Fallback từ accuracy
+      const l = accToToeic(x.listening?.acc ?? 0);
+      const r = accToToeic(x.reading?.acc ?? 0);
+      const overall = round5_990(l + r);
       return {
         _id: x._id,
         at: fmtTimeLabel(x.submittedAt),
@@ -408,23 +476,23 @@ export default function Dashboard() {
     const progress = [...progressHist].map((x) => {
       const ts = new Date(x.submittedAt).getTime();
       if (x.predicted?.listening != null || x.predicted?.reading != null) {
-        const { l, r, overall } = toPctFromPred(
+        const { l, r, overall } = toToeicScore(
           x.predicted?.listening,
           x.predicted?.reading
         );
         return {
           _id: x._id,
           at: fmtTimeLabel(x.submittedAt),
-          Listening: l,
-          Reading: r,
-          Overall: overall,
+          Listening: l ?? 0,
+          Reading: r ?? 0,
+          Overall: overall ?? 0,
           kind: "progress" as const,
           ts,
         };
       }
-      const l = clampPct((x.listening?.acc ?? 0) * 100);
-      const r = clampPct((x.reading?.acc ?? 0) * 100);
-      const overall = Math.round((l + r) / 2);
+      const l = accToToeic(x.listening?.acc ?? 0);
+      const r = accToToeic(x.reading?.acc ?? 0);
+      const overall = round5_990(l + r);
       return {
         _id: x._id,
         at: fmtTimeLabel(x.submittedAt),
@@ -495,6 +563,12 @@ export default function Dashboard() {
           </div>
         </header>
 
+        {/* ====== Activity Heatmap & Goal Progress ====== */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <ActivityHeatmap />
+          <GoalProgress />
+        </div>
+
         {/* ====== Grid 2 cột: Practice progress (trái) + Assessment (phải) ====== */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-stretch">
           {/* Charts - Tiến bộ luyện tập theo PART */}
@@ -509,7 +583,7 @@ export default function Dashboard() {
                 </h2>
               </div>
               <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                Đơn vị: %
+                Đơn vị: % (Accuracy)
               </div>
             </div>
 
@@ -562,6 +636,16 @@ export default function Dashboard() {
                         axisLine={{ stroke: "#d1d5db" }}
                         tickLine={{ stroke: "#d1d5db" }}
                         ticks={[0, 25, 50, 75, 100]}
+                        label={{
+                          value: "Accuracy (%)",
+                          angle: -90,
+                          position: "insideLeft",
+                          style: {
+                            textAnchor: "middle",
+                            fill: "#6b7280",
+                            fontSize: 11,
+                          },
+                        }}
                       />
                       <ChartTooltip
                         contentStyle={{
@@ -582,7 +666,24 @@ export default function Dashboard() {
                           strokeWidth: 1,
                           strokeDasharray: "5 5",
                         }}
-                        formatter={(value: number) => `${Math.round(value)}%`}
+                        formatter={(
+                          value: number,
+                          name: string,
+                          props: any
+                        ) => {
+                          const payload = props.payload;
+                          const level = payload?.level
+                            ? ` • Level ${payload.level}`
+                            : "";
+                          const test =
+                            payload?.test != null
+                              ? ` • Test ${payload.test}`
+                              : "";
+                          return [
+                            `${Math.round(value)}%${level}${test}`,
+                            "Accuracy",
+                          ];
+                        }}
                       />
                       <Line
                         type="monotone"
@@ -603,6 +704,20 @@ export default function Dashboard() {
                         }}
                         animationDuration={800}
                       />
+                      {lineByPart[selectedPart]?.some(
+                        (d) => d.movingAvg != null
+                      ) && (
+                        <Line
+                          type="monotone"
+                          dataKey="movingAvg"
+                          stroke="#94a3b8"
+                          strokeWidth={1.5}
+                          strokeDasharray="5 5"
+                          dot={false}
+                          activeDot={false}
+                          animationDuration={800}
+                        />
+                      )}
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -628,7 +743,7 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5 bg-zinc-300 dark:bg-zinc-700" />
-                <span>Đường xu hướng</span>
+                <span>Đường xu hướng (Moving Average)</span>
               </div>
             </div>
           </section>
@@ -683,12 +798,22 @@ export default function Dashboard() {
                         tickLine={{ stroke: "#d1d5db" }}
                       />
                       <YAxis
-                        domain={[0, 100]}
-                        ticks={[0, 25, 50, 75, 100]}
+                        domain={[0, 990]}
+                        ticks={[0, 200, 400, 600, 800, 990]}
                         stroke="#d1d5db"
                         tick={{ fill: "#6b7280", fontSize: 11 }}
                         axisLine={{ stroke: "#d1d5db" }}
                         tickLine={{ stroke: "#d1d5db" }}
+                        label={{
+                          value: "Điểm TOEIC",
+                          angle: -90,
+                          position: "insideLeft",
+                          style: {
+                            textAnchor: "middle",
+                            fill: "#6b7280",
+                            fontSize: 11,
+                          },
+                        }}
                       />
                       <ChartTooltip
                         contentStyle={{
@@ -710,9 +835,12 @@ export default function Dashboard() {
                         ) => {
                           const kind =
                             props?.payload?.kind === "progress"
-                              ? "Progress"
-                              : "Placement";
-                          return [`${Math.round(value)}%`, `${name} • ${kind}`];
+                              ? "Progress Test"
+                              : "Placement Test";
+                          return [
+                            `${Math.round(value)} điểm`,
+                            `${name} • ${kind}`,
+                          ];
                         }}
                       />
                       <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -771,11 +899,23 @@ export default function Dashboard() {
               const curLv = levels[p] ?? null;
               const lastLv = lastLevelByPart[p] ?? null;
               const lastAcc = lastAccByPart[p] ?? null;
-              const isFinite = lastAcc != null;
+              const hasLastAcc =
+                typeof lastAcc === "number" && Number.isFinite(lastAcc);
 
-              const movedUp = lastLv != null && curLv != null && curLv > lastLv;
-              const movedDown =
-                lastLv != null && curLv != null && curLv < lastLv;
+              const decision =
+                typeof window !== "undefined"
+                  ? getLastDecisionForPart(p)
+                  : null;
+              const movedUp = !!(
+                decision &&
+                decision.rule === "promote" &&
+                decision.to > decision.from
+              );
+              const movedDown = !!(
+                decision &&
+                decision.rule === "demote" &&
+                decision.to < decision.from
+              );
 
               const href = curLv
                 ? `${basePrefix}/practice/${encodeURIComponent(
@@ -875,13 +1015,13 @@ export default function Dashboard() {
                         Lần gần nhất
                       </span>
                       <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                        {isFinite ? `${lastAcc}%` : "—"}
+                        {hasLastAcc ? `${lastAcc}%` : "—"}
                       </span>
                     </div>
                     <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
-                          isFinite
+                          hasLastAcc
                             ? lastAcc! >= 80
                               ? "bg-emerald-500"
                               : lastAcc! >= 60
@@ -892,7 +1032,7 @@ export default function Dashboard() {
                             : "bg-zinc-400"
                         }`}
                         style={{
-                          width: isFinite
+                          width: hasLastAcc
                             ? `${Math.min(lastAcc!, 100)}%`
                             : "0%",
                         }}

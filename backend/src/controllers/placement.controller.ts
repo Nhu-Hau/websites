@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { PlacementAttempt } from "../models/PlacementAttempt";
 import { User } from "../models/User";
+import { chatService } from "../services/chat.service";
 
 const ITEMS_COLL = process.env.PLACEMENT_PARTS_COLL || "placement_parts";
 const STIMULI_COLL = process.env.PLACEMENT_STIMULI_COLL || "placement_stimuli";
@@ -14,16 +15,26 @@ function accToLevel(acc: number): 1 | 2 | 3 {
   if (acc >= 0.55) return 2;
   return 1;
 }
+function round5_495(n: number): number {
+  return Math.min(495, Math.max(0, Math.round(n / 5) * 5));
+}
+
+function round5_990(n: number): number {
+  return Math.min(990, Math.max(0, Math.round(n / 5) * 5));
+}
+
 function predictToeic(listeningAcc: number, readingAcc: number) {
-  const listening = Math.max(
+  const listeningRaw = Math.max(
     0,
     Math.min(495, Math.round((listeningAcc || 0) * 495))
   );
-  const reading = Math.max(
+  const readingRaw = Math.max(
     0,
     Math.min(495, Math.round((readingAcc || 0) * 495))
   );
-  const overall = listening + reading;
+  const listening = round5_495(listeningRaw);
+  const reading = round5_495(readingRaw);
+  const overall = round5_990(listening + reading);
   return { overall, listening, reading };
 }
 
@@ -302,6 +313,16 @@ export async function submitPlacement(req: Request, res: Response) {
       },
       { new: false }
     );
+
+    // Tự động gửi Learning Insight vào chat (chạy async, không block response)
+    chatService.generateLearningInsight(
+      String(userId),
+      "placement",
+      String(attempt._id),
+      "default"
+    ).catch((err) => {
+      console.error("[submitPlacement] Error generating Learning Insight:", err);
+    });
 
     return res.json({
       attemptId: String(attempt._id),

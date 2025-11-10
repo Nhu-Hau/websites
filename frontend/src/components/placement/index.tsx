@@ -9,7 +9,19 @@ import { groupByStimulus } from "@/utils/groupByStimulus";
 import { StimulusRowCard, StimulusColumnCard } from "../parts/StimulusCards";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { ListChecks, Timer, Send, Play, Clock, Focus } from "lucide-react";
+import {
+  ListChecks,
+  Timer,
+  Send,
+  Play,
+  Clock,
+  Focus,
+  MessageSquare,
+  Loader2,
+} from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
 import { useRouter } from "next/navigation";
 import { useBasePrefix } from "@/hooks/useBasePrefix";
 
@@ -47,9 +59,17 @@ export default function PlacementPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
+  // State cho AI insight
+  const [showInsight, setShowInsight] = useState(false);
+  const [insightLoading, setInsightLoading] = useState(false);
+  const [insight, setInsight] = useState<string | null>(null);
+
   const durationMin = 35;
   const countdownTotal = durationMin * 60;
-  const leftSec = Math.max(0, countdownTotal - timeSec);
+  const leftSec = useMemo(
+    () => Math.max(0, countdownTotal - timeSec),
+    [countdownTotal, timeSec]
+  );
   const progress = total ? Math.round((answered / total) * 100) : 0;
 
   // Guard: Nếu đã có attempt placement, chặn vào trang này và chuyển sang trang kết quả gần nhất
@@ -67,7 +87,9 @@ export default function PlacementPage() {
           const last = Array.isArray(j?.items) ? j.items[0] : undefined;
           const attemptId = last?._id;
           if (attemptId) {
-            toast.info("Bạn đã hoàn thành Placement, chuyển đến trang kết quả.");
+            toast.info(
+              "Bạn đã hoàn thành Placement, chuyển đến trang kết quả."
+            );
             router.replace(
               `${base}/placement/result/${encodeURIComponent(attemptId)}`
             );
@@ -278,12 +300,145 @@ export default function PlacementPage() {
             )}
 
             {resp && (
-              <ResultsPanel
-                resp={resp}
-                timeLabel={fmtTime(resp.timeSec)}
-                onToggleDetails={() => setShowDetails((s: any) => !s)}
-                showDetails={showDetails}
-              />
+              <>
+                <ResultsPanel
+                  resp={resp}
+                  timeLabel={fmtTime(resp.timeSec)}
+                  onToggleDetails={() => setShowDetails((s: any) => !s)}
+                  showDetails={showDetails}
+                />
+
+                {/* Ô nhận xét AI */}
+                {resp.attemptId && user?.access === "premium" && (
+                  <section className="mt-8 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-6 shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        Nhận xét từ AI
+                      </h3>
+                      {!showInsight && (
+                        <button
+                          onClick={async () => {
+                            if (insight) {
+                              setShowInsight(true);
+                              // Mở ChatBox và trigger refresh để hiện message
+                              if (typeof window !== "undefined") {
+                                window.dispatchEvent(
+                                  new CustomEvent("chatbox:open-and-refresh")
+                                );
+                              }
+                              return;
+                            }
+                            if (!resp.attemptId) return;
+                            setInsightLoading(true);
+                            try {
+                              const res = await fetch(
+                                `/api/chat/insight/placement/${resp.attemptId}`,
+                                {
+                                  method: "POST",
+                                  credentials: "include",
+                                }
+                              );
+                              if (!res.ok)
+                                throw new Error("Failed to load insight");
+                              const json = await res.json();
+                              if (json?.data?.insight) {
+                                setInsight(json.data.insight);
+                                setShowInsight(true);
+                                // Mở ChatBox và trigger refresh để hiện message
+                                if (typeof window !== "undefined") {
+                                  window.dispatchEvent(
+                                    new CustomEvent("chatbox:open-and-refresh")
+                                  );
+                                }
+                              } else {
+                                toast.error("Không thể tạo nhận xét");
+                              }
+                            } catch (e) {
+                              console.error(e);
+                              toast.error("Lỗi khi tải nhận xét");
+                            } finally {
+                              setInsightLoading(false);
+                            }
+                          }}
+                          disabled={insightLoading}
+                          className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-500 text-white text-sm font-medium hover:from-purple-700 hover:to-purple-600 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                          {insightLoading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Đang tải...
+                            </>
+                          ) : (
+                            <>
+                              <MessageSquare className="h-4 w-4" />
+                              {insight ? "Xem nhận xét" : "Tải nhận xét"}
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                    {showInsight && insight && (
+                      <div className="prose prose-sm max-w-none dark:prose-invert border-t border-zinc-200 dark:border-zinc-700 pt-4">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          rehypePlugins={[rehypeHighlight]}
+                          components={{
+                            h1: ({ children }) => (
+                              <h1 className="text-base font-bold mb-2">
+                                {children}
+                              </h1>
+                            ),
+                            h2: ({ children }) => (
+                              <h2 className="text-sm font-bold mb-2">
+                                {children}
+                              </h2>
+                            ),
+                            h3: ({ children }) => (
+                              <h3 className="text-xs font-bold mb-1">
+                                {children}
+                              </h3>
+                            ),
+                            p: ({ children }) => (
+                              <p className="mb-2 last:mb-0 text-sm">
+                                {children}
+                              </p>
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="list-disc list-inside mb-2 space-y-1 text-sm">
+                                {children}
+                              </ul>
+                            ),
+                            ol: ({ children }) => (
+                              <ol className="list-decimal list-inside mb-2 space-y-1 text-sm">
+                                {children}
+                              </ol>
+                            ),
+                            li: ({ children }) => (
+                              <li className="text-sm">{children}</li>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-semibold">
+                                {children}
+                              </strong>
+                            ),
+                            em: ({ children }) => (
+                              <em className="italic">{children}</em>
+                            ),
+                          }}
+                        >
+                          {insight}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+                    {showInsight && !insight && (
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4">
+                        Chưa có nhận xét
+                      </p>
+                    )}
+                  </section>
+                )}
+              </>
             )}
           </div>
         )}

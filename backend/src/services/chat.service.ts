@@ -1,12 +1,11 @@
 // src/services/ChatService.ts
 import type { IChatMessage } from "../models/ChatMessage";
+import { ChatMessage } from "../models/ChatMessage";
 import { User, type IUser } from "../models/User";
 import { ProgressAttempt } from "../models/ProgressAttempt";
 import { PracticeAttempt } from "../models/PracticeAttempt";
 import { PlacementAttempt } from "../models/PlacementAttempt";
-import { ChatMessage } from "../models/ChatMessage";
 import { Types } from "mongoose";
-
 
 type OpenAIRole = "system" | "user" | "assistant";
 
@@ -66,23 +65,58 @@ export class ChatService {
   private readonly collections: CollectionInfo[] = [
     {
       name: "users",
-      description: "Thông tin người dùng: tên, email, trình độ, điểm TOEIC dự đoán, level từng part",
-      keywords: ["thông tin", "profile", "trình độ", "level", "toeic", "điểm", "người dùng", "tài khoản"],
+      description:
+        "Thông tin người dùng: tên, email, trình độ, điểm TOEIC dự đoán, level từng part",
+      keywords: [
+        "thông tin",
+        "profile",
+        "trình độ",
+        "level",
+        "toeic",
+        "điểm",
+        "người dùng",
+        "tài khoản",
+      ],
     },
     {
       name: "progressattempts",
-      description: "Kết quả bài test progress: điểm tổng, listening, reading, accuracy, weak parts, thời gian làm bài",
-      keywords: ["progress", "test", "kết quả", "điểm", "accuracy", "weak", "yếu", "cần cải thiện", "lịch sử test"],
+      description:
+        "Kết quả bài test progress: điểm tổng, listening, reading, accuracy, weak parts, thời gian làm bài",
+      keywords: [
+        "progress",
+        "test",
+        "kết quả",
+        "điểm",
+        "accuracy",
+        "weak",
+        "yếu",
+        "cần cải thiện",
+        "lịch sử test",
+      ],
     },
     {
       name: "practiceattempts",
-      description: "Kết quả bài practice theo part và level: partKey, level, số câu đúng/sai, accuracy, thời gian",
-      keywords: ["practice", "luyện tập", "part", "bài tập", "kết quả practice", "lịch sử practice"],
+      description:
+        "Kết quả bài practice theo part và level: partKey, level, số câu đúng/sai, accuracy, thời gian",
+      keywords: [
+        "practice",
+        "luyện tập",
+        "part",
+        "bài tập",
+        "kết quả practice",
+        "lịch sử practice",
+      ],
     },
     {
       name: "placementattempts",
-      description: "Kết quả bài placement test: điểm tổng, listening, reading, level được xác định",
-      keywords: ["placement", "kiểm tra đầu vào", "xác định trình độ", "placement test"],
+      description:
+        "Kết quả bài placement test: điểm tổng, listening, reading, level được xác định",
+      keywords: [
+        "placement",
+        "kiểm tra đầu vào",
+        "xác định trình độ",
+        "placement test",
+      ],
     },
     {
       name: "chatmessages",
@@ -120,33 +154,45 @@ export class ChatService {
     this.providers = providers;
 
     if (this.providers.length === 0) {
-      console.warn("[ChatService] ⚠️ Không có AI provider nào được cấu hình!");
-      console.warn("[ChatService] Vui lòng cấu hình ít nhất một trong các biến môi trường sau:");
+      console.warn("[ChatService] Không có AI provider nào được cấu hình!");
+      console.warn(
+        "[ChatService] Vui lòng cấu hình ít nhất một trong các biến môi trường sau:"
+      );
       console.warn("  - OPENAI_API_KEY (hoặc)");
       console.warn("  - GROQ_API_KEY");
     } else {
       console.log(
-        `[ChatService] ✅ Đã khởi tạo ${this.providers.length} AI provider(s): ${this.providers.map((p) => `${p.name} (${p.model})`).join(", ")}`
+        `[ChatService] Đã khởi tạo ${
+          this.providers.length
+        } AI provider(s): ${this.providers
+          .map((p) => `${p.name} (${p.model})`)
+          .join(", ")}`
       );
     }
   }
 
-  /** System prompt: Trợ lý Tiếng Anh cho người Việt – compact */
-  private buildSystemPrompt(userProfile?: UserProfile): { role: "system"; content: string } {
-    const basePrompt = `Bạn là **Trợ lý Tiếng Anh** cho người Việt, CHỈ nội dung Tiếng Anh (TOEIC/IELTS).
-- **Ngôn ngữ**: Giải thích bằng **Tiếng Việt**, ví dụ bằng **Tiếng Anh** (chỉ đổi khi người dùng yêu cầu).
-- **Phạm vi**: CHỈ nội dung Tiếng Anh (TOEIC/IELTS, ngữ pháp, từ vựng, kỹ năng, dịch, sửa lỗi, lộ trình). Ngoài phạm vi → từ chối lịch sự và gợi ý quay lại chủ đề Tiếng Anh.
-- **Phong cách**: Ngắn gọn, rõ ràng, dùng Markdown vừa phải; thêm emoji nhẹ (📚✅) khi phù hợp.
-- **Thích nghi**: Ước lượng trình độ (beginner/intermediate/advanced) và điều chỉnh ví dụ/bài tập.
-- **Sửa lỗi (format cố định)**: Error → Fix → Why → (Practice 1 câu).
-- **Dịch**: Bản dịch + 2–3 ghi chú từ vựng/cấu trúc nổi bật.
-- **TOEIC**: Nhận diện Part 1–7; đáp án ngắn gọn + keyword/distractor + 1 mẹo nhanh.
-- **Tương tác**: Câu hỏi mơ hồ → hỏi lại **1 câu** kèm 2–3 lựa chọn (A/B/C).
-- **Trung thực**: Thiếu dữ liệu → nói "Chưa đủ thông tin" và đề nghị đầu vào tối thiểu.
-- **Khuôn mẫu trả lời** (tối đa 3 mục):
-  1) **Ý chính** (1–2 câu)
-  2) **Ví dụ/Minh họa**
-  3) **Gợi ý luyện tập/câu hỏi tiếp theo**`;
+  /** System prompt: Trợ lý Tiếng Anh cho người Việt – chuẩn hóa và chuyên nghiệp */
+  private buildSystemPrompt(userProfile?: UserProfile): {
+    role: "system";
+    content: string;
+  } {
+    const basePrompt = `Bạn là trợ lý Tiếng Anh chuyên nghiệp dành cho người Việt, chuyên về TOEIC/IELTS.
+
+**Quy tắc:**
+- Ngôn ngữ: Giải thích bằng Tiếng Việt, ví dụ bằng Tiếng Anh (trừ khi người dùng yêu cầu khác).
+- Phạm vi: Chỉ hỗ trợ Tiếng Anh (TOEIC/IELTS, ngữ pháp, từ vựng, kỹ năng, dịch thuật, sửa lỗi, lộ trình học). Từ chối lịch sự nếu câu hỏi ngoài phạm vi.
+- Phong cách: Ngắn gọn, rõ ràng, dùng Markdown hợp lý. Không dùng emoji.
+- Thích nghi: Đánh giá trình độ (beginner/intermediate/advanced) và điều chỉnh độ khó phù hợp.
+- Sửa lỗi: Lỗi → Sửa → Giải thích → Bài tập 1 câu.
+- Dịch thuật: Bản dịch chính xác kèm 2-3 ghi chú về từ vựng/cấu trúc.
+- TOEIC: Nhận diện Part 1-7, đưa đáp án ngắn gọn kèm keyword/distractor và 1 mẹo làm bài.
+- Tương tác: Nếu câu hỏi mơ hồ, hỏi lại 1 câu kèm 2-3 lựa chọn (A/B/C).
+- Trung thực: Nếu thiếu dữ liệu, nói "Chưa đủ thông tin" và đề nghị cung cấp thông tin cần thiết.
+
+**Cấu trúc trả lời** (tối đa 3 phần):
+1. Ý chính (1-2 câu tóm tắt)
+2. Ví dụ minh họa cụ thể
+3. Gợi ý luyện tập hoặc câu hỏi tiếp theo`;
 
     // Nếu có thông tin user, thêm phần cá nhân hóa
     if (userProfile) {
@@ -177,7 +223,9 @@ export class ChatService {
         2: "Intermediate (Trung cấp)",
         3: "Advanced (Cao cấp)",
       };
-      parts.push(`- **Trình độ**: ${levelMap[profile.level] || `Level ${profile.level}`}`);
+      parts.push(
+        `- **Trình độ**: ${levelMap[profile.level] || `Level ${profile.level}`}`
+      );
     }
 
     // Điểm TOEIC dự đoán
@@ -199,44 +247,59 @@ export class ChatService {
         2: "Intermediate",
         3: "Advanced",
       };
-      
+
       // Xử lý cả hai định dạng: nested { part: { "1": level } } hoặc flat { "part.1": level }
-      let partLevelsEntries: Array<{ partKey: string; partNumber: number; level: number }> = [];
-      
+      let partLevelsEntries: Array<{
+        partKey: string;
+        partNumber: number;
+        level: number;
+      }> = [];
+
       // Kiểm tra dạng nested: { part: { "1": 1, "2": 2, ... } }
-      if (profile.partLevels.part && typeof profile.partLevels.part === "object") {
+      if (
+        profile.partLevels.part &&
+        typeof profile.partLevels.part === "object"
+      ) {
         partLevelsEntries = Object.entries(profile.partLevels.part)
           .map(([partNum, level]) => {
             const partNumber = parseInt(partNum, 10);
-            const levelNum = typeof level === "number" ? level : parseInt(String(level), 10);
+            const levelNum =
+              typeof level === "number" ? level : parseInt(String(level), 10);
             return {
               partKey: `part.${partNumber}`,
               partNumber,
               level: levelNum,
             };
           })
-          .filter((p) => !isNaN(p.partNumber) && p.partNumber >= 1 && p.partNumber <= 7);
+          .filter(
+            (p) =>
+              !isNaN(p.partNumber) && p.partNumber >= 1 && p.partNumber <= 7
+          );
       } else {
         // Dạng flat: { "part.1": 1, "part.2": 2, ... }
         partLevelsEntries = Object.entries(profile.partLevels)
           .map(([part, level]) => {
             const partNum = part.replace(/^part\./, ""); // Extract số từ "part.1" -> "1"
             const partNumber = parseInt(partNum, 10);
-            const levelNum = typeof level === "number" ? level : parseInt(String(level), 10);
+            const levelNum =
+              typeof level === "number" ? level : parseInt(String(level), 10);
             return {
               partKey: part,
               partNumber,
               level: levelNum,
             };
           })
-          .filter((p) => !isNaN(p.partNumber) && p.partNumber >= 1 && p.partNumber <= 7);
+          .filter(
+            (p) =>
+              !isNaN(p.partNumber) && p.partNumber >= 1 && p.partNumber <= 7
+          );
       }
-      
+
       // Chỉ hiển thị nếu có entries hợp lệ
       if (partLevelsEntries.length > 0) {
         // Sắp xếp theo số part
         partLevelsEntries.sort((a, b) => a.partNumber - b.partNumber);
-        
+
         // Format danh sách level từng part - hiển thị chi tiết từng part
         const partLevelsList = partLevelsEntries
           .map(({ partNumber, level }) => {
@@ -244,17 +307,27 @@ export class ChatService {
             return `Part ${partNumber}: ${levelName} (Level ${level})`;
           })
           .join("\n  ");
-        
+
         parts.push(`- **Trình độ theo phần TOEIC**:\n  ${partLevelsList}`);
-        
+
         // Thêm gợi ý về phần cần cải thiện (level thấp nhất)
-        const sortedByLevel = [...partLevelsEntries].sort((a, b) => a.level - b.level);
-        
+        const sortedByLevel = [...partLevelsEntries].sort(
+          (a, b) => a.level - b.level
+        );
+
         if (sortedByLevel.length > 0) {
-          const weakestParts = sortedByLevel.filter((p) => p.level === sortedByLevel[0].level);
+          const weakestParts = sortedByLevel.filter(
+            (p) => p.level === sortedByLevel[0].level
+          );
           if (weakestParts.length > 0 && weakestParts[0].level < 3) {
-            const partsStr = weakestParts.map((p) => `Part ${p.partNumber}`).join(", ");
-            parts.push(`- **Cần tập trung cải thiện**: ${partsStr} (đang ở mức ${levelMap[weakestParts[0].level]})`);
+            const partsStr = weakestParts
+              .map((p) => `Part ${p.partNumber}`)
+              .join(", ");
+            parts.push(
+              `- **Cần tập trung cải thiện**: ${partsStr} (đang ở mức ${
+                levelMap[weakestParts[0].level]
+              })`
+            );
           }
         }
       }
@@ -262,12 +335,13 @@ export class ChatService {
 
     // Loại tài khoản
     if (profile.access) {
-      parts.push(`- **Tài khoản**: ${profile.access === "premium" ? "Premium" : "Free"}`);
+      parts.push(
+        `- **Tài khoản**: ${profile.access === "premium" ? "Premium" : "Free"}`
+      );
     }
 
     return parts.join("\n");
   }
-
 
   /** Bộ lọc “chỉ Tiếng Anh” – nới để không chặn nhầm câu chữa ngữ pháp */
   private isEnglishRelated(messages: Partial<IChatMessage>[]) {
@@ -307,9 +381,11 @@ export class ChatService {
   }
 
   /** Tính level từ điểm TOEIC */
-  private calculateLevelFromToeic(toeicPred: { overall: number | null } | null): number | undefined {
+  private calculateLevelFromToeic(
+    toeicPred: { overall: number | null } | null
+  ): number | undefined {
     if (!toeicPred || toeicPred.overall === null) return undefined;
-    
+
     const score = toeicPred.overall;
     if (score < 400) return 1; // Beginner
     if (score < 700) return 2; // Intermediate
@@ -351,7 +427,9 @@ export class ChatService {
         neededCollections.includes("progressattempts") ||
         neededCollections.length === 0
       ) {
-        const recentProgress = await ProgressAttempt.find({ userId: userObjectId })
+        const recentProgress = await ProgressAttempt.find({
+          userId: userObjectId,
+        })
           .sort({ submittedAt: -1 })
           .limit(5)
           .lean();
@@ -395,14 +473,19 @@ export class ChatService {
         neededCollections.includes("practiceattempts") ||
         neededCollections.length === 0
       ) {
-        const recentPractices = await PracticeAttempt.find({ userId: userObjectId })
+        const recentPractices = await PracticeAttempt.find({
+          userId: userObjectId,
+        })
           .sort({ submittedAt: -1 })
           .limit(10)
           .lean();
 
         if (recentPractices.length > 0) {
-          const partStatsMap: Record<string, { attempts: number; totalAcc: number }> = {};
-          
+          const partStatsMap: Record<
+            string,
+            { attempts: number; totalAcc: number }
+          > = {};
+
           recentPractices.forEach((p) => {
             if (!partStatsMap[p.partKey]) {
               partStatsMap[p.partKey] = { attempts: 0, totalAcc: 0 };
@@ -411,11 +494,15 @@ export class ChatService {
             partStatsMap[p.partKey].totalAcc += p.acc || 0;
           });
 
-          const partStats: Record<string, { attempts: number; avgAccuracy: number }> = {};
+          const partStats: Record<
+            string,
+            { attempts: number; avgAccuracy: number }
+          > = {};
           Object.entries(partStatsMap).forEach(([partKey, stats]) => {
             partStats[partKey] = {
               attempts: stats.attempts,
-              avgAccuracy: Math.round((stats.totalAcc / stats.attempts) * 100) / 100,
+              avgAccuracy:
+                Math.round((stats.totalAcc / stats.attempts) * 100) / 100,
             };
           });
 
@@ -438,7 +525,9 @@ export class ChatService {
         neededCollections.includes("placementattempts") ||
         neededCollections.length === 0
       ) {
-        const recentPlacements = await PlacementAttempt.find({ userId: userObjectId })
+        const recentPlacements = await PlacementAttempt.find({
+          userId: userObjectId,
+        })
           .sort({ submittedAt: -1 })
           .limit(3)
           .lean();
@@ -467,7 +556,7 @@ export class ChatService {
     const parts: string[] = [];
 
     if (context.userProgress) {
-      parts.push("## 📊 Kết quả Progress Test gần đây");
+      parts.push("## Kết quả Progress Test gần đây");
       if (context.userProgress.recentAttempts.length > 0) {
         parts.push(
           `- Tổng số bài test: ${context.userProgress.stats.totalAttempts}`
@@ -477,20 +566,30 @@ export class ChatService {
         );
         if (context.userProgress.stats.weakParts.length > 0) {
           parts.push(
-            `- Phần cần cải thiện: ${context.userProgress.stats.weakParts.join(", ")}`
+            `- Phần cần cải thiện: ${context.userProgress.stats.weakParts.join(
+              ", "
+            )}`
           );
         }
         parts.push("\n**3 bài test gần nhất:**");
-        context.userProgress.recentAttempts.slice(0, 3).forEach((attempt, idx) => {
-          parts.push(
-            `${idx + 1}. Ngày ${new Date(attempt.submittedAt).toLocaleDateString("vi-VN")}: ${attempt.correct}/${attempt.total} câu đúng (${attempt.acc}%), Listening: ${attempt.listening?.acc || "N/A"}%, Reading: ${attempt.reading?.acc || "N/A"}%`
-          );
-        });
+        context.userProgress.recentAttempts
+          .slice(0, 3)
+          .forEach((attempt, idx) => {
+            parts.push(
+              `${idx + 1}. Ngày ${new Date(
+                attempt.submittedAt
+              ).toLocaleDateString("vi-VN")}: ${attempt.correct}/${
+                attempt.total
+              } câu đúng (${attempt.acc}%), Listening: ${
+                attempt.listening?.acc || "N/A"
+              }%, Reading: ${attempt.reading?.acc || "N/A"}%`
+            );
+          });
       }
     }
 
     if (context.practiceHistory) {
-      parts.push("\n## 📝 Lịch sử Practice");
+      parts.push("\n## Lịch sử Practice");
       if (context.practiceHistory.recentPractices.length > 0) {
         parts.push("**Thống kê theo Part:**");
         Object.entries(context.practiceHistory.partStats).forEach(
@@ -501,26 +600,32 @@ export class ChatService {
           }
         );
         parts.push("\n**5 bài practice gần nhất:**");
-        context.practiceHistory.recentPractices.slice(0, 5).forEach((practice, idx) => {
-          parts.push(
-            `${idx + 1}. ${practice.partKey} (Level ${practice.level}): ${practice.correct}/${practice.total} câu đúng (${practice.acc}%)`
-          );
-        });
+        context.practiceHistory.recentPractices
+          .slice(0, 5)
+          .forEach((practice, idx) => {
+            parts.push(
+              `${idx + 1}. ${practice.partKey} (Level ${practice.level}): ${
+                practice.correct
+              }/${practice.total} câu đúng (${practice.acc}%)`
+            );
+          });
       }
     }
 
     if (context.placementHistory) {
-      parts.push("\n## 🎯 Kết quả Placement Test");
+      parts.push("\n## Kết quả Placement Test");
       if (context.placementHistory.latestLevel) {
-        parts.push(
-          `- Level hiện tại: ${context.placementHistory.latestLevel}`
-        );
+        parts.push(`- Level hiện tại: ${context.placementHistory.latestLevel}`);
       }
       if (context.placementHistory.recentPlacements.length > 0) {
         parts.push("**Lịch sử placement:**");
         context.placementHistory.recentPlacements.forEach((placement, idx) => {
           parts.push(
-            `${idx + 1}. Ngày ${new Date(placement.submittedAt).toLocaleDateString("vi-VN")}: Level ${placement.level}, Accuracy: ${placement.acc}%`
+            `${idx + 1}. Ngày ${new Date(
+              placement.submittedAt
+            ).toLocaleDateString("vi-VN")}: Level ${
+              placement.level
+            }, Accuracy: ${placement.acc}%`
           );
         });
       }
@@ -530,7 +635,9 @@ export class ChatService {
   }
 
   /** Lấy thông tin user profile từ database */
-  private async getUserProfile(userId?: string): Promise<UserProfile | undefined> {
+  private async getUserProfile(
+    userId?: string
+  ): Promise<UserProfile | undefined> {
     if (!userId) return undefined;
 
     try {
@@ -589,7 +696,9 @@ export class ChatService {
         } catch (e) {
           errorText = `Failed to read error response: ${e}`;
         }
-        const errorMsg = `${provider.name} API ${resp.status}: ${errorText.slice(0, 2000)}`;
+        const errorMsg = `${provider.name} API ${
+          resp.status
+        }: ${errorText.slice(0, 2000)}`;
         console.error(`[ChatService] ${errorMsg}`);
         throw new Error(errorMsg);
       }
@@ -598,35 +707,44 @@ export class ChatService {
       try {
         data = await resp.json();
       } catch (e) {
-        console.error(`[ChatService] ${provider.name} failed to parse JSON response:`, e);
+        console.error(
+          `[ChatService] ${provider.name} failed to parse JSON response:`,
+          e
+        );
         throw new Error(`${provider.name} invalid JSON response`);
       }
-      
+
       if (!data?.choices?.[0]?.message?.content) {
-        console.error(`[ChatService] ${provider.name} response không có content:`, JSON.stringify(data).slice(0, 500));
+        console.error(
+          `[ChatService] ${provider.name} response không có content:`,
+          JSON.stringify(data).slice(0, 500)
+        );
         throw new Error(`${provider.name} response không có content`);
       }
 
       const text = data.choices[0].message.content.trim();
-      
+
       if (!text) {
         throw new Error(`${provider.name} trả về content rỗng`);
       }
-      
+
       return text;
     } catch (err) {
       clearTimeout(timeoutId);
-      
+
       // Nếu là timeout
-      if (err instanceof Error && err.name === 'AbortError') {
+      if (err instanceof Error && err.name === "AbortError") {
         throw new Error(`${provider.name} request timeout (30s)`);
       }
-      
+
       // Nếu là network error
-      if (err instanceof TypeError && (err.message.includes('fetch') || err.message.includes('network'))) {
+      if (
+        err instanceof TypeError &&
+        (err.message.includes("fetch") || err.message.includes("network"))
+      ) {
         throw new Error(`${provider.name} network error: ${err.message}`);
       }
-      
+
       // Re-throw các lỗi khác
       throw err;
     }
@@ -638,8 +756,15 @@ export class ChatService {
     userId?: string
   ): Promise<string> {
     try {
-      const lastMessage = messages[messages.length - 1]?.content?.slice(0, 50) || "";
-      console.log(`[ChatService] generateResponse được gọi với ${messages.length} messages, userId: ${userId || "none"}, lastMessage: "${lastMessage}..."`);
+      const lastMessage =
+        messages[messages.length - 1]?.content?.slice(0, 50) || "";
+      console.log(
+        `[ChatService] generateResponse được gọi với ${
+          messages.length
+        } messages, userId: ${
+          userId || "none"
+        }, lastMessage: "${lastMessage}..."`
+      );
 
       // Chặn sớm những câu hỏi ngoài phạm vi
       if (!this.isEnglishRelated(messages)) {
@@ -649,24 +774,24 @@ export class ChatService {
 
       // Không có provider nào -> trả lỗi
       if (this.providers.length === 0) {
-        console.error("[ChatService] ❌ Không có providers để gọi!");
+        console.error("[ChatService] Không có providers để gọi!");
         return "Xin lỗi, hệ thống chưa được cấu hình AI provider. Vui lòng liên hệ quản trị viên.";
       }
 
       // Lấy thông tin user để cá nhân hóa (nếu có userId)
       const userProfile = await this.getUserProfile(userId);
-      
+
       // Lấy context từ database dựa trên câu hỏi
       const lastQuestion = messages[messages.length - 1]?.content || "";
       const dbContext = await this.getDatabaseContext(lastQuestion, userId);
       const dbContextText = this.formatDatabaseContext(dbContext);
-      
+
       // Xây dựng system prompt với context từ database
       let systemPrompt = this.buildSystemPrompt(userProfile);
       if (dbContextText) {
         systemPrompt = {
           role: "system",
-          content: `${systemPrompt.content}\n\n## 📚 Dữ liệu từ hệ thống\n${dbContextText}\n\n**Lưu ý**: Sử dụng thông tin trên để đưa ra câu trả lời chính xác và cá nhân hóa dựa trên lịch sử học tập của người dùng.`,
+          content: `${systemPrompt.content}\n\n## Dữ liệu từ hệ thống\n${dbContextText}\n\n**Lưu ý**: Sử dụng thông tin trên để đưa ra câu trả lời chính xác và cá nhân hóa dựa trên lịch sử học tập của người dùng.`,
         };
       }
 
@@ -682,33 +807,43 @@ export class ChatService {
 
       // Thử từng provider theo thứ tự, nếu fail thì chuyển sang provider tiếp theo
       let lastError: Error | null = null;
-      
+
       for (let i = 0; i < this.providers.length; i++) {
         const provider = this.providers[i];
-        
+
         try {
-          console.log(`[ChatService] Đang thử provider: ${provider.name} (${i + 1}/${this.providers.length})`);
-          
-          const response = await this.callProvider(provider, normalizedMessages, systemPrompt);
-          
+          console.log(
+            `[ChatService] Đang thử provider: ${provider.name} (${i + 1}/${
+              this.providers.length
+            })`
+          );
+
+          const response = await this.callProvider(
+            provider,
+            normalizedMessages,
+            systemPrompt
+          );
+
           // Nếu thành công và không phải provider đầu tiên, log để theo dõi
           if (i > 0) {
-            console.log(`[ChatService] ✅ Fallback thành công: ${provider.name} đã thay thế ${this.providers[0].name}`);
+            console.log(
+              `[ChatService] Fallback thành công: ${provider.name} đã thay thế ${this.providers[0].name}`
+            );
           }
-          
+
           return response;
-    } catch (err) {
+        } catch (err) {
           const error = err instanceof Error ? err : new Error(String(err));
           lastError = error;
-          
+
           console.error(
-            `[ChatService] ❌ Provider ${provider.name} thất bại:`,
+            `[ChatService] Provider ${provider.name} thất bại:`,
             error.message
           );
-          
+
           // Nếu không phải provider cuối cùng, tiếp tục thử provider tiếp theo
           if (i < this.providers.length - 1) {
-            console.log(`[ChatService] ⚠️ Chuyển sang provider dự phòng...`);
+            console.log(`[ChatService] Chuyển sang provider dự phòng...`);
             continue;
           }
         }
@@ -716,16 +851,22 @@ export class ChatService {
 
       // Tất cả providers đều fail
       if (lastError) {
-        console.error("[ChatService] ❌ Tất cả providers đều thất bại. Lỗi cuối cùng:", {
-          message: lastError.message,
-          stack: lastError.stack,
-        });
-        
+        console.error(
+          "[ChatService] Tất cả providers đều thất bại. Lỗi cuối cùng:",
+          {
+            message: lastError.message,
+            stack: lastError.stack,
+          }
+        );
+
         // Trả về message lỗi cụ thể hơn
         const errorMsg = lastError.message || "Unknown error";
         if (errorMsg.includes("401") || errorMsg.includes("Unauthorized")) {
           return "Xin lỗi, API key không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.";
-        } else if (errorMsg.includes("429") || errorMsg.includes("rate limit")) {
+        } else if (
+          errorMsg.includes("429") ||
+          errorMsg.includes("rate limit")
+        ) {
           return "Xin lỗi, đã vượt quá giới hạn yêu cầu. Vui lòng thử lại sau vài phút.";
         } else if (errorMsg.includes("timeout")) {
           return "Xin lỗi, yêu cầu đã quá thời gian chờ (30s). Vui lòng thử lại sau.";
@@ -734,7 +875,9 @@ export class ChatService {
         }
         return `Xin lỗi, đã xảy ra lỗi khi tạo phản hồi: ${errorMsg}. Vui lòng thử lại sau.`;
       } else {
-        console.error("[ChatService] ❌ Không có providers nào được cấu hình hoặc tất cả đều fail mà không có error");
+        console.error(
+          "[ChatService] Không có providers nào được cấu hình hoặc tất cả đều fail mà không có error"
+        );
         return "Xin lỗi, hệ thống AI chưa được cấu hình. Vui lòng liên hệ quản trị viên.";
       }
     } catch (err) {
@@ -747,6 +890,408 @@ export class ChatService {
     }
   }
 
+  /**
+   * Tạo Learning Insight tự động sau khi nộp bài test
+   * @param userId - ID người dùng
+   * @param testType - Loại test: "placement" | "practice" | "progress"
+   * @param attemptId - ID của attempt vừa nộp
+   * @param sessionId - Session ID của chat (mặc định: "default")
+   */
+  async generateLearningInsight(
+    userId: string,
+    testType: "placement" | "practice" | "progress",
+    attemptId: string,
+    sessionId: string = "default"
+  ): Promise<void> {
+    try {
+      console.log(
+        `[ChatService] Generating Learning Insight for userId: ${userId}, testType: ${testType}, attemptId: ${attemptId}`
+      );
+
+      // Lấy thông tin user
+      const user = await User.findById(userId).lean<IUser>();
+      if (!user) {
+        console.error(`[ChatService] User not found: ${userId}`);
+        return;
+      }
+
+      // Lấy attempt vừa nộp
+      let currentAttempt: any = null;
+      const attemptObjectId = new Types.ObjectId(attemptId);
+
+      if (testType === "progress") {
+        currentAttempt = await ProgressAttempt.findById(attemptObjectId).lean();
+      } else if (testType === "practice") {
+        currentAttempt = await PracticeAttempt.findById(attemptObjectId).lean();
+      } else if (testType === "placement") {
+        currentAttempt = await PlacementAttempt.findById(
+          attemptObjectId
+        ).lean();
+      }
+
+      if (!currentAttempt) {
+        console.error(`[ChatService] Attempt not found: ${attemptId}`);
+        return;
+      }
+
+      // Lấy attempt trước đó để so sánh
+      let previousAttempt: any = null;
+      const userObjectId = new Types.ObjectId(userId);
+
+      if (testType === "progress") {
+        const previousAttempts = await ProgressAttempt.find({
+          userId: userObjectId,
+          _id: { $ne: attemptObjectId },
+        })
+          .sort({ submittedAt: -1 })
+          .limit(1)
+          .lean();
+        previousAttempt = previousAttempts[0] || null;
+      } else if (testType === "practice") {
+        const previousAttempts = await PracticeAttempt.find({
+          userId: userObjectId,
+          partKey: currentAttempt.partKey,
+          _id: { $ne: attemptObjectId },
+        })
+          .sort({ submittedAt: -1 })
+          .limit(1)
+          .lean();
+        previousAttempt = previousAttempts[0] || null;
+      } else if (testType === "placement") {
+        // Placement chỉ làm 1 lần nên không có previous
+        previousAttempt = null;
+      }
+
+      // Lấy mục tiêu TOEIC
+      const toeicGoal = user.toeicGoal;
+      const currentScore = user.toeicPred?.overall ?? null;
+
+      // Tính progress nếu có mục tiêu
+      let progressPercent = null;
+      if (
+        toeicGoal &&
+        toeicGoal.targetScore !== null &&
+        toeicGoal.startScore !== null &&
+        currentScore !== null
+      ) {
+        const diff = toeicGoal.targetScore - toeicGoal.startScore;
+        if (diff > 0) {
+          progressPercent = Math.min(
+            100,
+            Math.max(0, ((currentScore - toeicGoal.startScore) / diff) * 100)
+          );
+        }
+      }
+
+      // Lấy activity data (heatmap) - 30 ngày gần nhất
+      const [practiceAttempts, progressAttempts, placementAttempts] =
+        await Promise.all([
+          PracticeAttempt.find({ userId: userObjectId })
+            .select("submittedAt createdAt")
+            .lean(),
+          ProgressAttempt.find({ userId: userObjectId })
+            .select("submittedAt createdAt")
+            .lean(),
+          PlacementAttempt.find({ userId: userObjectId })
+            .select("submittedAt createdAt")
+            .lean(),
+        ]);
+
+      const allAttempts: Array<{ date: Date }> = [
+        ...practiceAttempts.map((a) => ({
+          date: new Date(a.submittedAt || (a as any).createdAt || Date.now()),
+        })),
+        ...progressAttempts.map((a) => ({
+          date: new Date(a.submittedAt || (a as any).createdAt || Date.now()),
+        })),
+        ...placementAttempts.map((a) => ({
+          date: new Date(a.submittedAt || (a as any).createdAt || Date.now()),
+        })),
+      ];
+
+      // Nhóm theo ngày (30 ngày gần nhất)
+      const activityMap = new Map<string, number>();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      for (const attempt of allAttempts) {
+        if (attempt.date >= thirtyDaysAgo) {
+          const dateStr = attempt.date.toISOString().split("T")[0];
+          activityMap.set(dateStr, (activityMap.get(dateStr) || 0) + 1);
+        }
+      }
+
+      const activityData = Array.from(activityMap.entries()).map(
+        ([date, count]) => ({
+          date,
+          count,
+        })
+      );
+
+      const totalActivityDays = activityData.filter((d) => d.count > 0).length;
+      const totalActivityAttempts = activityData.reduce(
+        (sum, d) => sum + d.count,
+        0
+      );
+
+      // Xây dựng prompt cho AI
+      const insightPrompt = this.buildInsightPrompt(
+        testType,
+        currentAttempt,
+        previousAttempt,
+        toeicGoal,
+        currentScore,
+        progressPercent,
+        totalActivityDays,
+        totalActivityAttempts,
+        user.name
+      );
+
+      // Gọi AI để tạo insight
+      const userProfile = await this.getUserProfile(userId);
+      const systemPrompt = this.buildSystemPrompt(userProfile);
+
+      const messages: Array<{ role: OpenAIRole; content: string }> = [
+        { role: "user", content: insightPrompt },
+      ];
+
+      let insightText = "";
+      let lastError: Error | null = null;
+
+      for (let i = 0; i < this.providers.length; i++) {
+        const provider = this.providers[i];
+        try {
+          insightText = await this.callProvider(
+            provider,
+            messages,
+            systemPrompt
+          );
+          break;
+        } catch (err) {
+          const error = err instanceof Error ? err : new Error(String(err));
+          lastError = error;
+          if (i < this.providers.length - 1) {
+            continue;
+          }
+        }
+      }
+
+      if (!insightText && lastError) {
+        console.error(
+          `[ChatService] Failed to generate insight: ${lastError.message}`
+        );
+        return;
+      }
+
+      // Lưu insight vào chat
+      const insightMessage = new ChatMessage({
+        userId,
+        role: "assistant",
+        content: insightText,
+        sessionId,
+      });
+      await insightMessage.save();
+
+      console.log(
+        `[ChatService] Learning Insight saved to chat for userId: ${userId}`
+      );
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      console.error(`[ChatService] Error generating Learning Insight:`, {
+        message: error.message,
+        stack: error.stack,
+      });
+    }
+  }
+
+  /** Xây dựng prompt cho Learning Insight */
+  private buildInsightPrompt(
+    testType: "placement" | "practice" | "progress",
+    currentAttempt: any,
+    previousAttempt: any | null,
+    toeicGoal: any | null,
+    currentScore: number | null,
+    progressPercent: number | null,
+    totalActivityDays: number,
+    totalActivityAttempts: number,
+    userName: string
+  ): string {
+    const parts: string[] = [];
+
+    parts.push(
+      `Bạn là trợ lý học tập chuyên nghiệp. Hãy phân tích kết quả bài test vừa nộp và đưa ra nhận xét cá nhân hóa cho ${userName}.`
+    );
+
+    // Thông tin bài test hiện tại
+    if (testType === "progress") {
+      parts.push(`\n## Kết quả Progress Test vừa nộp`);
+      parts.push(`- Tổng số câu: ${currentAttempt.total}`);
+      parts.push(`- Số câu đúng: ${currentAttempt.correct}`);
+      parts.push(`- Độ chính xác: ${(currentAttempt.acc * 100).toFixed(1)}%`);
+      parts.push(
+        `- Listening: ${currentAttempt.listening?.correct || 0}/${
+          currentAttempt.listening?.total || 0
+        } (${((currentAttempt.listening?.acc || 0) * 100).toFixed(1)}%)`
+      );
+      parts.push(
+        `- Reading: ${currentAttempt.reading?.correct || 0}/${
+          currentAttempt.reading?.total || 0
+        } (${((currentAttempt.reading?.acc || 0) * 100).toFixed(1)}%)`
+      );
+      if (currentAttempt.predicted) {
+        parts.push(
+          `- Điểm TOEIC dự đoán: Tổng ${
+            currentAttempt.predicted.overall || "N/A"
+          }, Listening ${
+            currentAttempt.predicted.listening || "N/A"
+          }, Reading ${currentAttempt.predicted.reading || "N/A"}`
+        );
+      }
+      if (currentAttempt.weakParts && currentAttempt.weakParts.length > 0) {
+        parts.push(
+          `- Phần cần cải thiện: ${currentAttempt.weakParts.join(", ")}`
+        );
+      }
+      if (currentAttempt.partStats) {
+        parts.push(`\n**Chi tiết theo Part:**`);
+        Object.entries(currentAttempt.partStats).forEach(
+          ([part, stats]: [string, any]) => {
+            parts.push(
+              `- ${part}: ${stats.correct || 0}/${stats.total || 0} (${(
+                (stats.acc || 0) * 100
+              ).toFixed(1)}%)`
+            );
+          }
+        );
+      }
+    } else if (testType === "practice") {
+      parts.push(`\n## Kết quả Practice Test vừa nộp`);
+      parts.push(`- Part: ${currentAttempt.partKey}`);
+      parts.push(`- Level: ${currentAttempt.level}`);
+      parts.push(
+        `- Số câu đúng: ${currentAttempt.correct}/${currentAttempt.total}`
+      );
+      parts.push(`- Độ chính xác: ${(currentAttempt.acc * 100).toFixed(1)}%`);
+    } else if (testType === "placement") {
+      parts.push(`\n## Kết quả Placement Test vừa nộp`);
+      parts.push(`- Tổng số câu: ${currentAttempt.total}`);
+      parts.push(`- Số câu đúng: ${currentAttempt.correct}`);
+      parts.push(`- Độ chính xác: ${(currentAttempt.acc * 100).toFixed(1)}%`);
+      parts.push(
+        `- Listening: ${currentAttempt.listening?.correct || 0}/${
+          currentAttempt.listening?.total || 0
+        } (${((currentAttempt.listening?.acc || 0) * 100).toFixed(1)}%)`
+      );
+      parts.push(
+        `- Reading: ${currentAttempt.reading?.correct || 0}/${
+          currentAttempt.reading?.total || 0
+        } (${((currentAttempt.reading?.acc || 0) * 100).toFixed(1)}%)`
+      );
+      parts.push(`- Level được xác định: ${currentAttempt.level}`);
+      if (currentAttempt.predicted) {
+        parts.push(
+          `- Điểm TOEIC dự đoán: Tổng ${
+            currentAttempt.predicted.overall || "N/A"
+          }, Listening ${
+            currentAttempt.predicted.listening || "N/A"
+          }, Reading ${currentAttempt.predicted.reading || "N/A"}`
+        );
+      }
+      if (currentAttempt.weakParts && currentAttempt.weakParts.length > 0) {
+        parts.push(
+          `- Phần cần cải thiện: ${currentAttempt.weakParts.join(", ")}`
+        );
+      }
+    }
+
+    // So sánh với bài trước
+    if (previousAttempt) {
+      parts.push(`\n## So sánh với bài trước`);
+      if (testType === "progress") {
+        const accChange = (currentAttempt.acc - previousAttempt.acc) * 100;
+        parts.push(
+          `- Độ chính xác: ${(previousAttempt.acc * 100).toFixed(1)}% → ${(
+            currentAttempt.acc * 100
+          ).toFixed(1)}% (${accChange >= 0 ? "+" : ""}${accChange.toFixed(1)}%)`
+        );
+        if (previousAttempt.predicted && currentAttempt.predicted) {
+          const scoreChange =
+            (currentAttempt.predicted.overall || 0) -
+            (previousAttempt.predicted.overall || 0);
+          if (scoreChange !== 0) {
+            parts.push(
+              `- Điểm TOEIC: ${previousAttempt.predicted.overall || "N/A"} → ${
+                currentAttempt.predicted.overall || "N/A"
+              } (${scoreChange >= 0 ? "+" : ""}${scoreChange} điểm)`
+            );
+          }
+        }
+      } else if (testType === "practice") {
+        const accChange = (currentAttempt.acc - previousAttempt.acc) * 100;
+        parts.push(
+          `- Độ chính xác: ${(previousAttempt.acc * 100).toFixed(1)}% → ${(
+            currentAttempt.acc * 100
+          ).toFixed(1)}% (${accChange >= 0 ? "+" : ""}${accChange.toFixed(1)}%)`
+        );
+      }
+    }
+
+    // Mục tiêu TOEIC và progress
+    if (toeicGoal && toeicGoal.targetScore !== null) {
+      parts.push(`\n## Mục tiêu TOEIC`);
+      parts.push(`- Điểm khởi đầu: ${toeicGoal.startScore || "N/A"}`);
+      parts.push(`- Điểm mục tiêu: ${toeicGoal.targetScore}`);
+      parts.push(`- Điểm hiện tại: ${currentScore || "Chưa có"}`);
+      if (progressPercent !== null) {
+        parts.push(`- Tiến độ: ${progressPercent.toFixed(1)}%`);
+        parts.push(
+          `\n**Thanh tiến độ:** [${"█".repeat(
+            Math.floor(progressPercent / 5)
+          )}${"░".repeat(
+            20 - Math.floor(progressPercent / 5)
+          )}] ${progressPercent.toFixed(1)}%`
+        );
+      }
+    }
+
+    // Activity heatmap
+    if (totalActivityAttempts > 0) {
+      parts.push(`\n## Hoạt động học tập (30 ngày gần nhất)`);
+      parts.push(`- Số ngày có hoạt động: ${totalActivityDays} ngày`);
+      parts.push(`- Tổng số bài đã làm: ${totalActivityAttempts} bài`);
+    }
+
+    // Yêu cầu AI
+    parts.push(`\n## Yêu cầu phân tích`);
+    parts.push(`Đưa ra nhận xét cá nhân hóa bao gồm:`);
+    parts.push(`1. Phân tích điểm mạnh: Những phần làm tốt và lý do.`);
+    parts.push(`2. Phân tích điểm yếu: Những phần cần cải thiện và lý do.`);
+    parts.push(
+      `3. So sánh tiến bộ: ${
+        previousAttempt
+          ? "So sánh với bài trước, đánh giá tiến bộ."
+          : "Đây là bài test đầu tiên, đánh giá tổng quan."
+      }`
+    );
+    parts.push(
+      `4. Gợi ý cải thiện: Đưa ra 3-5 gợi ý cụ thể như luyện ngữ pháp (Part 5, 6), từ loại (Part 5), cấu trúc câu (Part 6), kỹ năng nghe (Listening), đọc hiểu (Reading).`
+    );
+    parts.push(`5. Động viên: Lời động viên phù hợp với kết quả.`);
+    if (progressPercent !== null) {
+      parts.push(
+        `6. Tiến độ mục tiêu: Nhận xét về tiến độ đạt mục tiêu TOEIC và lời khuyên.`
+      );
+    }
+
+    parts.push(`\n**Lưu ý:**`);
+    parts.push(`- Ngôn ngữ thân thiện, động viên`);
+    parts.push(`- Gợi ý cụ thể, có thể thực hiện`);
+    parts.push(`- Dùng Markdown hợp lý`);
+    parts.push(`- Không dùng emoji`);
+    parts.push(`- Độ dài 300-500 từ`);
+
+    return parts.join("\n");
+  }
 }
 
 export const chatService = new ChatService();

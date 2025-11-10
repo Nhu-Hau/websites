@@ -31,6 +31,12 @@ export interface IProgressMeta {
   lastTestVersion?: number | null;
 }
 
+export interface IToeicGoal {
+  targetScore: number | null; // Mục tiêu TOEIC (ví dụ: 700)
+  startScore: number | null; // Điểm khởi đầu khi đặt mục tiêu (ví dụ: 440)
+  setAt?: Date | null; // Thời điểm đặt mục tiêu
+}
+
 export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
@@ -56,6 +62,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   progressMeta?: IProgressMeta;
+  toeicGoal?: IToeicGoal;
 
   comparePassword(candidate: string): Promise<boolean>;
 }
@@ -84,6 +91,15 @@ const ProgressMetaSchema = new Schema<IProgressMeta>(
     lastSuggestedAt: { type: Date, default: null },
     completedTests: { type: [Number], default: [] },
     lastTestVersion: { type: Number, default: null },
+  },
+  { _id: false }
+);
+
+const ToeicGoalSchema = new Schema<IToeicGoal>(
+  {
+    targetScore: { type: Number, default: null },
+    startScore: { type: Number, default: null },
+    setAt: { type: Date, default: null },
   },
   { _id: false }
 );
@@ -153,6 +169,8 @@ const userSchema = new Schema<IUser>(
       type: ProgressMetaSchema,
       default: () => ({ completedTests: [] }),
     },
+
+    toeicGoal: { type: ToeicGoalSchema, default: null },
   },
   { timestamps: true, versionKey: false }
 );

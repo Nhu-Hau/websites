@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import type { Item, Stimulus, ChoiceId } from "@/types/tests";
 import type { GradeResp } from "@/types/placement";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
+import { useAutoSave } from "./useAutoSave";
 
 export type UsePlacementTestReturn = {
   items: Item[];
@@ -84,6 +85,29 @@ export function usePlacementTest(): UsePlacementTestReturn {
   const total = items.length;
   const answered = useMemo(() => Object.keys(answers).length, [answers]);
 
+  // Auto-save: khôi phục dữ liệu
+  const handleRestore = useCallback(
+    (data: { answers: Record<string, ChoiceId>; timeSec: number; started: boolean }) => {
+      // Khôi phục nếu có answers hoặc đã started
+      if ((data.answers && Object.keys(data.answers).length > 0) || data.started) {
+        if (data.answers && Object.keys(data.answers).length > 0) {
+          setAnswers(data.answers);
+        }
+        setTimeSec(data.timeSec);
+        if (data.started) {
+          setStarted(true);
+        }
+        toast.info("Đã khôi phục dữ liệu bài làm trước đó", {
+          duration: 3000,
+        });
+      }
+    },
+    []
+  );
+
+  // Auto-save: sử dụng hook (placement test luôn có ID cố định)
+  useAutoSave("placement", "default", answers, timeSec, started, resp, handleRestore);
+
   async function submit() {
     const res = await fetch("/api/placement/submit", {
       method: "POST",
@@ -124,6 +148,11 @@ export function usePlacementTest(): UsePlacementTestReturn {
       toast.success(`Hoàn thành bài kiểm tra (${acc}% chính xác)`, {
         classNames: { toast: "border border-blue-300 bg-blue-50 text-blue-700 font-semibold" },
       });
+    }
+
+    // Dispatch event để ChatBox tự động refresh và hiển thị Learning Insight
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("test-submitted", { detail: { type: "placement" } }));
     }
 
     try { await refresh(); } catch {}

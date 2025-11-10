@@ -11,7 +11,9 @@ import TestCard, {
   TestCardSkeleton,
 } from "@/components/parts/TestCard";
 import { History, Headphones, BookOpen, ChevronRight } from "lucide-react";
-import MandatoryPlacementModal from "@/components/parts/MandatoryPlacement";
+import MandatoryPlacementModal from "@/components/parts/MandatoryPlacement"; 
+import LevelSuggestModal from "@/components/parts/LevelSuggestModal";
+import { useAuth } from "@/context/AuthContext";
 
 /* ====== META ====== */
 const PART_META: Record<
@@ -60,6 +62,7 @@ export default function PracticePart() {
   const base = useBasePrefix("vi");
   const { partKey } = useParams<{ partKey: string }>();
   const sp = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
 
   const levelParam = Number(sp.get("level") ?? 1);
   const level: L = [1, 2, 3].includes(levelParam) ? (levelParam as L) : 1;
@@ -89,8 +92,15 @@ export default function PracticePart() {
   );
   const [showPlacementModal, setShowPlacementModal] = React.useState(false);
 
-  // ---- Fetch trạng thái placement (NEW)
+  // ---- Fetch trạng thái placement (NEW) - chỉ khi user đã đăng nhập
   React.useEffect(() => {
+    // Nếu chưa đăng nhập hoặc đang loading auth, không kiểm tra placement
+    if (authLoading || !user) {
+      setMustDoPlacement(false);
+      setShowPlacementModal(false);
+      return;
+    }
+
     let mounted = true;
     (async () => {
       try {
@@ -108,10 +118,12 @@ export default function PracticePart() {
         }
         if (!mounted) return;
         setMustDoPlacement(!done);
-        if (!done) setShowPlacementModal(true);
+        if (!done) {
+          setShowPlacementModal(true);
+        }
       } catch {
         if (!mounted) return;
-        // Nếu lỗi, an toàn: yêu cầu placement
+        // Nếu lỗi, an toàn: yêu cầu placement (chỉ khi đã đăng nhập)
         setMustDoPlacement(true);
         setShowPlacementModal(true);
       }
@@ -119,7 +131,7 @@ export default function PracticePart() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [user, authLoading]);
 
   // ---- Fetch gợi ý level theo user (giữ nguyên)
   React.useEffect(() => {
@@ -293,7 +305,7 @@ export default function PracticePart() {
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: Math.max(tests?.length ?? 0, 9) }).map(
                 (_, i) => (
-                  <TestCardSkeleton key={i} />
+                <TestCardSkeleton key={i} />
                 )
               )}
             </div>
@@ -370,6 +382,24 @@ export default function PracticePart() {
         open={!!showPlacementModal}
         onGoPlacement={goPlacement}
       />
+      {suggestedLevel != null && (
+        <LevelSuggestModal
+          open={showSuggestModal}
+          currentLevel={level}
+          suggestedLevel={suggestedLevel}
+          onContinue={() => {
+            setShowSuggestModal(false);
+            if (pendingLink) {
+              router.push(pendingLink);
+              setPendingLink(null);
+            }
+          }}
+          onCancel={() => {
+            setShowSuggestModal(false);
+            setPendingLink(null);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-html-link-for-pages */
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,6 +30,8 @@ type Msg = {
   createdAt?: string;
   /** hiển thị bong bóng chờ */
   pending?: boolean;
+  /** Đánh dấu là Learning Insight message */
+  isLearningInsight?: boolean;
 };
 
 function uid() {
@@ -133,6 +136,225 @@ function MessageContent({
   );
 }
 
+// Component để render Learning Insight với progress bar và heatmap
+function LearningInsightCard({ insightText }: { insightText: string }) {
+  const [goalData, setGoalData] = useState<{
+    hasGoal: boolean;
+    goal: { targetScore: number; startScore: number } | null;
+    currentScore: number | null;
+    progress: number | null;
+  } | null>(null);
+  const [activityData, setActivityData] = useState<{
+    activityData: Array<{ date: string; count: number }>;
+    stats: {
+      totalDays: number;
+      totalAttempts: number;
+      currentStreak: number;
+      maxStreak: number;
+    };
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchData() {
+      try {
+        const [goalRes, activityRes] = await Promise.all([
+          fetch("/api/dashboard/goal", {
+            credentials: "include",
+            cache: "no-store",
+          }),
+          fetch("/api/dashboard/activity", {
+            credentials: "include",
+            cache: "no-store",
+          }),
+        ]);
+
+        if (cancelled) return;
+
+        const goalJson = goalRes.ok ? await goalRes.json() : null;
+        const activityJson = activityRes.ok ? await activityRes.json() : null;
+
+        setGoalData(goalJson);
+        setActivityData(activityJson);
+      } catch (err) {
+        console.error("Failed to fetch Learning Insight data:", err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchData();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Render heatmap mini (30 ngày gần nhất)
+  const renderMiniHeatmap = () => {
+    if (!activityData || activityData.activityData.length === 0) {
+      return (
+        <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">
+          Chưa có dữ liệu hoạt động
+        </div>
+      );
+    }
+
+    const activityMap = new Map<string, number>();
+    activityData.activityData.forEach((it) =>
+      activityMap.set(it.date, it.count)
+    );
+
+    // Lấy 30 ngày gần nhất
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const days: Array<{ date: string; count: number }> = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${String(d.getDate()).padStart(2, "0")}`;
+      days.push({ date: dateStr, count: activityMap.get(dateStr) || 0 });
+    }
+
+    const maxCount = Math.max(...days.map((d) => d.count), 1);
+
+    return (
+      <div className="flex flex-wrap gap-1">
+        {days.map((day, idx) => {
+          const intensity =
+            maxCount > 0
+              ? Math.min(4, Math.ceil((day.count / maxCount) * 4))
+              : 0;
+          const colors = [
+            "bg-gray-100 dark:bg-zinc-800",
+            "bg-green-200 dark:bg-green-900/40",
+            "bg-green-400 dark:bg-green-700/60",
+            "bg-green-600 dark:bg-green-600",
+            "bg-green-700 dark:bg-green-500",
+          ];
+          return (
+            <div
+              key={idx}
+              className={`w-2.5 h-2.5 rounded-sm ${colors[intensity]}`}
+              title={`${day.date}: ${day.count} bài`}
+            />
+          );
+        })}
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Insight Text */}
+      <div className="prose prose-sm max-w-none dark:prose-invert">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeHighlight]}
+          components={{
+            h1: ({ children }) => (
+              <h1 className="text-base font-bold mb-2">{children}</h1>
+            ),
+            h2: ({ children }) => (
+              <h2 className="text-sm font-bold mb-2">{children}</h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="text-xs font-bold mb-1">{children}</h3>
+            ),
+            p: ({ children }) => (
+              <p className="mb-2 last:mb-0 text-sm">{children}</p>
+            ),
+            ul: ({ children }) => (
+              <ul className="list-disc list-inside mb-2 space-y-1 text-sm">
+                {children}
+              </ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="list-decimal list-inside mb-2 space-y-1 text-sm">
+                {children}
+              </ol>
+            ),
+            li: ({ children }) => <li className="text-sm">{children}</li>,
+            strong: ({ children }) => (
+              <strong className="font-semibold">{children}</strong>
+            ),
+            em: ({ children }) => <em className="italic">{children}</em>,
+          }}
+        >
+          {insightText}
+        </ReactMarkdown>
+      </div>
+
+      {/* Progress Bar & Heatmap */}
+      {!loading && (
+        <div className="space-y-3 pt-3 border-t border-gray-200 dark:border-zinc-700">
+          {/* Progress Bar */}
+          {goalData?.hasGoal && goalData.progress !== null ? (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-medium text-gray-700 dark:text-gray-300">
+                  Tiến độ đạt mục tiêu TOEIC
+                </span>
+                <span className="font-semibold text-sky-600 dark:text-sky-400">
+                  {Math.round(goalData.progress)}%
+                </span>
+              </div>
+              <div className="w-full h-2.5 bg-gray-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-sky-500 to-indigo-600 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min(100, Math.max(0, goalData.progress))}%`,
+                  }}
+                />
+              </div>
+              {goalData.goal && goalData.currentScore !== null && (
+                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <span>
+                    {goalData.goal.startScore} → {goalData.currentScore} /{" "}
+                    {goalData.goal.targetScore}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg">
+              💡 Hãy đặt mục tiêu TOEIC để theo dõi tiến độ
+            </div>
+          )}
+
+          {/* Activity Heatmap Mini */}
+          {activityData && activityData.stats ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-medium text-gray-700 dark:text-gray-300">
+                  Hoạt động học tập (30 ngày)
+                </span>
+                <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                  {activityData.stats.currentStreak > 0 && (
+                    <span className="flex items-center gap-1">
+                      🔥 {activityData.stats.currentStreak} ngày
+                    </span>
+                  )}
+                  <span>{activityData.stats.totalAttempts} bài</span>
+                </div>
+              </div>
+              {renderMiniHeatmap()}
+            </div>
+          ) : (
+            <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">
+              Chưa có dữ liệu Learning Insight
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ChatBox() {
   const t = useTranslations("chat");
   const { user } = useAuth();
@@ -140,23 +362,17 @@ export default function ChatBox() {
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
+  // Sử dụng session "default" để nhận Learning Insights từ backend
   const [sessionId, setSessionId] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("chatSessionId");
-      if (stored) return stored;
-    }
-    const newSessionId = `session_${Date.now()}_${Math.random()
-      .toString(36)
-      .slice(2)}`;
-    if (typeof window !== "undefined") {
-      localStorage.setItem("chatSessionId", newSessionId);
-    }
-    return newSessionId;
+    // Ưu tiên session "default" để nhận Learning Insights
+    return "default";
   });
   const [error, setError] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const listRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const lastReadCountRef = useRef(0);
 
   useClickOutside(wrapperRef, () => setOpen(false));
 
@@ -186,43 +402,167 @@ export default function ChatBox() {
             role: string;
             content: string;
             createdAt: string;
-          }) => ({
-            id: msg._id,
-            role: msg.role as "user" | "assistant",
-            content: msg.content,
-            at: new Date(msg.createdAt).getTime(),
-          })
+          }) => {
+            // Phát hiện Learning Insight message (thường có pattern đặc biệt hoặc được tạo tự động)
+            // Kiểm tra nếu là assistant message và có nội dung dài, có thể là Learning Insight
+            const isLearningInsight =
+              msg.role === "assistant" &&
+              (msg.content.includes("📊") ||
+                msg.content.includes("Kết quả") ||
+                msg.content.includes("Progress Test") ||
+                msg.content.includes("Practice Test") ||
+                msg.content.includes("Placement Test") ||
+                msg.content.includes("nhận xét") ||
+                msg.content.includes("phân tích"));
+
+            return {
+              id: msg._id,
+              role: msg.role as "user" | "assistant",
+              content: msg.content,
+              at: new Date(msg.createdAt).getTime(),
+              isLearningInsight,
+            };
+          }
         );
         setMessages(formattedMessages);
+
+        // Cập nhật unread count: so sánh với số lượng đã đọc
+        if (!open) {
+          // Chỉ tính unread khi ChatBox đóng
+          const currentCount = formattedMessages.length;
+          const unread = Math.max(0, currentCount - lastReadCountRef.current);
+          setUnreadCount(unread);
+        } else {
+          // Khi mở ChatBox, đánh dấu tất cả là đã đọc
+          lastReadCountRef.current = formattedMessages.length;
+          setUnreadCount(0);
+          // Lưu vào localStorage để persist
+          if (typeof window !== "undefined") {
+            localStorage.setItem(
+              `chat_read_count_${sessionId}`,
+              String(formattedMessages.length)
+            );
+          }
+        }
       } else {
         setMessages([]);
+        setUnreadCount(0);
       }
     } catch (err) {
       console.error("Failed to load chat history:", err);
+    }
+  }, [sessionId, user, open]);
+
+  // Load last read count from localStorage khi mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && user) {
+      const saved = localStorage.getItem(`chat_read_count_${sessionId}`);
+      if (saved) {
+        lastReadCountRef.current = parseInt(saved, 10) || 0;
+      }
     }
   }, [sessionId, user]);
 
   useEffect(() => {
     if (user && user.access === "premium" && open) {
       loadChatHistory();
+    } else if (user && user.access === "premium" && !open) {
+      // Khi đóng ChatBox, vẫn load để cập nhật unread count
+      loadChatHistory();
     }
   }, [user, open, loadChatHistory]);
 
-  // Auto-scroll when messages change/open toggles
+  // Polling để tự động refresh messages mới (Learning Insights)
+  // Chỉ polling khi ChatBox mở hoặc khi có placement/progress test mới
+  useEffect(() => {
+    if (!user || user.access !== "premium") return;
+
+    // Chỉ polling khi ChatBox mở để tránh refresh không cần thiết
+    // Khi đóng, chỉ refresh khi có event test-submitted
+    if (!open) return;
+
+    const interval = setInterval(() => {
+      loadChatHistory();
+    }, 5000); // Giảm tần suất xuống 5 giây để tránh refresh quá thường xuyên
+
+    return () => clearInterval(interval);
+  }, [user, loadChatHistory, open]);
+
+  // Lắng nghe sự kiện khi submit test để refresh messages ngay lập tức
+  // Chỉ listen cho placement và progress test, không listen cho practice test
+  useEffect(() => {
+    if (!user || user.access !== "premium") return;
+
+    const handleTestSubmitted = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const testType = customEvent.detail?.type;
+      // Chỉ refresh cho placement và progress test
+      if (testType === "placement" || testType === "progress") {
+        // Refresh messages sau 2 giây để đợi backend tạo Learning Insight
+        setTimeout(() => {
+          loadChatHistory();
+        }, 2000);
+      }
+    };
+
+    // Lắng nghe event để mở ChatBox và refresh
+    const handleOpenAndRefresh = () => {
+      setOpen(true);
+      setTimeout(() => {
+        loadChatHistory();
+      }, 500);
+    };
+
+    window.addEventListener("test-submitted", handleTestSubmitted);
+    window.addEventListener("chatbox:open-and-refresh", handleOpenAndRefresh);
+    return () => {
+      window.removeEventListener("test-submitted", handleTestSubmitted);
+      window.removeEventListener("chatbox:open-and-refresh", handleOpenAndRefresh);
+    };
+  }, [user, loadChatHistory]);
+
+  // Auto-scroll chỉ khi:
+  // 1. Mới mở ChatBox
+  // 2. Có message mới được thêm vào (số lượng tăng)
+  // 3. Người dùng đang ở gần cuối danh sách (cách đáy < 150px)
+  const prevMessagesLengthRef = useRef(messages.length);
+  const prevOpenRef = useRef(open);
+
   useEffect(() => {
     const el = listRef.current;
     if (!el) return;
-    el.scrollTop = el.scrollHeight;
+
+    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+    const hasNewMessages = messages.length > prevMessagesLengthRef.current;
+    const justOpened = !prevOpenRef.current && open; // Mới mở ChatBox
+
+    // Chỉ auto-scroll nếu:
+    // - Mới mở ChatBox
+    // - Có message mới VÀ đang ở gần cuối
+    // - Hoặc đang ở gần cuối và messages thay đổi (polling refresh)
+    if (justOpened || (open && (hasNewMessages || isNearBottom))) {
+      // Sử dụng setTimeout để đảm bảo DOM đã render xong
+      setTimeout(() => {
+        if (el) {
+          el.scrollTop = el.scrollHeight;
+        }
+      }, 0);
+    }
+
+    prevMessagesLengthRef.current = messages.length;
+    prevOpenRef.current = open;
   }, [messages, open]);
 
   // --- SEND with optimistic UI (user msg + pending assistant bubble) ---
   const send = async () => {
     const text = input.trim();
     if (!text || sending || !user) return;
-    
+
     // Kiểm tra premium access
     if (user.access !== "premium") {
-      setError("Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.");
+      setError(
+        "Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
+      );
       return;
     }
 
@@ -259,13 +599,18 @@ export default function ChatBox() {
 
       if (!json?.data) {
         console.error("[ChatBox] Response không có data field:", json);
-        throw new Error(json?.message || "Failed to send message: No data in response");
+        throw new Error(
+          json?.message || "Failed to send message: No data in response"
+        );
       }
 
       const { userMessage, assistantMessage } = json.data;
-      
+
       if (!userMessage || !assistantMessage) {
-        console.error("[ChatBox] Response thiếu userMessage hoặc assistantMessage:", { userMessage, assistantMessage });
+        console.error(
+          "[ChatBox] Response thiếu userMessage hoặc assistantMessage:",
+          { userMessage, assistantMessage }
+        );
         throw new Error("Invalid response format");
       }
 
@@ -295,21 +640,27 @@ export default function ChatBox() {
       console.error("Failed to send message:", err);
       let errorMessage = "Có lỗi xảy ra khi gửi tin nhắn";
       let errorCode = "";
-      
+
       // Kiểm tra error code từ response
       if (err instanceof Error) {
         errorMessage = err.message;
         errorCode = (err as any)?.code || "";
-        
+
         // Kiểm tra nếu status là 403 (Forbidden)
         if ((err as any)?.status === 403) {
           errorCode = errorCode || "PREMIUM_REQUIRED";
         }
       }
-      
+
       // Kiểm tra nếu lỗi là do không có premium
-      if (errorCode === "PREMIUM_REQUIRED" || errorMessage.includes("Premium") || errorMessage.includes("premium")) {
-        setError("Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.");
+      if (
+        errorCode === "PREMIUM_REQUIRED" ||
+        errorMessage.includes("Premium") ||
+        errorMessage.includes("premium")
+      ) {
+        setError(
+          "Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
+        );
       } else {
         setError(errorMessage);
       }
@@ -348,39 +699,48 @@ export default function ChatBox() {
     } finally {
       setMessages([]);
       setError(null);
-      const newSessionId = `session_${Date.now()}_${Math.random()
-        .toString(36)
-        .slice(2)}`;
-      localStorage.setItem("chatSessionId", newSessionId);
-      setSessionId(newSessionId);
+      // Giữ session "default" để tiếp tục nhận Learning Insights
+      setSessionId("default");
       // không reload trang — giữ UI mượt
     }
   };
 
   return (
     <>
-      {/* Floating Action Button (giữ nguyên) */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? t("closeChat") : t("openChat")}
-        className="fixed bottom-6 right-6 z-[70] flex h-14 w-14 items-center justify-center 
-      rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white
-      shadow-xl shadow-indigo-500/30 ring-4 ring-white/20
-      hover:scale-110 active:scale-95 transition-all duration-200
-      focus:outline-none focus:ring-4 focus:ring-sky-400/50
-      dark:from-sky-500 dark:to-indigo-500"
-      >
-        <motion.div
-          animate={{ rotate: open ? 90 : 0 }}
-          transition={{ type: "spring", stiffness: 300 }}
+      {/* Floating Action Button với badge unread */}
+      <div className="fixed bottom-6 right-6 z-[70]">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? t("closeChat") : t("openChat")}
+          className="relative flex h-14 w-14 items-center justify-center 
+        rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white
+        shadow-xl shadow-indigo-500/30 ring-4 ring-white/20
+        hover:scale-110 active:scale-95 transition-all duration-200
+        focus:outline-none focus:ring-4 focus:ring-sky-400/50
+        dark:from-sky-500 dark:to-indigo-500"
         >
-          {open ? (
-            <FiX className="h-6 w-6" />
-          ) : (
-            <FiMessageSquare className="h-6 w-6" />
+          <motion.div
+            animate={{ rotate: open ? 90 : 0 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            {open ? (
+              <FiX className="h-6 w-6" />
+            ) : (
+              <FiMessageSquare className="h-6 w-6" />
+            )}
+          </motion.div>
+          {/* Badge unread count */}
+          {!open && unreadCount > 0 && (
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-lg ring-2 ring-white dark:ring-zinc-900"
+            >
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </motion.span>
           )}
-        </motion.div>
-      </button>
+        </button>
+      </div>
 
       {/* Chat Panel */}
       <motion.div
@@ -532,11 +892,15 @@ export default function ChatBox() {
                         </div>
                       )}
 
-                      <MessageContent
-                        content={m.content}
-                        role={m.role}
-                        pending={m.pending}
-                      />
+                      {m.isLearningInsight ? (
+                        <LearningInsightCard insightText={m.content} />
+                      ) : (
+                        <MessageContent
+                          content={m.content}
+                          role={m.role}
+                          pending={m.pending}
+                        />
+                      )}
 
                       <div
                         className={`mt-2 text-[10px] font-medium flex items-center gap-1.5 ${
@@ -616,7 +980,7 @@ export default function ChatBox() {
                       ? "Cần tài khoản Premium để sử dụng..."
                       : t("placeholder")
                   }
-                  disabled={!user || sending || (user?.access !== "premium")}
+                  disabled={!user || sending || user?.access !== "premium"}
                   rows={1}
                   className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 
                   px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400
@@ -634,7 +998,12 @@ export default function ChatBox() {
 
               <button
                 onClick={send}
-                disabled={sending || !input.trim() || !user || (user?.access !== "premium")}
+                disabled={
+                  sending ||
+                  !input.trim() ||
+                  !user ||
+                  user?.access !== "premium"
+                }
                 className="group relative flex h-12 w-12 shrink-0 items-center justify-center 
                 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white
                 shadow-lg shadow-sky-500/30 transition-all

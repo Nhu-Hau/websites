@@ -16,6 +16,7 @@ import { useAuthSubmit } from "@/hooks/useAuthSubmit";
 import { useBasePrefix } from "@/hooks/useBasePrefix";
 
 const RESEND_COOLDOWN = 30; // giây
+const RESEND_STORAGE_KEY = "auth:resend:expiresAt";
 
 export default function RegisterForm() {
   const t = useTranslations("register");
@@ -41,7 +42,7 @@ export default function RegisterForm() {
   // ====== STATE cho gửi mã xác thực ======
   const [sendingCode, setSendingCode] = useState(false);
   const [cooldown, setCooldown] = useState<number>(0); // 0 nghĩa là có thể gửi
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Clear timer khi unmount
   useEffect(() => {
@@ -50,20 +51,36 @@ export default function RegisterForm() {
     };
   }, []);
 
-  const startCooldown = () => {
-    setCooldown(RESEND_COOLDOWN);
-    // clear đang chạy (nếu có) trước khi tạo mới
+  const startCooldown = (seconds = RESEND_COOLDOWN) => {
+    const expiresAt = Date.now() + seconds * 1000;
+    localStorage.setItem(RESEND_STORAGE_KEY, String(expiresAt));
+    setCooldown(seconds);
+
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
-      setCooldown((s) => {
-        if (s <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          return 0;
-        }
-        return s - 1;
-      });
+      const stored = Number(localStorage.getItem(RESEND_STORAGE_KEY) || 0);
+      const remaining = Math.ceil((stored - Date.now()) / 1000);
+
+      if (remaining <= 0) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = null;
+        setCooldown(0);
+        localStorage.removeItem(RESEND_STORAGE_KEY);
+      } else {
+        setCooldown(remaining);
+      }
     }, 1000);
   };
+
+  // Khôi phục cooldown nếu đang còn hạn (VD: user F5)
+  useEffect(() => {
+    const stored = Number(localStorage.getItem(RESEND_STORAGE_KEY) || 0);
+    const remaining = Math.ceil((stored - Date.now()) / 1000);
+    if (remaining > 0) {
+      startCooldown(remaining);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSendCode = async () => {
     if (sendingCode || cooldown > 0) return;
@@ -94,13 +111,19 @@ export default function RegisterForm() {
       const data = await res.json();
       if (res.ok) {
         toast.success(data.message || "Đã gửi mã");
-        // bắt đầu countdown 30s theo data.cooldownSec (nếu có)
+        // Bắt đầu đếm ngược (ưu tiên cooldown từ server nếu có)
+        startCooldown(
+          typeof data.cooldownSec === "number"
+            ? data.cooldownSec
+            : RESEND_COOLDOWN
+        );
       } else {
         if (res.status === 429 && typeof data.cooldownSec === "number") {
           toast.error(
             `Bạn vừa gửi mã. Vui lòng thử lại sau ${data.cooldownSec}s`
           );
-          // bật countdown theo data.cooldownSec
+          // Cũng kích hoạt đếm ngược theo server báo
+          startCooldown(data.cooldownSec);
         } else {
           toast.error(data.message || "Gửi mã thất bại");
         }

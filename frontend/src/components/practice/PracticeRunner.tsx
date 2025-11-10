@@ -1,7 +1,13 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { ChoiceId, Item, Stimulus } from "@/types/tests";
 import type { GradeResp } from "@/types/placement";
@@ -12,6 +18,9 @@ import {
 } from "@/components/parts/StimulusCards";
 import { groupByStimulus } from "@/utils/groupByStimulus";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
 import {
   Layers,
   Hash,
@@ -27,9 +36,12 @@ import {
   TrendingUp,
   TrendingDown,
   Info,
+  MessageSquare,
+  Loader2,
 } from "lucide-react";
 import { announceLevelsChanged, useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/useBasePrefix";
+import { useAutoSave } from "@/hooks/useAutoSave";
 
 const LISTENING_PARTS = new Set(["part.1", "part.2", "part.3", "part.4"]);
 
@@ -191,9 +203,13 @@ export default function PracticeRunner() {
         | "level"
       > & {
         answersMap: Record<string, { correctAnswer: ChoiceId }>;
+        savedAttemptId?: string;
       })
     | null
   >(null);
+  const [insightLoading, setInsightLoading] = useState(false);
+  const [insight, setInsight] = useState<string | null>(null);
+  const [showInsight, setShowInsight] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [started, setStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -202,7 +218,32 @@ export default function PracticeRunner() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false); // ⬅️ HUD mobile
 
   const countdownTotal = durationMin * 60;
-  const leftSec = Math.max(0, countdownTotal - timeSec);
+  const leftSec = useMemo(
+    () => Math.max(0, countdownTotal - timeSec),
+    [countdownTotal, timeSec]
+  );
+  const initialLeftSecRef = useRef<number | undefined>(undefined);
+  const prevTimeSecRef = useRef(0);
+
+  // Lưu initialLeftSec khi khôi phục (khi timeSec thay đổi từ 0 sang > 0 và started = true)
+  useEffect(() => {
+    // Khi khôi phục: timeSec thay đổi từ 0 sang > 0 và started = true
+    if (
+      started &&
+      timeSec > 0 &&
+      prevTimeSecRef.current === 0 &&
+      initialLeftSecRef.current === undefined
+    ) {
+      initialLeftSecRef.current = leftSec;
+    }
+    // Reset khi chưa start hoặc đã nộp bài
+    if (!started || resp) {
+      initialLeftSecRef.current = undefined;
+      prevTimeSecRef.current = 0;
+    } else {
+      prevTimeSecRef.current = timeSec;
+    }
+  }, [started, timeSec, leftSec, resp]);
 
   // fetch câu hỏi
   useEffect(() => {
@@ -320,6 +361,7 @@ export default function PracticeRunner() {
       timeSec,
       level,
       answersMap,
+      savedAttemptId: undefined as string | undefined,
     };
   }, [items, answers, timeSec]);
 
@@ -350,6 +392,7 @@ export default function PracticeRunner() {
       announceLevelsChanged();
 
       // ---- Derive decision for banner ----
+      // ---- Derive decision for banner ----
       const rule = json?.recommended?.reason?.rule as
         | "promote"
         | "demote"
@@ -359,6 +402,7 @@ export default function PracticeRunner() {
         | 1
         | 2
         | 3;
+
       const reasonText =
         json?.recommended?.reason?.text ||
         json?.recommended?.reason?.message ||
@@ -367,6 +411,7 @@ export default function PracticeRunner() {
           : rule === "demote"
           ? "Hiệu suất gần đây thấp, dưới ngưỡng duy trì."
           : "Hiệu suất ổn định.");
+
       const derivedRule: "promote" | "demote" | "keep" =
         rule ??
         (newLv > levelNum ? "promote" : newLv < levelNum ? "demote" : "keep");
@@ -377,7 +422,35 @@ export default function PracticeRunner() {
         to: newLv,
         reason: reasonText,
       });
+
+      /** 🔹 LƯU QUYẾT ĐỊNH LEVEL để Dashboard đọc */
+      try {
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            `toeic:lastDecision:${String(partKey)}`,
+            JSON.stringify({
+              from: levelNum as 1 | 2 | 3,
+              to: newLv,
+              rule: derivedRule, // "promote" | "demote" | "keep"
+              ts: Date.now(),
+            })
+          );
+          // (tuỳ chọn) bắn event để Dashboard nghe và refresh trạng thái
+          window.dispatchEvent(
+            new CustomEvent("toeic:level-decision", {
+              detail: { partKey, from: levelNum, to: newLv, rule: derivedRule },
+            })
+          );
+        }
+      } catch {
+        /* ignore */
+      }
+
+      // xây result và hiển thị
       const result = buildResult();
+      if (json?.savedAttemptId) {
+        result.savedAttemptId = json.savedAttemptId;
+      }
       setResp(result);
       setShowDetails(false);
     } catch (e) {
@@ -400,6 +473,45 @@ export default function PracticeRunner() {
   const totalQ = items.length;
   const answeredQ = useMemo(() => Object.keys(answers).length, [answers]);
   const progress = totalQ ? Math.round((answeredQ / totalQ) * 100) : 0;
+
+  // Auto-save: khôi phục dữ liệu
+  const handleRestore = useCallback(
+    (data: {
+      answers: Record<string, ChoiceId>;
+      timeSec: number;
+      started: boolean;
+    }) => {
+      // Khôi phục nếu có answers hoặc đã started
+      if (
+        (data.answers && Object.keys(data.answers).length > 0) ||
+        data.started
+      ) {
+        if (data.answers && Object.keys(data.answers).length > 0) {
+          setAnswers(data.answers);
+        }
+        setTimeSec(data.timeSec);
+        if (data.started) {
+          setStarted(true);
+        }
+        toast.info("Đã khôi phục dữ liệu bài làm trước đó", {
+          duration: 3000,
+        });
+      }
+    },
+    []
+  );
+
+  // Auto-save: sử dụng hook (testId = partKey-level-test)
+  const testId = `${partKey}-${level}-${test}`;
+  useAutoSave(
+    "practice",
+    testId,
+    answers,
+    timeSec,
+    started,
+    resp,
+    handleRestore
+  );
 
   // Header — badge nằm chung 1 hàng, py gọn
   const Header = () => (
@@ -483,6 +595,7 @@ export default function PracticeRunner() {
         onToggleDetails={() => setShowDetails((s) => !s)}
         showDetails={showDetails}
         countdownSec={countdownTotal}
+        initialLeftSec={initialLeftSecRef.current}
         started={started}
         onStart={() => {
           setStarted(true);
@@ -581,6 +694,117 @@ export default function PracticeRunner() {
                 router.push(`${base}/practice/${partKey}?level=${targetLevel}`);
               }}
             />
+
+            {/* Ô nhận xét */}
+            {resp?.savedAttemptId && user?.access === "premium" && (
+              <section className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-6 shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    Nhận xét từ AI
+                  </h3>
+                  {!showInsight && (
+                    <button
+                      onClick={async () => {
+                        if (insight) {
+                          setShowInsight(true);
+                          return;
+                        }
+                        if (!resp?.savedAttemptId) return;
+                        setInsightLoading(true);
+                        try {
+                          const res = await fetch(
+                            `/api/chat/insight/practice/${resp.savedAttemptId}`,
+                            {
+                              method: "POST",
+                              credentials: "include",
+                            }
+                          );
+                          if (!res.ok)
+                            throw new Error("Failed to load insight");
+                          const json = await res.json();
+                          if (json?.data?.insight) {
+                            setInsight(json.data.insight);
+                            setShowInsight(true);
+                          } else {
+                            toast.error("Không thể tạo nhận xét");
+                          }
+                        } catch (e) {
+                          console.error(e);
+                          toast.error("Lỗi khi tải nhận xét");
+                        } finally {
+                          setInsightLoading(false);
+                        }
+                      }}
+                      disabled={insightLoading}
+                      className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-500 text-white text-sm font-medium hover:from-purple-700 hover:to-purple-600 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {insightLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Đang tải...
+                        </>
+                      ) : (
+                        <>
+                          <MessageSquare className="h-4 w-4" />
+                          {insight ? "Xem nhận xét" : "Tải nhận xét"}
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+                {showInsight && insight && (
+                  <div className="prose prose-sm max-w-none dark:prose-invert border-t border-zinc-200 dark:border-zinc-700 pt-4">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeHighlight]}
+                      components={{
+                        h1: ({ children }) => (
+                          <h1 className="text-base font-bold mb-2">
+                            {children}
+                          </h1>
+                        ),
+                        h2: ({ children }) => (
+                          <h2 className="text-sm font-bold mb-2">{children}</h2>
+                        ),
+                        h3: ({ children }) => (
+                          <h3 className="text-xs font-bold mb-1">{children}</h3>
+                        ),
+                        p: ({ children }) => (
+                          <p className="mb-2 last:mb-0 text-sm">{children}</p>
+                        ),
+                        ul: ({ children }) => (
+                          <ul className="list-disc list-inside mb-2 space-y-1 text-sm">
+                            {children}
+                          </ul>
+                        ),
+                        ol: ({ children }) => (
+                          <ol className="list-decimal list-inside mb-2 space-y-1 text-sm">
+                            {children}
+                          </ol>
+                        ),
+                        li: ({ children }) => (
+                          <li className="text-sm">{children}</li>
+                        ),
+                        strong: ({ children }) => (
+                          <strong className="font-semibold">{children}</strong>
+                        ),
+                        em: ({ children }) => (
+                          <em className="italic">{children}</em>
+                        ),
+                      }}
+                    >
+                      {insight}
+                    </ReactMarkdown>
+                  </div>
+                )}
+                {showInsight && !insight && (
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4">
+                    Chưa có nhận xét
+                  </p>
+                )}
+              </section>
+            )}
 
             {/* Tổng quan kết quả */}
             <section className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-6 shadow-lg">

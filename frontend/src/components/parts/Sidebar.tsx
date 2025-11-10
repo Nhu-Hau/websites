@@ -3,16 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Item, ChoiceId } from "@/types/tests";
-import {
-  Play,
-  Eye,
-  EyeOff,
-  Focus as FocusIcon,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Circle,
-} from "lucide-react";
+import { Play, Eye, EyeOff, Focus as FocusIcon, Clock } from "lucide-react";
 
 function fmtMMSS(sec: number) {
   const safe = Math.max(0, sec | 0);
@@ -39,6 +30,7 @@ export function Sidebar({
   onToggleDetails,
   showDetails,
   countdownSec = 35 * 60,
+  initialLeftSec,
   started,
   onStart,
   isAuthed,
@@ -58,6 +50,7 @@ export function Sidebar({
   onToggleDetails: () => void;
   showDetails: boolean;
   countdownSec?: number;
+  initialLeftSec?: number;
   started: boolean;
   onStart: () => void;
   isAuthed: boolean;
@@ -65,19 +58,39 @@ export function Sidebar({
   focusMode: boolean;
   onToggleFocus: () => void;
 }) {
-  const [leftSec, setLeftSec] = useState<number>(countdownSec);
-  const initialSecRef = useRef<number>(countdownSec);
+  const [leftSec, setLeftSec] = useState<number>(
+    Number.isFinite(initialLeftSec as number)
+      ? (initialLeftSec as number)
+      : countdownSec
+  );
+  const initialSecRef = useRef<number>(
+    Number.isFinite(initialLeftSec as number)
+      ? (initialLeftSec as number)
+      : countdownSec
+  );
   const tickingRef = useRef<number | null>(null);
   const submittedRef = useRef(false);
 
   // Reset khi chưa start
   useEffect(() => {
     if (!started && !resp) {
-      setLeftSec(countdownSec);
-      initialSecRef.current = countdownSec;
+      const init = Number.isFinite(initialLeftSec as number)
+        ? (initialLeftSec as number)
+        : countdownSec;
+      setLeftSec(init);
+      initialSecRef.current = init;
       submittedRef.current = false;
     }
-  }, [countdownSec, started, resp]);
+  }, [countdownSec, initialLeftSec, started, resp]);
+
+  // Khi đã start và có giá trị khởi tạo mới (khôi phục từ local), cập nhật còn lại
+  useEffect(() => {
+    if (started && !resp && Number.isFinite(initialLeftSec as number)) {
+      setLeftSec(Math.max(0, initialLeftSec as number));
+      initialSecRef.current = Math.max(0, initialLeftSec as number);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialLeftSec, started]);
 
   // Timer tick
   useEffect(() => {
@@ -113,14 +126,18 @@ export function Sidebar({
     [leftSec, started]
   );
 
-  const progress = total ? Math.min(100, Math.round((answered / total) * 100)) : 0;
+  const progress = total
+    ? Math.min(100, Math.round((answered / total) * 100))
+    : 0;
   const canSubmit = started && !resp;
 
   // Classes
   const asideBase =
     "hidden lg:flex flex-col fixed top-20 left-0 h-[calc(100vh-5rem)] bg-white/95 dark:bg-zinc-900/95 border-r border-zinc-200 dark:border-zinc-800 backdrop-blur-sm shadow-sm z-40 transition-all duration-300";
   const asideSize = focusMode ? "w-[52px] px-2 py-3" : "w-[240px] px-3 py-4";
-  const contentHiddenCls = focusMode ? "opacity-0 pointer-events-none select-none" : "opacity-100";
+  const contentHiddenCls = focusMode
+    ? "opacity-0 pointer-events-none select-none"
+    : "opacity-100";
 
   return (
     <aside
@@ -196,7 +213,10 @@ export function Sidebar({
             <>
               <div className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
                 <Clock className="h-3.5 w-3.5" />
-                Thời gian: <strong className="text-zinc-900 dark:text-white">{timeLabel}</strong>
+                Thời gian:{" "}
+                <strong className="text-zinc-900 dark:text-white">
+                  {timeLabel}
+                </strong>
               </div>
               <button
                 onClick={onToggleDetails}
@@ -220,13 +240,18 @@ export function Sidebar({
 
         {/* Question Grid */}
         <div className="flex-1 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-3 shadow-sm overflow-hidden">
-          <p className="mb-2 text-xs font-bold text-zinc-800 dark:text-zinc-200">Câu hỏi</p>
+          <p className="mb-2 text-xs font-bold text-zinc-800 dark:text-zinc-200">
+            Câu hỏi
+          </p>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(2rem,1fr))] gap-1.5">
             {items.map((it, i) => {
               const picked = answers[it.id];
-              const correct = resp?.answersMap?.[it.id]?.correctAnswer as ChoiceId | undefined;
+              const correct = resp?.answersMap?.[it.id]?.correctAnswer as
+                | ChoiceId
+                | undefined;
 
-              let cls = "group relative flex h-8 w-8 items-center justify-center rounded-xl border-2 text-[11px] font-bold transition-all duration-200";
+              let cls =
+                "group relative flex h-8 w-8 items-center justify-center rounded-xl border-2 text-[11px] font-bold transition-all duration-200";
 
               if (!resp) {
                 cls += picked
@@ -234,7 +259,8 @@ export function Sidebar({
                   : " border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:scale-110";
               } else {
                 if (!picked) {
-                  cls += " border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400";
+                  cls +=
+                    " border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400";
                 } else if (picked === correct) {
                   cls += " bg-emerald-600 text-white border-emerald-600";
                 } else {

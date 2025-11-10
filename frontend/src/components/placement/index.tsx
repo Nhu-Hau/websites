@@ -2,29 +2,14 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { useProgressTest } from "@/hooks/useProgressTest";
+import { usePlacementTest } from "@/hooks/usePlacementTest";
 import { Sidebar } from "../parts/Sidebar";
 import { ResultsPanel } from "../parts/ResultsPanel";
 import { groupByStimulus } from "@/utils/groupByStimulus";
 import { StimulusRowCard, StimulusColumnCard } from "../parts/StimulusCards";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { ListChecks, Timer, Clock, Focus, Play, Send } from "lucide-react";
-import Link from "next/link";
-
-type EligResp = {
-  eligible: boolean;
-  reason?:
-    | "ok"
-    | "waiting_window"
-    | "no_practice_after_progress"
-    | "no_practice_yet";
-  since?: string;
-  nextEligibleAt?: string | null;
-  remainingMs?: number | null;
-  windowMinutes?: number;
-  suggestedAt?: string | null;
-};
+import { ListChecks, Timer, Send, Play, Clock, Focus } from "lucide-react";
 
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -32,18 +17,7 @@ function fmtTime(totalSec: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-function fmtDuration(ms: number) {
-  if (!Number.isFinite(ms) || ms <= 0) return "0 phút";
-  const sec = Math.floor(ms / 1000);
-  const d = Math.floor(sec / 86400);
-  const h = Math.floor((sec % 86400) / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  if (d > 0) return `${d} ngày ${h} giờ`;
-  if (h > 0) return `${h} giờ ${m} phút`;
-  return `${m} phút`;
-}
-
-export default function ProgressPage() {
+export default function PlacementPage() {
   const {
     items,
     stimulusMap,
@@ -51,7 +25,6 @@ export default function ProgressPage() {
     setAnswers,
     resp,
     timeSec,
-    setTimeSec,
     showDetails,
     setShowDetails,
     loading,
@@ -60,68 +33,28 @@ export default function ProgressPage() {
     answered,
     started,
     setStarted,
-  } = useProgressTest();
+  } = usePlacementTest();
 
   const { user } = useAuth();
   const isAuthed = !!user;
 
-  // ---- NEW: eligibility state ----
-  const [elig, setElig] = useState<EligResp | null>(null);
-  const [eligLoading, setEligLoading] = useState(true);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  // poll eligibility nhẹ mỗi 60s để cập nhật remainingMs
-  useEffect(() => {
-    let mounted = true;
-    let timer: number | null = null;
-
-    const fetchElig = async () => {
-      try {
-        const r = await fetch("/api/progress/eligibility", {
-          credentials: "include",
-          cache: "no-store",
-        });
-        if (!mounted) return;
-        if (!r.ok) {
-          setElig(null);
-          setEligLoading(false);
-          return;
-        }
-        const j: EligResp = await r.json();
-        setElig(j);
-        setEligLoading(false);
-      } catch {
-        if (mounted) {
-          setElig(null);
-          setEligLoading(false);
-        }
-      }
-    };
-
-    fetchElig();
-    // poll mỗi 60s
-    timer = window.setInterval(fetchElig, 60_000) as unknown as number;
-
-    return () => {
-      mounted = false;
-      if (timer) window.clearInterval(timer);
-    };
-  }, []);
-
   const [focusMode, setFocusMode] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const durationMin = 35;
   const countdownTotal = durationMin * 60;
   const leftSec = Math.max(0, countdownTotal - timeSec);
   const progress = total ? Math.round((answered / total) * 100) : 0;
 
+  // Group items
   const { groups, itemIndexMap } = useMemo(
     () => groupByStimulus(items, stimulusMap),
     [items, stimulusMap]
   );
 
+  // Jump to question
   const jumpTo = useCallback(
     (i: number) => {
       if (!started || resp) return;
@@ -133,6 +66,7 @@ export default function ProgressPage() {
     [started, resp]
   );
 
+  // Handle submit
   const handleSubmit = useCallback(async () => {
     if (!started || answered === 0 || isSubmitting) return;
     setIsSubmitting(true);
@@ -143,10 +77,12 @@ export default function ProgressPage() {
     }
   }, [started, answered, isSubmitting, submit]);
 
+  // Keyboard shortcut: F
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "f" && window.innerWidth >= 1024)
+      if (e.key.toLowerCase() === "f" && window.innerWidth >= 1024) {
         setFocusMode((v) => !v);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -155,50 +91,21 @@ export default function ProgressPage() {
   const onLoginRequest = () =>
     toast.error("Vui lòng đăng nhập để bắt đầu làm bài");
 
-  // ---- NEW: guard start by eligibility ----
   const handleStart = () => {
     if (!isAuthed) return onLoginRequest();
-
-    if (eligLoading) {
-      toast.info("Đang kiểm tra điều kiện làm Progress Test…");
-      return;
-    }
-    if (!elig?.eligible) {
-      // thông báo theo reason
-      switch (elig?.reason) {
-        case "no_practice_yet":
-          toast.error("Bạn chưa có lượt luyện tập nào");
-          break;
-        case "no_practice_after_progress":
-          toast.error(
-            "Hãy luyện tập ít nhất một lần sau bài Progress gần nhất trước khi bắt đầu."
-          );
-          break;
-        case "waiting_window":
-        default: {
-          const remain = elig?.remainingMs ?? 0;
-          toast.info(
-            `Chưa tới thời điểm làm Progress. Còn khoảng ${fmtDuration(
-              remain
-            )}.`
-          );
-        }
-      }
-      return;
-    }
-
     setStarted(true);
     setTimeout(() => {
       document.getElementById("q-1")?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 
+  // Header (đã cải thiện trước đó)
   const Header = () => (
     <header className="mb-8">
       <div className="mx-auto">
-        <div className="flex flex-col gap-5 xl:flex-row sm:justify-between py-6">
+        <div className="flex flex-col gap-5 xl:flex-row sm:justify-between">
           <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">
-            Progress Test
+            Bài kiểm tra xếp trình độ
           </h1>
           <div className="flex flex-wrap items-center gap-4">
             <div className="group flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white/80 dark:bg-zinc-800/70 backdrop-blur-sm border border-zinc-200/70 dark:border-zinc-700/70 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
@@ -232,8 +139,11 @@ export default function ProgressPage() {
         </div>
 
         <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-300 leading-relaxed">
-          Bài kiểm tra tiến bộ 7 phần để cập nhật điểm TOEIC ước lượng và nhận
-          nhận xét theo từng Part.
+          Kiểm tra rút gọn giúp ước lượng điểm TOEIC từ{" "}
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+            0–990
+          </span>{" "}
+          và nhận lộ trình học cá nhân hóa phù hợp nhất với bạn.
         </p>
       </div>
     </header>
@@ -241,6 +151,7 @@ export default function ProgressPage() {
 
   return (
     <div className="flex mt-16">
+      {/* Sidebar */}
       <Sidebar
         items={items}
         answers={answers}
@@ -249,30 +160,27 @@ export default function ProgressPage() {
         answered={answered}
         timeLabel={!resp ? fmtTime(timeSec) : fmtTime(resp.timeSec)}
         onSubmit={handleSubmit}
-        onSubmitWithLeftSec={(left) => {
-          // Đồng bộ timeSec dựa trên leftSec trước khi nộp (auto-submit từ Sidebar)
-          const used = Math.max(0, countdownTotal - Math.max(0, left));
-          setTimeSec(used);
-        }}
         onJump={jumpTo}
         onToggleDetails={() => setShowDetails((s: any) => !s)}
         showDetails={showDetails}
         countdownSec={countdownTotal}
         initialLeftSec={leftSec}
         started={started}
-        onStart={handleStart} // 🔒 start có guard eligibility
+        onStart={handleStart}
         isAuthed={isAuthed}
         onLoginRequest={onLoginRequest}
         focusMode={focusMode}
         onToggleFocus={() => setFocusMode((v) => !v)}
       />
 
+      {/* Main */}
       <main
         className={`flex-1 px-4 sm:px-6 py-8 transition-all duration-300 ${
           focusMode ? "lg:ml-[50px]" : "lg:ml-[250px]"
         } pb-28 lg:pb-0`}
       >
         <Header />
+
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent"></div>
@@ -291,19 +199,8 @@ export default function ProgressPage() {
                 để làm bài
               </h2>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Thời gian: <strong>{35} phút</strong> • {total} câu hỏi
+                Thời gian: <strong>{durationMin} phút</strong> - {total} câu hỏi
               </p>
-              {/* NEW: gợi ý đi Practice nếu chưa đủ điều kiện */}
-              {elig && !elig.eligible && (
-                <div className="mt-3 text-sm">
-                  <Link
-                    href="/practice"
-                    className="text-blue-600 dark:text-blue-400 underline"
-                  >
-                    Đi luyện tập ngay
-                  </Link>
-                </div>
-              )}
             </div>
           </div>
         ) : (
@@ -388,14 +285,14 @@ export default function ProgressPage() {
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-xl lg:hidden">
           <div
             className="
-              flex items-center justify-between
-              gap-2 sm:gap-4
-              rounded-2xl
-              bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl
-              border border-zinc-300 dark:border-zinc-700
-              px-3 py-2.5 sm:px-5 sm:py-4
-              shadow-2xl text-[11px] sm:text-sm font-medium
-            "
+        flex items-center justify-between
+        gap-2 sm:gap-4
+        rounded-2xl
+        bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl
+        border border-zinc-300 dark:border-zinc-700
+        px-3 py-2.5 sm:px-5 sm:py-4
+        shadow-2xl text-[11px] sm:text-sm font-medium
+      "
           >
             <div className="flex items-center gap-2 sm:gap-4 text-zinc-800 dark:text-zinc-200">
               Câu{" "}
@@ -421,12 +318,12 @@ export default function ProgressPage() {
               <button
                 onClick={() => setMobileNavOpen(true)} // NEW
                 className="
-                  hidden sm:flex items-center gap-1.5
-                  px-3 py-1.5 rounded-xl
-                  bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700
-                  text-zinc-800 dark:text-zinc-100 font-semibold
-                  transition-all hover:scale-105 active:scale-100
-                "
+            hidden sm:flex items-center gap-1.5
+            px-3 py-1.5 rounded-xl
+            bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700
+            text-zinc-800 dark:text-zinc-100 font-semibold
+            transition-all hover:scale-105 active:scale-100
+          "
                 aria-label="Điều hướng nhanh"
               >
                 <Focus className="w-4 h-4" />
@@ -435,12 +332,12 @@ export default function ProgressPage() {
               <button
                 onClick={() => setMobileNavOpen(true)} // NEW
                 className="
-                  sm:hidden grid place-items-center
-                  w-9 h-9 rounded-xl
-                  bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700
-                  text-zinc-800 dark:text-zinc-100 font-semibold
-                  transition-all hover:scale-105 active:scale-100
-                "
+            sm:hidden grid place-items-center
+            w-9 h-9 rounded-xl
+            bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700
+            text-zinc-800 dark:text-zinc-100 font-semibold
+            transition-all hover:scale-105 active:scale-100
+          "
                 aria-label="Điều hướng nhanh"
               >
                 <Focus className="w-4 h-4" />
@@ -448,12 +345,12 @@ export default function ProgressPage() {
               <button
                 onClick={handleSubmit}
                 className="
-                  flex items-center gap-1.5 sm:gap-2
-                  px-3 py-1.5 sm:px-5 sm:py-2.5
-                  rounded-xl bg-black hover:bg-zinc-800
-                  text-white font-bold text-[11px] sm:text-sm
-                  transition-all hover:scale-105 active:scale-100
-                "
+            flex items-center gap-1.5 sm:gap-2
+            px-3 py-1.5 sm:px-5 sm:py-2.5
+            rounded-xl bg-black hover:bg-zinc-800
+            text-white font-bold text-[11px] sm:text-sm
+            transition-all hover:scale-105 active:scale-100
+          "
               >
                 <Send className="w-4 h-4" />
                 Nộp
@@ -574,14 +471,14 @@ export default function ProgressPage() {
             <>
               <div
                 className="
-                flex items-center justify-between
-                gap-2 sm:gap-4
-                rounded-2xl
-                bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl
-                border border-zinc-300 dark:border-zinc-700
-                px-3 py-2.5 sm:px-5 sm:py-4
-                shadow-2xl text-[11px] sm:text-sm font-medium
-              "
+          flex items-center justify-between
+          gap-2 sm:gap-4
+          rounded-2xl
+          bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl
+          border border-zinc-300 dark:border-zinc-700
+          px-3 py-2.5 sm:px-5 sm:py-4
+          shadow-2xl text-[11px] sm:text-sm font-medium
+        "
               >
                 <div className="flex items-center gap-2 sm:gap-4 text-zinc-800 dark:text-zinc-200">
                   Câu{" "}
@@ -604,12 +501,12 @@ export default function ProgressPage() {
                 <button
                   onClick={handleSubmit}
                   className="
-                  flex items-center gap-1.5 sm:gap-2
-                  px-3 py-1.5 sm:px-5 sm:py-2.5
-                  rounded-xl bg-black hover:bg-zinc-800
-                  text-white font-bold text-[11px] sm:text-sm
-                  transition-all hover:scale-105 active:scale-100
-                "
+            flex items-center gap-1.5 sm:gap-2
+            px-3 py-1.5 sm:px-5 sm:py-2.5
+            rounded-xl bg-black hover:bg-zinc-800
+            text-white font-bold text-[11px] sm:text-sm
+            transition-all hover:scale-105 active:scale-100
+          "
                 >
                   <Send className="w-4 h-4" />
                   Nộp

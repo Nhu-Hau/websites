@@ -1,4 +1,4 @@
-import PracticeRunner from "@/components/placement/PracticeRunner";
+import PracticeRunner from "@/components/practice/PracticeRunner";
 
 export default function Page() {
   return (

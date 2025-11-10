@@ -1,4 +1,4 @@
-import HistoryAttemptDetail from "@/components/placement/HistoryAttemptDetail";
+import HistoryAttemptDetail from "@/components/parts/HistoryAttempt";
 
 export default function Page() {
   return (

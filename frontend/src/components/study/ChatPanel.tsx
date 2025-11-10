@@ -19,6 +19,7 @@ import { RoomEvent } from "livekit-client";
 import { Send, Upload, Download, X, AlertCircle, Trash2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import Swal from "sweetalert2";
 
 type Role = "student" | "teacher" | "admin";
 type Me = { id: string; name: string; role: Role };
@@ -383,8 +384,16 @@ export default function ChatPanel({ me, roomName }: Props) {
   );
 
   const handleDeleteRoom = useCallback(async () => {
-    if (!confirm("Bạn có chắc muốn xóa phòng này? Tất cả dữ liệu sẽ bị mất."))
-      return;
+    const result = await Swal.fire({
+      title: "Xác nhận xoá",
+      text: "Bạn có chắc muốn xóa phòng này? Tất cả dữ liệu sẽ bị mất.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
 
     try {
       const res = await fetch(`/api/rooms/${encodeURIComponent(roomName)}`, {

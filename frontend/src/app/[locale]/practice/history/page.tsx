@@ -1,4 +1,4 @@
-import PracticeHistory from "@/components/placement/PracticeHistory";
+import PracticeHistory from "@/components/practice/PracticeHistory";
 
 export default function Page() {
   return (

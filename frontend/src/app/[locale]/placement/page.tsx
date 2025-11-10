@@ -1,5 +1,5 @@
 // frontend/src/app/[locale]/placement/page.tsx
-import PlacementPage from "@/components/parts/index";
+import PlacementPage from "@/components/placement/index";
 
 export default function PlacementWrapper() {
   return (

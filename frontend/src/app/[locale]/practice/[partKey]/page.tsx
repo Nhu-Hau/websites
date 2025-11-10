@@ -1,4 +1,4 @@
-import PracticePart from "@/components/placement/PracticePart";
+import PracticePart from "@/components/practice/PracticePart";
 
 export default function Page() {
   return <PracticePart />;

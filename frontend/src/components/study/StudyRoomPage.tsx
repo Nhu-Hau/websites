@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import ChatPanel from "@/components/study/ChatPanel";
 import { useBasePrefix } from "@/hooks/useBasePrefix";
+import Swal from "sweetalert2";
 
 type JoinResp = {
   wsUrl: string;
@@ -296,7 +297,16 @@ function ParticipantsList({ roomName }: { roomName: string }) {
   const [showList, setShowList] = useState(false);
 
   const handleKick = useCallback(async (userId: string, userName: string) => {
-    if (!confirm(`Bạn có chắc muốn kick "${userName}" khỏi phòng?`)) return;
+    const result = await Swal.fire({
+      title: "Xác nhận",
+      text: `Bạn có chắc muốn kick "${userName}" khỏi phòng?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Có, kick",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
     
     try {
       const res = await fetch(`/api/rooms/${encodeURIComponent(roomName)}/kick`, {

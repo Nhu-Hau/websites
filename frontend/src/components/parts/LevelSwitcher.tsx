@@ -85,18 +85,22 @@ function LevelSwitcherSkeleton() {
     </div>
   );
 }
-
-/* =========================
-   Component
-   ========================= */
 export default function LevelSwitcher({
   level,
   suggestedLevel,
   partLoading = false, // chỉ true khi đổi part: hiển thị skeleton
+
+  // NEW: khóa chuyển level + tooltip
+  disabled = false,
+  tooltip,
 }: {
   level: L;
   suggestedLevel?: L | null;
   partLoading?: boolean;
+
+  // NEW
+  disabled?: boolean;
+  tooltip?: string;
 }) {
   if (partLoading) return <LevelSwitcherSkeleton />;
 
@@ -122,11 +126,12 @@ export default function LevelSwitcher({
 
   const setLevel = useCallback(
     (next: L) => {
+      if (disabled) return; // NEW: chặn chuyển khi khóa
       const params = new URLSearchParams(search.toString());
       params.set("level", String(next));
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
-    [router, pathname, search]
+    [router, pathname, search, disabled] // NEW: phụ thuộc disabled
   );
 
   const updateIndicator = useCallback(() => {
@@ -160,16 +165,15 @@ export default function LevelSwitcher({
     return () => observer.disconnect();
   }, [updateIndicator]);
 
-  // Keyboard support (ArrowLeft/Right)
+  // Keyboard support (ArrowLeft/Right) — NEW: tắt khi disabled
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    if (!el || disabled) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
         e.preventDefault();
         const idx = LEVELS.indexOf(level);
-        let nextIdx = idx;
-        nextIdx =
+        const nextIdx =
           e.key === "ArrowRight"
             ? Math.min(LEVELS.length - 1, idx + 1)
             : Math.max(0, idx - 1);
@@ -178,7 +182,7 @@ export default function LevelSwitcher({
     };
     el.addEventListener("keydown", handler);
     return () => el.removeEventListener("keydown", handler);
-  }, [level, setLevel]);
+  }, [level, setLevel, disabled]); // NEW
 
   const cfg = levelConfig[level];
 
@@ -228,7 +232,7 @@ export default function LevelSwitcher({
               aria-label={c.label}
               onClick={() => setLevel(lv)}
               className={cn(
-                "group relative z-10 flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold outline-none", 
+                "group relative z-10 flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold outline-none",
                 "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-600",
                 active
                   ? "text-white drop-shadow-sm"
@@ -261,7 +265,7 @@ export default function LevelSwitcher({
               {isSuggested && (
                 <Sparkles
                   className={cn(
-                    "h-3.5 w-3.5 transition-opacity", 
+                    "h-3.5 w-3.5 transition-opacity",
                     active ? "text-white/90" : "text-amber-500"
                   )}
                 />

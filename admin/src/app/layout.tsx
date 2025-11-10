@@ -27,23 +27,33 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b">
           <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
-            <Link href="/" className="font-semibold text-tealCustom">Admin</Link>
+            <Link href="/" className="font-semibold text-tealCustom">
+              Admin
+            </Link>
             <nav className="flex items-center gap-4 text-sm">
-              <Link href="/" className="hover:underline">Dashboard</Link>
-              <Link href="/users" className="hover:underline">Users</Link>
-              <Link href="/parts" className="hover:underline">Parts</Link>
-              <Link href="/community" className="hover:underline">Community</Link>
+              <Link href="/" className="hover:underline">
+                Dashboard
+              </Link>
+              <Link href="/users" className="hover:underline">
+                Users
+              </Link>
+              <Link href="/parts" className="hover:underline">
+                Parts
+              </Link>
+              <Link href="/community" className="hover:underline">
+                Community
+              </Link>
               <AdminChatLink />
               <LogoutButton />
             </nav>
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-4">
-          {children}
-        </main>
+        <main className="mx-auto max-w-6xl px-4">{children}</main>
       </body>
     </html>
   );

@@ -9,17 +9,9 @@ import LevelSwitcher from "@/components/parts/LevelSwitcher";
 import TestCard, {
   AttemptSummary,
   TestCardSkeleton,
-} from "@/components/cards/TestCard";
-import {
-  History,
-  Headphones,
-  BookOpen,
-  ChevronRight,
-  AlertTriangle,
-  ArrowRight,
-  RefreshCw,
-  X,
-} from "lucide-react";
+} from "@/components/parts/TestCard";
+import { History, Headphones, BookOpen, ChevronRight } from "lucide-react";
+import MandatoryPlacementModal from "@/components/parts/MandatoryPlacement";
 
 /* ====== META ====== */
 const PART_META: Record<
@@ -38,7 +30,6 @@ const PART_META: Record<
 type L = 1 | 2 | 3;
 type AttemptMap = Record<number, AttemptSummary>;
 
-/* ====== UTILS ====== */
 function normalizePartLevels(raw: any): Partial<Record<string, L>> {
   const out: Partial<Record<string, L>> = {};
   if (!raw || typeof raw !== "object") return out;
@@ -63,85 +54,6 @@ function normalizePartLevels(raw: any): Partial<Record<string, L>> {
   return out;
 }
 
-/* ====== MODAL ====== */
-function SuggestionModal({
-  open,
-  suggested,
-  current,
-  onSwitch,
-  onContinue,
-  onClose,
-}: {
-  open: boolean;
-  suggested: number | null;
-  current: number;
-  onSwitch: () => void;
-  onContinue: () => void;
-  onClose: () => void;
-}) {
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in-0">
-      <div className="relative w-[90%] max-w-sm rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 animate-in zoom-in-95">
-        {/* Close */}
-        <button
-          onClick={onClose}
-          aria-label="Đóng"
-          className="absolute right-3 top-3 text-zinc-400 transition hover:text-zinc-600 dark:hover:text-zinc-300"
-        >
-          <X className="h-5 w-5" />
-        </button>
-
-        {/* Header */}
-        <div className="mb-3 flex justify-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-            <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-          </div>
-        </div>
-
-        <h3 className="mb-2 text-center text-lg font-bold text-zinc-900 dark:text-zinc-100">
-          Nên luyện ở{" "}
-          <span className="text-emerald-600 dark:text-emerald-400">
-            Level {suggested}
-          </span>
-        </h3>
-
-        <p className="mb-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Hệ thống khuyến nghị bạn luyện ở Level {suggested} để phù hợp với năng
-          lực hiện tại. Bạn muốn chuyển sang Level {suggested} không? Bạn vẫn có
-          thể tiếp tục Level {current} nếu muốn.
-        </p>
-
-        {/* Actions */}
-        <div className="flex justify-center gap-3">
-          <button
-            onClick={onSwitch}
-            className="flex-row items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-500 "
-          >
-            {/* Áp dụng class: whitespace-nowrap vào đây */}
-            <div className="flex items-center gap-1 whitespace-nowrap">
-              <RefreshCw className="h-4 w-4" />
-              Chuyển sang Level {suggested}
-            </div>
-          </button>
-
-          <button
-            onClick={onContinue}
-            className="flex-row items-center justify-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 transition-all hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-          >
-            {/* Áp dụng class: whitespace-nowrap vào đây */}
-            <div className="flex items-center gap-1 whitespace-nowrap">
-              <ArrowRight className="h-4 w-4" />
-              Vẫn tiếp tục
-            </div>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* ====== PAGE ====== */
 export default function PracticePart() {
   const router = useRouter();
@@ -161,17 +73,55 @@ export default function PracticePart() {
   const [tests, setTests] = React.useState<number[]>([]);
   const [progressByTest, setProgressByTest] = React.useState<AttemptMap>({});
 
-  // suggestedLevel khởi tạo = undefined để tránh “lấp lánh” khi chưa fetch xong
+  // gợi ý level (có thể null nếu chưa có) — giữ logic cũ
   const [suggestedLevel, setSuggestedLevel] = React.useState<
     L | null | undefined
   >(undefined);
   const [loading, setLoading] = React.useState<boolean>(true);
 
-  // modal
+  // Modal chọn level lệch — giữ
   const [showSuggestModal, setShowSuggestModal] = React.useState(false);
   const [pendingLink, setPendingLink] = React.useState<string | null>(null);
 
-  /* ---- Fetch gợi ý level chỉ khi đổi part ---- */
+  // NEW —— trạng thái bắt buộc placement
+  const [mustDoPlacement, setMustDoPlacement] = React.useState<boolean | null>(
+    null
+  );
+  const [showPlacementModal, setShowPlacementModal] = React.useState(false);
+
+  // ---- Fetch trạng thái placement (NEW)
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        // Xác định đã làm placement hay chưa dựa vào lịch sử attempts
+        // Nếu có ít nhất 1 attempt -> coi như đã làm
+        const r = await fetch("/api/placement/attempts?limit=1", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        let done = false;
+        if (r.ok) {
+          const j = await r.json().catch(() => ({}));
+          const items = Array.isArray(j?.items) ? j.items : [];
+          done = items.length > 0;
+        }
+        if (!mounted) return;
+        setMustDoPlacement(!done);
+        if (!done) setShowPlacementModal(true);
+      } catch {
+        if (!mounted) return;
+        // Nếu lỗi, an toàn: yêu cầu placement
+        setMustDoPlacement(true);
+        setShowPlacementModal(true);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // ---- Fetch gợi ý level theo user (giữ nguyên)
   React.useEffect(() => {
     let mounted = true;
     (async () => {
@@ -195,7 +145,7 @@ export default function PracticePart() {
     };
   }, [partKey]);
 
-  /* ---- Fetch tests + progress khi đổi part/level ---- */
+  // ---- Fetch tests + progress (giữ nguyên)
   React.useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -245,9 +195,14 @@ export default function PracticePart() {
   const isListening = /^part\.[1-4]$/.test(partKey);
   const locale = base.slice(1) || "vi";
 
+  // Handler vào placement (NEW)
+  const goPlacement = React.useCallback(() => {
+    router.push(`${base}/placement`);
+  }, [router, base]);
+
   return (
-    <div className="relative min-h-screen bg-zinc-50  bg-gradient-to-b dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 transition-colors duration-300">
-      {/* --- Background gradient --- */}
+    <div className="relative min-h-screen bg-zinc-50 bg-gradient-to-b dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 transition-colors duration-300">
+      {/* background decor giữ nguyên */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_50%_at_50%_-10%,rgba(24,24,27,0.12),transparent)] dark:bg-[radial-gradient(80%_50%_at_50%_-10%,rgba(255,255,255,0.06),transparent)]" />
 
       <div className="relative mx-auto max-w-[1350px] px-4 xs:px-6 py-10 pt-16">
@@ -255,7 +210,7 @@ export default function PracticePart() {
         <header>
           <div className="mx-auto">
             <div className="flex flex-col gap-6 py-6 xl:flex-row sm:items-start sm:justify-between">
-              {/* ---- Left: Title & Description ---- */}
+              {/* Left */}
               <div className="flex-1 space-y-4">
                 <div className="group inline-flex items-center gap-2.5 rounded-full border px-3 py-2 xs:px-4 xs:py-2 backdrop-blur-sm shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
                   {isListening ? (
@@ -279,7 +234,7 @@ export default function PracticePart() {
                   )}
                 </div>
 
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-zinc-900 dark:text-zinc-50 transition-all duration-300 hover:scale-[1.01]">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-zinc-900 dark:text-zinc-50">
                   {meta.title}
                 </h1>
 
@@ -292,16 +247,22 @@ export default function PracticePart() {
                   <span className="font-semibold text-sky-600 dark:text-sky-400">
                     gợi ý cải thiện
                   </span>{" "}
-                  phù hợp nhất với bạn.
+                  phù hợp.
                 </p>
               </div>
 
-              {/* ---- Right: Level + History ---- */}
+              {/* Right: Level + History */}
               <div className="flex flex-col sm:flex-row items-stretch gap-3">
                 <div className="flex justify-center">
                   <LevelSwitcher
                     level={level}
                     suggestedLevel={suggestedLevel ?? undefined}
+                    disabled={mustDoPlacement === true}
+                    tooltip={
+                      mustDoPlacement
+                        ? "Vui lòng làm Placement trước"
+                        : undefined
+                    }
                   />
                 </div>
 
@@ -318,7 +279,7 @@ export default function PracticePart() {
                     <span className="text-sm font-semibold text-zinc-900 dark:text-white">
                       Lịch sử
                     </span>
-                    <ChevronRight className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400 transition-all duration-300 group-hover:translate-x-1 group-hover:text-zinc-700 dark:group-hover:text-zinc-200" />
+                    <ChevronRight className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400 transition-all duration-300 group-hover:translate-x-1" />
                   </Link>
                 </div>
               </div>
@@ -353,11 +314,22 @@ export default function PracticePart() {
               {tests.map((testNum) => {
                 const p = progressByTest[testNum];
                 const href = `${base}/practice/${partKey}/${level}/${testNum}`;
+
                 return (
                   <div
                     key={testNum}
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${
+                      mustDoPlacement ? "opacity-90" : ""
+                    }`}
+                    // NEW: chặn click nếu chưa làm placement
                     onClickCapture={(e) => {
+                      if (mustDoPlacement) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowPlacementModal(true);
+                        return;
+                      }
+                      // logic lệch level (giữ nguyên)
                       if (suggestedLevel != null && level !== suggestedLevel) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -366,7 +338,10 @@ export default function PracticePart() {
                       }
                     }}
                     onClick={() => {
-                      if (suggestedLevel == null || level === suggestedLevel) {
+                      if (
+                        !mustDoPlacement &&
+                        (suggestedLevel == null || level === suggestedLevel)
+                      ) {
                         router.push(href);
                       }
                     }}
@@ -379,6 +354,10 @@ export default function PracticePart() {
                       totalQuestions={meta.defaultQuestions}
                       durationMin={meta.defaultDuration}
                       attemptSummary={p}
+                      disabled={mustDoPlacement === true}
+                      disabledHint={
+                        mustDoPlacement ? "Cần làm Placement trước" : undefined
+                      }
                     />
                   </div>
                 );
@@ -387,22 +366,9 @@ export default function PracticePart() {
           )}
         </section>
       </div>
-
-      {/* ===== Modal ===== */}
-      <SuggestionModal
-        open={showSuggestModal}
-        suggested={suggestedLevel ?? null}
-        current={level}
-        onSwitch={() => {
-          setShowSuggestModal(false);
-          if (suggestedLevel)
-            router.push(`${base}/practice/${partKey}?level=${suggestedLevel}`);
-        }}
-        onContinue={() => {
-          setShowSuggestModal(false);
-          if (pendingLink) router.push(pendingLink);
-        }}
-        onClose={() => setShowSuggestModal(false)}
+      <MandatoryPlacementModal
+        open={!!showPlacementModal}
+        onGoPlacement={goPlacement}
       />
     </div>
   );

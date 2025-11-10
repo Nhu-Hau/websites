@@ -2,7 +2,7 @@
 // src/app/layout.tsx
 // @ts-ignore
 import "./globals.css";
-import '@livekit/components-styles';
+import "@livekit/components-styles";
 export const metadata = {
   title: "TOEIC PREP",
   description:
@@ -16,9 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html suppressHydrationWarning>
-      <body>
-        {children}
-        </body>
+      <body>{children}</body>
     </html>
   );
 }

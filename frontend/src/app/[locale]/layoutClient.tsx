@@ -16,12 +16,14 @@ export default function LayoutClient({
   // ẩn ChatBox + AdminChatBox + Footer ở các trang luyện test hoặc placement
   const hideAll =
     /^\/[a-z]{2}\/(practice|study)\/[^/]+(\/\d+\/\d+)?$/.test(pathname) || // /vi/practice/part.1/1/2
-    /^\/[a-z]{2}\/placement$/.test(pathname); // /vi/placement
+    /^\/[a-z]{2}\/placement$/.test(pathname) ||
+    /^\/[a-z]{2}\/progress$/.test(pathname); // /vi/placement
 
   // chỉ ẩn Footer ở các trang kết quả hoặc lịch sử
   const hideFooterOnly =
     /^\/[a-z]{2}\/placement\/result\/[^/]+$/.test(pathname) || // /vi/placement/result/abc123
-    /^\/[a-z]{2}\/practice\/history\/[^/]+$/.test(pathname); // /vi/practice/history/abc123
+    /^\/[a-z]{2}\/practice\/history\/[^/]+$/.test(pathname) ||
+    /^\/[a-z]{2}\/progress$/.test(pathname); // /vi/practice/history/abc123
 
   return (
     <>

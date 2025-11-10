@@ -10,7 +10,7 @@ import useClickOutside from "@/hooks/useClickOutside";
 import { useTheme } from "@/context/ThemeContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import ProgressEligibilityWatcher from "@/components/progress/ProgressEligibility";
-import PracticeInactivityWatcher from "../placement/PracticeInactivity";
+import PracticeInactivityWatcher from "../practice/PracticeInactivity";
 
 /* ================= LanguageSwitcher ================= */
 export function LanguageSwitcher() {

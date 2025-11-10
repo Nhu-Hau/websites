@@ -18,15 +18,36 @@ import {
   clearAuthCookies,
   refreshAccessToken,
 } from "../services/auth.service";
-import { signGoogleSignupToken, verifyGoogleSignupToken, verifyRefreshToken, newJti, signRefreshToken } from "../lib/jwt";
-import { signupCookieName, signupCookieOpts, refreshCookieName, refreshCookieOpts } from "../config/cookies";
+import {
+  signGoogleSignupToken,
+  verifyGoogleSignupToken,
+  verifyRefreshToken,
+  newJti,
+  signRefreshToken,
+} from "../lib/jwt";
+import {
+  signupCookieName,
+  signupCookieOpts,
+  refreshCookieName,
+  refreshCookieOpts,
+} from "../config/cookies";
 import { ResetTokenModel } from "../models/ResetToken";
 import { sendMail } from "../lib/mailer";
 import { PasswordCodeModel } from "../models/PasswordCode";
-import { EmailVerificationCodeModel } from "../models/EmailVerificationCode";
+import { EmailVerificationCodeModel, IEmailVerificationCode } from "../models/EmailVerificationCode";
 
 const RESET_SECRET = process.env.RESET_SECRET!;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+
+function normalizeEmail(raw?: string) {
+  return String(raw || "")
+    .trim()
+    .toLowerCase();
+}
+
+function now() {
+  return new Date();
+}
 
 /** Cập nhật avatar người dùng (multer.memoryStorage -> req.file) */
 export async function uploadAvatar(req: Request, res: Response) {
@@ -168,30 +189,56 @@ export async function refresh(req: Request, res: Response) {
   }
 }
 
-// POST /auth/send-verification-code - Gửi mã xác thực email
+// POST /auth/send-verification-code
 export async function sendVerificationCode(req: Request, res: Response) {
   try {
-    const { email } = req.body;
-    if (!email)
-      return res.status(400).json({ message: "Vui lòng nhập email" });
+    const rawEmail = req.body?.email;
+    const email = normalizeEmail(rawEmail);
+    if (!email) return res.status(400).json({ message: "Vui lòng nhập email" });
 
-    // Kiểm tra email đã được sử dụng chưa
+    // Email đã tồn tại user? => không cho đăng ký
     if (await User.findOne({ email }))
       return res.status(409).json({ message: "Email này đã được sử dụng" });
 
-    // Tạo mã xác thực 6 số
+    // Cooldown 30s cho resend
+    const COOLDOWN_MS = 30_000;
+
+    // Tìm bản ghi mã mới nhất còn hiệu lực (chưa dùng)
+    const latest = await EmailVerificationCodeModel.findOne({
+      email,
+      used: false,
+      expiresAt: { $gt: new Date() },
+    })
+      .sort({ lastSentAt: -1 })
+      .lean<IEmailVerificationCode | null>();
+
+    if (latest) {
+      const last = new Date(latest.lastSentAt || latest.expiresAt || now());
+      const diff = Date.now() - last.getTime();
+      const remain = COOLDOWN_MS - diff;
+      if (remain > 0) {
+        // Đang cooldown → báo 429 + số giây còn lại
+        return res.status(429).json({
+          message: "Vui lòng thử lại sau",
+          cooldownSec: Math.ceil(remain / 1000),
+        });
+      }
+    }
+
+    // Tạo mã mới (và vô hiệu các mã cũ chưa dùng để tránh đụng độ)
+    // Lưu ý: chỉ xoá mã cũ nếu bạn muốn mỗi lần chỉ có 1 mã hợp lệ
+    await EmailVerificationCodeModel.deleteMany({ email, used: false });
+
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const codeHash = await bcrypt.hash(code, 10);
 
-    // Xóa các mã cũ chưa dùng cho email này
-    await EmailVerificationCodeModel.deleteMany({ email, used: false });
-
-    // Lưu mã mới (hiệu lực 10 phút)
-    await EmailVerificationCodeModel.create({
+    const doc = await EmailVerificationCodeModel.create({
       email,
       codeHash,
       used: false,
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      lastSentAt: new Date(),
+      resendCount: (latest?.resendCount ?? 0) + 1, // giờ TS biết trường này tồn tại
     });
 
     // Gửi email
@@ -208,6 +255,8 @@ export async function sendVerificationCode(req: Request, res: Response) {
 
     return res.json({
       message: "Mã xác thực đã được gửi đến email của bạn",
+      expiresAt: doc.expiresAt,
+      cooldownSec: Math.ceil(COOLDOWN_MS / 1000),
     });
   } catch (e) {
     console.error("[sendVerificationCode] ERROR", e);
@@ -218,7 +267,12 @@ export async function sendVerificationCode(req: Request, res: Response) {
 // POST /auth/register
 export async function register(req: Request, res: Response) {
   try {
-    const { name, email, password, level, verificationCode } = req.body;
+    const name = String(req.body?.name || "").trim();
+    const email = normalizeEmail(req.body?.email);
+    const password = req.body?.password as string;
+    const level = req.body?.level;
+    const verificationCode = String(req.body?.verificationCode || "").trim();
+
     if (!name || !email || !password)
       return res
         .status(400)
@@ -229,37 +283,38 @@ export async function register(req: Request, res: Response) {
         .status(400)
         .json({ message: "Vui lòng nhập mã xác thực email" });
 
-    // Kiểm tra email đã được sử dụng chưa
     if (await User.findOne({ email }))
       return res.status(409).json({ message: "Email này đã được sử dụng" });
 
-    // Kiểm tra mã xác thực
+    // tìm mã còn hiệu lực, mới nhất, chưa dùng
     const codeEntry = await EmailVerificationCodeModel.findOne({
       email,
       used: false,
-    });
+      expiresAt: { $gt: new Date() },
+    }).sort({ lastSentAt: -1 });
+
     if (!codeEntry)
       return res
         .status(400)
         .json({ message: "Mã xác thực không hợp lệ hoặc đã hết hạn" });
 
-    if (codeEntry.expiresAt.getTime() < Date.now())
-      return res.status(400).json({ message: "Mã xác thực đã hết hạn" });
-
-    const codeValid = await bcrypt.compare(verificationCode, codeEntry.codeHash);
+    const codeValid = await bcrypt.compare(
+      verificationCode,
+      codeEntry.codeHash
+    );
     if (!codeValid)
       return res.status(400).json({ message: "Mã xác thực không đúng" });
 
-    // Đánh dấu mã đã sử dụng
+    // đánh dấu đã dùng
     codeEntry.used = true;
     await codeEntry.save();
 
-    // Tạo tài khoản
+    // tạo user
     const user: IUser = await User.create({
       name,
       email,
       password,
-      role: "user",
+      role: "user", // nếu hệ thống của bạn dùng "student", đổi tại đây
       access: "free",
       level: level ?? 1,
       emailVerified: true,
@@ -333,7 +388,9 @@ export async function login(req: Request, res: Response) {
 
       await user.save();
       return res.status(401).json({
-        message: `Email hoặc mật khẩu không chính xác. Bạn còn ${MAX_ATTEMPTS - user.loginAttempts} lần thử.`,
+        message: `Email hoặc mật khẩu không chính xác. Bạn còn ${
+          MAX_ATTEMPTS - user.loginAttempts
+        } lần thử.`,
       });
     }
 

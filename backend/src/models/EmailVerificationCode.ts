@@ -1,22 +1,18 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, InferSchemaType } from "mongoose";
 
-export interface IEmailVerificationCode extends Document {
-  email: string;
-  codeHash: string;
-  used: boolean;
-  expiresAt: Date;
-  createdAt: Date;
-}
 
-const EmailVerificationCodeSchema = new Schema<IEmailVerificationCode>(
-  {
-    email: { type: String, required: true, index: true },
-    codeHash: { type: String, required: true },
-    used: { type: Boolean, default: false },
-    expiresAt: { type: Date, required: true },
-  },
-  { timestamps: { createdAt: true, updatedAt: false }, versionKey: false }
-);
+const EmailVerificationCodeSchema = new Schema({
+  email: { type: String, index: true, required: true },
+  codeHash: { type: String, required: true },
+  used: { type: Boolean, default: false, index: true },
+  expiresAt: { type: Date, required: true, index: true },
+  lastSentAt: { type: Date, default: () => new Date() },
+  resendCount: { type: Number, default: 0 },
+});
+
+EmailVerificationCodeSchema.index({ email: 1, used: 1, expiresAt: 1 });
+
+export type IEmailVerificationCode = InferSchemaType<typeof EmailVerificationCodeSchema>;
 
 export const EmailVerificationCodeModel =
   mongoose.models.EmailVerificationCode ||

@@ -138,7 +138,6 @@ export default function CommunityPage() {
     void load();
   };
 
-  const currentItems = activeTab === "posts" ? posts : comments;
 
   if (loadingMe) return <div className="p-6">Đang kiểm tra quyền…</div>;
   if (!me || me.role !== 'admin') return <div className="p-6 text-red-600">Chỉ dành cho Admin</div>;

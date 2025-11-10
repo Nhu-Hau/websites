@@ -7,10 +7,6 @@ import { PlacementAttempt } from "../models/PlacementAttempt";
 import { ChatMessage } from "../models/ChatMessage";
 import { Types } from "mongoose";
 
-// Nếu chạy Node < 18, cần cài polyfill fetch:
-//   npm i node-fetch
-// rồi bỏ comment dòng dưới:
-// import fetch from "node-fetch";
 
 type OpenAIRole = "system" | "user" | "assistant";
 

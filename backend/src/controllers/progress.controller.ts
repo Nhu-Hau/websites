@@ -438,20 +438,11 @@ export async function getProgressAttemptItemsOrdered(
 }
 
 function getEligibilityWindowMs() {
-  const minutesRaw = Number(process.env.PROGRESS_ELIGIBILITY_MINUTES);
-  const minutes =
-    Number.isFinite(minutesRaw) && minutesRaw > 0 ? minutesRaw : 5 * 24 * 60; // mặc định 5 ngày
-  return minutes * 60 * 1000;
+  const raw = Number(process.env.PROGRESS_ELIGIBILITY_MINUTES);
+  const minutes = Number.isFinite(raw) && raw > 0 ? raw : 5 * 24 * 60;
+  return minutes * 60_000;
 }
 
-/**
- * Logic:
- *  - Phải có practice.
- *  - Nếu CHƯA từng progress: mốc = lastPractice (gần nhất). Đủ cửa sổ => eligible.
- *  - Nếu ĐÃ từng progress: bắt buộc có practice SAU lần progress gần nhất.
- *      + mốc = lastPractice SAU progress (gần nhất).
- *      + đủ cửa sổ => eligible.
- */
 export async function getProgressEligibility(req: Request, res: Response) {
   try {
     const userId = (req as any).auth?.userId;

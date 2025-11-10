@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
@@ -14,6 +14,8 @@ import PasswordField from "@/components/auth/PasswordField";
 import { usePasswordToggle } from "@/hooks/usePasswordToggle";
 import { useAuthSubmit } from "@/hooks/useAuthSubmit";
 import { useBasePrefix } from "@/hooks/useBasePrefix";
+
+const RESEND_COOLDOWN = 30; // giây
 
 export default function RegisterForm() {
   const t = useTranslations("register");
@@ -36,6 +38,81 @@ export default function RegisterForm() {
     },
   });
 
+  // ====== STATE cho gửi mã xác thực ======
+  const [sendingCode, setSendingCode] = useState(false);
+  const [cooldown, setCooldown] = useState<number>(0); // 0 nghĩa là có thể gửi
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clear timer khi unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const startCooldown = () => {
+    setCooldown(RESEND_COOLDOWN);
+    // clear đang chạy (nếu có) trước khi tạo mới
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setCooldown((s) => {
+        if (s <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+  };
+
+  const handleSendCode = async () => {
+    if (sendingCode || cooldown > 0) return;
+
+    const email = (
+      document.getElementById("email") as HTMLInputElement
+    )?.value?.trim();
+    if (!email) {
+      toast.error("Vui lòng nhập email trước");
+      return;
+    }
+    // kiểm tra định dạng đơn giản
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error("Email không hợp lệ");
+      return;
+    }
+
+    setSendingCode(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/send-verification-code`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message || "Đã gửi mã");
+        // bắt đầu countdown 30s theo data.cooldownSec (nếu có)
+      } else {
+        if (res.status === 429 && typeof data.cooldownSec === "number") {
+          toast.error(
+            `Bạn vừa gửi mã. Vui lòng thử lại sau ${data.cooldownSec}s`
+          );
+          // bật countdown theo data.cooldownSec
+        } else {
+          toast.error(data.message || "Gửi mã thất bại");
+        }
+      }
+    } catch (e) {
+      toast.error("Không thể gửi mã. Vui lòng thử lại.");
+      console.error("[send-verification-code]", e);
+    } finally {
+      setSendingCode(false);
+    }
+  };
+
   function onGoogle() {
     setGLoading(true);
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/google`;
@@ -49,10 +126,7 @@ export default function RegisterForm() {
           {t("alreadyAccount")}{" "}
           <Link
             href={`${basePrefix}/auth/login`}
-            className="font-medium text-sky-600 dark:text-sky-400 
-                       underline underline-offset-4 decoration-dashed 
-                       hover:no-underline hover:text-sky-700 dark:hover:text-sky-300 
-                       transition-colors duration-200"
+            className="font-medium text-sky-600 dark:text-sky-400 underline underline-offset-4 decoration-dashed hover:no-underline hover:text-sky-700 dark:hover:text-sky-300 transition-colors duration-200"
           >
             {t("login")}
           </Link>
@@ -83,12 +157,7 @@ export default function RegisterForm() {
             required
             autoFocus
             aria-invalid={!!errors.name}
-            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 
-                       bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm
-                       text-zinc-900 dark:text-zinc-100 
-                       placeholder:text-zinc-500 dark:placeholder:text-zinc-400
-                       focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500
-                       transition-all duration-200"
+            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200"
             placeholder={t("placeholderName")}
             onChange={() =>
               errors.name && setErrors((e) => ({ ...e, name: undefined }))
@@ -112,12 +181,7 @@ export default function RegisterForm() {
             required
             autoComplete="email"
             aria-invalid={!!errors.email}
-            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 
-                       bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm
-                       text-zinc-900 dark:text-zinc-100 
-                       placeholder:text-zinc-500 dark:placeholder:text-zinc-400
-                       focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500
-                       transition-all duration-200"
+            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200"
             placeholder={t("placeholderEmail")}
             onChange={() =>
               errors.email && setErrors((e) => ({ ...e, email: undefined }))
@@ -135,12 +199,7 @@ export default function RegisterForm() {
             placeholder={
               t("placeholderPassword") || "Nhập mật khẩu (tối thiểu 8 ký tự)"
             }
-            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 
-                       bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm
-                       text-zinc-900 dark:text-zinc-100 
-                       placeholder:text-zinc-500 dark:placeholder:text-zinc-400
-                       focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500
-                       transition-all duration-200"
+            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200"
             minLength={8}
             autoComplete="new-password"
             show={pw.show}
@@ -161,12 +220,7 @@ export default function RegisterForm() {
             name="confirm"
             label={t("confirmPassword")}
             placeholder={t("confirmPlaceholder") || "Nhập lại mật khẩu"}
-            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 
-                       bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm
-                       text-zinc-900 dark:text-zinc-100 
-                       placeholder:text-zinc-500 dark:placeholder:text-zinc-400
-                       focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500
-                       transition-all duration-200"
+            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200"
             minLength={8}
             autoComplete="new-password"
             show={cpw.show}
@@ -179,6 +233,7 @@ export default function RegisterForm() {
           <FieldError message={errors.confirm} />
         </div>
 
+        {/* Verification code */}
         <div className="space-y-2">
           <label
             htmlFor="verificationCode"
@@ -193,49 +248,37 @@ export default function RegisterForm() {
               type="text"
               required
               maxLength={6}
-              className="flex-1 rounded-xl border border-zinc-300 dark:border-zinc-700 
-                 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm"
+              className="flex-1 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm"
               placeholder="Nhập mã 6 số"
             />
             <button
               type="button"
-              onClick={async () => {
-                const email = (
-                  document.getElementById("email") as HTMLInputElement
-                )?.value;
-                if (!email) return toast.error("Vui lòng nhập email trước");
-                const res = await fetch(
-                  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/send-verification-code`,
-                  {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email }),
-                  }
-                );
-                const data = await res.json();
-                if (res.ok) toast.success(data.message);
-                else toast.error(data.message);
-              }}
-              className="px-4 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-medium
-                 hover:bg-sky-700 transition"
+              onClick={handleSendCode}
+              disabled={sendingCode || cooldown > 0}
+              aria-disabled={sendingCode || cooldown > 0}
+              className={`px-4 py-2.5 rounded-xl text-sm font-medium transition ${
+                sendingCode || cooldown > 0
+                  ? "bg-zinc-300 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 cursor-not-allowed"
+                  : "bg-sky-600 hover:bg-sky-700 text-white"
+              }`}
             >
-              Gửi mã
+              {sendingCode
+                ? "Đang gửi…"
+                : cooldown > 0
+                ? `Gửi lại mã (${cooldown}s)`
+                : "Gửi mã"}
             </button>
           </div>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Nếu không nhận được mã, bạn có thể yêu cầu gửi lại sau 30 giây.
+          </p>
         </div>
 
         {/* Submit Button */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 
-                     hover:from-sky-700 hover:to-sky-600
-                     text-white font-medium py-3 text-sm shadow-sm
-                     disabled:opacity-50 disabled:cursor-not-allowed
-                     transform transition-all duration-200 
-                     hover:scale-[1.01] active:scale-[0.99]
-                     focus:outline-none focus:ring-2 focus:ring-sky-500 
-                     focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
+          className="w-full rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-700 hover:to-sky-600 text-white font-medium py-3 text-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">

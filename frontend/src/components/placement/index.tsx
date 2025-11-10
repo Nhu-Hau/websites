@@ -10,6 +10,8 @@ import { StimulusRowCard, StimulusColumnCard } from "../parts/StimulusCards";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { ListChecks, Timer, Send, Play, Clock, Focus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useBasePrefix } from "@/hooks/useBasePrefix";
 
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -18,6 +20,8 @@ function fmtTime(totalSec: number) {
 }
 
 export default function PlacementPage() {
+  const router = useRouter();
+  const base = useBasePrefix("vi");
   const {
     items,
     stimulusMap,
@@ -47,6 +51,36 @@ export default function PlacementPage() {
   const countdownTotal = durationMin * 60;
   const leftSec = Math.max(0, countdownTotal - timeSec);
   const progress = total ? Math.round((answered / total) * 100) : 0;
+
+  // Guard: Nếu đã có attempt placement, chặn vào trang này và chuyển sang trang kết quả gần nhất
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/placement/attempts?limit=1", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!mounted) return;
+        if (r.ok) {
+          const j = await r.json().catch(() => ({}));
+          const last = Array.isArray(j?.items) ? j.items[0] : undefined;
+          const attemptId = last?._id;
+          if (attemptId) {
+            toast.info("Bạn đã hoàn thành Placement, chuyển đến trang kết quả.");
+            router.replace(
+              `${base}/placement/result/${encodeURIComponent(attemptId)}`
+            );
+          }
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [router, base]);
 
   // Group items
   const { groups, itemIndexMap } = useMemo(

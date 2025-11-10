@@ -4,6 +4,8 @@ import mongoose from "mongoose";
 import { ProgressAttempt } from "../models/ProgressAttempt";
 import { PracticeAttempt } from "../models/PracticeAttempt";
 import { User } from "../models/User";
+import { accessCookieName } from "../config/cookies";
+import { verifyAccessToken } from "../lib/jwt";
 
 const ITEMS_COLL =
   process.env.PROGRESS_PARTS_COLL ||
@@ -36,11 +38,63 @@ function predictToeic(listeningAcc: number, readingAcc: number) {
  * Optional per-part limits: ?p1=4&p2=8&p3=9&p4=9&p5=10&p6=8&p7=7
  * Không truyền => lấy tất cả mỗi part (theo order tăng).
  */
+function resolveItemTest(it: any): number | null {
+  const candidates = [it?.test, it?.version, it?.paper, it?.paperId];
+  for (const raw of candidates) {
+    const num = Number(raw);
+    if (Number.isInteger(num)) return num;
+  }
+  return null;
+}
+
+function normalizeCompletedTests(raw: unknown): number[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((v) => Number(v))
+    .filter((v) => Number.isInteger(v))
+    .map((v) => v);
+}
+
+function pickNextProgressTest(completed: number[]): number {
+  if (!completed.includes(1)) return 1;
+  if (!completed.includes(2)) return 2;
+  return 2;
+}
+
 export async function getProgressPaper(req: Request, res: Response) {
   try {
     const db = mongoose.connection;
     const itemsCol = db.collection(ITEMS_COLL);
     const stimCol = db.collection(STIMULI_COLL);
+
+    let requestedTest: number | null = null;
+    const queryTest = Number(req.query.test);
+    if (Number.isInteger(queryTest)) requestedTest = queryTest;
+
+    let userId: string | null = null;
+    if (!requestedTest) {
+      const token = req.cookies?.[accessCookieName];
+      if (token) {
+        try {
+          const payload = verifyAccessToken(token);
+          if (payload?.id) userId = String(payload.id);
+        } catch {
+          userId = null;
+        }
+      }
+    }
+
+    let targetTest = requestedTest;
+    if (!targetTest && userId) {
+      const me = await User.findById(userId)
+        .select("progressMeta")
+        .lean<{ progressMeta?: any }>();
+      const completed = normalizeCompletedTests(
+        me?.progressMeta?.completedTests
+      );
+      targetTest = pickNextProgressTest(completed);
+    }
+    if (!targetTest) targetTest = 1;
 
     const limits: Record<
       | "part.1"
@@ -69,9 +123,17 @@ export async function getProgressPaper(req: Request, res: Response) {
       const cur = itemsCol
         .find({ part: pk }, { projection: { _id: 0 } })
         .sort({ order: 1, id: 1 });
-      items = items.concat(
-        lim > 0 ? await cur.limit(lim).toArray() : await cur.toArray()
-      );
+      const arr = await cur.toArray();
+      const filtered =
+        targetTest != null
+          ? arr.filter((it) => {
+              const t = resolveItemTest(it);
+              if (t == null) return targetTest === 1; // fallback: coi như test 1
+              return t === targetTest;
+            })
+          : arr;
+      const final = lim > 0 ? filtered.slice(0, lim) : filtered;
+      items = items.concat(final);
     }
 
     items.sort((a, b) => {
@@ -93,7 +155,7 @@ export async function getProgressPaper(req: Request, res: Response) {
     const stimulusMap: Record<string, any> = {};
     for (const s of stArr) stimulusMap[s.id] = s;
 
-    return res.json({ items, stimulusMap });
+    return res.json({ items, stimulusMap, meta: { test: targetTest } });
   } catch (e) {
     console.error("[getProgressPaper] ERROR", e);
     return res.status(500).json({ message: "Lỗi máy chủ" });
@@ -290,6 +352,14 @@ export async function submitProgress(req: Request, res: Response) {
     });
 
     // Update profile: cập nhật toeicPred theo bài progress mới nhất
+    const versionNum = Number(version);
+    const normalizedVersion = Number.isInteger(versionNum)
+      ? versionNum
+      : Number.parseInt(String(version ?? ""), 10);
+    const finalVersion = Number.isInteger(normalizedVersion)
+      ? normalizedVersion
+      : 1;
+
     await User.updateOne(
       { _id: userId },
       {
@@ -297,7 +367,11 @@ export async function submitProgress(req: Request, res: Response) {
           toeicPred: predicted,
           "progressMeta.lastAttemptAt": attempt.submittedAt,
           "progressMeta.lastSuggestedAt": null, // reset gợi ý
+          "progressMeta.lastTestVersion": finalVersion,
           updatedAt: new Date(),
+        },
+        $addToSet: {
+          "progressMeta.completedTests": finalVersion,
         },
       }
     ).exec();

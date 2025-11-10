@@ -29,10 +29,9 @@
         "part7": "Part 7: Đọc hiểu"
       }
     },
-    "course": "Video bổ trợ",
     "forum": "Cộng đồng",
-    "dashboard": "Dashboard",
-    "createStudyRoom": "Phòng học"
+    "createStudyRoom": "Phòng học",
+    "dashboard": "Bảng điều khiển"
   },
   "UserMenu": {
     "login": "Đăng nhập",

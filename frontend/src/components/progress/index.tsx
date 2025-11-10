@@ -60,6 +60,7 @@ export default function ProgressPage() {
     answered,
     started,
     setStarted,
+    version,
   } = useProgressTest();
 
   const { user } = useAuth();
@@ -197,8 +198,15 @@ export default function ProgressPage() {
     <header className="mb-8">
       <div className="mx-auto">
         <div className="flex flex-col gap-5 xl:flex-row sm:justify-between py-6">
-          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight flex items-center gap-3 flex-wrap">
             Progress Test
+            {typeof version === "number" &&
+            Number.isFinite(version) &&
+            version > 0 ? (
+              <span className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm font-semibold uppercase tracking-wide">
+                Test {version}
+              </span>
+            ) : null}
           </h1>
           <div className="flex flex-wrap items-center gap-4">
             <div className="group flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white/80 dark:bg-zinc-800/70 backdrop-blur-sm border border-zinc-200/70 dark:border-zinc-700/70 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">

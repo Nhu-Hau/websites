@@ -26,6 +26,7 @@ export type UseProgressTestReturn = {
   answered: number;
   started: boolean;
   setStarted: React.Dispatch<React.SetStateAction<boolean>>;
+  version: number | null;
 };
 
 export function useProgressTest(): UseProgressTestReturn {
@@ -37,6 +38,7 @@ export function useProgressTest(): UseProgressTestReturn {
   const [showDetails, setShowDetails] = useState(false);
   const [loading, setLoading] = useState(true);
   const [started, setStarted] = useState(false);
+  const [version, setVersion] = useState<number | null>(null);
 
   const { refresh } = useAuth();
 
@@ -70,6 +72,8 @@ export function useProgressTest(): UseProgressTestReturn {
         if (!mounted) return;
         setItems(its);
         setStimulusMap(data.stimulusMap || {});
+        const v = Number(data?.meta?.test);
+        setVersion(Number.isFinite(v) ? v : 1);
       } catch (e) {
         console.error("Load progress paper failed", e);
         toast.error("Không tải được đề Progress");
@@ -95,6 +99,7 @@ export function useProgressTest(): UseProgressTestReturn {
         answers,
         timeSec,
         allIds: items.map((it) => it.id),
+        version,
       }),
     });
 
@@ -116,24 +121,35 @@ export function useProgressTest(): UseProgressTestReturn {
     const acc = Math.round(((r as any)?.acc || 0) * 100);
 
     if (est) {
-      toast.success(`🎯 Progress • TOEIC ước lượng: ${est} điểm (${acc}%)`, {
+      toast.success(`Progress • TOEIC ước lượng: ${est} điểm (${acc}%)`, {
         classNames: {
-          toast: "border border-blue-300 bg-blue-50 text-blue-700 font-semibold",
+          toast:
+            "border border-blue-300 bg-blue-50 text-blue-700 font-semibold",
         },
         duration: 3500,
       });
       if (est >= 800) {
-        confetti({ particleCount: 120, spread: 70, startVelocity: 26, origin: { y: 0.3 } });
+        confetti({
+          particleCount: 120,
+          spread: 70,
+          startVelocity: 26,
+          origin: { y: 0.3 },
+        });
       }
     } else {
       toast.success(`Hoàn thành Progress (${acc}% chính xác)`, {
         classNames: {
-          toast: "border border-blue-300 bg-blue-50 text-blue-700 font-semibold",
+          toast:
+            "border border-blue-300 bg-blue-50 text-blue-700 font-semibold",
         },
       });
     }
 
-    try { await refresh(); } catch {/* ignore */}
+    try {
+      await refresh();
+    } catch {
+      /* ignore */
+    }
   }
 
   return {
@@ -153,5 +169,6 @@ export function useProgressTest(): UseProgressTestReturn {
     answered,
     started,
     setStarted,
+    version,
   };
 }

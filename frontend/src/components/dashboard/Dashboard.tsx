@@ -496,9 +496,9 @@ export default function Dashboard() {
         </header>
 
         {/* ====== Grid 2 cột: Practice progress (trái) + Assessment (phải) ====== */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-stretch">
           {/* Charts - Tiến bộ luyện tập theo PART */}
-          <section className="rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+          <section className="h-full flex flex-col rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
               <div className="flex items-center gap-2.5">
                 <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-indigo-900/30 dark:to-blue-900/30">
@@ -521,11 +521,11 @@ export default function Dashboard() {
                     key={p}
                     onClick={() => setSelectedPart(p)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border
-                     ${
-                       isSel
-                         ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-indigo-600 shadow-sm"
-                         : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
-                     }`}
+              ${
+                isSel
+                  ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-indigo-600 shadow-sm"
+                  : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
+              }`}
                   >
                     {PART_LABEL[p]}
                   </button>
@@ -533,10 +533,11 @@ export default function Dashboard() {
               })}
             </div>
 
-            <div className="relative">
+            {/* Biểu đồ chiếm phần còn lại của section */}
+            <div className="relative flex-1 min-h-[260px]">
               {lineByPart[selectedPart]?.length > 0 ? (
-                <div style={{ width: "100%", height: 260 }} className="mt-2">
-                  <ResponsiveContainer>
+                <div className="absolute inset-0">
+                  <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={lineByPart[selectedPart]}
                       margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
@@ -550,20 +551,14 @@ export default function Dashboard() {
                         dataKey="at"
                         interval="preserveStartEnd"
                         stroke="#d1d5db"
-                        tick={{
-                          fill: "#6b7280",
-                          fontSize: 11,
-                        }}
+                        tick={{ fill: "#6b7280", fontSize: 11 }}
                         axisLine={{ stroke: "#d1d5db" }}
                         tickLine={{ stroke: "#d1d5db" }}
                       />
                       <YAxis
                         domain={[0, 100]}
                         stroke="#d1d5db"
-                        tick={{
-                          fill: "#6b7280",
-                          fontSize: 11,
-                        }}
+                        tick={{ fill: "#6b7280", fontSize: 11 }}
                         axisLine={{ stroke: "#d1d5db" }}
                         tickLine={{ stroke: "#d1d5db" }}
                         ticks={[0, 25, 50, 75, 100]}
@@ -612,7 +607,7 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="h-64 flex flex-col items-center justify-center text-center p-6">
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
                   <div className="p-4 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-3">
                     <BarChart3 className="w-8 h-8 text-zinc-400 dark:text-zinc-600" />
                   </div>
@@ -639,7 +634,7 @@ export default function Dashboard() {
           </section>
 
           {/* Assessment (Placement + Progress) */}
-          <section className="rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+          <section className="h-full flex flex-col rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
             <div className="flex items-center justify-between gap-3 mb-6">
               <div className="flex items-center gap-2.5">
                 <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30">
@@ -665,14 +660,11 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Line: lịch sử L/R/Overall gộp */}
-            <div className="mb-6">
-              <p className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-2">
-                Lịch sử điểm (%) – gộp Placement & Progress
-              </p>
+            {/* Biểu đồ lấp đầy phần còn lại */}
+            <div className="mb-6 flex-1 min-h-[220px] relative">
               {assessmentLineData.length ? (
-                <div style={{ width: "100%", height: 220 }}>
-                  <ResponsiveContainer>
+                <div className="absolute inset-0">
+                  <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={assessmentLineData}
                       margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
@@ -724,83 +716,30 @@ export default function Dashboard() {
                         }}
                       />
                       <Legend wrapperStyle={{ fontSize: 12 }} />
-                      {/* Listening */}
+                      {/* ...3 đường Line như bạn đang có ... */}
                       <Line
                         type="monotone"
                         dataKey="Listening"
                         stroke="#10b981"
                         strokeWidth={2}
-                        dot={(props: any) => {
-                          const kind = props?.payload?.kind;
-                          const stroke =
-                            kind === "progress" ? "#059669" : "#0ea5e9";
-                          return (
-                            <circle
-                              cx={props.cx}
-                              cy={props.cy}
-                              r={3.5}
-                              stroke={stroke}
-                              strokeWidth={2}
-                              fill="#fff"
-                            />
-                          );
-                        }}
-                        activeDot={{ r: 5, strokeWidth: 2, fill: "#fff" }}
-                        animationDuration={600}
                       />
-                      {/* Reading */}
                       <Line
                         type="monotone"
                         dataKey="Reading"
                         stroke="#f59e0b"
                         strokeWidth={2}
-                        dot={(props: any) => {
-                          const kind = props?.payload?.kind;
-                          const stroke =
-                            kind === "progress" ? "#d97706" : "#f59e0b";
-                          return (
-                            <circle
-                              cx={props.cx}
-                              cy={props.cy}
-                              r={3.5}
-                              stroke={stroke}
-                              strokeWidth={2}
-                              fill="#fff"
-                            />
-                          );
-                        }}
-                        activeDot={{ r: 5, strokeWidth: 2, fill: "#fff" }}
-                        animationDuration={600}
                       />
-                      {/* Overall */}
                       <Line
                         type="monotone"
                         dataKey="Overall"
                         stroke="#6366f1"
                         strokeWidth={2}
-                        dot={(props: any) => {
-                          const kind = props?.payload?.kind;
-                          const stroke =
-                            kind === "progress" ? "#22c55e" : "#6366f1";
-                          return (
-                            <circle
-                              cx={props.cx}
-                              cy={props.cy}
-                              r={3.5}
-                              stroke={stroke}
-                              strokeWidth={2}
-                              fill="#fff"
-                            />
-                          );
-                        }}
-                        activeDot={{ r: 5, strokeWidth: 2, fill: "#fff" }}
-                        animationDuration={600}
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="h-48 flex flex-col items-center justify-center text-center p-6">
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
                   <div className="p-3 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-2">
                     <Gauge className="w-6 h-6 text-zinc-400 dark:text-zinc-600" />
                   </div>
@@ -812,97 +751,6 @@ export default function Dashboard() {
                   </p>
                 </div>
               )}
-            </div>
-
-            {/* Bar: % theo Part của lần gần nhất (có partStats) */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
-                  Phân bố theo 7 Part (lần gần nhất)
-                </p>
-                <span className="text-[11px] text-zinc-500">Đơn vị: %</span>
-              </div>
-              {(() => {
-                const latest = [...placementHist, ...progressHist]
-                  .filter((x: any) => x?.partStats)
-                  .sort(
-                    (a: any, b: any) =>
-                      new Date(b.submittedAt).getTime() -
-                      new Date(a.submittedAt).getTime()
-                  )[0] as
-                  | {
-                      partStats?: Record<
-                        string,
-                        { total: number; correct: number; acc: number }
-                      >;
-                    }
-                  | undefined;
-
-                const data = PARTS.map((p) => {
-                  const stat = latest?.partStats?.[p];
-                  return {
-                    part: PART_LABEL[p],
-                    acc: stat ? Math.round((stat.acc || 0) * 100) : 0,
-                  };
-                });
-
-                return latest ? (
-                  <div style={{ width: "100%", height: 200 }}>
-                    <ResponsiveContainer>
-                      <BarChart
-                        data={data}
-                        margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="4 4"
-                          stroke="#e5e7eb"
-                          className="dark:stroke-zinc-700 opacity-40"
-                        />
-                        <XAxis
-                          dataKey="part"
-                          stroke="#d1d5db"
-                          tick={{ fill: "#6b7280", fontSize: 11 }}
-                          axisLine={{ stroke: "#d1d5db" }}
-                          tickLine={{ stroke: "#d1d5db" }}
-                        />
-                        <YAxis
-                          domain={[0, 100]}
-                          ticks={[0, 20, 40, 60, 80, 100]}
-                          stroke="#d1d5db"
-                          tick={{ fill: "#6b7280", fontSize: 11 }}
-                          axisLine={{ stroke: "#d1d5db" }}
-                          tickLine={{ stroke: "#d1d5db" }}
-                        />
-                        <ChartTooltip
-                          contentStyle={{
-                            backgroundColor: "#ffffff",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: "12px",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                            padding: "8px 12px",
-                          }}
-                          formatter={(value: number) => `${Math.round(value)}%`}
-                          labelStyle={{
-                            color: "#6b7280",
-                            fontWeight: 600,
-                            fontSize: 12,
-                          }}
-                        />
-                        <Bar
-                          dataKey="acc"
-                          name="Accuracy"
-                          fill="#8b5cf6"
-                          radius={[6, 6, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : (
-                  <div className="h-44 flex items-center justify-center text-zinc-500 dark:text-zinc-400 text-sm">
-                    Không có thống kê theo Part cho lần gần nhất.
-                  </div>
-                );
-              })()}
             </div>
           </section>
         </div>

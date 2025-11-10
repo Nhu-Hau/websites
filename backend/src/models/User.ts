@@ -24,6 +24,13 @@ export interface IPartLevelsMeta {
   };
 }
 
+export interface IProgressMeta {
+  lastAttemptAt?: Date | null;
+  lastSuggestedAt?: Date | null;
+  completedTests?: number[];
+  lastTestVersion?: number | null;
+}
+
 export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
@@ -48,6 +55,7 @@ export interface IUser extends Document {
   lockedUntil?: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  progressMeta?: IProgressMeta;
 
   comparePassword(candidate: string): Promise<boolean>;
 }
@@ -66,6 +74,16 @@ const ToeicPredSchema = new Schema<IToeicPred>(
     overall: { type: Number, default: null },
     listening: { type: Number, default: null },
     reading: { type: Number, default: null },
+  },
+  { _id: false }
+);
+
+const ProgressMetaSchema = new Schema<IProgressMeta>(
+  {
+    lastAttemptAt: { type: Date, default: null },
+    lastSuggestedAt: { type: Date, default: null },
+    completedTests: { type: [Number], default: [] },
+    lastTestVersion: { type: Number, default: null },
   },
   { _id: false }
 );
@@ -130,6 +148,11 @@ const userSchema = new Schema<IUser>(
     loginAttempts: { type: Number, default: 0 },
     isLocked: { type: Boolean, default: false },
     lockedUntil: { type: Date, default: null },
+
+    progressMeta: {
+      type: ProgressMetaSchema,
+      default: () => ({ completedTests: [] }),
+    },
   },
   { timestamps: true, versionKey: false }
 );

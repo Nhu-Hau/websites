@@ -22,6 +22,8 @@ import socketAuthRoutes from "./routes/socketAuth.routes";
 import studyroomRoutes from "./routes/studyrooms.routes";
 import progressRoutes from "./routes/progress.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
+import badgeRoutes from "./routes/badge.routes";
+import studyScheduleRoutes from "./routes/study-schedule.routes";
 
 import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
 
@@ -33,6 +35,9 @@ app.set("etag", false); // disable ETag nếu không cần
 app.use(helmet()); // các header bảo mật
 app.use(cookieParser());
 app.use(express.json({ limit: "2mb" })); // parse body JSON
+
+// HTTP Request Logging với Morgan
+app.use(morgan("dev")); // Log format: :method :url :status :response-time ms
 
 //CORS
 const FRONTEND_ORIGIN = process.env.CLIENT_URL || "http://localhost:3000";
@@ -98,6 +103,12 @@ app.use("/api/progress", progressRoutes);
 
 // Dashboard
 app.use("/api/dashboard", dashboardRoutes);
+
+// Badges
+app.use("/api/badges", badgeRoutes);
+
+// Study Schedules
+app.use("/api/study-schedules", studyScheduleRoutes);
 
 //404 CHO API (tuỳ chọn)
 app.use((req, res, next) => {

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
 import { useAutoSave } from "./useAutoSave";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 export type UsePlacementTestReturn = {
   items: Item[];
@@ -109,10 +110,9 @@ export function usePlacementTest(): UsePlacementTestReturn {
   useAutoSave("placement", "default", answers, timeSec, started, resp, handleRestore);
 
   async function submit() {
-    const res = await fetch("/api/placement/submit", {
+    const res = await fetchWithAuth("/api/placement/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({
         answers,
         timeSec,

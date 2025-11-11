@@ -1,27 +1,17 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, {
-  useEffect,
-  useState,
-  useCallback,
-  useMemo,
-  useRef,
-} from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { ChoiceId, Item, Stimulus } from "@/types/tests";
 import type { GradeResp } from "@/types/placement";
 import { Sidebar } from "@/components/parts/Sidebar";
-import FocusHUD from "@/components/parts/FocusHUD";
 import {
   StimulusRowCard,
   StimulusColumnCard,
 } from "@/components/parts/StimulusCards";
 import { groupByStimulus } from "@/utils/groupByStimulus";
 import { toast } from "sonner";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
 import {
   Layers,
   Hash,
@@ -37,14 +27,9 @@ import {
   TrendingUp,
   TrendingDown,
   Info,
-  MessageSquare,
-  Loader2,
-  Send,
-  Play,
 } from "lucide-react";
 import { announceLevelsChanged, useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/useBasePrefix";
-import { useAutoSave } from "@/hooks/useAutoSave";
 
 const LISTENING_PARTS = new Set(["part.1", "part.2", "part.3", "part.4"]);
 
@@ -206,13 +191,9 @@ export default function PracticeRunner() {
         | "level"
       > & {
         answersMap: Record<string, { correctAnswer: ChoiceId }>;
-        savedAttemptId?: string;
       })
     | null
   >(null);
-  const [insightLoading, setInsightLoading] = useState(false);
-  const [insight, setInsight] = useState<string | null>(null);
-  const [showInsight, setShowInsight] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [started, setStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -221,32 +202,7 @@ export default function PracticeRunner() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false); // ⬅️ HUD mobile
 
   const countdownTotal = durationMin * 60;
-  const leftSec = useMemo(
-    () => Math.max(0, countdownTotal - timeSec),
-    [countdownTotal, timeSec]
-  );
-  const initialLeftSecRef = useRef<number | undefined>(undefined);
-  const prevTimeSecRef = useRef(0);
-
-  // Lưu initialLeftSec khi khôi phục (khi timeSec thay đổi từ 0 sang > 0 và started = true)
-  useEffect(() => {
-    // Khi khôi phục: timeSec thay đổi từ 0 sang > 0 và started = true
-    if (
-      started &&
-      timeSec > 0 &&
-      prevTimeSecRef.current === 0 &&
-      initialLeftSecRef.current === undefined
-    ) {
-      initialLeftSecRef.current = leftSec;
-    }
-    // Reset khi chưa start hoặc đã nộp bài
-    if (!started || resp) {
-      initialLeftSecRef.current = undefined;
-      prevTimeSecRef.current = 0;
-    } else {
-      prevTimeSecRef.current = timeSec;
-    }
-  }, [started, timeSec, leftSec, resp]);
+  const leftSec = Math.max(0, countdownTotal - timeSec);
 
   // fetch câu hỏi
   useEffect(() => {
@@ -364,7 +320,6 @@ export default function PracticeRunner() {
       timeSec,
       level,
       answersMap,
-      savedAttemptId: undefined as string | undefined,
     };
   }, [items, answers, timeSec]);
 
@@ -376,12 +331,12 @@ export default function PracticeRunner() {
     for (const it of items)
       if (answers[it.id] != null) answersPayload[it.id] = answers[it.id];
     try {
-      const { fetchWithAuth } = await import("@/lib/fetchWithAuth");
-      const res = await fetchWithAuth(
+      const res = await fetch(
         `/api/practice/parts/${encodeURIComponent(partKey)}/submit`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             level: levelNum,
             test: testNum,
@@ -395,7 +350,6 @@ export default function PracticeRunner() {
       announceLevelsChanged();
 
       // ---- Derive decision for banner ----
-      // ---- Derive decision for banner ----
       const rule = json?.recommended?.reason?.rule as
         | "promote"
         | "demote"
@@ -405,7 +359,6 @@ export default function PracticeRunner() {
         | 1
         | 2
         | 3;
-
       const reasonText =
         json?.recommended?.reason?.text ||
         json?.recommended?.reason?.message ||
@@ -414,7 +367,6 @@ export default function PracticeRunner() {
           : rule === "demote"
           ? "Hiệu suất gần đây thấp, dưới ngưỡng duy trì."
           : "Hiệu suất ổn định.");
-
       const derivedRule: "promote" | "demote" | "keep" =
         rule ??
         (newLv > levelNum ? "promote" : newLv < levelNum ? "demote" : "keep");
@@ -425,39 +377,9 @@ export default function PracticeRunner() {
         to: newLv,
         reason: reasonText,
       });
-
-      /** 🔹 LƯU QUYẾT ĐỊNH LEVEL để Dashboard đọc */
-      try {
-        if (typeof window !== "undefined") {
-          localStorage.setItem(
-            `toeic:lastDecision:${String(partKey)}`,
-            JSON.stringify({
-              from: levelNum as 1 | 2 | 3,
-              to: newLv,
-              rule: derivedRule, // "promote" | "demote" | "keep"
-              ts: Date.now(),
-            })
-          );
-          // (tuỳ chọn) bắn event để Dashboard nghe và refresh trạng thái
-          window.dispatchEvent(
-            new CustomEvent("toeic:level-decision", {
-              detail: { partKey, from: levelNum, to: newLv, rule: derivedRule },
-            })
-          );
-        }
-      } catch {
-        /* ignore */
-      }
-
-      // xây result và hiển thị
       const result = buildResult();
-      if (json?.savedAttemptId) {
-        result.savedAttemptId = json.savedAttemptId;
-      }
       setResp(result);
       setShowDetails(false);
-      // Scroll to top after submission
-      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       console.error(e);
       toast.error("Nộp bài thất bại");
@@ -478,53 +400,6 @@ export default function PracticeRunner() {
   const totalQ = items.length;
   const answeredQ = useMemo(() => Object.keys(answers).length, [answers]);
   const progress = totalQ ? Math.round((answeredQ / totalQ) * 100) : 0;
-
-  const handleStart = () => {
-    setStarted(true);
-    setTimeout(
-      () =>
-        document.getElementById("q-1")?.scrollIntoView({ behavior: "smooth" }),
-      100
-    );
-  };
-  // Auto-save: khôi phục dữ liệu
-  const handleRestore = useCallback(
-    (data: {
-      answers: Record<string, ChoiceId>;
-      timeSec: number;
-      started: boolean;
-    }) => {
-      // Khôi phục nếu có answers hoặc đã started
-      if (
-        (data.answers && Object.keys(data.answers).length > 0) ||
-        data.started
-      ) {
-        if (data.answers && Object.keys(data.answers).length > 0) {
-          setAnswers(data.answers);
-        }
-        setTimeSec(data.timeSec);
-        if (data.started) {
-          setStarted(true);
-        }
-        toast.info("Đã khôi phục dữ liệu bài làm trước đó", {
-          duration: 3000,
-        });
-      }
-    },
-    []
-  );
-
-  // Auto-save: sử dụng hook (testId = partKey-level-test)
-  const testId = `${partKey}-${level}-${test}`;
-  useAutoSave(
-    "practice",
-    testId,
-    answers,
-    timeSec,
-    started,
-    resp,
-    handleRestore
-  );
 
   // Header — badge nằm chung 1 hàng, py gọn
   const Header = () => (
@@ -608,7 +483,6 @@ export default function PracticeRunner() {
         onToggleDetails={() => setShowDetails((s) => !s)}
         showDetails={showDetails}
         countdownSec={countdownTotal}
-        initialLeftSec={initialLeftSecRef.current}
         started={started}
         onStart={() => {
           setStarted(true);
@@ -708,117 +582,6 @@ export default function PracticeRunner() {
               }}
             />
 
-            {/* Ô nhận xét */}
-            {resp?.savedAttemptId && user?.access === "premium" && (
-              <section className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-6 shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    Nhận xét từ AI
-                  </h3>
-                  {!showInsight && (
-                    <button
-                      onClick={async () => {
-                        if (insight) {
-                          setShowInsight(true);
-                          return;
-                        }
-                        if (!resp?.savedAttemptId) return;
-                        setInsightLoading(true);
-                        try {
-                          const res = await fetch(
-                            `/api/chat/insight/practice/${resp.savedAttemptId}`,
-                            {
-                              method: "POST",
-                              credentials: "include",
-                            }
-                          );
-                          if (!res.ok)
-                            throw new Error("Failed to load insight");
-                          const json = await res.json();
-                          if (json?.data?.insight) {
-                            setInsight(json.data.insight);
-                            setShowInsight(true);
-                          } else {
-                            toast.error("Không thể tạo nhận xét");
-                          }
-                        } catch (e) {
-                          console.error(e);
-                          toast.error("Lỗi khi tải nhận xét");
-                        } finally {
-                          setInsightLoading(false);
-                        }
-                      }}
-                      disabled={insightLoading}
-                      className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-500 text-white text-sm font-medium hover:from-purple-700 hover:to-purple-600 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {insightLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Đang tải...
-                        </>
-                      ) : (
-                        <>
-                          <MessageSquare className="h-4 w-4" />
-                          {insight ? "Xem nhận xét" : "Tải nhận xét"}
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-                {showInsight && insight && (
-                  <div className="prose prose-sm max-w-none dark:prose-invert border-t border-zinc-200 dark:border-zinc-700 pt-4">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeHighlight]}
-                      components={{
-                        h1: ({ children }) => (
-                          <h1 className="text-base font-bold mb-2">
-                            {children}
-                          </h1>
-                        ),
-                        h2: ({ children }) => (
-                          <h2 className="text-sm font-bold mb-2">{children}</h2>
-                        ),
-                        h3: ({ children }) => (
-                          <h3 className="text-xs font-bold mb-1">{children}</h3>
-                        ),
-                        p: ({ children }) => (
-                          <p className="mb-2 last:mb-0 text-sm">{children}</p>
-                        ),
-                        ul: ({ children }) => (
-                          <ul className="list-disc list-inside mb-2 space-y-1 text-sm">
-                            {children}
-                          </ul>
-                        ),
-                        ol: ({ children }) => (
-                          <ol className="list-decimal list-inside mb-2 space-y-1 text-sm">
-                            {children}
-                          </ol>
-                        ),
-                        li: ({ children }) => (
-                          <li className="text-sm">{children}</li>
-                        ),
-                        strong: ({ children }) => (
-                          <strong className="font-semibold">{children}</strong>
-                        ),
-                        em: ({ children }) => (
-                          <em className="italic">{children}</em>
-                        ),
-                      }}
-                    >
-                      {insight}
-                    </ReactMarkdown>
-                  </div>
-                )}
-                {showInsight && !insight && (
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4">
-                    Chưa có nhận xét
-                  </p>
-                )}
-              </section>
-            )}
-
             {/* Tổng quan kết quả */}
             <section className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-6 shadow-lg">
               <h2 className="text-2xl font-extrabold text-center bg-gradient-to-r from-emerald-600 to-sky-600 bg-clip-text text-transparent mb-6">
@@ -906,19 +669,161 @@ export default function PracticeRunner() {
         )}
       </main>
 
-      <FocusHUD
-        started={started}
-        resp={resp}
-        focusMode={focusMode}
-        durationMin={durationMin}
-        total={totalQ}
-        currentIndex={currentIndex}
-        leftSec={leftSec}
-        progressPercent={progress}
-        onStart={handleStart}
-        onSubmit={submit}
-        onOpenQuickNav={() => setMobileNavOpen(true)}
-      />
+      {/* 🔹 Nút BẮT ĐẦU cho mobile (<lg) – đặt NGAY SAU </main> */}
+      {!started && !resp && (
+        <div className="lg:hidden fixed bottom-5 inset-x-5 z-50">
+          <button
+            type="button"
+            onClick={() => {
+              setStarted(true);
+              setTimeout(
+                () =>
+                  document
+                    .getElementById("q-1")
+                    ?.scrollIntoView({ behavior: "smooth" }),
+                100
+              );
+            }}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl
+                     bg-emerald-600 hover:bg-emerald-500 active:scale-95
+                     text-white text-sm font-bold shadow-lg"
+          >
+            Bắt đầu
+          </button>
+        </div>
+      )}
+
+      {/* HUD Focus (desktop ≥ lg) */}
+      {focusMode && started && !resp && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden lg:flex items-center gap-4 rounded-full bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-300 dark:border-zinc-700 px-5 py-2.5 shadow-2xl text-sm font-bold"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="flex items-center gap-1.5">
+            Câu
+            <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
+              {currentIndex + 1}
+            </span>
+            / {totalQ}
+          </span>
+          <span className="flex items-center gap-1 text-red-600 dark:text-red-400">
+            <Clock className="w-4 h-4" />
+            {fmtTime(leftSec)}
+          </span>
+          <div className="w-32 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <button
+            onClick={() => setFocusMode(false)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all hover:scale-105"
+            title="Mở lại Sidebar (F)"
+          >
+            <Focus className="w-4 h-4" />
+            Mở lại
+          </button>
+        </div>
+      )}
+
+      {/* HUD Mobile button (< lg) */}
+      {started && !resp && (
+        <button
+          type="button"
+          onClick={() => setMobileNavOpen(true)}
+          className="lg:hidden fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 px-3.5 py-2.5 rounded-full
+                   bg-zinc-900 text-white dark:bg-zinc-800 shadow-lg border border-zinc-700/50 active:scale-95"
+          aria-label="Mở điều hướng nhanh"
+        >
+          <Focus className="w-4 h-4" />
+          <span className="text-sm font-semibold">
+            Câu {currentIndex + 1}/{totalQ}
+          </span>
+          <span className="text-xs opacity-80">• {fmtTime(leftSec)}</span>
+        </button>
+      )}
+
+      {/* Mobile bottom sheet (< lg) */}
+      {mobileNavOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          {/* backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setMobileNavOpen(false)}
+            aria-hidden
+          />
+          {/* sheet */}
+          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-700 p-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                <Focus className="w-4 h-4" />
+                Điều hướng nhanh
+              </div>
+              <button
+                onClick={() => setMobileNavOpen(false)}
+                className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+              >
+                Đóng
+              </button>
+            </div>
+
+            {/* tiến độ */}
+            <div className="mb-3">
+              <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="mt-1.5 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                <span>
+                  Câu {currentIndex + 1}/{totalQ}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  {fmtTime(leftSec)}
+                </span>
+              </div>
+            </div>
+
+            {/* danh sách câu hỏi */}
+            <div className="max-h-[40vh] overflow-y-auto">
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: totalQ }).map((_, i) => {
+                  const idx = i;
+                  const itemId = items[idx]?.id || "";
+                  const answered = Object.prototype.hasOwnProperty.call(
+                    answers,
+                    itemId
+                  );
+                  const isCurrent = currentIndex === idx;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setMobileNavOpen(false);
+                        jumpTo(idx);
+                      }}
+                      className={[
+                        "px-3 py-1.5 rounded-lg text-sm font-semibold border transition",
+                        isCurrent
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : answered
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800"
+                          : "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700",
+                      ].join(" ")}
+                    >
+                      {i + 1}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

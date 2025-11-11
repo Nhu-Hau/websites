@@ -241,8 +241,8 @@ export async function sendVerificationCode(req: Request, res: Response) {
       resendCount: (latest?.resendCount ?? 0) + 1, // giờ TS biết trường này tồn tại
     });
 
-    // Gửi email
-    await sendMail({
+    // Gửi email bất đồng bộ (không await) để trả về response nhanh
+    sendMail({
       to: email,
       subject: "Mã xác thực đăng ký tài khoản",
       html: `
@@ -251,8 +251,12 @@ export async function sendVerificationCode(req: Request, res: Response) {
         <p style="font-size:20px;font-weight:700;letter-spacing:3px">${code}</p>
         <p>Mã này có hiệu lực trong 10 phút.</p>
       `,
+    }).catch((err) => {
+      console.error("[sendVerificationCode] Email send failed:", err);
+      // Không throw để không ảnh hưởng response
     });
 
+    // Trả về response ngay lập tức, không đợi email
     return res.json({
       message: "Mã xác thực đã được gửi đến email của bạn",
       expiresAt: doc.expiresAt,
@@ -547,8 +551,8 @@ export async function forgotPassword(req: Request, res: Response) {
     expiresAt: new Date(Date.now() + 10 * 60 * 1000),
   });
 
-  /** C) Gửi email: cả LINK và MÃ để người dùng chọn cách thuận tiện */
-  await sendMail({
+  /** C) Gửi email: cả LINK và MÃ để người dùng chọn cách thuận tiện - bất đồng bộ */
+  sendMail({
     to: email,
     subject: "Đặt lại mật khẩu",
     html: `
@@ -557,8 +561,12 @@ export async function forgotPassword(req: Request, res: Response) {
       <p style="font-size:20px;font-weight:700;letter-spacing:3px">${code}</p>
       <hr />
     `,
+  }).catch((err) => {
+    console.error("[forgotPassword] Email send failed:", err);
+    // Không throw để không ảnh hưởng response
   });
 
+  // Trả về response ngay lập tức, không đợi email
   return res.json({
     message:
       "Vui lòng kiểm tra email để lấy mã xác nhận hoặc liên kết đặt lại mật khẩu.",

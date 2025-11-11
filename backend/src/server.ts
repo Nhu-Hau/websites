@@ -4,6 +4,7 @@ dotenv.config();
 
 import { createServer } from "./app";
 import { setupSocketIO } from "./lib/socket";
+import { startCronJobs } from "./lib/cron";
 import { Server as HTTPServer } from "http";
 
 
@@ -19,9 +20,13 @@ createServer()
     // Make io available globally
     (global as any).io = io;
     
+    // Start cron jobs
+    startCronJobs();
+    
     server.listen(PORT, () => {
       console.log(`Server listening on http://localhost:${PORT}`);
       console.log(`Socket.IO server ready`);
+      console.log(`Cron jobs started`);
     });
   })
   .catch((err) => {

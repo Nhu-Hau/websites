@@ -1,12 +1,13 @@
 // backend/src/controllers/progress.controller.ts
 import { Request, Response } from "express";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { ProgressAttempt } from "../models/ProgressAttempt";
 import { PracticeAttempt } from "../models/PracticeAttempt";
 import { User } from "../models/User";
 import { accessCookieName } from "../config/cookies";
 import { verifyAccessToken } from "../lib/jwt";
 import { chatService } from "../services/chat.service";
+import { checkAndAwardBadges } from "../services/badge.service";
 
 const ITEMS_COLL =
   process.env.PROGRESS_PARTS_COLL ||
@@ -391,6 +392,11 @@ export async function submitProgress(req: Request, res: Response) {
       "default"
     ).catch((err) => {
       console.error("[submitProgress] Error generating Learning Insight:", err);
+    });
+
+    // Kiểm tra và cấp badges (async, không block response)
+    checkAndAwardBadges(new Types.ObjectId(String(userId))).catch((err) => {
+      console.error("[submitProgress] Error checking badges:", err);
     });
 
     return res.json({

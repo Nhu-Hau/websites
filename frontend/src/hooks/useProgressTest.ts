@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
 import { useAutoSave } from "./useAutoSave";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 export type UseProgressTestReturn = {
   items: Item[];
@@ -177,10 +178,9 @@ export function useProgressTest(): UseProgressTestReturn {
 
   // submit
   async function submit() {
-    const res = await fetch("/api/progress/submit", {
+    const res = await fetchWithAuth("/api/progress/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({
         answers,
         timeSec,

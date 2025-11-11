@@ -4,6 +4,7 @@ import mongoose, { Types } from "mongoose";
 import { PracticeAttempt } from "../models/PracticeAttempt";
 import { User } from "../models/User";
 import { chatService } from "../services/chat.service";
+import { checkAndAwardBadges } from "../services/badge.service";
 
 const PARTS_COLL = process.env.PARTS_COLL || "practice_parts";
 const VALID_PARTS = new Set([
@@ -294,6 +295,11 @@ export async function submitPracticePart(req: Request, res: Response) {
         )
       ),
     };
+
+    // Kiểm tra và cấp badges (async, không block response)
+    checkAndAwardBadges(new Types.ObjectId(String(userId))).catch((err) => {
+      console.error("[submitPracticePart] Error checking badges:", err);
+    });
 
     return res.json({
       total,

@@ -179,7 +179,7 @@ export class ChatService {
     const basePrompt = `Bạn là trợ lý Tiếng Anh chuyên nghiệp dành cho người Việt, chuyên về TOEIC/IELTS.
 
 **Quy tắc:**
-- Ngôn ngữ: Giải thích bằng Tiếng Việt, ví dụ bằng Tiếng Anh (trừ khi người dùng yêu cầu khác).
+- Ngôn ngữ: Giải thích bằng Tiếng Việt, ví dụ bằng Tiếng Anh (trừ khi người dùng yêu cầu khác). TUYỆT ĐỐI KHÔNG sử dụng tiếng Trung Quốc (中文, 汉语) hoặc bất kỳ ký tự Trung Quốc nào trong câu trả lời. Chỉ sử dụng Tiếng Việt và Tiếng Anh.
 - Phạm vi: Chỉ hỗ trợ Tiếng Anh (TOEIC/IELTS, ngữ pháp, từ vựng, kỹ năng, dịch thuật, sửa lỗi, lộ trình học). Từ chối lịch sự nếu câu hỏi ngoài phạm vi.
 - Phong cách: Ngắn gọn, rõ ràng, dùng Markdown hợp lý. Không dùng emoji.
 - Thích nghi: Đánh giá trình độ (beginner/intermediate/advanced) và điều chỉnh độ khó phù hợp.
@@ -722,10 +722,23 @@ export class ChatService {
         throw new Error(`${provider.name} response không có content`);
       }
 
-      const text = data.choices[0].message.content.trim();
+      let text = data.choices[0].message.content.trim();
 
       if (!text) {
         throw new Error(`${provider.name} trả về content rỗng`);
+      }
+
+      // Loại bỏ các ký tự Trung Quốc nếu có (phòng ngừa)
+      // Kiểm tra xem có ký tự Trung Quốc không (Unicode range: \u4e00-\u9fff)
+      const chineseRegex = /[\u4e00-\u9fff]+/g;
+      if (chineseRegex.test(text)) {
+        console.warn(`[ChatService] Phát hiện ký tự Trung Quốc trong response, đang loại bỏ...`);
+        // Loại bỏ các đoạn có ký tự Trung Quốc
+        text = text.split('\n').filter((line: string) => !chineseRegex.test(line)).join('\n');
+        // Nếu sau khi lọc mà text rỗng, thêm thông báo
+        if (!text.trim()) {
+          text = "Xin lỗi, có lỗi xảy ra khi tạo phản hồi. Vui lòng thử lại.";
+        }
       }
 
       return text;

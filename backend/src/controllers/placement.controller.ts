@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { PlacementAttempt } from "../models/PlacementAttempt";
 import { User } from "../models/User";
 import { chatService } from "../services/chat.service";
+import { checkAndAwardBadges } from "../services/badge.service";
 
 const ITEMS_COLL = process.env.PLACEMENT_PARTS_COLL || "placement_parts";
 const STIMULI_COLL = process.env.PLACEMENT_STIMULI_COLL || "placement_stimuli";
@@ -322,6 +323,11 @@ export async function submitPlacement(req: Request, res: Response) {
       "default"
     ).catch((err) => {
       console.error("[submitPlacement] Error generating Learning Insight:", err);
+    });
+
+    // Kiểm tra và cấp badges (async, không block response)
+    checkAndAwardBadges(new Types.ObjectId(String(userId))).catch((err) => {
+      console.error("[submitPlacement] Error checking badges:", err);
     });
 
     return res.json({

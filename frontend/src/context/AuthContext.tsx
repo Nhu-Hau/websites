@@ -221,7 +221,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Auto-refresh token trước khi hết hạn (mỗi 25 phút, token có 30 phút)
+  // Auto-refresh token trước khi hết hạn (mỗi 20 phút, token có 30 phút) - tăng tần suất để tránh hết hạn
   useEffect(() => {
     if (!user) return;
     
@@ -258,7 +258,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isRefreshing.current = false;
         console.warn("Auto-refresh token failed:", e);
       }
-    }, 25 * 60 * 1000); // Mỗi 25 phút
+    }, 20 * 60 * 1000); // Mỗi 20 phút (tăng tần suất từ 25 phút)
 
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps

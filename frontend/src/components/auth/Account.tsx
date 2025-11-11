@@ -526,20 +526,20 @@ export default function Account() {
         )}
       </section>
 
-      {/* ===== Meta / CreatedAt + Links ===== */}
+      {/* ===== Stats Grid ===== */}
       <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 bg-white/90 dark:bg-zinc-900/80 backdrop-blur-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
               Thời gian tạo
             </div>
             <div className="font-medium text-zinc-900 dark:text-zinc-100">
-              {user.createdAt ? new Date(user.createdAt).toLocaleString() : "—"}
+              {user.createdAt ? new Date(user.createdAt).toLocaleDateString("vi-VN") : "—"}
             </div>
           </div>
 
           <div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
               Placement gần nhất
             </div>
             <div className="font-medium">
@@ -553,13 +553,13 @@ export default function Account() {
                   Xem kết quả
                 </Link>
               ) : (
-                "—"
+                <span className="text-zinc-500 dark:text-zinc-400">Chưa có</span>
               )}
             </div>
           </div>
 
           <div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
               Lịch sử luyện tập
             </div>
             <div className="font-medium">
@@ -571,8 +571,69 @@ export default function Account() {
               </Link>
             </div>
           </div>
+
+          <div>
+            <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+              Lịch học sắp tới
+            </div>
+            <div className="font-medium">
+              <Link
+                className="underline text-sky-700 dark:text-sky-300 hover:text-sky-600 dark:hover:text-sky-200"
+                href={`${base}/dashboard`}
+              >
+                Xem lịch học
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* ===== Recent Activity ===== */}
+      {recent.length > 0 && (
+        <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 bg-white/90 dark:bg-zinc-900/80 backdrop-blur-sm">
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 flex items-center gap-2">
+            <Activity className="w-4 h-4" />
+            Hoạt động gần đây
+          </h3>
+          <div className="space-y-2">
+            {recent.slice(0, 5).map((attempt) => (
+              <div
+                key={attempt._id}
+                className="flex items-center justify-between p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 text-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-zinc-500" />
+                  <span className="text-zinc-700 dark:text-zinc-300">
+                    {attempt.partKey
+                      ? `Part ${attempt.partKey.split(".")[1]}`
+                      : attempt.test
+                      ? `Test ${attempt.test}`
+                      : "Practice"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                    {attempt.acc}%
+                  </span>
+                  {attempt.submittedAt && (
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {new Date(attempt.submittedAt).toLocaleDateString("vi-VN")}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          {recent.length > 5 && (
+            <Link
+              href={`${base}/practice/history`}
+              className="mt-3 text-sm text-sky-700 dark:text-sky-300 hover:underline flex items-center gap-1"
+            >
+              Xem tất cả <ChevronRight className="w-4 h-4" />
+            </Link>
+          )}
+        </section>
+      )}
 
       {/* ===== Crop Modal ===== */}
       {cropOpen && rawImage && (

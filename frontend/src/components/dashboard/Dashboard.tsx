@@ -29,6 +29,8 @@ import { toast } from "sonner";
 import { useBasePrefix } from "@/hooks/useBasePrefix";
 import ActivityHeatmap from "./ActivityHeatmap";
 import GoalProgress from "./GoalProgress";
+import Badges from "./Badges";
+import StudySchedule from "./StudySchedule";
 
 /* ===================== Types ===================== */
 type Lvl = 1 | 2 | 3;
@@ -572,99 +574,97 @@ export default function Dashboard() {
         {/* ====== Grid 2 cột: Practice progress (trái) + Assessment (phải) ====== */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-stretch">
           {/* Charts - Tiến bộ luyện tập theo PART */}
-          <section className="h-full flex flex-col rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-indigo-900/30 dark:to-blue-900/30">
-                  <BarChart3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          <section className="max-h-96 flex flex-col rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-4 sm:p-5 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+            {/* Header: giảm margin/padding + font */}
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-indigo-900/30 dark:to-blue-900/30">
+                  <BarChart3 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                <h2 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white">
                   Tiến bộ luyện tập
                 </h2>
               </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+              <div className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                 Đơn vị: % (Accuracy)
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-5">
-              {PARTS.map((p) => {
-                const isSel = selectedPart === p;
-                return (
-                  <button
-                    key={p}
-                    onClick={() => setSelectedPart(p)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border
+            {/* Part chips: thu nhỏ + cho phép kéo ngang nếu tràn */}
+            <div className="-mx-1 mb-3 overflow-x-auto no-scrollbar">
+              <div className="px-1 flex items-center gap-1.5 min-w-max">
+                {PARTS.map((p) => {
+                  const isSel = selectedPart === p;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setSelectedPart(p)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all duration-200 border
               ${
                 isSel
                   ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-indigo-600 shadow-sm"
                   : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
               }`}
-                  >
-                    {PART_LABEL[p]}
-                  </button>
-                );
-              })}
+                    >
+                      {PART_LABEL[p]}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Biểu đồ chiếm phần còn lại của section */}
-            <div className="relative flex-1 min-h-[260px]">
+            {/* Chart chiếm phần còn lại, min-height thấp hơn để khớp max-h-96 */}
+            <div className="relative flex-1 min-h-[220px]">
               {lineByPart[selectedPart]?.length > 0 ? (
                 <div className="absolute inset-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={lineByPart[selectedPart]}
-                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                      margin={{ top: 6, right: 8, left: 0, bottom: 0 }} // giảm margin
                     >
                       <CartesianGrid
-                        strokeDasharray="4 4"
+                        strokeDasharray="3 3"
                         stroke="#e5e7eb"
                         className="dark:stroke-zinc-700 opacity-40"
                       />
                       <XAxis
                         dataKey="at"
                         interval="preserveStartEnd"
-                        stroke="#d1d5db"
-                        tick={{ fill: "#6b7280", fontSize: 11 }}
+                        tick={{ fill: "#6b7280", fontSize: 10 }}
                         axisLine={{ stroke: "#d1d5db" }}
                         tickLine={{ stroke: "#d1d5db" }}
+                        minTickGap={18}
                       />
                       <YAxis
                         domain={[0, 100]}
-                        stroke="#d1d5db"
-                        tick={{ fill: "#6b7280", fontSize: 11 }}
+                        tick={{ fill: "#6b7280", fontSize: 10 }}
                         axisLine={{ stroke: "#d1d5db" }}
                         tickLine={{ stroke: "#d1d5db" }}
                         ticks={[0, 25, 50, 75, 100]}
-                        label={{
-                          value: "Accuracy (%)",
-                          angle: -90,
-                          position: "insideLeft",
-                          style: {
-                            textAnchor: "middle",
-                            fill: "#6b7280",
-                            fontSize: 11,
-                          },
-                        }}
+                        width={26} // hẹp trục Y để tăng vùng vẽ
                       />
                       <ChartTooltip
                         contentStyle={{
                           backgroundColor: "#ffffff",
                           border: "1px solid #e5e7eb",
-                          borderRadius: "12px",
-                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                          padding: "8px 12px",
+                          borderRadius: "10px",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                          padding: "6px 10px",
                         }}
                         labelStyle={{
                           color: "#6b7280",
                           fontWeight: 600,
-                          fontSize: 12,
+                          fontSize: 11,
                         }}
-                        itemStyle={{ color: "#6366f1", fontWeight: 500 }}
+                        itemStyle={{
+                          color: "#6366f1",
+                          fontWeight: 500,
+                          fontSize: 11,
+                        }}
                         cursor={{
                           stroke: "#d1d5db",
                           strokeWidth: 1,
-                          strokeDasharray: "5 5",
+                          strokeDasharray: "4 4",
                         }}
                         formatter={(
                           value: number,
@@ -673,15 +673,13 @@ export default function Dashboard() {
                         ) => {
                           const payload = props.payload;
                           const level = payload?.level
-                            ? ` • Level ${payload.level}`
+                            ? ` • Level${payload.level}`
                             : "";
                           const test =
-                            payload?.test != null
-                              ? ` • Test ${payload.test}`
-                              : "";
+                            payload?.test != null ? ` • Test${payload.test}` : "";
                           return [
                             `${Math.round(value)}%${level}${test}`,
-                            "Accuracy",
+                            "Acc",
                           ];
                         }}
                       />
@@ -689,20 +687,20 @@ export default function Dashboard() {
                         type="monotone"
                         dataKey="acc"
                         stroke="#6366f1"
-                        strokeWidth={2.5}
+                        strokeWidth={2}
                         dot={{
-                          r: 4,
+                          r: 3.2,
                           stroke: "#6366f1",
-                          strokeWidth: 2,
+                          strokeWidth: 1.5,
                           fill: "#fff",
-                        }}
+                        }} // dot nhỏ
                         activeDot={{
-                          r: 6,
+                          r: 5,
                           stroke: "#6366f1",
                           strokeWidth: 2,
                           fill: "#fff",
                         }}
-                        animationDuration={800}
+                        animationDuration={700}
                       />
                       {lineByPart[selectedPart]?.some(
                         (d) => d.movingAvg != null
@@ -711,11 +709,11 @@ export default function Dashboard() {
                           type="monotone"
                           dataKey="movingAvg"
                           stroke="#94a3b8"
-                          strokeWidth={1.5}
-                          strokeDasharray="5 5"
+                          strokeWidth={1.25}
+                          strokeDasharray="5 4"
                           dot={false}
                           activeDot={false}
-                          animationDuration={800}
+                          animationDuration={700}
                         />
                       )}
                     </LineChart>
@@ -723,49 +721,54 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-                  <div className="p-4 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-3">
-                    <BarChart3 className="w-8 h-8 text-zinc-400 dark:text-zinc-600" />
+                  <div className="p-3 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-2.5">
+                    <BarChart3 className="w-6 h-6 text-zinc-400 dark:text-zinc-600" />
                   </div>
-                  <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                  <p className="text-[13px] font-medium text-zinc-600 dark:text-zinc-400">
                     Chưa có dữ liệu
                   </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-500 mt-1">
                     Luyện tập để theo dõi tiến bộ!
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="mt-4 flex items-center justify-center gap-6 text-xs text-zinc-500 dark:text-zinc-400">
+            {/* Legend: gọn tối đa và thấp hơn */}
+            <div className="mt-3 flex items-center justify-center gap-4 text-[11px] text-zinc-500 dark:text-zinc-400">
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-indigo-500" />
-                <span>Accuracy (%)</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
+                <span>Accuracy</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5 bg-zinc-300 dark:bg-zinc-700" />
-                <span>Đường xu hướng (Moving Average)</span>
+                <span>Moving Avg</span>
               </div>
             </div>
           </section>
 
-          {/* Assessment (Placement + Progress) */}
-          <section className="h-full flex flex-col rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
-            <div className="flex items-center justify-between gap-3 mb-6">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30">
-                  <Gauge className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+          {/* Assessment (compact, height-optimized) */}
+          <section className="max-h-96 flex flex-col rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-4 sm:p-5 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+            {/* Header: nhỏ gọn */}
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30">
+                  <Gauge className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                 </div>
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                <h2 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white">
                   Assessment
                 </h2>
               </div>
-              <div className="flex items-center gap-3 text-xs">
+
+              {/* Links: chữ nhỏ, gói trong 1 dòng, tự xuống dòng nếu hẹp */}
+              <div className="flex items-center gap-2 text-[11px] sm:text-xs flex-wrap">
                 <Link
                   href={`${basePrefix}/placement/result/last`}
                   className="underline text-violet-600 dark:text-violet-400 hover:opacity-80"
                 >
                   Kết quả Placement gần nhất
                 </Link>
+                <span className="text-zinc-300 dark:text-zinc-600">•</span>
                 <Link
                   href={`${basePrefix}/progress`}
                   className="underline text-emerald-600 dark:text-emerald-400 hover:opacity-80"
@@ -775,93 +778,127 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Biểu đồ lấp đầy phần còn lại */}
-            <div className="mb-6 flex-1 min-h-[220px] relative">
+            {/* Chart chiếm phần còn lại */}
+            <div className="relative flex-1 min-h-[210px]">
               {assessmentLineData.length ? (
                 <div className="absolute inset-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={assessmentLineData}
-                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                      margin={{ top: 6, right: 8, left: 0, bottom: 0 }} // giảm margin
                     >
                       <CartesianGrid
-                        strokeDasharray="4 4"
+                        strokeDasharray="3 3"
                         stroke="#e5e7eb"
                         className="dark:stroke-zinc-700 opacity-40"
                       />
                       <XAxis
                         dataKey="at"
                         interval="preserveStartEnd"
-                        stroke="#d1d5db"
-                        tick={{ fill: "#6b7280", fontSize: 11 }}
+                        tick={{ fill: "#6b7280", fontSize: 10 }}
                         axisLine={{ stroke: "#d1d5db" }}
                         tickLine={{ stroke: "#d1d5db" }}
+                        minTickGap={18}
                       />
                       <YAxis
                         domain={[0, 990]}
                         ticks={[0, 200, 400, 600, 800, 990]}
-                        stroke="#d1d5db"
-                        tick={{ fill: "#6b7280", fontSize: 11 }}
+                        tick={{ fill: "#6b7280", fontSize: 10 }}
                         axisLine={{ stroke: "#d1d5db" }}
                         tickLine={{ stroke: "#d1d5db" }}
-                        label={{
-                          value: "Điểm TOEIC",
-                          angle: -90,
-                          position: "insideLeft",
-                          style: {
-                            textAnchor: "middle",
-                            fill: "#6b7280",
-                            fontSize: 11,
-                          },
-                        }}
+                        width={30} // hẹp trục Y để tăng vùng vẽ
                       />
                       <ChartTooltip
                         contentStyle={{
                           backgroundColor: "#ffffff",
                           border: "1px solid #e5e7eb",
-                          borderRadius: "12px",
-                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                          padding: "8px 12px",
+                          borderRadius: "10px",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                          padding: "6px 10px",
                         }}
                         labelStyle={{
                           color: "#6b7280",
                           fontWeight: 600,
-                          fontSize: 12,
+                          fontSize: 11,
+                        }}
+                        itemStyle={{ fontSize: 11 }}
+                        cursor={{
+                          stroke: "#d1d5db",
+                          strokeWidth: 1,
+                          strokeDasharray: "4 4",
                         }}
                         formatter={(
                           value: number,
                           name: string,
                           props: any
                         ) => {
+                          // Hiển thị điểm làm tròn bội số 5 cho “feel” TOEIC
+                          const rounded5 = Math.round(value / 5) * 5;
                           const kind =
                             props?.payload?.kind === "progress"
                               ? "Progress Test"
                               : "Placement Test";
-                          return [
-                            `${Math.round(value)} điểm`,
-                            `${name} • ${kind}`,
-                          ];
+                          return [`${rounded5} điểm`, `${name} • ${kind}`];
                         }}
                       />
-                      <Legend wrapperStyle={{ fontSize: 12 }} />
-                      {/* ...3 đường Line như bạn đang có ... */}
+
+                      {/* Lines: nét vừa, dot nhỏ để đỡ chiếm chỗ */}
                       <Line
                         type="monotone"
                         dataKey="Listening"
                         stroke="#10b981"
                         strokeWidth={2}
+                        dot={{
+                          r: 3,
+                          stroke: "#10b981",
+                          strokeWidth: 1.5,
+                          fill: "#fff",
+                        }}
+                        activeDot={{
+                          r: 5,
+                          stroke: "#10b981",
+                          strokeWidth: 2,
+                          fill: "#fff",
+                        }}
+                        animationDuration={700}
                       />
                       <Line
                         type="monotone"
                         dataKey="Reading"
                         stroke="#f59e0b"
                         strokeWidth={2}
+                        dot={{
+                          r: 3,
+                          stroke: "#f59e0b",
+                          strokeWidth: 1.5,
+                          fill: "#fff",
+                        }}
+                        activeDot={{
+                          r: 5,
+                          stroke: "#f59e0b",
+                          strokeWidth: 2,
+                          fill: "#fff",
+                        }}
+                        animationDuration={700}
                       />
                       <Line
                         type="monotone"
                         dataKey="Overall"
                         stroke="#6366f1"
                         strokeWidth={2}
+                        dot={{
+                          r: 3,
+                          stroke: "#6366f1",
+                          strokeWidth: 1.5,
+                          fill: "#fff",
+                        }}
+                        activeDot={{
+                          r: 5,
+                          stroke: "#6366f1",
+                          strokeWidth: 2,
+                          fill: "#fff",
+                        }}
+                        animationDuration={700}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -871,17 +908,51 @@ export default function Dashboard() {
                   <div className="p-3 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-2">
                     <Gauge className="w-6 h-6 text-zinc-400 dark:text-zinc-600" />
                   </div>
-                  <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                  <p className="text-[13px] font-medium text-zinc-600 dark:text-zinc-400">
                     Chưa có dữ liệu Assessment
                   </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-500 mt-1">
                     Hãy làm Placement/Progress để xem biểu đồ này.
                   </p>
                 </div>
               )}
             </div>
+
+            {/* Legend: đưa ra ngoài vùng chart để không “ăn” chiều cao chart */}
+            <div className="mt-3 flex items-center justify-center gap-4 text-[11px] text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: "#10b981" }}
+                />
+                <span>Listening</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: "#f59e0b" }}
+                />
+                <span>Reading</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: "#6366f1" }}
+                />
+                <span>Overall</span>
+              </div>
+            </div>
           </section>
         </div>
+        {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <div className="lg:col-span-1">
+            <Badges />
+          </div> */}
+        <div className="grid grid-cols-1 ">
+          <StudySchedule />
+           <Badges />
+        </div>
+        
 
         {/* 7 Parts Summary */}
         <section className="rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">

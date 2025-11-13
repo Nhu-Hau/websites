@@ -1,5 +1,8 @@
 // frontend/src/app/[locale]/study/[room]/page.tsx
-import StudyRoomPage from "@/components/features/study/StudyRoomPage";
+import dynamicImport from "next/dynamic";
+
+// Dynamic import client component nặng để tối ưu bundle size
+const StudyRoomPage = dynamicImport(() => import("@/components/features/study/StudyRoomPage"));
 
 export default function StudyRoomWrapper() {
   return (

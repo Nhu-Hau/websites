@@ -1,7 +1,6 @@
-"use client"
-import React, { useState } from "react";
-import Image from "next/image";
+import React from "react";
 import SectionHeader from "./SectionHeader";
+import { TestimonialAvatar } from "./TestimonialAvatar";
 
 type Testimonial = {
   avatar: string;
@@ -9,25 +8,6 @@ type Testimonial = {
   score: string;
   quote: string;
 };
-
-function Avatar({ src, alt }: { src: string; alt: string }) {
-  const [imgSrc, setImgSrc] = useState(src);
-  const fallback =
-    "https://s3.ap-southeast-2.amazonaws.com/project.toeic/avatar/default-avatar.png"; // đặt 1 ảnh dự phòng
-
-  return (
-    <Image
-      src={imgSrc}
-      alt={alt}
-      width={40}
-      height={40}
-      sizes="40px"
-      className="h-10 w-10 rounded-full object-cover"
-      onError={() => setImgSrc(fallback)}
-      loading="lazy"
-    />
-  );
-}
 
 export default function Testimonials() {
   const items: Testimonial[] = [
@@ -72,11 +52,11 @@ export default function Testimonials() {
               className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-800"
             >
               <blockquote className="text-sm leading-6 text-slate-700 dark:text-zinc-300">
-                “{t.quote}”
+                &ldquo;{t.quote}&rdquo;
               </blockquote>
               <figcaption className="mt-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Avatar src={t.avatar} alt={t.name} />
+                  <TestimonialAvatar src={t.avatar} alt={t.name} />
                   <div className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
                     {t.name}
                   </div>

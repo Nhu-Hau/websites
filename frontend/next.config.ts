@@ -10,7 +10,8 @@ function normalizeBase(url?: string) {
 }
 
 const API_BASE =
-  normalizeBase(process.env.NEXT_PUBLIC_API_BASE_URL) || "http://localhost:4000";
+  normalizeBase(process.env.NEXT_PUBLIC_API_BASE_URL) ||
+  "http://localhost:4000";
 
 const nextConfig = {
   reactStrictMode: false,

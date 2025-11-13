@@ -1,10 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import ChatBox from "@/components/common/ChatBox";
-import AdminChatBox from "@/components/common/AdminChatBox";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import ChatBox from "../../components/common/ChatBox";
+import AdminChatBox from "../../components/common/AdminChatBox";
+import Header from "../../components/common/Header";
+import Footer from "@/components/common/Footer";
 
 export default function LayoutClient({
   children,

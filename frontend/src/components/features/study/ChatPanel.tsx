@@ -270,7 +270,7 @@ export default function ChatPanel({ me, roomName }: Props) {
   const onSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      const anyEv = e as unknown as { nativeEvent?: any };
+      const anyEv = e as unknown as { nativeEvent?: { isComposing?: boolean } };
       if (anyEv?.nativeEvent?.isComposing) return;
       void sendText();
     },
@@ -407,7 +407,7 @@ export default function ChatPanel({ me, roomName }: Props) {
       }
       toast.success("Đã xóa phòng");
       window.location.href = "/study/create";
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast.error("Xóa phòng thất bại");
       console.error("Failed to delete room:", e);
     }

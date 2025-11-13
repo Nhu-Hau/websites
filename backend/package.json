@@ -23,6 +23,7 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "groq": "^4.13.0",
+    "groq-sdk": "^0.35.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "livekit-server-sdk": "^2.14.0",

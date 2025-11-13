@@ -22,7 +22,8 @@ import Swal from "sweetalert2";
 import type { CommunityComment } from "@/types/community.types";
 import { getSocket } from "@/lib/socket";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 type Attachment = {
   type: "image" | "link" | "file";

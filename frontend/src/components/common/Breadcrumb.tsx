@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 
 type Crumb = { href?: string; label: string };

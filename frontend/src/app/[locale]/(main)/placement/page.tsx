@@ -1,5 +1,8 @@
 // frontend/src/app/[locale]/placement/page.tsx
-import PlacementPage from "@/components/features/placement/index";
+import dynamic from "next/dynamic";
+
+// Dynamic import client component nặng để tối ưu bundle size
+const PlacementPage = dynamic(() => import("@/components/features/placement/index"));
 
 export default function PlacementWrapper() {
   return (

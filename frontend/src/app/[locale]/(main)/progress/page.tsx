@@ -1,5 +1,8 @@
 // frontend/src/app/[locale]/progress/page.tsx
-import ProgressPage from "@/components/features/progress";
+import dynamic from "next/dynamic";
+
+// Dynamic import client component nặng để tối ưu bundle size
+const ProgressPage = dynamic(() => import("@/components/features/progress"));
 
 export default function ProgressWrapper() {
   return (

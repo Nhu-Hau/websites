@@ -2,13 +2,13 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { useProgressTest } from "@/hooks/useProgressTest";
-import { Sidebar } from "@/components/parts/Sidebar";
-import { ResultsPanel } from "@/components/parts/ResultsPanel";
+import { useProgressTest } from "@/hooks/tests/useProgressTest";
+import { Sidebar } from "../parts/Sidebar";
+import { ResultsPanel } from "../parts/ResultsPanel";
 import { groupByStimulus } from "@/utils/groupByStimulus";
-import { StimulusRowCard, StimulusColumnCard } from "@/components/parts/StimulusCards";
+import { StimulusRowCard, StimulusColumnCard } from "../parts/StimulusCards";
 import { useAuth } from "@/context/AuthContext";
-import FocusHUD from "@/components/parts/FocusHUD";
+import FocusHUD from "@/components/features/practice/FocusHUD";
 import { toast } from "sonner";
 import {
   ListChecks,

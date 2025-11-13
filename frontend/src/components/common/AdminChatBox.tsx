@@ -12,10 +12,10 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { FaUserTie } from "react-icons/fa";
-import useClickOutside from "@/hooks/common/useClickOutside";
+import useClickOutside from "@/hooks/useClickOutside";
 import { useAuth } from "@/context/AuthContext";
-import { postJson } from "@/lib/api/client";
-import { useSocket } from "@/hooks/common/useSocket";
+import { postJson } from "@/lib/http";
+import { useSocket } from "@/hooks/useSocket";
 
 type Msg = {
   _id?: string;
@@ -122,7 +122,9 @@ export default function AdminChatBox() {
         if (response.status === 403) {
           const errorData = await response.json();
           if (errorData.code === "PREMIUM_REQUIRED") {
-            setError("Chức năng chat với Admin chỉ dành cho tài khoản Premium.");
+            setError(
+              "Chức năng chat với Admin chỉ dành cho tài khoản Premium."
+            );
             return;
           }
         }
@@ -251,10 +253,12 @@ export default function AdminChatBox() {
   const send = async () => {
     const text = input.trim();
     if (!text || sending || !user) return;
-    
+
     // Kiểm tra premium access
     if (user.access !== "premium") {
-      setError("Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.");
+      setError(
+        "Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
+      );
       return;
     }
 
@@ -318,10 +322,17 @@ export default function AdminChatBox() {
       const errorMessage = err?.message || "Có lỗi xảy ra khi gửi tin nhắn";
       const errorCode = err?.code || "";
       const errorStatus = err?.status || 0;
-      
+
       // Kiểm tra nếu lỗi là do không có premium
-      if (errorCode === "PREMIUM_REQUIRED" || errorStatus === 403 || errorMessage.includes("Premium") || errorMessage.includes("premium")) {
-        setError("Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.");
+      if (
+        errorCode === "PREMIUM_REQUIRED" ||
+        errorStatus === 403 ||
+        errorMessage.includes("Premium") ||
+        errorMessage.includes("premium")
+      ) {
+        setError(
+          "Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
+        );
       } else {
         setError(errorMessage);
       }
@@ -619,7 +630,7 @@ export default function AdminChatBox() {
                       ? "Cần tài khoản Premium để sử dụng..."
                       : "Nhập tin nhắn cho admin..."
                   }
-                  disabled={!user || sending || (user?.access !== "premium")}
+                  disabled={!user || sending || user?.access !== "premium"}
                   rows={1}
                   maxLength={maxLen}
                   className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 outline-none dark:border-zinc-600 dark:bg-zinc-800/70 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-orange-400"
@@ -632,7 +643,12 @@ export default function AdminChatBox() {
 
               <button
                 onClick={send}
-                disabled={sending || !input.trim() || !user || (user?.access !== "premium")}
+                disabled={
+                  sending ||
+                  !input.trim() ||
+                  !user ||
+                  user?.access !== "premium"
+                }
                 className="group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-600 to-orange-500 text-white shadow-lg shadow-orange-500/30 transition-all enabled:hover:scale-110 enabled:hover:shadow-xl enabled:focus:outline-none enabled:focus:ring-4 enabled:focus:ring-orange-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {sending ? (

@@ -45,15 +45,20 @@ export default function ForgotPasswordForm() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/forgot-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/forgot-password`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim() }),
+        }
+      );
       const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
-        toast.success(data.message || "Nếu email tồn tại, chúng tôi đã gửi mã xác nhận.");
+        toast.success(
+          data.message || "Nếu email tồn tại, chúng tôi đã gửi mã xác nhận."
+        );
         setStep(2);
         setCooldown(60);
       } else {
@@ -68,17 +73,21 @@ export default function ForgotPasswordForm() {
   async function onResetWithCode(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return toast.error("Thiếu email");
-    if (!code || code.length < 4) return toast.error("Mã xác nhận không hợp lệ");
+    if (!code || code.length < 4)
+      return toast.error("Mã xác nhận không hợp lệ");
     if (pw.length < 8) return toast.error("Mật khẩu phải có ít nhất 8 ký tự");
     if (pw !== cpw) return toast.error("Mật khẩu không khớp");
 
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/reset-password-code`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code, password: pw }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/reset-password-code`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, code, password: pw }),
+        }
+      );
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         toast.success(data.message || "Đặt lại mật khẩu thành công!");
@@ -110,13 +119,29 @@ export default function ForgotPasswordForm() {
       {/* Progress Indicator */}
       <div className="flex justify-center mb-6">
         <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${step >= 1 ? "bg-sky-600 text-white" : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"}`}>
+          <div
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
+              step >= 1
+                ? "bg-sky-600 text-white"
+                : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"
+            }`}
+          >
             1
           </div>
           <div className="w-12 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-full">
-            <div className={`h-full rounded-full transition-all duration-300 ${step === 2 ? "w-full bg-sky-600" : "w-0"}`} />
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${
+                step === 2 ? "w-full bg-sky-600" : "w-0"
+              }`}
+            />
           </div>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${step === 2 ? "bg-sky-600 text-white" : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"}`}>
+          <div
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
+              step === 2
+                ? "bg-sky-600 text-white"
+                : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"
+            }`}
+          >
             2
           </div>
         </div>
@@ -126,7 +151,10 @@ export default function ForgotPasswordForm() {
         <form onSubmit={sendCode} className="mt-4 space-y-6" noValidate>
           {/* Email */}
           <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
               Email
             </label>
             <input
@@ -163,7 +191,15 @@ export default function ForgotPasswordForm() {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" opacity="0.3" />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                    opacity="0.3"
+                  />
                   <path fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                 </svg>
                 Đang gửi...
@@ -195,7 +231,9 @@ export default function ForgotPasswordForm() {
         <form onSubmit={onResetWithCode} className="mt-4 space-y-6" noValidate>
           {/* Email (disabled) */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Email</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Email
+            </label>
             <input
               type="email"
               disabled
@@ -209,7 +247,9 @@ export default function ForgotPasswordForm() {
 
           {/* Code */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Mã xác nhận</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Mã xác nhận
+            </label>
             <input
               inputMode="numeric"
               pattern="[0-9]*"
@@ -298,7 +338,15 @@ export default function ForgotPasswordForm() {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" opacity="0.3" />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                    opacity="0.3"
+                  />
                   <path fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                 </svg>
                 Đang xử lý...

@@ -28,7 +28,9 @@ export function GoogleAuthEffect({ auth }: { auth?: string }) {
         }
         toast.success("Đăng nhập Google thành công!");
       } catch {
-        toast.error("Không thể lấy thông tin người dùng sau khi đăng nhập Google");
+        toast.error(
+          "Không thể lấy thông tin người dùng sau khi đăng nhập Google"
+        );
       } finally {
         // XÓA query ?auth=... nhưng giữ nguyên locale/path hiện tại
         router.replace(pathname);

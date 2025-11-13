@@ -1,4 +1,7 @@
-import PlacementResult from "@/components/features/placement/PlacementResult";
+import dynamic from "next/dynamic";
+
+// Dynamic import client component để tối ưu bundle size
+const PlacementResult = dynamic(() => import("@/components/features/placement/PlacementResult"));
 
 export default function Page() {
   return (

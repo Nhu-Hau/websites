@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Card } from "./card";
+import Card from "./card";
 
 export interface StatsCardProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: React.ReactNode;

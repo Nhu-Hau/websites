@@ -11,7 +11,7 @@ import {
 import { groupByStimulus } from "@/utils/groupByStimulus";
 import type { ChoiceId, Item, Stimulus } from "@/types/tests.types";
 import { Sidebar } from "@/components/parts/Sidebar";
-import { Trophy, Gauge, MessageSquare, Loader2 } from "lucide-react";
+import { Gauge, MessageSquare, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";

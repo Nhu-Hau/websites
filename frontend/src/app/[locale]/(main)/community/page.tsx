@@ -1,6 +1,12 @@
 //frontend/src/app/[locale]/community/page.tsx
-import Header from "@/components/features/community/Header";
-import CommunityComponent from "@/components/features/community/CommunityPage";
+import dynamic from "next/dynamic";
+import PageWrapper from "@/components/layout/PageWrapper";
+
+// Dynamic import client components để tối ưu bundle size
+const Header = dynamic(() => import("@/components/features/community/Header"));
+const CommunityComponent = dynamic(
+  () => import("@/components/features/community/CommunityPage")
+);
 
 type Params = { locale: string };
 
@@ -12,9 +18,9 @@ export default async function CommunityPage({
   const { locale } = await params;
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 transition-colors duration-300">
+    <PageWrapper>
       <Header locale={locale} active="community" />
       <CommunityComponent />
-    </div>
+    </PageWrapper>
   );
 }

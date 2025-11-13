@@ -8,15 +8,17 @@ import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { toast } from "sonner";
 import {
-  Loader2,
-  PlusCircle,
-  Sparkles,
-  ShieldCheck,
-  Link as LinkIcon,
-  CheckCircle2,
-  AlertCircle,
+  Hash,
+  Lightbulb,
   Copy,
   Check,
+  AlertCircle,
+  CheckCircle,
+  Loader2,
+  Plus,
+  Zap,
+  Shield,
+  UserCheck,
 } from "lucide-react";
 
 interface CreateStudyRoomProps {
@@ -40,7 +42,7 @@ function slugifyRoom(input: string): string {
 
 function randomSuggestion(): string {
   const n = Math.floor(1000 + Math.random() * 9000);
-  const pool = ["toeic", "study", "practice", "listening", "reading", "grammar"];
+  const pool = ["toeic", "ielts", "math", "physics", "english", "grammar"];
   const pick = pool[Math.floor(Math.random() * pool.length)];
   return `${pick}-room-${n}`;
 }
@@ -68,7 +70,7 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
   const basePrefix = useBasePrefix("vi");
   const { user: authUser, loading: authLoading } = useAuth();
 
-  const role: Role = (authUser?.role as Role) || "user"; // đồng bộ với trang list
+  const role: Role = (authUser?.role as Role) || "user";
   const displayName = authUser?.name || "Guest";
   const userId = authUser?.id || `guest-${crypto.randomUUID()}`;
 
@@ -111,8 +113,7 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
     }
     if (!canCreateRoom) {
       toast.error("Bạn không có quyền tạo phòng học", {
-        description:
-          "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
+        description: "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
       });
       return;
     }
@@ -139,8 +140,7 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
         message.includes("admin")
       ) {
         toast.error("Bạn không có quyền tạo phòng học", {
-          description:
-            "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
+          description: "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
         });
       } else {
         toast.error("Tạo phòng thất bại", { description: message });
@@ -160,41 +160,41 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
     [loading, authLoading, isValid, onCreate]
   );
 
-  // Nếu chưa đăng nhập
+  // === Không đăng nhập ===
   if (!authUser) {
     return (
-      <div className="w-full mx-auto">
-        <div className="rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/80 dark:bg-amber-900/20 backdrop-blur-sm p-6">
+      <div className="max-w-md mx-auto p-6">
+        <div className="rounded-2xl border border-amber-300/50 bg-amber-50/70 dark:bg-amber-900/20 backdrop-blur-sm p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
-            <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
             <h3 className="text-lg font-bold text-amber-900 dark:text-amber-200">
               Yêu cầu đăng nhập
             </h3>
           </div>
           <p className="text-sm text-amber-800 dark:text-amber-300">
-            Vui lòng đăng nhập để tạo phòng học. Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.
+            Vui lòng đăng nhập để tạo phòng học. Chỉ giáo viên và quản trị viên mới có thể tạo phòng.
           </p>
         </div>
       </div>
     );
   }
 
-  // Không có quyền
+  // === Không có quyền ===
   if (!canCreateRoom) {
     return (
-      <div className="w-full mx-auto">
-        <div className="rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50/80 dark:bg-red-900/20 backdrop-blur-sm p-6">
+      <div className="max-w-md mx-auto p-6">
+        <div className="rounded-2xl border border-red-300/50 bg-red-50/70 dark:bg-red-900/20 backdrop-blur-sm p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
-            <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400 flex-shrink-0" />
+            <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
             <h3 className="text-lg font-bold text-red-900 dark:text-red-200">
               Không có quyền tạo phòng
             </h3>
           </div>
-          <p className="text-sm text-red-800 dark:text-red-300 mb-1">
-            Vai trò hiện tại của bạn: <span className="font-semibold capitalize">{role}</span>.
+          <p className="text-sm text-red-800 dark:text-red-300">
+            Vai trò hiện tại: <span className="font-semibold capitalize">{role}</span>
           </p>
-          <p className="text-xs text-red-700 dark:text-red-400">
-            Nếu bạn là giáo viên nhưng chưa có quyền, vui lòng liên hệ quản trị viên để được cấp quyền.
+          <p className="text-xs text-red-700 dark:text-red-400 mt-1">
+            Liên hệ quản trị viên để được cấp quyền giáo viên.
           </p>
         </div>
       </div>
@@ -202,156 +202,124 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
   }
 
   return (
-    <div className="w-full mx-auto">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md">
-            <ShieldCheck className="h-6 w-6 text-white" />
+    <>
+      {/* Header - Thanh trạng thái */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg shadow-blue-500/20">
+            <Shield className="h-7 w-7 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
               Tạo phòng học trực tuyến
-            </h3>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+              <UserCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
               Vai trò: <span className="font-semibold capitalize">{role}</span>
             </p>
           </div>
         </div>
       </div>
 
-      {/* Card */}
-      <div>
-        <label
-          htmlFor={fieldId}
-          className="block text-sm font-bold text-zinc-800 dark:text-zinc-200 mb-3"
-        >
+      {/* Main Card */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-6 shadow-sm">
+        {/* Label */}
+        <label htmlFor={fieldId} className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">
           Tên phòng học
         </label>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="relative flex-1">
-            <input
-              id={fieldId}
-              value={input}
-              onChange={onInputChange}
-              onKeyDown={onKeyDown}
-              placeholder=""
-              className={cn(
-                "w-full rounded-xl border px-4 py-3 text-sm font-medium outline-none transition-all duration-300",
-                "bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm",
-                isValid
-                  ? "border-zinc-300 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
-                  : "border-rose-400 focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500"
-              )}
-              aria-invalid={!isValid}
-              aria-describedby={`${helpId} ${!isValid ? errId : ""}`}
-              autoComplete="off"
-            />
-
-            {/* Slug Preview */}
-            <div className="absolute -bottom-6 left-0 right-0 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-                <code className="font-mono bg-zinc-100 dark:bg-zinc-700 px-1.5 py-0.5 rounded">
-                  {finalSlug || "—"}
-                </code>
-                {finalSlug && (
-                  <button
-                    onClick={copySlug}
-                    className="group flex items-center gap-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
-                    title="Sao chép tên phòng"
-                    type="button"
-                  >
-                    {copied ? (
-                      <Check className="h-3 w-3 text-emerald-600" />
-                    ) : (
-                      <Copy className="h-3 w-3 group-hover:scale-110 transition-transform" />
-                    )}
-                  </button>
-                )}
+        {/* Input + Preview + Button */}
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <div className="flex items-center border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900/50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:border-blue-500 transition-all">
+                <Hash className="ml-3 h-5 w-5 text-slate-400" />
+                <input
+                  id={fieldId}
+                  value={input}
+                  onChange={onInputChange}
+                  onKeyDown={onKeyDown}
+                  placeholder="Nhập tên phòng..."
+                  className="w-full px-3 py-3.5 text-sm font-medium text-slate-900 dark:text-white bg-transparent outline-none placeholder:text-slate-400"
+                  autoComplete="off"
+                  aria-invalid={!isValid}
+                  aria-describedby={`${helpId} ${!isValid ? errId : ""}`}
+                />
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={quickUseSuggestion}
+              className="inline-flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-600 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 px-5 text-sm font-semibold text-blue-700 dark:text-blue-300 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-800/40 dark:hover:to-indigo-800/40 transition-all duration-200 shadow-sm"
+            >
+              <Lightbulb className="h-4.5 w-4.5 text-yellow-600 dark:text-yellow-400" />
+              Gợi ý
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={quickUseSuggestion}
-            className="group inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3 text-sm font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-emerald-500 transition-all duration-300"
-          >
-            <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400 transition-transform group-hover:scale-110" />
-            Gợi ý
-          </button>
-        </div>
-
-        {/* Validation Message */}
-        <div className="mt-8 flex items-center gap-2">
-          {isValid ? (
-            <>
-              <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-              <p id={helpId} className="text-xs text-zinc-600 dark:text-zinc-400">
-                Tên hợp lệ! Nhấn{" "}
-                <kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-[10px] font-mono">
-                  Enter
-                </kbd>{" "}
-                để tạo nhanh.
-              </p>
-            </>
-          ) : (
-            <>
-              <AlertCircle className="h-5 w-5 text-rose-600 flex-shrink-0" />
-              <p id={errId} className="text-xs text-rose-600 font-medium">
-                {errorMsg}
-              </p>
-            </>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="mt-6 flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={onCreate}
-            disabled={loading || authLoading || !isValid}
-            className={cn(
-              "group inline-flex items-center justify-center gap-2.5 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all duration-300 shadow-md",
-              loading || !isValid
-                ? "bg-zinc-400 dark:bg-zinc-600 cursor-not-allowed opacity-70"
-                : "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 hover:shadow-lg hover:scale-[1.02]"
-            )}
-            type="button"
-          >
-            {loading ? (
+          {/* Validation Feedback */}
+          <div className="flex items-center gap-2.5 text-sm">
+            {isValid ? (
               <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                Đang tạo…
+                <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                <p id={helpId} className="text-slate-600 dark:text-slate-400">
+                  Tên hợp lệ! Nhấn <kbd className="mx-1 px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-xs font-mono">Enter</kbd> để tạo nhanh.
+                </p>
               </>
             ) : (
               <>
-                <PlusCircle className="h-5 w-5 transition-transform group-hover:scale-110" />
-                Tạo & vào phòng
+                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                <p id={errId} className="text-red-600 font-medium">
+                  {errorMsg}
+                </p>
               </>
             )}
-          </button>
+          </div>
 
-          <button
-            type="button"
-            onClick={quickUseSuggestion}
-            className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-medium border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all"
-          >
-            <LinkIcon className="h-4 w-4" />
-            Dùng tên gợi ý
-          </button>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <button
+              onClick={onCreate}
+              disabled={loading || authLoading || !isValid}
+              className={cn(
+                "group inline-flex items-center justify-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-bold text-white transition-all duration-200 shadow-md",
+                loading || !isValid
+                  ? "bg-slate-400 dark:bg-slate-600 cursor-not-allowed opacity-70"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              )}
+              type="button"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Đang tạo…
+                </>
+              ) : (
+                <>
+                  <Plus className="h-5 w-5 transition-transform group-hover:scale-110" />
+                  Tạo & vào phòng
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={quickUseSuggestion}
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-medium border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+            >
+              <Zap className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+              Dùng tên gợi ý
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Footer Tip */}
-      <p className="mt-5 text-xs text-center text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5">
-        <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-        Gõ tên phòng → Nhấn{" "}
-        <kbd className="mx-1 px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">
-          Enter
-        </kbd>{" "}
-        để tạo nhanh
+      <p className="mt-5 text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1.5">
+        <Lightbulb className="h-3.5 w-3.5 text-yellow-500" />
+        Gõ tên phòng → Nhấn <kbd className="mx-1 px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono">Enter</kbd> để tạo nhanh
       </p>
-    </div>
+    </>
   );
 }

@@ -14,9 +14,9 @@ import {
 } from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
 import { useTranslations } from "next-intl";
-import useClickOutside from "@/hooks/common/useClickOutside";
+import useClickOutside from "@/hooks/useClickOutside";
 import { useAuth } from "@/context/AuthContext";
-import { postJson } from "@/lib/api/client";
+import { postJson } from "@/lib/http";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";

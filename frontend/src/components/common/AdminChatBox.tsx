@@ -12,10 +12,10 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { FaUserTie } from "react-icons/fa";
-import useClickOutside from "@/hooks/useClickOutside";
+import useClickOutside from "@/hooks/common/useClickOutside";
 import { useAuth } from "@/context/AuthContext";
-import { postJson } from "@/lib/http";
-import { useSocket } from "@/hooks/useSocket";
+import { postJson } from "@/lib/api/client";
+import { useSocket } from "@/hooks/common/useSocket";
 
 type Msg = {
   _id?: string;

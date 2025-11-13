@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import type { GradeResp } from "@/types/placement";
+import type { GradeResp } from "@/types/placement.types";
 import React from "react";
 import {
   Gauge,

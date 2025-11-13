@@ -1,4 +1,4 @@
-import type { Item } from "@/types/tests";
+import type { Item } from "@/types/tests.types";
 
 export function buildFirstIndexByStimulus(items: Item[]) {
   const m = new Map<string, number>();

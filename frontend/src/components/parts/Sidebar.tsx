@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import type { Item, ChoiceId } from "@/types/tests";
+import type { Item, ChoiceId } from "@/types/tests.types";
 import { Play, Eye, EyeOff, Focus as FocusIcon, Clock } from "lucide-react";
 
 function fmtMMSS(sec: number) {

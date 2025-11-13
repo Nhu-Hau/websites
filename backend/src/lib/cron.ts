@@ -3,11 +3,11 @@ import cron from "node-cron";
 import {
   getSchedulesToRemind,
   markMissedSchedules,
-} from "../services/study-schedule.service";
-import { sendMail } from "./mailer";
-import { StudySchedule } from "../models/StudySchedule";
+} from "../modules/study-schedule/study-schedule.service";
+import { sendMail } from "../shared/services/email.service";
+import { StudySchedule } from "../shared/models/StudySchedule";
 import { Server as SocketIOServer } from "socket.io";
-import { Notification } from "../models/Notification";
+import { Notification } from "../shared/models/Notification";
 import { Types } from "mongoose";
 
 function getIO(): SocketIOServer | null {

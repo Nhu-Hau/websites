@@ -5,12 +5,12 @@ import Link from "next/link";
 import Flag from "react-world-flags";
 import { Globe, Bell, Moon, Sun } from "lucide-react";
 import { Tooltip } from "react-tooltip";
-import { useLocaleSwitch } from "@/hooks/useLocaleSwitch";
-import useClickOutside from "@/hooks/useClickOutside";
+import { useLocaleSwitch } from "@/hooks/routing/useLocaleSwitch";
+import useClickOutside from "@/hooks/common/useClickOutside";
 import { useTheme } from "@/context/ThemeContext";
-import { useNotifications } from "@/hooks/useNotifications";
-import ProgressEligibilityWatcher from "@/components/progress/ProgressEligibility";
-import PracticeInactivityWatcher from "../practice/PracticeInactivity";
+import { useNotifications } from "@/hooks/common/useNotifications";
+import ProgressEligibilityWatcher from "@/components/features/progress/ProgressEligibility";
+import PracticeInactivityWatcher from "@/components/features/practice/PracticeInactivity";
 
 /* ================= LanguageSwitcher ================= */
 export function LanguageSwitcher() {

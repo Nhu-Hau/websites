@@ -1,4 +1,4 @@
-import type { Item, Stimulus } from "@/types/tests";
+import type { Item, Stimulus } from "@/types/tests.types";
 
 /** Một nhóm Stimulus + danh sách Item con (hoặc single item nếu không có stimulusId) */
 export type StimulusGroup = {

@@ -5,25 +5,27 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import path from "path";
-import { connectMongo } from "./lib/mongoose";
-import passport, { initPassport } from "./lib/passport";
-import authRoutes from "./routes/auth.routes";
-import adminAuthRoutes from "./routes/adminAuth.routes";
-import adminRoutes from "./routes/admin.routes";
-import adminChatRoutes from "./routes/adminChat.routes";
-import chatRoutes from "./routes/chat.routes";
-import placementRoutes from "./routes/placement.routes";
-import partsRoutes from "./routes/parts.routes";
-import practiceRoutes from "./routes/practice.routes";
-import communityRoutes from "./routes/community.routes";
-import notificationRoutes from "./routes/notification.routes";
-import paymentsRoutes from "./routes/payments.routes";
-import socketAuthRoutes from "./routes/socketAuth.routes";
-import studyroomRoutes from "./routes/studyrooms.routes";
-import progressRoutes from "./routes/progress.routes";
-import dashboardRoutes from "./routes/dashboard.routes";
-import badgeRoutes from "./routes/badge.routes";
-import studyScheduleRoutes from "./routes/study-schedule.routes";
+import { connectMongo } from "./config/database";
+import passport, { initPassport } from "./config/passport";
+import {
+  authRoutes,
+  adminAuthRoutes,
+  adminRoutes,
+  adminChatRoutes,
+  chatRoutes,
+  placementRoutes,
+  partsRoutes,
+  practiceRoutes,
+  communityRoutes,
+  notificationRoutes,
+  paymentsRoutes,
+  socketAuthRoutes,
+  studyroomRoutes,
+  progressRoutes,
+  dashboardRoutes,
+  badgeRoutes,
+  studyScheduleRoutes,
+} from "./modules";
 
 import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
 

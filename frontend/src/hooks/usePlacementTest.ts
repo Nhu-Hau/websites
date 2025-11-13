@@ -2,13 +2,13 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
-import type { Item, Stimulus, ChoiceId } from "@/types/tests";
-import type { GradeResp } from "@/types/placement";
+import type { Item, Stimulus, ChoiceId } from "@/types/tests.types";
+import type { GradeResp } from "@/types/placement.types";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
-import { useAutoSave } from "./useAutoSave";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { useAutoSave } from "@/hooks/common/useAutoSave";
+import { fetchWithAuth } from "@/lib/api/client";
 
 export type UsePlacementTestReturn = {
   items: Item[];

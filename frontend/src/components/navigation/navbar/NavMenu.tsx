@@ -1,7 +1,7 @@
 "use client";
 
 import NavItem from "./NavItem";
-import { MenuNav } from "@/lib/navData";
+import { MenuNav } from "@/lib/navigation/navData";
 
 export default function NavMenu() {
   const menu = MenuNav();

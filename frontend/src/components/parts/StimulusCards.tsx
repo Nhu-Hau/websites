@@ -3,7 +3,7 @@
 "use client";
 
 import React from "react";
-import type { Stimulus, Item, ChoiceId } from "@/types/tests";
+import type { Stimulus, Item, ChoiceId } from "@/types/tests.types";
 import { Volume2, FileText } from "lucide-react";
 
 type ChoiceLike = { id: ChoiceId; text?: string; content?: string | any };

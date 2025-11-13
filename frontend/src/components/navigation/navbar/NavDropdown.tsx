@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { SubItemType } from "@/types/navTypes";
+import type { SubItemType } from "@/lib/navigation/navTypes";
 import { usePathname } from "next/navigation";
 
 interface DropdownProps {

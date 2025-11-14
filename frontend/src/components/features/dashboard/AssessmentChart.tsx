@@ -222,33 +222,41 @@ export default function AssessmentChart() {
 
   /* ===================== Render ===================== */
   return (
-    <section className="h-full flex flex-col rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3 mb-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-xl ring-2 ring-white/50">
-            <Gauge className="h-7 w-7 text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-black text-zinc-900 dark:text-white">
-              Assessment
-            </h2>
-            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              Theo dõi điểm Listening, Reading & Overall
-            </p>
+    <section className="group relative h-full flex flex-col rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005] hover:ring-rose-300/50 dark:hover:ring-rose-600/50 overflow-hidden">
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="relative flex flex-col h-full">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-4">
+            <div className="relative transform-gpu transition-all duration-400 group-hover:scale-110 group-hover:-rotate-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-rose-600 shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/30 backdrop-blur-md">
+                  <Gauge className="h-7 w-7 text-white drop-shadow-md" />
+                </div>
+              </div>
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rose-400/40 to-pink-400/40 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-zinc-900 dark:text-white">
+                Assessment
+              </h2>
+              <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
+                Theo dõi điểm Listening, Reading & Overall
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Chart */}
-      <div className="relative flex-1 min-h-[140px]">
-        {loading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-violet-600 dark:text-violet-400" />
-            <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
-              Đang tải dữ liệu...
-            </p>
-          </div>
+        {/* Chart */}
+        <div className="relative flex-1 min-h-[140px]">
+          {loading ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+              <Loader2 className="h-8 w-8 animate-spin text-rose-600 dark:text-rose-400" />
+              <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400">
+                Đang tải dữ liệu...
+              </p>
+            </div>
         ) : assessmentLineData.length ? (
           <div className="absolute inset-0">
             <ResponsiveContainer width="100%" height="100%">
@@ -293,7 +301,7 @@ export default function AssessmentChart() {
                   }}
                   itemStyle={{ fontSize: 12, fontWeight: 600 }}
                   cursor={{
-                    stroke: "#6366f1",
+                    stroke: "#ef4444",
                     strokeWidth: 2,
                     strokeDasharray: "6 6",
                   }}
@@ -345,17 +353,17 @@ export default function AssessmentChart() {
                 <Line
                   type="monotone"
                   dataKey="Overall"
-                  stroke="#6366f1"
+                  stroke="#ef4444"
                   strokeWidth={3}
                   dot={{
                     r: 5,
-                    stroke: "#6366f1",
+                    stroke: "#ef4444",
                     strokeWidth: 2,
                     fill: "#fff",
                   }}
                   activeDot={{
                     r: 7,
-                    stroke: "#6366f1",
+                    stroke: "#ef4444",
                     strokeWidth: 3,
                     fill: "#fff",
                   }}
@@ -364,23 +372,23 @@ export default function AssessmentChart() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner">
-              <Gauge className="h-10 w-10 text-slate-400 dark:text-zinc-500" />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6">
+              <div className="mx-auto w-24 h-24 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner flex items-center justify-center mb-6">
+                <Gauge className="h-12 w-12 text-slate-400 dark:text-zinc-500" />
+              </div>
+              <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mb-2">
+                Chưa có dữ liệu Assessment
+              </p>
+              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 text-center max-w-xs">
+                Hãy làm Placement hoặc Progress Test để xem biểu đồ này.
+              </p>
             </div>
-            <p className="text-base font-black text-zinc-800 dark:text-zinc-200">
-              Chưa có dữ liệu Assessment
-            </p>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 text-center max-w-xs">
-              Hãy làm Placement hoặc Progress Test để xem biểu đồ này.
-            </p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Legend */}
-      <div className="mt-5 flex items-center justify-center gap-6 text-sm font-bold">
+        {/* Legend */}
+        <div className="mt-6 flex items-center justify-center gap-6 text-sm font-bold">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded-full bg-emerald-500 shadow-md" />
           <span className="text-emerald-700 dark:text-emerald-400">Listening</span>
@@ -390,9 +398,10 @@ export default function AssessmentChart() {
           <span className="text-amber-700 dark:text-amber-400">Reading</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-indigo-600 shadow-md" />
-          <span className="text-indigo-700 dark:text-indigo-400">Overall</span>
+          <div className="w-4 h-4 rounded-full bg-rose-500 shadow-md" />
+          <span className="text-rose-700 dark:text-rose-400">Overall</span>
         </div>
+      </div>
       </div>
     </section>
   );

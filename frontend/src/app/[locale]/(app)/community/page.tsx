@@ -47,7 +47,7 @@ export default async function CommunityPage({
   const currentUserId = currentUser?._id ? String(currentUser._id) : undefined;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-32">
+    <div className="min-h-screen bg-[#DFD0B8] dark:bg-zinc-950 pt-32">
       <CommunityHeader locale={locale} active="community" />
       <main className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
         <Suspense fallback={<CommunityPostsSkeleton />}>

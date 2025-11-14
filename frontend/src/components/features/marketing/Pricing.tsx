@@ -73,7 +73,7 @@ export default function Pricing() {
   async function onApplyCode() {
     setPromoErr(null);
     if (!user) {
-      router.push(`${basePrefix}/auth/login`);
+      router.push(`${basePrefix}/login`);
       return;
     }
     const trimmed = code.trim();
@@ -113,7 +113,7 @@ export default function Pricing() {
 
   const handleUpgrade = async () => {
     if (!user) {
-      router.push(`${basePrefix}/auth/login`);
+      router.push(`${basePrefix}/login`);
       return;
     }
     if (isPremium) return;
@@ -320,7 +320,7 @@ export default function Pricing() {
             </ul>
 
             <Link
-              href={`${basePrefix}/auth/register`}
+              href={`${basePrefix}/register`}
               className="relative z-10 mt-8 inline-flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-emerald-500 bg-white dark:bg-zinc-800 px-5 py-3 text-sm font-black text-emerald-600 dark:text-emerald-400 shadow-lg transition-all hover:bg-emerald-50 dark:hover:bg-zinc-700"
             >
               Dùng thử

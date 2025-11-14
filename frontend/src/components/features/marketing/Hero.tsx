@@ -193,7 +193,7 @@ export default function Hero() {
         duration: 2500,
       });
       setTimeout(() => {
-        router.push(`${base}/auth/login`);
+        router.push(`${base}/login`);
       }, 1000);
       return;
     }
@@ -211,7 +211,7 @@ export default function Hero() {
             duration: 3000,
             action: {
               label: "Đăng nhập lại",
-              onClick: () => router.push(`${base}/auth/login`),
+              onClick: () => router.push(`${base}/login`),
             },
           });
         } else {

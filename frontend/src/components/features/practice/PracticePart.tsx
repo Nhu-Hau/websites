@@ -320,7 +320,7 @@ export default function PracticePart() {
         {/* ===== Grid Tests ===== */}
         <section className="space-y-10 pt-6">
           {loading ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: Math.max(tests?.length ?? 0, 9) }).map(
                 (_, i) => (
                   <TestCardSkeleton key={i} />
@@ -343,7 +343,7 @@ export default function PracticePart() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {tests.map((testNum) => {
                 const p = progressByTest[testNum];
                 const href = `${base}/practice/${partKey}/${level}/${testNum}`;

@@ -130,15 +130,7 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
       router.push(`${basePrefix}/study/${finalSlug}`);
     } catch (e: any) {
       const message = e?.message || "Không thể tạo phòng. Vui lòng thử lại.";
-      const errorCode = e?.code || "";
-      const errorStatus = e?.status || 0;
-
-      if (
-        errorCode === "TEACHER_OR_ADMIN_REQUIRED" ||
-        errorStatus === 403 ||
-        message.includes("teacher") ||
-        message.includes("admin")
-      ) {
+      if (message.includes("teacher") || message.includes("admin")) {
         toast.error("Bạn không có quyền tạo phòng học", {
           description: "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
         });
@@ -160,18 +152,21 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
     [loading, authLoading, isValid, onCreate]
   );
 
-  // === Không đăng nhập ===
   if (!authUser) {
     return (
       <div className="max-w-md mx-auto p-6">
-        <div className="rounded-2xl border border-amber-300/50 bg-amber-50/70 dark:bg-amber-900/20 backdrop-blur-sm p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-            <h3 className="text-lg font-bold text-amber-900 dark:text-amber-200">
+        <div className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 p-6 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005] hover:ring-amber-300/50 dark:hover:ring-amber-600/50 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
+          
+          <div className="relative flex items-center gap-3 mb-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50">
+              <AlertCircle className="h-7 w-7 text-white" />
+            </div>
+            <h3 className="text-lg font-black text-zinc-900 dark:text-white">
               Yêu cầu đăng nhập
             </h3>
           </div>
-          <p className="text-sm text-amber-800 dark:text-amber-300">
+          <p className="relative text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Vui lòng đăng nhập để tạo phòng học. Chỉ giáo viên và quản trị viên mới có thể tạo phòng.
           </p>
         </div>
@@ -179,21 +174,24 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
     );
   }
 
-  // === Không có quyền ===
   if (!canCreateRoom) {
     return (
       <div className="max-w-md mx-auto p-6">
-        <div className="rounded-2xl border border-red-300/50 bg-red-50/70 dark:bg-red-900/20 backdrop-blur-sm p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
-            <h3 className="text-lg font-bold text-red-900 dark:text-red-200">
+        <div className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 p-6 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005] hover:ring-rose-300/50 dark:hover:ring-rose-600/50 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
+          
+          <div className="relative flex items-center gap-3 mb-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50">
+              <AlertCircle className="h-7 w-7 text-white" />
+            </div>
+            <h3 className="text-lg font-black text-zinc-900 dark:text-white">
               Không có quyền tạo phòng
             </h3>
           </div>
-          <p className="text-sm text-red-800 dark:text-red-300">
-            Vai trò hiện tại: <span className="font-semibold capitalize">{role}</span>
+          <p className="relative text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Vai trò hiện tại: <span className="font-black capitalize text-rose-600 dark:text-rose-400">{role}</span>
           </p>
-          <p className="text-xs text-red-700 dark:text-red-400 mt-1">
+          <p className="relative text-xs font-medium text-zinc-600 dark:text-zinc-400 mt-1">
             Liên hệ quản trị viên để được cấp quyền giáo viên.
           </p>
         </div>
@@ -203,90 +201,83 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
 
   return (
     <>
-      {/* Header - Thanh trạng thái */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg shadow-blue-500/20">
-            <Shield className="h-7 w-7 text-white" />
+          <div className="relative">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 p-px shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50">
+              <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white dark:bg-zinc-900 backdrop-blur-md">
+                <Shield className="h-7 w-7 text-blue-600 dark:text-blue-400 drop-shadow-md" />
+              </div>
+            </div>
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-400/40 to-indigo-400/40 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-xl font-black text-zinc-900 dark:text-white">
               Tạo phòng học trực tuyến
             </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
               <UserCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-              Vai trò: <span className="font-semibold capitalize">{role}</span>
+              Vai trò: <span className="font-black capitalize">{role}</span>
             </p>
           </div>
         </div>
       </div>
 
       {/* Main Card */}
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-6 shadow-sm">
-        {/* Label */}
-        <label htmlFor={fieldId} className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">
+      <div className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005] hover:ring-blue-300/50 dark:hover:ring-blue-600/50 overflow-hidden">
+        
+        <label htmlFor={fieldId} className="relative block text-sm font-black text-zinc-700 dark:text-zinc-200 mb-3">
           Tên phòng học
         </label>
 
-        {/* Input + Preview + Button */}
-        <div className="space-y-4">
+        <div className="relative space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <div className="flex items-center border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900/50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:border-blue-500 transition-all">
-                <Hash className="ml-3 h-5 w-5 text-slate-400" />
+              <div className="flex items-center border-2 border-white/30 dark:border-zinc-700/50 rounded-2xl bg-white/90 dark:bg-zinc-800/90 overflow-hidden focus-within:ring-4 focus-within:ring-blue-500/30 focus-within:border-blue-500 transition-all duration-300 shadow-md">
+                <Hash className="ml-3 h-5 w-5 text-zinc-400 dark:text-zinc-500" />
                 <input
                   id={fieldId}
                   value={input}
                   onChange={onInputChange}
                   onKeyDown={onKeyDown}
                   placeholder="Nhập tên phòng..."
-                  className="w-full px-3 py-3.5 text-sm font-medium text-slate-900 dark:text-white bg-transparent outline-none placeholder:text-slate-400"
+                  className="w-full px-3 py-3.5 text-sm font-medium text-zinc-900 dark:text-white bg-transparent outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
                   autoComplete="off"
                   aria-invalid={!isValid}
                   aria-describedby={`${helpId} ${!isValid ? errId : ""}`}
                 />
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={quickUseSuggestion}
-              className="inline-flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-600 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 px-5 text-sm font-semibold text-blue-700 dark:text-blue-300 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-800/40 dark:hover:to-indigo-800/40 transition-all duration-200 shadow-sm"
-            >
-              <Lightbulb className="h-4.5 w-4.5 text-yellow-600 dark:text-yellow-400" />
-              Gợi ý
-            </button>
           </div>
 
-          {/* Validation Feedback */}
           <div className="flex items-center gap-2.5 text-sm">
             {isValid ? (
               <>
                 <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                <p id={helpId} className="text-slate-600 dark:text-slate-400">
-                  Tên hợp lệ! Nhấn <kbd className="mx-1 px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-xs font-mono">Enter</kbd> để tạo nhanh.
+                <p id={helpId} className="text-zinc-600 dark:text-zinc-400 font-medium">
+                  Tên hợp lệ! Nhấn <kbd className="mx-1 px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-xs font-mono">Enter</kbd> để tạo nhanh.
                 </p>
               </>
             ) : (
               <>
                 <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-                <p id={errId} className="text-red-600 font-medium">
+                <p id={errId} className="text-red-600 font-black">
                   {errorMsg}
                 </p>
               </>
             )}
           </div>
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <button
               onClick={onCreate}
               disabled={loading || authLoading || !isValid}
               className={cn(
-                "group inline-flex items-center justify-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-bold text-white transition-all duration-200 shadow-md",
+                "group inline-flex items-center justify-center gap-2.5 rounded-2xl px-6 py-3.5 text-sm font-black text-white transition-all duration-300 shadow-xl",
                 loading || !isValid
-                  ? "bg-slate-400 dark:bg-slate-600 cursor-not-allowed opacity-70"
-                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                  ? "bg-zinc-400 dark:bg-zinc-600 cursor-not-allowed opacity-70"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
               )}
               type="button"
             >
@@ -306,20 +297,15 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
             <button
               type="button"
               onClick={quickUseSuggestion}
-              className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-medium border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              className="group/quick relative inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-sm font-black border-2 border-white/30 dark:border-zinc-700/50 bg-white/90 dark:bg-zinc-800/90 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all duration-300 shadow-md hover:shadow-xl hover:scale-105 overflow-hidden"
             >
-              <Zap className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-              Dùng tên gợi ý
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 to-amber-500/5 opacity-0 group-hover/quick:opacity-100 transition-opacity duration-300" />
+              <Zap className="h-4 w-4 text-yellow-600 dark:text-yellow-400 relative z-10 transition-transform group-hover/quick:scale-110" />
+              <span className="relative z-10">Dùng tên gợi ý</span>
             </button>
           </div>
         </div>
       </div>
-
-      {/* Footer Tip */}
-      <p className="mt-5 text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1.5">
-        <Lightbulb className="h-3.5 w-3.5 text-yellow-500" />
-        Gõ tên phòng → Nhấn <kbd className="mx-1 px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono">Enter</kbd> để tạo nhanh
-      </p>
     </>
   );
 }

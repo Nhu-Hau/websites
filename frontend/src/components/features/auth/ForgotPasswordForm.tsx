@@ -91,7 +91,7 @@ export default function ForgotPasswordForm() {
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         toast.success(data.message || "Đặt lại mật khẩu thành công!");
-        router.push(`${basePrefix}/auth/login`);
+        router.push(`${basePrefix}/login`);
       } else {
         toast.error(data.message || "Mã không hợp lệ. Vui lòng thử lại.");
       }
@@ -212,7 +212,7 @@ export default function ForgotPasswordForm() {
           {/* Back to login */}
           <div className="flex justify-center">
             <Link
-              href={`${basePrefix}/auth/login`}
+              href={`${basePrefix}/login`}
               className="inline-flex items-center gap-1 text-sm text-sky-600 dark:text-sky-400 
                          hover:text-sky-700 dark:hover:text-sky-300 
                          underline underline-offset-4 decoration-dashed 

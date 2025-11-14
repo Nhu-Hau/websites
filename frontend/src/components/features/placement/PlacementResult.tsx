@@ -129,7 +129,7 @@ export default function PlacementResult() {
             cache: "no-store",
           });
           if (res.status === 401) {
-            router.push(`${basePrefix}/auth/login`);
+            router.push(`${basePrefix}/login`);
             return;
           }
           if (res.ok) {

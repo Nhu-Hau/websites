@@ -310,8 +310,9 @@ export async function listStudyRooms(user: { id: string; name: string; role: str
 }
 
 export async function deleteStudyRoom(roomName: string, user: { id: string; name: string; role: string }) {
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:4000';
   const encodedName = encodeNameForHeader(user.name);
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/study-rooms/${encodeURIComponent(roomName)}`, {
+  const res = await fetch(`${base}/api/rooms/${encodeURIComponent(roomName)}`, {
     method: 'DELETE',
     credentials: 'include',
     headers: {
@@ -322,7 +323,10 @@ export async function deleteStudyRoom(roomName: string, user: { id: string; name
       'x-user-role': user.role,
     },
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || `Failed to delete room: ${res.status} ${res.statusText}`);
+  }
   return res.json();
 }
 

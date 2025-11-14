@@ -28,7 +28,7 @@ export default function FinalCTA() {
         <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
           {/* Nút chính – Nổi bật */}
           <Link
-            href={`${basePrefix}/auth/register`}
+            href={`${basePrefix}/register`}
             className="group relative inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-sky-600 to-sky-500 px-7 py-4 text-base font-black text-white shadow-xl transition-all hover:from-sky-500 hover:to-sky-400 hover:shadow-2xl hover:scale-[1.02] overflow-hidden"
           >
             <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

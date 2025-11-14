@@ -46,7 +46,6 @@ type ChatMsg = {
   fromName: string;
   role: Role;
   text?: string;
-  // Với doc:
   docId?: string;
   docName?: string;
   ts: number;
@@ -109,9 +108,7 @@ export default function ChatPanel({ me, roomName }: Props) {
     try {
       const res = await fetch(
         `/api/rooms/${encodeURIComponent(roomName)}/comments/count/${me.id}`,
-        {
-          credentials: "include",
-        }
+        { credentials: "include" }
       );
       if (res.ok) {
         const data = await res.json();
@@ -145,8 +142,7 @@ export default function ChatPanel({ me, roomName }: Props) {
       _enc?: Encryption_Type
     ) => {
       if (topic !== "chat") return;
-      if (participant && "isLocal" in participant && participant.isLocal)
-        return;
+      if (participant && "isLocal" in participant && participant.isLocal) return;
 
       try {
         const text = new TextDecoder().decode(payload);
@@ -175,9 +171,7 @@ export default function ChatPanel({ me, roomName }: Props) {
           saveToLS(next);
           return next;
         });
-      } catch {
-        // ignore
-      }
+      } catch {}
     };
 
     room.on(RoomEvent.DataReceived, onData);
@@ -230,7 +224,6 @@ export default function ChatPanel({ me, roomName }: Props) {
       console.error("LiveKit send error:", e);
     }
 
-    // save to DB (background)
     try {
       const res = await fetch(
         `/api/rooms/${encodeURIComponent(roomName)}/comments`,
@@ -311,7 +304,6 @@ export default function ChatPanel({ me, roomName }: Props) {
         const data = await res.json();
         const doc = data.document as RoomDocument;
 
-        // phát 1 chat message kind="doc"
         const docMsg: ChatMsg = {
           id: crypto.randomUUID(),
           kind: "doc",
@@ -340,7 +332,7 @@ export default function ChatPanel({ me, roomName }: Props) {
           toast.success("Đã gửi tài liệu vào chat");
         } catch (err) {
           console.error("Send doc message failed:", err);
-          toast.error("Không gửi được tin nhắn tài liệu");
+          toast.error("Không 보내 được tin nhắn tài liệu");
         }
       } catch (err) {
         console.error("Upload error:", err);
@@ -353,7 +345,6 @@ export default function ChatPanel({ me, roomName }: Props) {
     [roomName, canUpload, me, room, saveToLS]
   );
 
-  // download (premium only)
   const handleDownload = useCallback(
     async (docId: string) => {
       if (!isPremium) {
@@ -364,9 +355,7 @@ export default function ChatPanel({ me, roomName }: Props) {
       }
       try {
         const res = await fetch(
-          `/api/rooms/${encodeURIComponent(
-            roomName
-          )}/documents/${docId}/download`,
+          `/api/rooms/${encodeURIComponent(roomName)}/documents/${docId}/download`,
           { credentials: "include" }
         );
         if (!res.ok) {
@@ -418,12 +407,12 @@ export default function ChatPanel({ me, roomName }: Props) {
     return msgs.map((m) => {
       const isMe = m.fromId === me.id;
       const base =
-        "max-w-[85%] rounded-2xl px-3.5 py-2 text-sm shadow-sm border transition";
-      const bubble = isMe
-        ? "bg-sky-600 text-white border-sky-700"
-        : "bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700";
+        "group/msg relative max-w-[85%] rounded-2xl px-3.5 py-2 text-sm shadow-lg border-2 transition-all duration-300";
 
-      // 💬 text message
+      const bubble = isMe
+        ? "bg-gradient-to-tr from-sky-600 to-indigo-600 text-white border-sky-700 rounded-tr-sm"
+        : "bg-white/90 dark:bg-zinc-800/90 text-zinc-900 dark:text-zinc-100 border-white/30 dark:border-zinc-700/50 rounded-tl-sm backdrop-blur-sm";
+
       if (m.kind === "text") {
         return (
           <div
@@ -435,17 +424,18 @@ export default function ChatPanel({ me, roomName }: Props) {
               title={new Date(m.ts).toLocaleString("vi-VN")}
             >
               {!isMe && (
-                <div className="text-[11px] opacity-70 mb-0.5">
-                  {m.fromName} • {m.role}
+                <div className="text-xs opacity-80 mb-0.5 font-black">
+                  {m.fromName} • <span className="capitalize">{m.role}</span>
                 </div>
               )}
-              <div className="whitespace-pre-wrap break-words">{m.text}</div>
+              <div className="whitespace-pre-wrap break-words font-medium">
+                {m.text}
+              </div>
             </div>
           </div>
         );
       }
 
-      // 📎 doc message
       return (
         <div
           key={m.id}
@@ -454,52 +444,48 @@ export default function ChatPanel({ me, roomName }: Props) {
           <div
             className={`${base} ${
               isMe
-                ? "bg-sky-50 text-sky-900 border-sky-200"
-                : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                ? "bg-gradient-to-br from-sky-50 to-indigo-50 text-sky-900 border-sky-200"
+                : "bg-white/90 dark:bg-zinc-900/90 border-white/30 dark:border-zinc-700/50 backdrop-blur-sm"
             }`}
             title={new Date(m.ts).toLocaleString("vi-VN")}
           >
             {!isMe && (
-              <div className="text-[11px] opacity-70 mb-0.5">
+              <div className="text-xs opacity-80 mb-0.5 font-black">
                 {m.fromName} - {m.role}
               </div>
             )}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-sky-100 text-sky-700">
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-br from-sky-100 to-indigo-100 text-sky-700 shadow-inner">
                   <Upload className="w-4 h-4" />
                 </div>
                 <div className="min-w-[80px] max-w-[110px]">
                   <div
-                    className="text-sm font-medium truncate text-ellipsis overflow-hidden"
+                    className="text-sm font-black truncate text-ellipsis overflow-hidden"
                     title={m.docName || "Tệp tin"}
                   >
                     {m.docName?.length && m.docName.length > 20
                       ? m.docName.slice(0, 17) + "..."
                       : m.docName || "Tệp tin"}
                   </div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+                  <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                     Tài liệu đính kèm
                   </div>
                 </div>
               </div>
 
               {canDownload && m.docId ? (
-                <a
-                  href={`/api/rooms/${encodeURIComponent(roomName)}/documents/${
-                    m.docId
-                  }/download`}
-                  target="_blank"
-                  rel="noopener"
-                  className="ml-auto flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+                <button
+                  onClick={() => handleDownload(m.docId!)}
+                  className="ml-auto flex items-center gap-1 text-xs font-black px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-400 hover:to-teal-400 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
                   title="Tải xuống"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Tải
-                </a>
+                </button>
               ) : (
                 <span
-                  className="ml-auto flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-zinc-300 text-zinc-400 cursor-not-allowed"
+                  className="ml-auto flex items-center gap-1 text-xs font-black px-2.5 py-1.5 rounded-lg border-2 border-zinc-300 dark:border-zinc-600 text-zinc-400 cursor-not-allowed"
                   title="Chỉ Premium hoặc Teacher/Admin"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -511,45 +497,59 @@ export default function ChatPanel({ me, roomName }: Props) {
         </div>
       );
     });
-  }, [msgs, me.id, isPremium, handleDownload]);
+  }, [msgs, me.id, canDownload, handleDownload]);
 
   return (
-    <aside className="h-[calc(100dvh-5rem)] md:h-[calc(100dvh-6rem)] border-l border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/50 backdrop-blur-sm flex flex-col">
+    <aside className="group relative h-[calc(100dvh-5rem)] md:h-[calc(100dvh-6rem)] border-l-2 border-white/30 dark:border-zinc-700/50 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl flex flex-col shadow-2xl ring-2 ring-white/20 dark:ring-zinc-700/50 transition-all duration-500 hover:ring-blue-300/50 dark:hover:ring-blue-600/50 overflow-hidden">
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      
       {/* Header */}
-      <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+      <div className="relative px-4 py-3 border-b-2 border-white/30 dark:border-zinc-700/50 flex items-center justify-between bg-gradient-to-r from-blue-50/90 to-indigo-50/90 dark:from-blue-900/30 dark:to-indigo-900/20">
         <div>
-          <div className="text-sm font-semibold">Bình luận livestream</div>
-          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="text-sm font-black text-zinc-900 dark:text-white">
+            Bình luận livestream
+          </div>
+          <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
             #{roomName}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="relative flex items-center gap-2">
           {canDeleteRoom && (
             <button
               onClick={handleDeleteRoom}
-              className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400"
+              className="group/del relative p-2 rounded-xl bg-red-50/80 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 transition-all duration-300 hover:scale-110 shadow-md hover:shadow-lg overflow-hidden"
               title="Xóa phòng"
             >
-              <Trash2 className="w-4 h-4" />
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-rose-500/5 opacity-0 group-hover/del:opacity-100 transition-opacity duration-300" />
+              <Trash2 className="w-4 h-4 relative z-10 transition-transform group-hover/del:rotate-12" />
             </button>
           )}
         </div>
       </div>
 
       {/* Messages */}
-      <div ref={listRef} className="flex-1 px-3 py-3 space-y-2 overflow-y-auto">
+      <div
+        ref={listRef}
+        className="relative flex-1 px-3 py-3 space-y-2 overflow-y-auto bg-gradient-to-b from-transparent to-white/30 dark:to-zinc-800/50"
+      >
         {items.length ? (
           items
         ) : (
-          <div className="text-xs text-zinc-500 dark:text-zinc-400 text-center mt-6">
-            Hãy là người bình luận đầu tiên!
+          <div className="relative text-center mt-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 mb-3 shadow-inner ring-4 ring-white/30 dark:ring-zinc-700/30">
+              <Send className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+            </div>
+            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Hãy là người bình luận đầu tiên!
+            </p>
           </div>
         )}
       </div>
 
       {/* Input row */}
-      <div className="p-3 border-t border-zinc-200 dark:border-zinc-800">
-        <form onSubmit={onSubmit} className="flex items-center gap-2">
+      <div className="relative p-3 border-t-2 border-white/30 dark:border-zinc-700/50 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md">
+        <form onSubmit={onSubmit} className="relative flex items-center gap-2">
           {canUpload && (
             <>
               <input
@@ -562,10 +562,11 @@ export default function ChatPanel({ me, roomName }: Props) {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                className="group/upload relative p-2 rounded-xl bg-white/90 dark:bg-zinc-700/90 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 overflow-hidden"
                 title="Tải tệp lên và gửi vào chat"
               >
-                <Upload className="w-5 h-5 text-sky-600" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 opacity-0 group-hover/upload:opacity-100 transition-opacity duration-300" />
+                <Upload className="w-5 h-5 text-blue-600 dark:text-blue-400 relative z-10 transition-transform group-hover/upload:scale-110" />
               </button>
             </>
           )}
@@ -578,20 +579,21 @@ export default function ChatPanel({ me, roomName }: Props) {
                 : "Nhập tin nhắn…"
             }
             disabled={!isPremium && commentCount >= commentLimit}
-            className="flex-1 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-400 disabled:opacity-60"
+            className="flex-1 rounded-2xl border-2 border-white/30 dark:border-zinc-700/50 bg-white/90 dark:bg-zinc-700/90 px-3 py-2 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500/50 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-white transition-all duration-300 shadow-md"
           />
           <button
             type="submit"
             disabled={
               !input.trim() || (!isPremium && commentCount >= commentLimit)
             }
-            className="inline-flex items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold bg-sky-600 text-white hover:bg-sky-500 disabled:opacity-60"
+            className="group/btn relative inline-flex items-center justify-center gap-2 rounded-2xl px-3.5 py-2 text-sm font-black bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 disabled:opacity-60 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 overflow-hidden"
           >
-            <Send className="w-4 h-4" />
+            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+            <Send className="w-4 h-4 relative z-10 transition-transform group-hover/btn:translate-x-0.5" />
           </button>
         </form>
         {!isPremium && (
-          <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 text-center">
+          <div className="relative mt-2 text-center text-xs font-black text-zinc-500 dark:text-zinc-400">
             Comment: {commentCount}/{commentLimit}
           </div>
         )}

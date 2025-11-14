@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 // frontend/src/components/community/PostCard.tsx
 "use client";
@@ -12,15 +13,12 @@ import {
   File as FileIcon,
   Trash2,
   Share2,
-  User as UserIcon,
   Flag,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import type { CommunityPost } from "@/types/community.types";
 import Swal from "sweetalert2";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-import { Card } from "@/components/ui";
-import { Button } from "@/components/ui";
 
 type Props = {
   post: CommunityPost & { user?: any; liked?: boolean; canDelete?: boolean };
@@ -37,29 +35,31 @@ type Attachment = {
   key?: string;
 };
 
+// MÀU CHỦ ĐẠO
+const PRIMARY = "#1C6EA4";
+const SECONDARY = "#3D8FC7";
+const ACCENT = "#6BA9D9";
+
 function AttachmentIcon({ type }: { type: "image" | "link" | "file" }) {
-  if (type === "image")
-    return <ImageIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />;
-  if (type === "file")
-    return <FileIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />;
-  return <LinkIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />;
+  const color = `text-[${PRIMARY}] dark:text-[${ACCENT}]`;
+  if (type === "image") return <ImageIcon className={`h-4 w-4 ${color}`} />;
+  if (type === "file") return <FileIcon className={`h-4 w-4 ${color}`} />;
+  return <LinkIcon className={`h-4 w-4 ${color}`} />;
 }
 
 function Avatar({ name, url }: { name?: string; url?: string }) {
   if (url) {
-    // User-generated avatar from external URL (Google OAuth, etc.)
-    // Using <img> instead of Next/Image for external user content
     return (
       <img
         src={url}
         alt={name || "avatar"}
-        className="h-10 w-10 rounded-full object-cover"
+        className="h-12 w-12 rounded-full object-cover ring-2 ring-white/50 dark:ring-zinc-700/50 shadow-md"
       />
     );
   }
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
-      <UserIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+    <div className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[${PRIMARY}] to-[${SECONDARY}] text-white font-black text-sm shadow-lg ring-2 ring-white/50 dark:ring-zinc-700/50`}>
+      {(name?.[0] ?? "?").toUpperCase()}
     </div>
   );
 }
@@ -75,16 +75,12 @@ function PostCardComponent({ post, apiBase, onChanged }: Props) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
 
-  // ✅ local state cho UX mượt, nhưng số like sẽ luôn sync lại từ props (socket đẩy chuẩn)
   const [liked, setLiked] = React.useState(!!post.liked);
-  const [likesCount, setLikesCount] = React.useState<number>(
-    Number(post.likesCount) || 0
-  );
-  const actingRef = React.useRef(false); // chặn double click/lag
+  const [likesCount, setLikesCount] = React.useState<number>(Number(post.likesCount) || 0);
+  const actingRef = React.useRef(false);
   const [reporting, setReporting] = React.useState(false);
   const [reportedOnce, setReportedOnce] = React.useState(false);
 
-  // chỉ sync số & màu từ props khi socket/parent cập nhật
   React.useEffect(() => {
     setLikesCount(Number(post.likesCount) || 0);
     setLiked(!!post.liked);
@@ -95,56 +91,31 @@ function PostCardComponent({ post, apiBase, onChanged }: Props) {
     if (actingRef.current) return;
     actingRef.current = true;
 
-    // optimistic: đổi màu + đổi số ngay cho cảm giác nhanh
     setLiked((prev) => {
-      setLikesCount((c) => {
-        const safeC = Number(c) || 0;
-        return prev ? Math.max(0, safeC - 1) : safeC + 1;
-      });
+      setLikesCount((c) => (prev ? Math.max(0, c - 1) : c + 1));
       return !prev;
     });
 
     try {
-      const res = await fetch(
-        `${apiBase}/api/community/posts/${post._id}/like`,
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
+      const res = await fetch(`${apiBase}/api/community/posts/${post._id}/like`, {
+        method: "POST",
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("fail");
       const data = await res.json();
 
-      // ưu tiên server value nếu có, nhưng bảo đảm number
-      if (typeof data.likesCount === "number") {
-        setLikesCount(Number(data.likesCount) || 0);
-      } else {
-        // nếu server không gửi likesCount, sync bằng liked từ server
-        setLikesCount((c) => {
-          const safeC = Number(c) || 0;
-          return typeof data.liked === "boolean"
-            ? data.liked
-              ? safeC
-              : safeC
-            : safeC;
-        });
-      }
-      // sync liked từ server (để tránh bất đồng)
+      if (typeof data.likesCount === "number") setLikesCount(Number(data.likesCount) || 0);
       if (typeof data.liked === "boolean") setLiked(data.liked);
     } catch {
-      // revert nếu lỗi
       setLiked((prev) => {
-        setLikesCount((c) => {
-          const safeC = Number(c) || 0;
-          return prev ? safeC + 1 : Math.max(safeC - 1, 0);
-        });
+        setLikesCount((c) => (prev ? c + 1 : Math.max(c - 1, 0)));
         return !prev;
       });
       toast.error("Không thể thích bài viết.");
     } finally {
       actingRef.current = false;
     }
-  }, [post._id, apiBase, liked]);
+  }, [post._id, apiBase]);
 
   const reportPost = React.useCallback(async () => {
     const result = await Swal.fire({
@@ -155,24 +126,19 @@ function PostCardComponent({ post, apiBase, onChanged }: Props) {
       confirmButtonText: "Báo cáo",
       cancelButtonText: "Hủy",
     });
-
     if (!result.isConfirmed) return;
 
     setReporting(true);
     try {
-      const r = await fetch(
-        `${apiBase}/api/community/posts/${post._id}/report`,
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
+      const r = await fetch(`${apiBase}/api/community/posts/${post._id}/report`, {
+        method: "POST",
+        credentials: "include",
+      });
       const j = await r.json().catch(() => ({}));
-
       if (r.ok) {
         toast.success(j.message || "Đã báo cáo bài viết");
-        setReportedOnce(true); // khoá nút (tuỳ thích)
-        onChanged(); // refresh danh sách (ẩn bài nếu đạt ngưỡng)
+        setReportedOnce(true);
+        onChanged();
       } else {
         toast.error(j.message || "Không thể báo cáo bài viết");
       }
@@ -224,37 +190,37 @@ function PostCardComponent({ post, apiBase, onChanged }: Props) {
   }, [router, basePrefix, post._id]);
 
   return (
-    <Card
-      variant="interactive"
-      hover
+    <div
       onClick={handleCardClick}
-      className="overflow-hidden cursor-pointer"
+      className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005] hover:ring-[#3D8FC7]/50 dark:hover:ring-[#6BA9D9]/50 overflow-hidden cursor-pointer"
     >
+
       {/* Header */}
-      <div className="p-5 sm:p-6 border-b border-zinc-200 dark:border-zinc-700">
-        <div className="flex items-start gap-3">
+      <div className="relative p-5 sm:p-6 border-b border-white/30 dark:border-zinc-700/50">
+        <div className="flex items-start gap-4">
           <Avatar name={post.user?.name} url={post.user?.picture} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 truncate">
+              <h3 className="font-black text-base text-zinc-900 dark:text-zinc-50 truncate">
                 {post.user?.name || "Người dùng"}
               </h3>
-              <time className="text-sm text-zinc-500 dark:text-zinc-400">
+              <time className="text-xs font-bold text-zinc-500 dark:text-zinc-400">
                 {new Date(post.createdAt).toLocaleString("vi-VN")}
               </time>
               {post.canDelete && (
-                <Button
-                  onClick={deletePost}
-                  variant="ghost"
-                  size="sm"
-                  className="ml-auto text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deletePost(e);
+                  }}
+                  className="group/delete ml-auto px-3 py-1.5 rounded-xl text-xs font-black text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-all hover:scale-[1.05]"
                 >
-                  <Trash2 className="h-4 w-4" /> Xóa
-                </Button>
+                  <Trash2 className="h-4 w-4 inline mr-1.5 transition-transform group-hover/delete:rotate-12" /> Xóa
+                </button>
               )}
             </div>
             {post.content && (
-              <p className="mt-2 text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap break-words">
+              <p className="mt-3 text-sm font-medium text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap break-words leading-relaxed">
                 {post.content}
               </p>
             )}
@@ -264,7 +230,7 @@ function PostCardComponent({ post, apiBase, onChanged }: Props) {
 
       {/* Attachments */}
       {post.attachments?.length ? (
-        <div className="p-5 sm:p-6 border-b border-zinc-200 dark:border-zinc-700">
+        <div className="relative p-5 sm:p-6 border-b border-white/30 dark:border-zinc-700/50">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {post.attachments.map((a: Attachment, idx: number) => (
               <a
@@ -273,15 +239,16 @@ function PostCardComponent({ post, apiBase, onChanged }: Props) {
                 target="_blank"
                 rel="noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="group flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition"
+                className="group/attach relative flex items-center gap-3 p-3 rounded-2xl border-2 border-white/40 dark:border-zinc-700/50 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-zinc-700 hover:shadow-md hover:scale-[1.02] transition-all"
               >
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#1C6EA4]/10 via-[#3D8FC7]/10 to-[#6BA9D9]/10 opacity-0 group-hover/attach:opacity-100 transition-opacity duration-300" />
                 <AttachmentIcon type={a.type} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50 truncate">
+                <div className="flex-1 min-w-0 relative z-10">
+                  <p className="text-sm font-black text-zinc-900 dark:text-zinc-50 truncate">
                     {a.name ?? a.url}
                   </p>
                   {a.size && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                       {fmtSize(a.size)}
                     </p>
                   )}
@@ -293,59 +260,64 @@ function PostCardComponent({ post, apiBase, onChanged }: Props) {
       ) : null}
 
       {/* Actions */}
-      <div className="p-4 sm:p-5 flex items-center gap-3">
+      <div className="relative p-4 sm:p-5 flex items-center gap-3 flex-wrap">
         {/* Like */}
-        <Button
+        <button
           onClick={toggleLike}
           aria-label={liked ? "Bỏ thích" : "Thích"}
-          variant={liked ? "primary" : "ghost"}
-          size="sm"
-          className={liked ? "bg-red-500 hover:bg-red-600" : ""}
+          className={`group/like relative flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-black transition-all duration-300 hover:scale-[1.05] ${
+            liked
+              ? `bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg`
+              : `bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700`
+          }`}
         >
-          <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
-          {likesCount}
-        </Button>
+          <div className={`absolute inset-0 rounded-2xl ${liked ? "bg-rose-400/20" : "bg-[#1C6EA4]/10"} opacity-0 group-hover/like:opacity-100 transition-opacity duration-300`} />
+          <Heart className={`h-4 w-4 relative z-10 transition-transform ${liked ? "fill-current scale-110" : ""}`} />
+          <span className="relative z-10">{likesCount}</span>
+        </button>
 
         {/* Comment count */}
         <div
           aria-label="Số bình luận"
-          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200"
+          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-black bg-gradient-to-br from-[#1C6EA4]/5 via-[#3D8FC7]/5 to-[#6BA9D9]/5 dark:from-[#1C6EA4]/20 dark:via-[#3D8FC7]/20 dark:to-[#6BA9D9]/20 border-2 border-white/40 dark:border-zinc-700/50 text-[#1C6EA4] dark:text-[#6BA9D9] shadow-inner`}
         >
           <MessageCircle className="h-4 w-4" />
-          {post.commentsCount}
+          {post.commentsCount || 0}
         </div>
 
-        {/* Báo cáo — ẩn với bài của chính mình */}
+        {/* Báo cáo */}
         {!post.canDelete && (
-          <Button
-            onClick={reportPost}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              reportPost();
+            }}
             disabled={reporting || reportedOnce}
-            variant="ghost"
-            size="sm"
+            className="group/report relative flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 dark:border-zinc-700/50 text-rose-600 dark:text-rose-400 hover:bg-white dark:hover:bg-zinc-700 hover:scale-[1.05] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             title={reportedOnce ? "Bạn đã báo cáo bài này" : "Báo cáo bài viết"}
-            aria-label="Báo cáo bài viết"
           >
-            <Flag className="h-4 w-4 text-rose-500" />
-            Báo cáo
-          </Button>
+            <div className="absolute inset-0 rounded-2xl bg-rose-400/10 opacity-0 group-hover/report:opacity-100 transition-opacity duration-300" />
+            <Flag className="h-4 w-4 relative z-10" />
+            <span className="relative z-10">Báo cáo</span>
+          </button>
         )}
 
         {/* Share */}
-        <Button
-          onClick={sharePost}
-          variant="ghost"
-          size="sm"
-          className="ml-auto"
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            sharePost(e);
+          }}
+          className="group/share relative ml-auto flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 dark:border-zinc-700/50 text-[#1C6EA4] dark:text-[#6BA9D9] hover:bg-white dark:hover:bg-zinc-700 hover:scale-[1.05] transition-all"
         >
-          <Share2 className="h-4 w-4" />
-          Chia sẻ
-        </Button>
+          <div className="absolute inset-0 rounded-2xl bg-[#3D8FC7]/10 opacity-0 group-hover/share:opacity-100 transition-opacity duration-300" />
+          <Share2 className="h-4 w-4 relative z-10" />
+          <span className="relative z-10">Chia sẻ</span>
+        </button>
       </div>
-    </Card>
+    </div>
   );
 }
 
-// Memoize component to prevent unnecessary re-renders when parent updates
 const PostCard = React.memo(PostCardComponent);
-
 export default PostCard;

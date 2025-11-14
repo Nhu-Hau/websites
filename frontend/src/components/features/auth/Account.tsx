@@ -262,7 +262,7 @@ export default function Account() {
           });
           if (!res.ok) {
             toast.error("Vui lòng đăng nhập");
-            router.push(`${base}/auth/login`);
+            router.push(`${base}/login`);
             return;
           }
           const u = await res.json();

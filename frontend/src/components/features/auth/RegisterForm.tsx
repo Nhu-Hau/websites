@@ -149,7 +149,7 @@ export default function RegisterForm() {
         <>
           {t("alreadyAccount")}{" "}
           <Link
-            href={`${basePrefix}/auth/login`}
+            href={`${basePrefix}/login`}
             className="font-medium text-sky-600 dark:text-sky-400 underline underline-offset-4 decoration-dashed hover:no-underline hover:text-sky-700 dark:hover:text-sky-300 transition-colors duration-200"
           >
             {t("login")}

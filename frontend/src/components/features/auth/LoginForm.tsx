@@ -54,7 +54,7 @@ export default function LoginForm() {
         <>
           {t("noAccount")}{" "}
           <Link
-            href={`${basePrefix}/auth/register`}
+            href={`${basePrefix}/register`}
             className="underline underline-offset-2 hover:no-underline text-sky-600 dark:text-sky-400"
           >
             {t("register")}
@@ -122,7 +122,7 @@ export default function LoginForm() {
         {/* Forgot Password */}
         <div className="flex justify-end">
           <Link
-            href={`${basePrefix}/auth/forgot-password`}
+            href={`${basePrefix}/forgot-password`}
             className="text-sm text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 
                  underline underline-offset-4 decoration-dashed hover:no-underline 
                  transition-colors duration-200"

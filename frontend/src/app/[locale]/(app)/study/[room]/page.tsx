@@ -1,8 +1,11 @@
 // frontend/src/app/[locale]/study/[room]/page.tsx
-import dynamic from "next/dynamic";
+import dynamicImport from "next/dynamic";
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 // Dynamic import client component nặng để tối ưu bundle size
-const StudyRoomPage = dynamic(() => import("@/components/features/study/StudyRoomPage"));
+const StudyRoomPage = dynamicImport(() => import("@/components/features/study/StudyRoomPage"));
 
 export default function StudyRoomWrapper() {
   return (
@@ -11,5 +14,3 @@ export default function StudyRoomWrapper() {
     </div>
   );
 }
-
-export const dynamic = 'force-dynamic';

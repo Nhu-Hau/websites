@@ -155,7 +155,7 @@ return (
     <div className="flex items-center justify-between mb-5 relative z-10">
       <div className="flex items-center gap-3">
         <div className="relative p-2 rounded-2xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-700 shadow-inner">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent" />
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-zinc-400/50 to-transparent" />
           <Target className="w-5 h-5 text-zinc-700 dark:text-zinc-300 relative z-10" />
         </div>
         <h3 className="text-xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">

@@ -206,10 +206,10 @@ function BadgeItem({ badge }: { badge: Badge }) {
       <div
         data-tooltip-id={tooltipId}
         data-tooltip-content={detailedDescription}
-        className={`
+          className={`
           group relative flex items-center justify-center
           w-12 h-12 rounded-xl border-2 transition-all duration-300
-          bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl
+          bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl
           ${config.borderColor}
           hover:scale-105 hover:shadow-xl hover:ring-2 hover:ring-white/30
           cursor-pointer
@@ -243,10 +243,10 @@ function LockedBadgeItem({ badgeType }: { badgeType: BadgeType }) {
       <div
         data-tooltip-id={tooltipId}
         data-tooltip-content={`Chưa đạt: ${config.description}`}
-        className={`
+          className={`
           group relative flex items-center justify-center
           w-12 h-12 rounded-xl border-2 border-dashed transition-all duration-300
-          bg-white/60 dark:bg-zinc-800/60 backdrop-blur-xl
+          bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl
           ${config.borderColor}
           opacity-50 grayscale
           hover:opacity-70 hover:grayscale-0 hover:scale-105 hover:shadow-md
@@ -347,22 +347,30 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
   const totalCount = Object.keys(BADGE_CONFIG).length;
 
   return (
-    <div className="rounded-2xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-4 shadow-xl ring-2 ring-white/20 dark:ring-zinc-800/50">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-amber-500 shadow-lg ring-2 ring-white/50">
-            <Trophy className="h-5 w-5 text-white" />
+    <div className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005] hover:ring-amber-300/50 dark:hover:ring-amber-600/50 overflow-hidden">
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="relative">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="relative transform-gpu transition-all duration-400 group-hover:scale-110 group-hover:-rotate-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/30 backdrop-blur-md">
+                  <Trophy className="h-7 w-7 text-white drop-shadow-md" />
+                </div>
+              </div>
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-400/40 to-orange-400/40 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-zinc-900 dark:text-white">
+                Bộ sưu tập huy hiệu
+              </h2>
+              <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
+                {earnedCount} / {totalCount} huy hiệu đã mở khóa
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-black text-zinc-900 dark:text-white">
-              Bộ sưu tập huy hiệu
-            </h2>
-            <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
-              {earnedCount} / {totalCount} huy hiệu đã mở khóa
-            </p>
-          </div>
-        </div>
         {earnedCount > 0 && (
           <div className="px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900/30 dark:to-amber-900/30 border-2 border-yellow-300 dark:border-yellow-700 shadow-md">
             <span className="text-sm font-black text-yellow-700 dark:text-yellow-300">
@@ -372,48 +380,49 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
         )}
       </div>
 
-      {checking ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-yellow-600 dark:text-yellow-400" />
-        </div>
-      ) : badges.length === 0 ? (
-        <div className="text-center py-8">
-          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner flex items-center justify-center mb-3">
-            <Trophy className="h-8 w-8 text-slate-400 dark:text-zinc-500" />
+          {checking ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-amber-600 dark:text-amber-400" />
           </div>
-          <p className="text-sm font-black text-zinc-700 dark:text-zinc-300 mb-1">
-            Chưa có huy hiệu nào
-          </p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Hãy bắt đầu luyện tập để mở khóa huy hiệu đầu tiên!
-          </p>
-        </div>
+        ) : badges.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="mx-auto w-24 h-24 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner flex items-center justify-center mb-6">
+              <Trophy className="h-12 w-12 text-slate-400 dark:text-zinc-500" />
+            </div>
+            <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mb-2">
+              Chưa có huy hiệu nào
+            </p>
+            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-8">
+              Hãy bắt đầu luyện tập để mở khóa huy hiệu đầu tiên!
+            </p>
+          </div>
       ) : (
         <>
-          {/* Earned Badges */}
-          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2.5 mb-5">
+            {/* Earned Badges */}
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3 mb-6">
             {badges.map((badge) => (
               <BadgeItem key={badge._id} badge={badge} />
             ))}
           </div>
 
-          {/* Locked Badges */}
-          {badges.length < totalCount && (
-            <div className="pt-4 border-t-2 border-white/20">
-              <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-3 text-center">
-                Huy hiệu chưa mở khóa
-              </p>
-              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2.5">
+            {/* Locked Badges */}
+            {badges.length < totalCount && (
+              <div className="pt-6 border-t-2 border-white/20 dark:border-zinc-700/50">
+                <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-4 text-center">
+                  Huy hiệu chưa mở khóa
+                </p>
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
                 {Object.keys(BADGE_CONFIG)
                   .filter((type) => !badges.some((b) => b.badgeType === type))
                   .map((type) => (
                     <LockedBadgeItem key={type} badgeType={type as BadgeType} />
                   ))}
+                </div>
               </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

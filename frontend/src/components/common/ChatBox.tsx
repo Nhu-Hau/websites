@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-html-link-for-pages */
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -708,93 +709,99 @@ export default function ChatBox() {
     }
   };
 
-  return (
-    <>
-      {/* Floating Action Button với badge unread */}
-      <div className="fixed bottom-6 right-6 z-[70]">
-        <button
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? t("closeChat") : t("openChat")}
-          className="relative flex h-14 w-14 items-center justify-center 
-        rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white
-        shadow-xl shadow-indigo-500/30 ring-4 ring-white/20
-        hover:scale-110 active:scale-95 transition-all duration-200
-        focus:outline-none focus:ring-4 focus:ring-sky-400/50
-        dark:from-sky-500 dark:to-indigo-500"
-        >
-          <motion.div
-            animate={{ rotate: open ? 90 : 0 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            {open ? (
-              <FiX className="h-6 w-6" />
-            ) : (
-              <FiMessageSquare className="h-6 w-6" />
-            )}
-          </motion.div>
-          {/* Badge unread count */}
-          {!open && unreadCount > 0 && (
-            <motion.span
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-lg ring-2 ring-white dark:ring-zinc-900"
-            >
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </motion.span>
-          )}
-        </button>
-      </div>
-
-      {/* Chat Panel */}
-      <motion.div
-        ref={wrapperRef}
-        initial={false}
-        animate={{
-          opacity: open ? 1 : 0,
-          y: open ? 0 : 16,
-          scale: open ? 1 : 0.95,
-        }}
-        transition={{ duration: 0.25, ease: "easeOut" }}
-        className={`fixed bottom-44 sm:bottom-4 right-4 sm:right-[6.5rem] z-[60]
-                    w-[calc(100vw-2rem)] sm:w-[28rem] md:w-[32rem]
-        ${open ? "pointer-events-auto" : "pointer-events-none"}`}
+return (
+  <>
+    {/* Floating Action Button với badge unread */}
+    <div className="fixed bottom-6 right-6 z-[70]">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-label={open ? t("closeChat") : t("openChat")}
+        className="group relative flex h-14 w-14 items-center justify-center 
+          rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white
+          shadow-xl ring-4 ring-white/30 dark:ring-zinc-800/30
+          hover:scale-110 active:scale-95 transition-all duration-200
+          focus:outline-none focus:ring-4 focus:ring-sky-400/50"
       >
-        <div
-          className="overflow-hidden rounded-3xl border border-white/20 
-        bg-white/85 backdrop-blur-xl shadow-2xl
-        dark:bg-zinc-900/90 dark:border-zinc-700/50"
+        <motion.div
+          animate={{ rotate: open ? 90 : 0 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          className="flex items-center justify-center"
         >
+          {open ? (
+            <FiX className="h-6 w-6" />
+          ) : (
+            <FiMessageSquare className="h-6 w-6" />
+          )}
+        </motion.div>
+
+        {/* Badge unread count */}
+        {!open && unreadCount > 0 && (
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-black text-white shadow-lg ring-2 ring-white dark:ring-zinc-900"
+          >
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </motion.span>
+        )}
+      </button>
+    </div>
+
+    {/* Chat Panel */}
+    <motion.div
+      ref={wrapperRef}
+      initial={false}
+      animate={{
+        opacity: open ? 1 : 0,
+        y: open ? 0 : 16,
+        scale: open ? 1 : 0.95,
+      }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className={`fixed bottom-44 sm:bottom-4 right-4 sm:right-[6.5rem] z-[60]
+                  w-[calc(100vw-2rem)] sm:w-[28rem] md:w-[32rem]
+        ${open ? "pointer-events-auto" : "pointer-events-none"}`}
+    >
+      <div
+        className="group/overlay overflow-hidden rounded-3xl border-2 border-white/30 
+          bg-white/90 backdrop-blur-xl shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50
+          dark:bg-zinc-900/90 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005]"
+      >
+        {/* Gradient overlay khi hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-indigo-500/5 opacity-0 group-hover/overlay:opacity-100 transition-opacity duration-500" />
+
+        <div className="relative">
           {/* Header */}
           <div
             className="relative flex items-center justify-between
-            px-4 xs:px-5 py-3.5 xs:py-4
-            bg-gradient-to-r from-gray-50/80 to-white/60
-            dark:from-zinc-900 dark:to-zinc-800/80
-            border-b border-gray-200/50 dark:border-zinc-700"
+              px-4 xs:px-5 py-3.5 xs:py-4
+              bg-gradient-to-r from-gray-50/90 to-white/80
+              dark:from-zinc-900 dark:to-zinc-800/90
+              border-b border-white/30 dark:border-zinc-700/50"
           >
             <div className="flex items-center gap-3">
-              <div className="relative">
+              <div className="relative transform-gpu transition-all duration-400 group-hover/overlay:scale-110 group-hover/overlay:-rotate-3">
                 <div
                   className="h-10 w-10 xs:h-11 xs:w-11 rounded-2xl
-                  bg-gradient-to-tr from-indigo-600 to-sky-600 p-px shadow-lg"
+                    bg-gradient-to-tr from-indigo-600 to-sky-600 p-px shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50"
                 >
-                  <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white dark:bg-zinc-900">
-                    <FaGraduationCap className="h-5 w-5 text-indigo-600 dark:text-sky-400" />
+                  <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white dark:bg-zinc-900 backdrop-blur-md">
+                    <FaGraduationCap className="h-5 w-5 text-indigo-600 dark:text-sky-400 drop-shadow-md" />
                   </div>
                 </div>
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-400/40 to-sky-400/40 blur-xl opacity-0 group-hover/overlay:opacity-100 transition-opacity duration-500" />
                 <span
                   className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full 
-                bg-green-500 border-2 border-white dark:border-zinc-900"
+                    bg-green-500 border-2 border-white dark:border-zinc-900 animate-pulse"
                 />
               </div>
 
               <div className="leading-tight">
-                <h3 className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">
+                <h3 className="text-sm xs:text-base font-black text-zinc-900 dark:text-white">
                   {t("title")}
                 </h3>
-                <p className="text-[11px] xs:text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                  {t("subtitle")}
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="font-bold">{t("subtitle")}</span>
                 </p>
               </div>
             </div>
@@ -803,22 +810,22 @@ export default function ChatBox() {
               {messages.length > 0 && (
                 <button
                   onClick={clearChat}
-                  className="group rounded-xl p-2 xs:p-2.5 text-gray-500 hover:bg-red-50 hover:text-red-600
-                focus:outline-none focus:ring-2 focus:ring-red-400 transition
-                dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                  className="group/btn rounded-xl p-2 xs:p-2.5 text-zinc-500 hover:bg-red-50 hover:text-red-600
+                    focus:outline-none focus:ring-2 focus:ring-red-400 transition
+                    dark:text-zinc-400 dark:hover:bg-red-900/30 dark:hover:text-red-400"
                   aria-label="Xóa cuộc trò chuyện"
                 >
-                  <FiTrash2 className="h-4 w-4 xs:h-4.5 xs:w-4.5 transition group-hover:scale-110" />
+                  <FiTrash2 className="h-4 w-4 xs:h-4.5 xs:w-4.5 transition group-hover/btn:scale-110 group-hover/btn:rotate-12" />
                 </button>
               )}
               <button
                 onClick={() => setOpen(false)}
-                className="rounded-xl p-2 xs:p-2.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700
-              focus:outline-none focus:ring-2 focus:ring-gray-400 transition
-              dark:text-gray-400 dark:hover:bg-zinc-800 dark:hover:text-gray-200"
+                className="group/btn rounded-xl p-2 xs:p-2.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700
+                  focus:outline-none focus:ring-2 focus:ring-zinc-400 transition
+                  dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                 aria-label={t("close")}
               >
-                <FiX className="h-4 w-4 xs:h-4.5 xs:w-4.5" />
+                <FiX className="h-4 w-4 xs:h-4.5 xs:w-4.5 transition group-hover/btn:scale-110" />
               </button>
             </div>
           </div>
@@ -829,10 +836,10 @@ export default function ChatBox() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="mx-3 mt-3 rounded-xl bg-red-50/80 border border-red-200/50 
-            px-3 py-2.5 backdrop-blur-sm dark:bg-red-900/20 dark:border-red-800/50"
+              className="mx-3 mt-3 rounded-2xl bg-gradient-to-r from-red-50 to-red-50/80 border-2 border-red-200/50 
+                px-3 py-2.5 backdrop-blur-sm shadow-inner dark:from-red-900/30 dark:to-red-900/20 dark:border-red-800/50"
             >
-              <p className="text-sm font-medium text-red-700 dark:text-red-300 flex items-center gap-2">
+              <p className="text-sm font-black text-red-700 dark:text-red-300 flex items-center gap-2">
                 <FiAlertCircle className="h-4 w-4" />
                 {error}
               </p>
@@ -843,21 +850,22 @@ export default function ChatBox() {
           <div
             ref={listRef}
             className="px-3 xs:px-4 py-4 space-y-4
-            max-h-[65vh] xs:max-h-[70vh] sm:max-h-[60vh]
-            min-h-[38vh] xs:min-h-[40vh]
-            overflow-y-auto
-            bg-gradient-to-b from-transparent to-gray-50/30
-            dark:from-transparent dark:to-zinc-900/50"
+              max-h-[65vh] xs:max-h-[70vh] sm:max-h-[60vh]
+              min-h-[38vh] xs:min-h-[40vh]
+              overflow-y-auto
+              bg-gradient-to-b from-transparent to-white/30
+              dark:from-transparent dark:to-zinc-900/50"
           >
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-8">
                 <div
-                  className="h-16 w-16 rounded-full bg-gradient-to-tr from-sky-100 to-indigo-100 
-                dark:from-sky-900/50 dark:to-indigo-900/50 flex items-center justify-center mb-4"
+                  className="relative h-16 w-16 rounded-full bg-gradient-to-tr from-sky-100 to-indigo-100 
+                    dark:from-sky-900/50 dark:to-indigo-900/50 flex items-center justify-center mb-4 shadow-inner"
                 >
                   <FiMessageSquare className="h-8 w-8 text-sky-600 dark:text-sky-400" />
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-sky-400/20 to-indigo-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400 max-w-xs leading-relaxed">
                   {!user
                     ? "Vui lòng đăng nhập để bắt đầu trò chuyện"
                     : user.access !== "premium"
@@ -875,23 +883,21 @@ export default function ChatBox() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 300 }}
-                    className={`flex ${
-                      m.role === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`group relative
-                      max-w-[86%] xs:max-w-[82%] sm:max-w-[80%]
-                      rounded-2xl px-4 py-3 text-sm shadow-md transition-all ${
-                        m.role === "user"
+                      className={`group/msg relative
+                        max-w-[86%] xs:max-w-[82%] sm:max-w-[80%]
+                        rounded-2xl px-4 py-3 text-sm shadow-lg transition-all duration-300
+                        ${m.role === "user"
                           ? "bg-gradient-to-tr from-sky-600 to-indigo-600 text-white rounded-tr-sm"
-                          : "bg-white text-gray-800 dark:bg-zinc-800 dark:text-gray-100 rounded-tl-sm"
-                      }`}
+                          : "bg-white/90 text-zinc-800 dark:bg-zinc-800/90 dark:text-zinc-100 rounded-tl-sm backdrop-blur-sm"
+                        }`}
                     >
                       {m.role === "assistant" && (
-                        <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-75">
-                          <FaGraduationCap className="h-3.5 w-3.5" />
-                          <span className="font-medium">{t("ai")}</span>
+                        <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-80">
+                          <FaGraduationCap className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+                          <span className="font-black">{t("ai")}</span>
                         </div>
                       )}
 
@@ -906,10 +912,10 @@ export default function ChatBox() {
                       )}
 
                       <div
-                        className={`mt-2 text-[10px] font-medium flex items-center gap-1.5 ${
+                        className={`mt-2 text-xs font-bold flex items-center gap-1.5 ${
                           m.role === "user"
-                            ? "text-white/70"
-                            : "text-gray-400 dark:text-gray-500"
+                            ? "text-white/80"
+                            : "text-zinc-500 dark:text-zinc-400"
                         }`}
                       >
                         <FiClock className="h-3 w-3" />
@@ -924,15 +930,13 @@ export default function ChatBox() {
                       {/* Copy (assistant only) */}
                       {m.role === "assistant" && !m.pending && (
                         <button
-                          onClick={() =>
-                            navigator.clipboard.writeText(m.content)
-                          }
-                          className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 
-                          p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow-md
-                          transition hover:scale-110 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                          onClick={() => navigator.clipboard.writeText(m.content)}
+                          className="absolute -top-2 -right-2 opacity-0 group-hover/msg:opacity-100 
+                            p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow-md
+                            transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-sky-400"
                           aria-label="Sao chép"
                         >
-                          <FiCopy className="h-3.5 w-3.5 text-gray-600 dark:text-gray-300" />
+                          <FiCopy className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-300" />
                         </button>
                       )}
                     </div>
@@ -944,22 +948,13 @@ export default function ChatBox() {
             {/* Typing */}
             {sending && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-2 rounded-2xl bg-gray-100 dark:bg-zinc-800 px-4 py-3">
+                <div className="flex items-center gap-2 rounded-2xl bg-white/80 dark:bg-zinc-800/80 px-4 py-3 shadow-inner">
                   <div className="flex space-x-1">
-                    <span
-                      className="h-2 w-2 rounded-full bg-gray-400 animate-bounce"
-                      style={{ animationDelay: "0ms" }}
-                    />
-                    <span
-                      className="h-2 w-2 rounded-full bg-gray-400 animate-bounce"
-                      style={{ animationDelay: "150ms" }}
-                    />
-                    <span
-                      className="h-2 w-2 rounded-full bg-gray-400 animate-bounce"
-                      style={{ animationDelay: "300ms" }}
-                    />
+                    <span className="h-2 w-2 rounded-full bg-sky-500 animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="h-2 w-2 rounded-full bg-sky-500 animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="h-2 w-2 rounded-full bg-sky-500 animate-bounce" style={{ animationDelay: "300ms" }} />
                   </div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
                     AI đang suy nghĩ...
                   </span>
                 </div>
@@ -968,7 +963,7 @@ export default function ChatBox() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-gray-200/60 dark:border-zinc-700/60 p-4 bg-white/70 dark:bg-zinc-900/70">
+          <div className="border-t-2 border-white/30 dark:border-zinc-700/50 p-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md">
             <div className="flex items-end gap-3">
               <div className="flex-1 relative">
                 <Textarea
@@ -985,42 +980,42 @@ export default function ChatBox() {
                   }
                   disabled={!user || sending || user?.access !== "premium"}
                   rows={1}
-                  className="pr-12 bg-white/80 dark:bg-zinc-800/70 border-gray-300/70 dark:border-zinc-600 focus:ring-4 focus:ring-sky-500/20"
+                  className="pr-12 bg-white/90 dark:bg-zinc-800/90 border-2 border-white/30 dark:border-zinc-700/50 
+                    focus:ring-4 focus:ring-sky-500/30 focus:border-sky-500/50 
+                    placeholder:text-zinc-400 dark:placeholder:text-zinc-500
+                    text-sm font-medium rounded-2xl"
                   style={{ minHeight: "52px", maxHeight: "120px" }}
                 />
-                <div className="absolute right-3 bottom-3 text-xs text-gray-400">
+                <div className="absolute right-3 bottom-3 text-xs font-bold text-zinc-400">
                   {input.length}/2000
                 </div>
               </div>
 
               <Button
                 onClick={send}
-                disabled={
-                  sending ||
-                  !input.trim() ||
-                  !user ||
-                  user?.access !== "premium"
-                }
+                disabled={sending || !input.trim() || !user || user?.access !== "premium"}
                 isLoading={sending}
                 size="lg"
                 variant="primary"
-                className="h-12 w-12 shrink-0 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 shadow-lg shadow-sky-500/30 hover:scale-110 hover:shadow-xl focus:ring-4 focus:ring-sky-400/50 p-0"
+                className="h-12 w-12 shrink-0 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 
+                  shadow-xl shadow-sky-500/30 hover:scale-110 hover:shadow-2xl 
+                  focus:ring-4 focus:ring-sky-400/50 p-0 transition-all duration-300"
               >
                 {!sending && <FiSend className="h-5 w-5" />}
               </Button>
             </div>
 
             {!user && (
-              <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-                <a href={`${basePrefix}/auth/login`} className="text-sky-600 hover:underline">
+              <p className="mt-3 text-center text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                <a href={`${basePrefix}/login`} className="text-sky-600 hover:underline font-black">
                   Đăng nhập
                 </a>{" "}
                 để sử dụng
               </p>
             )}
             {user && user.access !== "premium" && (
-              <p className="mt-2 text-center text-xs text-orange-600 dark:text-orange-400">
-                <a href={`${basePrefix}/account`} className="hover:underline font-medium">
+              <p className="mt-3 text-center text-xs font-black text-orange-600 dark:text-orange-400">
+                <a href={`${basePrefix}/account`} className="hover:underline">
                   Nâng cấp lên Premium
                 </a>{" "}
                 để sử dụng chat với AI
@@ -1028,7 +1023,8 @@ export default function ChatBox() {
             )}
           </div>
         </div>
-      </motion.div>
-    </>
-  );
+      </div>
+    </motion.div>
+  </>
+);
 }

@@ -90,9 +90,9 @@ export default function GoalProgressClient({ initialData }: GoalProgressClientPr
 
   if (!data || !data.hasGoal || !data.goal) {
     return (
-      <div className="rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-7 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
+      <div className="rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
         {/* Header */}
-        <div className="flex items-center justify-between mb-7">
+        <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-purple-600 shadow-xl ring-2 ring-white/50">
               <Target className="h-7 w-7 text-white" />
@@ -143,9 +143,9 @@ export default function GoalProgressClient({ initialData }: GoalProgressClientPr
   const isAchieved = progressPercent >= 100;
 
   return (
-    <div className="rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-7 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
+    <div className="rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50 h-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-7">
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
           <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${isAchieved ? "bg-gradient-to-br from-emerald-500 to-teal-500" : "bg-gradient-to-br from-violet-600 to-purple-600"} shadow-xl ring-2 ring-white/50`}>
             {isAchieved ? <Trophy className="h-7 w-7 text-white" /> : <Target className="h-7 w-7 text-white" />}
@@ -171,7 +171,7 @@ export default function GoalProgressClient({ initialData }: GoalProgressClientPr
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-7 text-center">
+      <div className="grid grid-cols-3 gap-4 mb-6 text-center pt-10">
         <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/30 dark:to-purple-900/30 shadow-inner">
           <p className="text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">Mục tiêu</p>
           <p className="text-2xl font-black text-violet-900 dark:text-white mt-1">{goal.targetScore}</p>
@@ -187,7 +187,7 @@ export default function GoalProgressClient({ initialData }: GoalProgressClientPr
       </div>
 
       {/* Progress Bar */}
-      <div className="mb-6">
+      <div className="mb-5">
         <div className="relative h-12 bg-white/80 dark:bg-zinc-800/80 rounded-2xl shadow-inner overflow-hidden border-2 border-white/40">
           <div
             className={`absolute inset-0 h-full bg-gradient-to-r ${isAchieved ? "from-emerald-500 to-teal-500" : "from-violet-600 to-purple-600"} transition-all duration-1000 ease-out flex items-center justify-end pr-4`}
@@ -243,14 +243,14 @@ function GoalDialog({
   currentTarget?: number;
 }) {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
-      onClick={() => setShowDialog(false)}
-    >
       <div
-        className="w-full max-w-md rounded-3xl bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-7 shadow-2xl border-2 border-white/30 ring-2 ring-white/20 dark:ring-zinc-800/50"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+        onClick={() => setShowDialog(false)}
       >
+        <div
+          className="w-full max-w-md rounded-3xl bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-6 shadow-2xl border-2 border-white/30 ring-2 ring-white/20 dark:ring-zinc-800/50"
+          onClick={(e) => e.stopPropagation()}
+        >
         <div className="flex items-center gap-3 mb-6">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-purple-600 shadow-lg ring-2 ring-white/50">
             <Target className="h-7 w-7 text-white" />

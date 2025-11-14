@@ -24,19 +24,25 @@ interface ActivityHeatmapClientProps {
   initialData: ActivityResponse | null;
 }
 
-export default function ActivityHeatmapClient({ initialData }: ActivityHeatmapClientProps) {
-  if (!initialData || !initialData.activityData || initialData.activityData.length === 0) {
+export default function ActivityHeatmapClient({
+  initialData,
+}: ActivityHeatmapClientProps) {
+  if (
+    !initialData ||
+    !initialData.activityData ||
+    initialData.activityData.length === 0
+  ) {
     return (
       <CardWrap>
         <Header />
-        <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <div className="flex flex-col items-center justify-center py-10 gap-4">
           <div className="p-4 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner">
             <Calendar className="h-10 w-10 text-slate-400 dark:text-zinc-500" />
           </div>
-          <p className="text-base font-bold text-zinc-700 dark:text-zinc-300">
+          <p className="text-base font-black text-zinc-800 dark:text-zinc-200">
             Chưa có dữ liệu hoạt động
           </p>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 text-center max-w-xs">
             Hãy làm bài để theo dõi tiến trình học tập!
           </p>
         </div>
@@ -55,7 +61,9 @@ export default function ActivityHeatmapClient({ initialData }: ActivityHeatmapCl
   for (let i = 364; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
-    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const dateStr = `${date.getFullYear()}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     days.push({ date, count: activityMap.get(dateStr) || 0 });
   }
 
@@ -86,7 +94,7 @@ export default function ActivityHeatmapClient({ initialData }: ActivityHeatmapCl
       <Header />
 
       {/* Heatmap */}
-      <div className="mb-8 overflow-x-auto">
+      <div className="mb-6 overflow-x-auto">
         <div className="flex gap-1.5 min-w-max p-1">
           {weeks.map((week, wi) => (
             <div key={wi} className="flex flex-col gap-1.5">
@@ -95,8 +103,12 @@ export default function ActivityHeatmapClient({ initialData }: ActivityHeatmapCl
                 return (
                   <div
                     key={di}
-                    className={`group relative w-4 h-4 rounded-md ${getColor(day.count)} transition-all duration-200 hover:scale-150 hover:shadow-lg hover:ring-2 hover:ring-emerald-500 dark:hover:ring-emerald-400 cursor-pointer`}
-                    title={`${day.date.toLocaleDateString("vi-VN")}: ${day.count} bài`}
+                    className={`group relative w-4 h-4 rounded-md ${getColor(
+                      day.count
+                    )} transition-all duration-200 hover:scale-150 hover:shadow-lg hover:ring-2 hover:ring-emerald-500 dark:hover:ring-emerald-400 cursor-pointer`}
+                    title={`${day.date.toLocaleDateString("vi-VN")}: ${
+                      day.count
+                    } bài`}
                   >
                     {/* Tooltip nhỏ khi hover */}
                     <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
@@ -113,7 +125,7 @@ export default function ActivityHeatmapClient({ initialData }: ActivityHeatmapCl
       </div>
 
       {/* Stats + Legend */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-wrap items-center gap-5 text-base">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-amber-500 shadow-md">
@@ -132,7 +144,8 @@ export default function ActivityHeatmapClient({ initialData }: ActivityHeatmapCl
           <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
             <Trophy className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             <span>
-              <strong>{stats.totalDays}</strong> ngày • <strong>{stats.totalAttempts}</strong> lần
+              <strong>{stats.totalDays}</strong> ngày •{" "}
+              <strong>{stats.totalAttempts}</strong> lần
             </span>
           </div>
         </div>
@@ -152,9 +165,11 @@ export default function ActivityHeatmapClient({ initialData }: ActivityHeatmapCl
 
       {/* Streak banner */}
       {stats.currentStreak > 0 && (
-        <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 dark:from-orange-900/30 dark:via-amber-900/30 dark:to-orange-900/30 border-2 border-orange-200 dark:border-orange-800/50 shadow-inner">
-          <p className="text-base font-black text-orange-800 dark:text-orange-300 text-center">
-            Bạn đã duy trì chuỗi học <span className="text-xl">{stats.currentStreak}</span> ngày liên tiếp!
+        <div className="mt-5 p-2 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 dark:from-orange-900/30 dark:via-amber-900/30 dark:to-orange-900/30 border-2 border-orange-200 dark:border-orange-800/50 shadow-inner">
+          <p className="text-sm font-black text-orange-800 dark:text-orange-300 text-center">
+            Bạn đã duy trì chuỗi học{" "}
+            <span className="text-sm">{stats.currentStreak}</span> ngày liên
+            tiếp!
           </p>
         </div>
       )}
@@ -164,7 +179,7 @@ export default function ActivityHeatmapClient({ initialData }: ActivityHeatmapCl
 
 function CardWrap({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-7 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
+    <div className="rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
       {children}
     </div>
   );
@@ -172,7 +187,7 @@ function CardWrap({ children }: { children: React.ReactNode }) {
 
 function Header() {
   return (
-    <div className="flex items-center gap-3 mb-7">
+    <div className="flex items-center gap-3 mb-5">
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-xl ring-2 ring-white/50">
         <Calendar className="h-7 w-7 text-white" />
       </div>

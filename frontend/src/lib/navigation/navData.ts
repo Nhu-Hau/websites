@@ -11,7 +11,6 @@ export function MenuNav(): NavItemType[] {
   const items: NavItemType[] = [
     {
       label: t("practiceLR.title"),
-      href: `/${locale}/practice/part.1?level=1`,
       children: [
         {
           label: t("practiceLR.parts.part1"),

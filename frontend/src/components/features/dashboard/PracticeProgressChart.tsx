@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Loader2 } from "lucide-react";
 
 /* ===================== Types ===================== */
 type Lvl = 1 | 2 | 3;
@@ -185,36 +185,38 @@ export default function PracticeProgressChart() {
 
   /* ===================== Render ===================== */
   return (
-    <section className="max-h-96 flex flex-col rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-4 sm:p-5 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+    <section className="h-full flex flex-col rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-indigo-900/30 dark:to-blue-900/30">
-            <BarChart3 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-600 shadow-xl ring-2 ring-white/50">
+            <BarChart3 className="h-7 w-7 text-white" />
           </div>
-          <h2 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white">
-            Tiến bộ luyện tập
-          </h2>
-        </div>
-        <div className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-          Đơn vị: % (Accuracy)
+          <div>
+            <h2 className="text-xl font-black text-zinc-900 dark:text-white">
+              Tiến bộ luyện tập
+            </h2>
+            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Theo dõi accuracy theo từng Part
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Part chips */}
-      <div className="-mx-1 mb-3 overflow-x-auto no-scrollbar">
-        <div className="px-1 flex items-center gap-1.5 min-w-max">
+      <div className="mb-4">
+        <div className="flex items-center gap-1.5 flex-wrap">
           {PARTS.map((p) => {
             const isSel = selectedPart === p;
             return (
               <button
                 key={p}
                 onClick={() => setSelectedPart(p)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all duration-200 border
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all duration-200
               ${
                 isSel
-                  ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-indigo-600 shadow-sm"
-                  : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
+                  ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md"
+                  : "bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 hover:shadow-sm"
               }`}
               >
                 {PART_LABEL[p]}
@@ -225,11 +227,11 @@ export default function PracticeProgressChart() {
       </div>
 
       {/* Chart */}
-      <div className="relative flex-1 min-h-[220px]">
+      <div className="relative flex-1 min-h-[140px]">
         {loading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-            <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mb-2" />
-            <p className="text-[13px] font-medium text-zinc-600 dark:text-zinc-400">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+            <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
               Đang tải dữ liệu...
             </p>
           </div>
@@ -238,51 +240,48 @@ export default function PracticeProgressChart() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={lineByPart[selectedPart]}
-                margin={{ top: 6, right: 8, left: 0, bottom: 0 }}
+                margin={{ top: 8, right: 12, left: 4, bottom: 4 }}
               >
                 <CartesianGrid
-                  strokeDasharray="3 3"
+                  strokeDasharray="4 4"
                   stroke="#e5e7eb"
-                  className="dark:stroke-zinc-700 opacity-40"
+                  className="dark:stroke-zinc-700 opacity-50"
                 />
                 <XAxis
                   dataKey="at"
                   interval="preserveStartEnd"
-                  tick={{ fill: "#6b7280", fontSize: 10 }}
+                  tick={{ fill: "#6b7280", fontSize: 11, fontWeight: 600 }}
                   axisLine={{ stroke: "#d1d5db" }}
                   tickLine={{ stroke: "#d1d5db" }}
-                  minTickGap={18}
+                  minTickGap={20}
                 />
                 <YAxis
                   domain={[0, 100]}
-                  tick={{ fill: "#6b7280", fontSize: 10 }}
+                  ticks={[0, 25, 50, 75, 100]}
+                  tick={{ fill: "#6b7280", fontSize: 11, fontWeight: 600 }}
                   axisLine={{ stroke: "#d1d5db" }}
                   tickLine={{ stroke: "#d1d5db" }}
-                  ticks={[0, 25, 50, 75, 100]}
-                  width={26}
+                  width={36}
                 />
                 <ChartTooltip
                   contentStyle={{
-                    backgroundColor: "#ffffff",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "10px",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                    padding: "6px 10px",
+                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "12px",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                    padding: "10px 14px",
+                    backdropFilter: "blur(8px)",
                   }}
                   labelStyle={{
-                    color: "#6b7280",
-                    fontWeight: 600,
-                    fontSize: 11,
+                    color: "#374151",
+                    fontWeight: 700,
+                    fontSize: 12,
                   }}
-                  itemStyle={{
-                    color: "#6366f1",
-                    fontWeight: 500,
-                    fontSize: 11,
-                  }}
+                  itemStyle={{ fontSize: 12, fontWeight: 600 }}
                   cursor={{
-                    stroke: "#d1d5db",
-                    strokeWidth: 1,
-                    strokeDasharray: "4 4",
+                    stroke: "#6366f1",
+                    strokeWidth: 2,
+                    strokeDasharray: "6 6",
                   }}
                   formatter={(value: number, name: string, props: any) => {
                     const payload = props.payload;
@@ -291,27 +290,27 @@ export default function PracticeProgressChart() {
                       : "";
                     const test =
                       payload?.test != null ? ` • Test${payload.test}` : "";
-                    return [`${Math.round(value)}%${level}${test}`, "Acc"];
+                    return [`${Math.round(value)}%${level}${test}`, "Accuracy"];
                   }}
                 />
                 <Line
                   type="monotone"
                   dataKey="acc"
                   stroke="#6366f1"
-                  strokeWidth={2}
+                  strokeWidth={3}
                   dot={{
-                    r: 3.2,
-                    stroke: "#6366f1",
-                    strokeWidth: 1.5,
-                    fill: "#fff",
-                  }}
-                  activeDot={{
                     r: 5,
                     stroke: "#6366f1",
                     strokeWidth: 2,
                     fill: "#fff",
                   }}
-                  animationDuration={700}
+                  activeDot={{
+                    r: 7,
+                    stroke: "#6366f1",
+                    strokeWidth: 3,
+                    fill: "#fff",
+                  }}
+                  animationDuration={800}
                 />
                 {lineByPart[selectedPart]?.some(
                   (d) => d.movingAvg != null
@@ -320,41 +319,43 @@ export default function PracticeProgressChart() {
                     type="monotone"
                     dataKey="movingAvg"
                     stroke="#94a3b8"
-                    strokeWidth={1.25}
+                    strokeWidth={2}
                     strokeDasharray="5 4"
                     dot={false}
                     activeDot={false}
-                    animationDuration={700}
+                    animationDuration={800}
                   />
                 )}
               </LineChart>
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-            <div className="p-3 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-2.5">
-              <BarChart3 className="w-6 h-6 text-zinc-400 dark:text-zinc-600" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner">
+              <BarChart3 className="h-10 w-10 text-slate-400 dark:text-zinc-500" />
             </div>
-            <p className="text-[13px] font-medium text-zinc-600 dark:text-zinc-400">
-              Chưa có dữ liệu
+            <p className="text-base font-black text-zinc-800 dark:text-zinc-200">
+              Chưa có dữ liệu luyện tập
             </p>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-500 mt-1">
-              Luyện tập để theo dõi tiến bộ!
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 text-center max-w-xs">
+              Hãy làm bài Practice để xem biểu đồ tiến bộ này.
             </p>
           </div>
         )}
       </div>
 
       {/* Legend */}
-      <div className="mt-3 flex items-center justify-center gap-4 text-[11px] text-zinc-500 dark:text-zinc-400">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-          <span>Accuracy</span>
+      <div className="mt-5 flex items-center justify-center gap-6 text-sm font-bold">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-full bg-indigo-600 shadow-md" />
+          <span className="text-indigo-700 dark:text-indigo-400">Accuracy</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-0.5 bg-zinc-300 dark:bg-zinc-700" />
-          <span>Moving Avg</span>
-        </div>
+        {lineByPart[selectedPart]?.some((d) => d.movingAvg != null) && (
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-0.5 bg-slate-400 dark:bg-slate-500" />
+            <span className="text-slate-600 dark:text-zinc-400">Moving Avg</span>
+          </div>
+        )}
       </div>
     </section>
   );

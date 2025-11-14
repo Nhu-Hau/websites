@@ -208,17 +208,17 @@ function BadgeItem({ badge }: { badge: Badge }) {
         data-tooltip-content={detailedDescription}
         className={`
           group relative flex items-center justify-center
-          w-16 h-16 rounded-2xl border-2 transition-all duration-300
+          w-12 h-12 rounded-xl border-2 transition-all duration-300
           bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl
           ${config.borderColor}
-          hover:scale-110 hover:shadow-2xl hover:ring-4 hover:ring-white/30
+          hover:scale-105 hover:shadow-xl hover:ring-2 hover:ring-white/30
           cursor-pointer
         `}
       >
-        <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${config.gradient} opacity-20 group-hover:opacity-30 transition-opacity`} />
-        <Icon className={`relative z-10 w-8 h-8 ${config.textColor} drop-shadow-md`} />
-        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full border-2 border-white dark:border-zinc-900 shadow-lg flex items-center justify-center">
-          <Trophy className="w-3 h-3 text-white" />
+        <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${config.gradient} opacity-20 group-hover:opacity-30 transition-opacity`} />
+        <Icon className={`relative z-10 w-6 h-6 ${config.textColor} drop-shadow-md`} />
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full border-2 border-white dark:border-zinc-900 shadow-md flex items-center justify-center">
+          <Trophy className="w-2.5 h-2.5 text-white" />
         </div>
       </div>
       <Tooltip
@@ -245,18 +245,18 @@ function LockedBadgeItem({ badgeType }: { badgeType: BadgeType }) {
         data-tooltip-content={`Chưa đạt: ${config.description}`}
         className={`
           group relative flex items-center justify-center
-          w-16 h-16 rounded-2xl border-2 border-dashed transition-all duration-300
+          w-12 h-12 rounded-xl border-2 border-dashed transition-all duration-300
           bg-white/60 dark:bg-zinc-800/60 backdrop-blur-xl
           ${config.borderColor}
           opacity-50 grayscale
-          hover:opacity-70 hover:grayscale-0 hover:scale-105 hover:shadow-lg
+          hover:opacity-70 hover:grayscale-0 hover:scale-105 hover:shadow-md
           cursor-not-allowed
         `}
       >
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br opacity-10" />
-        <Icon className={`w-8 h-8 ${config.textColor} opacity-40`} />
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-br opacity-10" />
+        <Icon className={`w-6 h-6 ${config.textColor} opacity-40`} />
         <div className="absolute inset-0 flex items-center justify-center">
-          <Lock className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+          <Lock className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
         </div>
       </div>
       <Tooltip
@@ -347,25 +347,25 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
   const totalCount = Object.keys(BADGE_CONFIG).length;
 
   return (
-    <div className="rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-8 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
+    <div className="rounded-2xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-4 shadow-xl ring-2 ring-white/20 dark:ring-zinc-800/50">
       {/* Header */}
-      <div className="flex items-center justify-between mb-7">
-        <div className="flex items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-yellow-500 to-amber-500 shadow-xl ring-2 ring-white/50">
-            <Trophy className="h-8 w-8 text-white" />
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-amber-500 shadow-lg ring-2 ring-white/50">
+            <Trophy className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="text-2xl font-black text-zinc-900 dark:text-white">
+            <h2 className="text-xl font-black text-zinc-900 dark:text-white">
               Bộ sưu tập huy hiệu
-            </h3>
+            </h2>
             <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
               {earnedCount} / {totalCount} huy hiệu đã mở khóa
             </p>
           </div>
         </div>
         {earnedCount > 0 && (
-          <div className="px-5 py-2.5 rounded-full bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900/30 dark:to-amber-900/30 border-2 border-yellow-300 dark:border-yellow-700 shadow-lg">
-            <span className="text-lg font-black text-yellow-700 dark:text-yellow-300">
+          <div className="px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900/30 dark:to-amber-900/30 border-2 border-yellow-300 dark:border-yellow-700 shadow-md">
+            <span className="text-sm font-black text-yellow-700 dark:text-yellow-300">
               {earnedCount}
             </span>
           </div>
@@ -373,25 +373,25 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
       </div>
 
       {checking ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-10 w-10 animate-spin text-yellow-600 dark:text-yellow-400" />
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-yellow-600 dark:text-yellow-400" />
         </div>
       ) : badges.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="mx-auto w-24 h-24 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner flex items-center justify-center mb-5">
-            <Trophy className="h-12 w-12 text-slate-400 dark:text-zinc-500" />
+        <div className="text-center py-8">
+          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner flex items-center justify-center mb-3">
+            <Trophy className="h-8 w-8 text-slate-400 dark:text-zinc-500" />
           </div>
-          <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mb-2">
+          <p className="text-sm font-black text-zinc-700 dark:text-zinc-300 mb-1">
             Chưa có huy hiệu nào
           </p>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Hãy bắt đầu luyện tập để mở khóa huy hiệu đầu tiên!
           </p>
         </div>
       ) : (
         <>
           {/* Earned Badges */}
-          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-4 mb-8">
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2.5 mb-5">
             {badges.map((badge) => (
               <BadgeItem key={badge._id} badge={badge} />
             ))}
@@ -399,11 +399,11 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
 
           {/* Locked Badges */}
           {badges.length < totalCount && (
-            <div className="pt-6 border-t-2 border-white/20">
-              <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400 mb-4 text-center">
+            <div className="pt-4 border-t-2 border-white/20">
+              <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-3 text-center">
                 Huy hiệu chưa mở khóa
               </p>
-              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-4">
+              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2.5">
                 {Object.keys(BADGE_CONFIG)
                   .filter((type) => !badges.some((b) => b.badgeType === type))
                   .map((type) => (

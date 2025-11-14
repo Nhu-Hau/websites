@@ -222,7 +222,7 @@ export default function AssessmentChart() {
 
   /* ===================== Render ===================== */
   return (
-    <section className="max-h-96 flex flex-col rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
+    <section className="h-full flex flex-col rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-3">
@@ -241,7 +241,7 @@ export default function AssessmentChart() {
       </div>
 
       {/* Chart */}
-      <div className="relative flex-1 min-h-[210px]">
+      <div className="relative flex-1 min-h-[140px]">
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
             <Loader2 className="h-8 w-8 animate-spin text-violet-600 dark:text-violet-400" />

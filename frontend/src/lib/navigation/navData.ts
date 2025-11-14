@@ -1,5 +1,5 @@
 "use client";
-import type { NavItemType } from "../types/navTypes";
+import type { NavItemType } from "../../types/nav.types";
 import { useTranslations, useLocale } from "next-intl";
 import { useAuth } from "@/context/AuthContext";
 

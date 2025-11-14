@@ -8,8 +8,8 @@ import { groupByStimulus } from "@/utils/groupByStimulus";
 import {
   StimulusRowCard,
   StimulusColumnCard,
-} from "@/components/parts/StimulusCards";
-import { Sidebar } from "@/components/parts/Sidebar";
+} from "@/components/features/practice/StimulusCards";
+import { Sidebar } from "@/components/features/practice/Sidebar";
 import { toast } from "sonner";
 import {
   Layers,
@@ -66,14 +66,6 @@ function fmtTime(totalSec: number) {
   const s = totalSec % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
 }
-function getLevelColor(level: 1 | 2 | 3) {
-  return level === 1
-    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
-    : level === 2
-    ? "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
-    : "bg-violet-100 text-violet-800 dark:bg-violet-900/50 dark:text-violet-300";
-}
-
 export default function HistoryAttemptDetail() {
   const { attemptId } = useParams<{ attemptId: string }>();
 

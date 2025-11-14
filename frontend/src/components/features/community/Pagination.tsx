@@ -1,6 +1,7 @@
 //frontend/src/components/community/Pagination.tsx
 "use client";
 import React from "react";
+import { Button } from "@/components/ui";
 
 type Props = {
   page: number;
@@ -24,15 +25,28 @@ export default function Pagination({ page, total, pageSize, onChange }: Props) {
   add(totalPages);
   pages.sort((a, b) => a - b);
 
+  const handlePrev = React.useCallback(() => {
+    onChange(Math.max(1, page - 1));
+  }, [onChange, page]);
+
+  const handleNext = React.useCallback(() => {
+    onChange(Math.min(totalPages, page + 1));
+  }, [onChange, page, totalPages]);
+
+  const handlePage = React.useCallback((p: number) => {
+    onChange(p);
+  }, [onChange]);
+
   return (
     <nav className="flex items-center justify-center gap-1 select-none">
-      <button
-        onClick={() => onChange(Math.max(1, page - 1))}
+      <Button
+        onClick={handlePrev}
         disabled={page <= 1}
-        className="rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-1 text-sm disabled:opacity-40 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+        variant="outline"
+        size="sm"
       >
         ← Trước
-      </button>
+      </Button>
 
       {pages.map((p, i) => {
         const prev = pages[i - 1];
@@ -40,28 +54,27 @@ export default function Pagination({ page, total, pageSize, onChange }: Props) {
         return (
           <React.Fragment key={p}>
             {dots && <span className="px-2 text-sm text-zinc-500">…</span>}
-            <button
-              onClick={() => onChange(p)}
+            <Button
+              onClick={() => handlePage(p)}
               aria-current={p === page ? "page" : undefined}
-              className={`rounded-lg px-3 py-1 text-sm border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 ${
-                p === page
-                  ? "bg-black text-white border-black dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100"
-                  : ""
-              }`}
+              variant={p === page ? "primary" : "outline"}
+              size="sm"
+              className={p === page ? "bg-black text-white border-black dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100" : ""}
             >
               {p}
-            </button>
+            </Button>
           </React.Fragment>
         );
       })}
 
-      <button
-        onClick={() => onChange(Math.min(totalPages, page + 1))}
+      <Button
+        onClick={handleNext}
         disabled={page >= totalPages}
-        className="rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-1 text-sm disabled:opacity-40 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+        variant="outline"
+        size="sm"
       >
         Sau →
-      </button>
+      </Button>
     </nav>
   );
 }

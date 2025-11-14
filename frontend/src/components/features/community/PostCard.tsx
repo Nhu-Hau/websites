@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 // frontend/src/components/community/PostCard.tsx
 "use client";
@@ -19,6 +18,9 @@ import {
 import { toast } from "react-toastify";
 import type { CommunityPost } from "@/types/community.types";
 import Swal from "sweetalert2";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { Card } from "@/components/ui";
+import { Button } from "@/components/ui";
 
 type Props = {
   post: CommunityPost & { user?: any; liked?: boolean; canDelete?: boolean };
@@ -44,7 +46,9 @@ function AttachmentIcon({ type }: { type: "image" | "link" | "file" }) {
 }
 
 function Avatar({ name, url }: { name?: string; url?: string }) {
-  if (url)
+  if (url) {
+    // User-generated avatar from external URL (Google OAuth, etc.)
+    // Using <img> instead of Next/Image for external user content
     return (
       <img
         src={url}
@@ -52,6 +56,7 @@ function Avatar({ name, url }: { name?: string; url?: string }) {
         className="h-10 w-10 rounded-full object-cover"
       />
     );
+  }
   return (
     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
       <UserIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
@@ -66,8 +71,9 @@ function fmtSize(n?: number) {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function PostCard({ post, apiBase, onChanged }: Props) {
+function PostCardComponent({ post, apiBase, onChanged }: Props) {
   const router = useRouter();
+  const basePrefix = useBasePrefix();
 
   // ✅ local state cho UX mượt, nhưng số like sẽ luôn sync lại từ props (socket đẩy chuẩn)
   const [liked, setLiked] = React.useState(!!post.liked);
@@ -84,7 +90,7 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
     setLiked(!!post.liked);
   }, [post.likesCount, post.liked]);
 
-  async function toggleLike(e: React.MouseEvent) {
+  const toggleLike = React.useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (actingRef.current) return;
     actingRef.current = true;
@@ -138,9 +144,9 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
     } finally {
       actingRef.current = false;
     }
-  }
+  }, [post._id, apiBase, liked]);
 
-  async function reportPost() {
+  const reportPost = React.useCallback(async () => {
     const result = await Swal.fire({
       title: "Báo cáo bài viết?",
       text: "Bạn có chắc muốn báo cáo bài viết này không?",
@@ -175,9 +181,9 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
     } finally {
       setReporting(false);
     }
-  }
+  }, [post._id, apiBase, onChanged]);
 
-  async function deletePost(e: React.MouseEvent) {
+  const deletePost = React.useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     const result = await Swal.fire({
       title: "Xóa bài viết?",
@@ -200,9 +206,9 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
     } catch {
       toast.error("Lỗi khi xoá bài viết.");
     }
-  }
+  }, [post._id, apiBase, onChanged]);
 
-  async function sharePost(e: React.MouseEvent) {
+  const sharePost = React.useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
       await navigator.share({
@@ -211,12 +217,18 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
         url: `${window.location.origin}/community/post/${post._id}`,
       });
     } catch {}
-  }
+  }, [post._id, post.content]);
+
+  const handleCardClick = React.useCallback(() => {
+    router.push(`${basePrefix}/community/post/${post._id}`);
+  }, [router, basePrefix, post._id]);
 
   return (
-    <article
-      onClick={() => router.push(`/community/post/${post._id}`)}
-      className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg overflow-hidden border border-zinc-200/60 dark:border-zinc-700/60 transition-all hover:shadow-xl cursor-pointer"
+    <Card
+      variant="interactive"
+      hover
+      onClick={handleCardClick}
+      className="overflow-hidden cursor-pointer"
     >
       {/* Header */}
       <div className="p-5 sm:p-6 border-b border-zinc-200 dark:border-zinc-700">
@@ -231,12 +243,14 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
                 {new Date(post.createdAt).toLocaleString("vi-VN")}
               </time>
               {post.canDelete && (
-                <button
+                <Button
                   onClick={deletePost}
-                  className="ml-auto flex items-center gap-1.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 px-3 py-1.5 rounded-full transition"
+                  variant="ghost"
+                  size="sm"
+                  className="ml-auto text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
                 >
                   <Trash2 className="h-4 w-4" /> Xóa
-                </button>
+                </Button>
               )}
             </div>
             {post.content && (
@@ -279,21 +293,18 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
       ) : null}
 
       {/* Actions */}
-      {/* Actions */}
       <div className="p-4 sm:p-5 flex items-center gap-3">
         {/* Like */}
-        <button
+        <Button
           onClick={toggleLike}
           aria-label={liked ? "Bỏ thích" : "Thích"}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-            liked
-              ? "bg-red-500 text-white"
-              : "bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600"
-          }`}
+          variant={liked ? "primary" : "ghost"}
+          size="sm"
+          className={liked ? "bg-red-500 hover:bg-red-600" : ""}
         >
           <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
           {likesCount}
-        </button>
+        </Button>
 
         {/* Comment count */}
         <div
@@ -306,32 +317,35 @@ export default function PostCard({ post, apiBase, onChanged }: Props) {
 
         {/* Báo cáo — ẩn với bài của chính mình */}
         {!post.canDelete && (
-          <button
+          <Button
             onClick={reportPost}
             disabled={reporting || reportedOnce}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition
-        ${
-          reporting || reportedOnce
-            ? "bg-zinc-100 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed"
-            : "bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600"
-        }`}
+            variant="ghost"
+            size="sm"
             title={reportedOnce ? "Bạn đã báo cáo bài này" : "Báo cáo bài viết"}
             aria-label="Báo cáo bài viết"
           >
             <Flag className="h-4 w-4 text-rose-500" />
             Báo cáo
-          </button>
+          </Button>
         )}
 
         {/* Share */}
-        <button
+        <Button
           onClick={sharePost}
-          className="ml-auto flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition"
+          variant="ghost"
+          size="sm"
+          className="ml-auto"
         >
           <Share2 className="h-4 w-4" />
           Chia sẻ
-        </button>
+        </Button>
       </div>
-    </article>
+    </Card>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders when parent updates
+const PostCard = React.memo(PostCardComponent);
+
+export default PostCard;

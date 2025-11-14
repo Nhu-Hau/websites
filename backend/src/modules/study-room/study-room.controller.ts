@@ -1,15 +1,15 @@
 import type { Request, Response } from "express";
 import multer from "multer";
 import { z } from "zod";
-import { lk, WS_URL_FOR_CLIENT, createJoinToken } from "../lib/livekit";
-import { uploadBufferToS3, safeDeleteS3 } from "../lib/s3";
-import { StudyRoom } from "../models/StudyRoom";
-import { User } from "../models/User";
-import { RoomBannedUser } from "../models/RoomBannedUser";
-import { RoomComment } from "../models/RoomComment";
-import { RoomDocument } from "../models/RoomDocument";
-import { RoomSession } from "../models/RoomSession";
-import { SessionParticipant } from "../models/SessionParticipant";
+import { lk, WS_URL_FOR_CLIENT, createJoinToken } from "../../shared/services/livekit.service";
+import { uploadBufferToS3, safeDeleteS3 } from "../../shared/services/storage.service";
+import { StudyRoom } from "../../shared/models/StudyRoom";
+import { User } from "../../shared/models/User";
+import { RoomBannedUser } from "../../shared/models/RoomBannedUser";
+import { RoomComment } from "../../shared/models/RoomComment";
+import { RoomDocument } from "../../shared/models/RoomDocument";
+import { RoomSession } from "../../shared/models/RoomSession";
+import { SessionParticipant } from "../../shared/models/SessionParticipant";
 
 interface IUserSlim {
   _id: string;
@@ -148,7 +148,7 @@ export async function listPersistedRooms(_req: Request, res: Response) {
     roomName: d.roomName,
     createdBy: d.createdBy,
     createdAt: d.createdAt,
-    numParticipants: map.get(d.roomName)?.numParticipants ?? 0,
+    numParticipants: (map.get(d.roomName) as any)?.numParticipants ?? 0,
   }));
   res.json({ rooms: payload });
 }

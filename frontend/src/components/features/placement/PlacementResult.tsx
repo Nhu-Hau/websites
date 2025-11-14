@@ -3,20 +3,21 @@
 
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ResultsPanel } from "@/components/parts/ResultsPanel";
+import { ResultsPanel } from "@/components/features/practice/ResultsPanel";
 import {
   StimulusRowCard,
   StimulusColumnCard,
-} from "@/components/parts/StimulusCards";
+} from "@/components/features/practice/StimulusCards";
 import { groupByStimulus } from "@/utils/groupByStimulus";
 import type { ChoiceId, Item, Stimulus } from "@/types/tests.types";
-import { Sidebar } from "@/components/parts/Sidebar";
+import { Sidebar } from "@/components/features/practice/Sidebar";
 import { Gauge, MessageSquare, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 type AttemptItem = {
   id: string;
@@ -58,6 +59,7 @@ function fmtTime(totalSec: number) {
 export default function PlacementResult() {
   const { attemptId } = useParams<{ attemptId: string }>();
   const router = useRouter();
+  const basePrefix = useBasePrefix();
 
   const [loading, setLoading] = React.useState(true);
   const [attempt, setAttempt] = React.useState<Attempt | null>(null);
@@ -66,6 +68,7 @@ export default function PlacementResult() {
     Record<string, Stimulus>
   >({});
   const [showDetails, setShowDetails] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   // 🆕 fix type error: cần prop focusMode + onToggleFocus
   const [focusMode, setFocusMode] = React.useState(false);
@@ -79,6 +82,7 @@ export default function PlacementResult() {
   // ===== Fetch dữ liệu =====
   React.useEffect(() => {
     let mounted = true;
+    setError(null);
     (async () => {
       try {
         setLoading(true);
@@ -98,7 +102,25 @@ export default function PlacementResult() {
                 `/api/placement/attempts/${last._id}`,
                 { credentials: "include", cache: "no-store" }
               );
-              if (detailRes.ok) attemptData = await detailRes.json();
+              if (detailRes.ok) {
+                attemptData = await detailRes.json();
+              } else {
+                const errorText = await detailRes.text();
+                console.error("Failed to fetch attempt detail:", errorText);
+                if (mounted) {
+                  setError(`Không thể tải chi tiết: ${detailRes.status}`);
+                }
+              }
+            } else {
+              if (mounted) {
+                setError("Không tìm thấy kết quả gần nhất");
+              }
+            }
+          } else {
+            const errorText = await hist.text();
+            console.error("Failed to fetch attempt history:", errorText);
+            if (mounted) {
+              setError(`Không thể tải lịch sử: ${hist.status}`);
             }
           }
         } else {
@@ -107,14 +129,34 @@ export default function PlacementResult() {
             cache: "no-store",
           });
           if (res.status === 401) {
-            router.push("/auth/login");
+            router.push(`${basePrefix}/auth/login`);
             return;
           }
-          if (res.ok) attemptData = (await res.json()) as Attempt;
+          if (res.ok) {
+            attemptData = (await res.json()) as Attempt;
+            console.log("Fetched attempt data:", attemptData);
+          } else {
+            const errorText = await res.text();
+            console.error("Failed to fetch attempt:", res.status, errorText);
+            if (mounted) {
+              setError(
+                `Không thể tải kết quả (${res.status}): ${
+                  errorText || "Lỗi không xác định"
+                }`
+              );
+            }
+          }
         }
 
-        if (!mounted || !attemptData) return;
+        if (!mounted) return;
+
+        if (!attemptData) {
+          setLoading(false);
+          return;
+        }
+
         setAttempt(attemptData);
+        console.log("Attempt set, fetching items...");
 
         // tải lại câu hỏi gốc để render
         const orderedRes = await fetch(
@@ -125,14 +167,21 @@ export default function PlacementResult() {
         );
 
         if (orderedRes.ok) {
-          const { items, stimulusMap } = (await orderedRes.json()) as ItemsResp;
+          const data = (await orderedRes.json()) as ItemsResp;
+          console.log("Fetched items from /items endpoint:", {
+            itemsCount: data.items?.length,
+            stimulusCount: Object.keys(data.stimulusMap || {}).length,
+          });
           if (!mounted) return;
-          setItems(items || []);
-          setStimulusMap(stimulusMap || {});
+          setItems(data.items || []);
+          setStimulusMap(data.stimulusMap || {});
         } else {
+          console.warn(
+            "Failed to fetch items from /items endpoint, trying fallback..."
+          );
           const allIds = attemptData.allIds?.length
             ? attemptData.allIds
-            : attemptData.items.map((i) => i.id);
+            : attemptData.items?.map((i) => i.id) || [];
           if (allIds.length) {
             const r = await fetch(`/api/placement/items`, {
               method: "POST",
@@ -151,14 +200,36 @@ export default function PlacementResult() {
                   (a, b) =>
                     (indexMap.get(a.id) ?? 0) - (indexMap.get(b.id) ?? 0)
                 );
+              console.log("Fetched items from fallback endpoint:", {
+                itemsCount: orderedItems.length,
+                stimulusCount: Object.keys(json.stimulusMap || {}).length,
+              });
               if (!mounted) return;
               setItems(orderedItems);
               setStimulusMap(json.stimulusMap || {});
+            } else {
+              const errorText = await r.text();
+              console.error("Failed to fetch items from fallback:", errorText);
+              if (mounted) {
+                setError(
+                  `Không thể tải câu hỏi: ${r.status} - ${errorText}`
+                );
+              }
+            }
+          } else {
+            console.warn("No item IDs found in attempt data");
+            if (mounted) {
+              setError("Không tìm thấy danh sách câu hỏi");
             }
           }
         }
       } catch (e) {
-        console.error(e);
+        console.error("Error fetching placement result:", e);
+        if (mounted) {
+          setError(
+            `Lỗi khi tải dữ liệu: ${e instanceof Error ? e.message : "Lỗi không xác định"}`
+          );
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -166,7 +237,7 @@ export default function PlacementResult() {
     return () => {
       mounted = false;
     };
-  }, [attemptId, router]);
+  }, [attemptId, router, basePrefix]);
 
   // ====== Compute dữ liệu ======
   const answers = React.useMemo(() => {
@@ -230,11 +301,35 @@ export default function PlacementResult() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="text-center py-20 pt-32">
+        <p className="text-red-600 dark:text-red-400 font-medium mb-2">
+          {error}
+        </p>
+        <button
+          onClick={() => {
+            setError(null);
+            setLoading(true);
+            // Trigger re-fetch by updating a dependency
+            window.location.reload();
+          }}
+          className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+        >
+          Thử lại
+        </button>
+      </div>
+    );
+  }
+
   if (!attempt) {
     return (
       <div className="text-center py-20 pt-32">
         <p className="text-zinc-700 dark:text-zinc-300 font-medium">
           Không tìm thấy kết quả.
+        </p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+          Attempt ID: {attemptId}
         </p>
       </div>
     );
@@ -443,33 +538,53 @@ export default function PlacementResult() {
 
         {/* Danh sách câu hỏi */}
         <section className="mt-8 space-y-6">
-          {groups.map((g) =>
-            g.stimulus?.part === "part.1" ? (
-              <StimulusRowCard
-                key={g.key}
-                stimulus={g.stimulus}
-                items={g.items}
-                itemIndexMap={itemIndexMap}
-                answers={answers}
-                correctMap={correctMap}
-                locked
-                onPick={() => {}}
-                showStimulusDetails={showDetails}
-                showPerItemExplain={showDetails}
-              />
-            ) : (
-              <StimulusColumnCard
-                key={g.key}
-                stimulus={g.stimulus}
-                items={g.items}
-                itemIndexMap={itemIndexMap}
-                answers={answers}
-                correctMap={correctMap}
-                locked
-                onPick={() => {}}
-                showStimulusDetails={showDetails}
-                showPerItemExplain={showDetails}
-              />
+          {items.length === 0 ? (
+            <div className="text-center py-12 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80">
+              <p className="text-zinc-600 dark:text-zinc-400 mb-2">
+              Không có câu hỏi để hiển thị.
+            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-500">
+              Items: {items.length}, Groups: {groups.length}
+            </p>
+          </div>
+          ) : groups.length === 0 ? (
+            <div className="text-center py-12 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80">
+              <p className="text-zinc-600 dark:text-zinc-400 mb-2">
+              Không thể nhóm câu hỏi để hiển thị.
+            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-500">
+              Items: {items.length}, StimulusMap keys: {Object.keys(stimulusMap).length}
+            </p>
+          </div>
+          ) : (
+            groups.map((g) =>
+              g.stimulus?.part === "part.1" ? (
+                <StimulusRowCard
+                  key={g.key}
+                  stimulus={g.stimulus}
+                  items={g.items}
+                  itemIndexMap={itemIndexMap}
+                  answers={answers}
+                  correctMap={correctMap}
+                  locked
+                  onPick={() => {}}
+                  showStimulusDetails={showDetails}
+                  showPerItemExplain={showDetails}
+                />
+              ) : (
+                <StimulusColumnCard
+                  key={g.key}
+                  stimulus={g.stimulus}
+                  items={g.items}
+                  itemIndexMap={itemIndexMap}
+                  answers={answers}
+                  correctMap={correctMap}
+                  locked
+                  onPick={() => {}}
+                  showStimulusDetails={showDetails}
+                  showPerItemExplain={showDetails}
+                />
+              )
             )
           )}
         </section>

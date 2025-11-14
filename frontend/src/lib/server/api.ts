@@ -239,3 +239,35 @@ export async function getCommunityPost(postId: string) {
   }
 }
 
+/**
+ * Fetch badges
+ * Cache: no-store (user-specific, needs real-time data)
+ */
+export async function getBadges() {
+  try {
+    const data = await serverFetch<{ badges: any[] }>("/api/badges", {
+      cache: "no-store",
+    });
+    return data.badges || [];
+  } catch (error) {
+    console.error("Failed to fetch badges:", error);
+    return [];
+  }
+}
+
+/**
+ * Fetch study schedules upcoming
+ * Cache: no-store (user-specific, needs real-time data)
+ */
+export async function getStudyScheduleUpcoming() {
+  try {
+    const data = await serverFetch<{ data: any }>("/api/study-schedules/upcoming", {
+      cache: "no-store",
+    });
+    return data.data || null;
+  } catch (error) {
+    console.error("Failed to fetch study schedule upcoming:", error);
+    return null;
+  }
+}
+

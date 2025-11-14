@@ -10,10 +10,8 @@ import {
   Link as LinkIcon,
   Image as ImageIcon,
   File as FileIcon,
-  Loader2,
   Paperclip,
   X,
-  User as UserIcon,
   Trash2,
   Share2,
 } from "lucide-react";
@@ -41,6 +39,8 @@ function AttachmentIcon({ type }: { type: "image" | "link" | "file" }) {
 
 function Avatar({ url, name }: { url?: string; name?: string }) {
   if (url) {
+    // User-generated avatar from external URL (Google OAuth, etc.)
+    // Using <img> instead of Next/Image for external user content
     return (
       <img
         src={url}

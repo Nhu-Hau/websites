@@ -438,10 +438,8 @@ export async function getPlacementAttemptItemsOrdered(
     const ids = Array.isArray(attempt.allIds) ? attempt.allIds : [];
     if (!ids.length) return res.json({ items: [], stimulusMap: {} });
 
-    const itemsCol = db.collection(process.env.ITEMS_COLL || "parts_placement");
-    const stimCol = db.collection(
-      process.env.STIMULI_COLL || "stimuli_placement"
-    );
+    const itemsCol = db.collection(ITEMS_COLL);
+    const stimCol = db.collection(STIMULI_COLL);
 
     const items = await itemsCol
       .aggregate([

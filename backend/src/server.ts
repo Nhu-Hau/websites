@@ -4,7 +4,7 @@ dotenv.config();
 
 import { createServer } from "./app";
 import { setupSocketIO } from "./shared/services/socket.service";
-import { startCronJobs } from "./lib/cron";
+import { startCronJobs } from "./shared/services/cron.service";
 import { Server as HTTPServer } from "http";
 
 

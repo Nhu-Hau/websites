@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Calendar,
   Clock,
@@ -15,11 +15,9 @@ import {
   Repeat,
   Pencil,
   Trash2,
-  Sparkles,
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 type StudyPlan =
   | "practice_p1"
@@ -145,9 +143,11 @@ function DayPill({
   );
 }
 
-export default function StudyScheduleAdvanced() {
-  const basePrefix = useBasePrefix();
+export interface StudyScheduleClientProps {
+  initialUpcoming: StudyScheduleData | null;
+}
 
+export default function StudyScheduleClient({ initialUpcoming }: StudyScheduleClientProps) {
   // ---- Form state
   const [whenType, setWhenType] = useState<"today" | "tomorrow" | "date">(
     "tomorrow"
@@ -169,8 +169,8 @@ export default function StudyScheduleAdvanced() {
   const [saving, setSaving] = useState(false);
 
   // ---- Upcoming
-  const [upcoming, setUpcoming] = useState<StudyScheduleData | null>(null);
-  const [loadingUpcoming, setLoadingUpcoming] = useState(true);
+  const [upcoming, setUpcoming] = useState<StudyScheduleData | null>(initialUpcoming);
+  const [loadingUpcoming, setLoadingUpcoming] = useState(false);
   const [editing, setEditing] = useState(false); // inline edit upcoming
 
   // ---- Fetch upcoming
@@ -183,15 +183,12 @@ export default function StudyScheduleAdvanced() {
       if (!res.ok) throw new Error("Failed to fetch upcoming");
       const json = await res.json();
       setUpcoming(json.data || null);
-    } catch (e) {
+    } catch {
       setUpcoming(null);
     } finally {
       setLoadingUpcoming(false);
     }
   };
-  useEffect(() => {
-    fetchUpcoming();
-  }, []);
 
   // ---- Helpers for payload
   const startLocal = useMemo(() => {

@@ -7,7 +7,7 @@ import { Menu } from "lucide-react";
 import Image from "next/image";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
-import HeaderActions from "@/components/common/HeaderActions";
+import HeaderActions from "@/components/layout/HeaderActions";
 import useClickOutside from "@/hooks/common/useClickOutside";
 import useEscapeKey from "@/hooks/common/useEscapeKey";
 import UserMenu from "@/components/features/auth/UserMenu";

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-html-link-for-pages */
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,12 +13,15 @@ import {
 } from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
 import { useTranslations } from "next-intl";
-import useClickOutside from "@/hooks/useClickOutside";
+import useClickOutside from "@/hooks/common/useClickOutside";
 import { useAuth } from "@/context/AuthContext";
-import { postJson } from "@/lib/http";
+import { postJson } from "@/lib/api/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { Textarea } from "@/components/ui";
+import { Button } from "@/components/ui";
 
 type Msg = {
   _id?: string;
@@ -358,6 +360,7 @@ function LearningInsightCard({ insightText }: { insightText: string }) {
 export default function ChatBox() {
   const t = useTranslations("chat");
   const { user } = useAuth();
+  const basePrefix = useBasePrefix();
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
@@ -968,7 +971,7 @@ export default function ChatBox() {
           <div className="border-t border-gray-200/60 dark:border-zinc-700/60 p-4 bg-white/70 dark:bg-zinc-900/70">
             <div className="flex items-end gap-3">
               <div className="flex-1 relative">
-                <textarea
+                <Textarea
                   ref={textareaRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -982,13 +985,7 @@ export default function ChatBox() {
                   }
                   disabled={!user || sending || user?.access !== "premium"}
                   rows={1}
-                  className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 
-                  px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400
-                  focus:border-sky-500 focus:ring-4 focus:ring-sky-500/20
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                  transition-all duration-200 outline-none
-                  dark:border-zinc-600 dark:bg-zinc-800/70 dark:text-gray-100
-                  dark:placeholder:text-gray-500 dark:focus:border-sky-400"
+                  className="pr-12 bg-white/80 dark:bg-zinc-800/70 border-gray-300/70 dark:border-zinc-600 focus:ring-4 focus:ring-sky-500/20"
                   style={{ minHeight: "52px", maxHeight: "120px" }}
                 />
                 <div className="absolute right-3 bottom-3 text-xs text-gray-400">
@@ -996,7 +993,7 @@ export default function ChatBox() {
                 </div>
               </div>
 
-              <button
+              <Button
                 onClick={send}
                 disabled={
                   sending ||
@@ -1004,24 +1001,18 @@ export default function ChatBox() {
                   !user ||
                   user?.access !== "premium"
                 }
-                className="group relative flex h-12 w-12 shrink-0 items-center justify-center 
-                rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white
-                shadow-lg shadow-sky-500/30 transition-all
-                enabled:hover:scale-110 enabled:hover:shadow-xl
-                enabled:focus:outline-none enabled:focus:ring-4 enabled:focus:ring-sky-400/50
-                disabled:opacity-50 disabled:cursor-not-allowed"
+                isLoading={sending}
+                size="lg"
+                variant="primary"
+                className="h-12 w-12 shrink-0 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 shadow-lg shadow-sky-500/30 hover:scale-110 hover:shadow-xl focus:ring-4 focus:ring-sky-400/50 p-0"
               >
-                {sending ? (
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
-                ) : (
-                  <FiSend className="h-5 w-5 transition group-enabled:group-hover:translate-x-0.5" />
-                )}
-              </button>
+                {!sending && <FiSend className="h-5 w-5" />}
+              </Button>
             </div>
 
             {!user && (
               <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-                <a href="/auth/login" className="text-sky-600 hover:underline">
+                <a href={`${basePrefix}/auth/login`} className="text-sky-600 hover:underline">
                   Đăng nhập
                 </a>{" "}
                 để sử dụng
@@ -1029,7 +1020,7 @@ export default function ChatBox() {
             )}
             {user && user.access !== "premium" && (
               <p className="mt-2 text-center text-xs text-orange-600 dark:text-orange-400">
-                <a href="/account" className="hover:underline font-medium">
+                <a href={`${basePrefix}/account`} className="hover:underline font-medium">
                   Nâng cấp lên Premium
                 </a>{" "}
                 để sử dụng chat với AI

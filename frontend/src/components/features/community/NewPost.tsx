@@ -6,6 +6,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Paperclip, Send, X } from "lucide-react";
 import { toast } from "react-toastify";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 type Attachment = {
   type: "image" | "link" | "file";
@@ -18,6 +19,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000"
 
 export default function NewPost() {
   const router = useRouter();
+  const basePrefix = useBasePrefix();
   const [content, setContent] = React.useState("");
   const [attachments, setAttachments] = React.useState<Attachment[]>([]);
   const [uploading, setUploading] = React.useState(false);
@@ -82,7 +84,7 @@ export default function NewPost() {
       setContent("");
       setAttachments([]);
       toast.success("Đăng bài thành công!");
-      router.push("/community");
+      router.push(`${basePrefix}/community`);
     } catch {
       toast.error("Lỗi khi đăng bài");
     } finally {
@@ -136,6 +138,7 @@ export default function NewPost() {
                     className="relative group rounded-lg border border-zinc-300 dark:border-zinc-700 overflow-hidden"
                   >
                     {a.type === "image" ? (
+                      // User-uploaded image from API - using <img> for dynamic user content
                       <img
                         src={fullUrl(a.url)}
                         alt=""

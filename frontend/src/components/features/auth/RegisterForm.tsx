@@ -1,8 +1,9 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
@@ -12,8 +13,8 @@ import GoogleButton from "@/components/features/auth/GoogleButton";
 import FieldError from "@/components/features/auth/FieldError";
 import PasswordField from "@/components/features/auth/PasswordField";
 import { Button, Input } from "@/components/ui";
-import { usePasswordToggle } from "@/hooks/common/usePasswordToggle";
-import { useAuthSubmit } from "@/hooks/common/useAuthSubmit";
+import { usePasswordToggle } from "@/hooks/auth/usePasswordToggle";
+import { useAuthSubmit } from "@/hooks/auth/useAuthSubmit";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 const RESEND_COOLDOWN = 30; // giây
@@ -36,7 +37,7 @@ export default function RegisterForm() {
     onSuccess: (data) => {
       toast.success(t("success"));
       if (data.user) login(data.user);
-      router.push(`${basePrefix}/homePage`);
+      router.push(`${basePrefix}/home`);
     },
   });
 
@@ -52,7 +53,7 @@ export default function RegisterForm() {
     };
   }, []);
 
-  const startCooldown = (seconds = RESEND_COOLDOWN) => {
+  const startCooldown = useCallback((seconds = RESEND_COOLDOWN) => {
     const expiresAt = Date.now() + seconds * 1000;
     localStorage.setItem(RESEND_STORAGE_KEY, String(expiresAt));
     setCooldown(seconds);
@@ -71,7 +72,7 @@ export default function RegisterForm() {
         setCooldown(remaining);
       }
     }, 1000);
-  };
+  }, []);
 
   // Khôi phục cooldown nếu đang còn hạn (VD: user F5)
   useEffect(() => {
@@ -80,8 +81,7 @@ export default function RegisterForm() {
     if (remaining > 0) {
       startCooldown(remaining);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [startCooldown]);
 
   const handleSendCode = async () => {
     if (sendingCode || cooldown > 0) return;

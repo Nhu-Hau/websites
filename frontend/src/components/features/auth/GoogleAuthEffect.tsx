@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export function GoogleAuthEffect({ auth }: { auth?: string }) {
   const router = useRouter();
-  const pathname = usePathname(); // ví dụ: /vi/homePage
+  const pathname = usePathname(); // ví dụ: /vi/home
   const { login } = useAuth();
   const hasRun = useRef(false);
 

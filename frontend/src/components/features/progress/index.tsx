@@ -3,10 +3,10 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useProgressTest } from "@/hooks/tests/useProgressTest";
-import { Sidebar } from "../parts/Sidebar";
-import { ResultsPanel } from "../parts/ResultsPanel";
+import { Sidebar } from "@/components/features/practice/Sidebar";
+import { ResultsPanel } from "@/components/features/practice/ResultsPanel";
 import { groupByStimulus } from "@/utils/groupByStimulus";
-import { StimulusRowCard, StimulusColumnCard } from "../parts/StimulusCards";
+import { StimulusRowCard, StimulusColumnCard } from "@/components/features/practice/StimulusCards";
 import { useAuth } from "@/context/AuthContext";
 import FocusHUD from "@/components/features/practice/FocusHUD";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 type EligResp = {
   eligible: boolean;
@@ -57,6 +58,7 @@ function fmtDuration(ms: number) {
 }
 
 export default function ProgressPage() {
+  const basePrefix = useBasePrefix();
   const {
     items,
     stimulusMap,
@@ -328,7 +330,7 @@ export default function ProgressPage() {
               {elig && !elig.eligible && (
                 <div className="mt-3 text-sm">
                   <Link
-                    href="/practice"
+                    href={`${basePrefix}/practice`}
                     className="text-blue-600 dark:text-blue-400 underline"
                   >
                     Đi luyện tập ngay

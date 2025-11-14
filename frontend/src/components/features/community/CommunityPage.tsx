@@ -3,9 +3,9 @@
 
 import React from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import PostCard from "@/components/community/PostCard";
-import Pagination from "@/components/community/Pagination";
-import type { CommunityPost } from "@/types/community";
+import PostCard from "@/components/features/community/PostCard";
+import Pagination from "@/components/features/community/Pagination";
+import type { CommunityPost } from "@/types/community.types";
 import { toast } from "react-toastify";
 import { getSocket } from "@/lib/socket";
 

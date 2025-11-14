@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react"; // Nếu dùng lucide-react
 
 import AuthLayout from "@/components/features/auth/AuthLayout";
 import PasswordField from "@/components/features/auth/PasswordField";
-import { usePasswordToggle } from "@/hooks/common/usePasswordToggle";
+import { usePasswordToggle } from "@/hooks/auth/usePasswordToggle";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 export default function ForgotPasswordForm() {

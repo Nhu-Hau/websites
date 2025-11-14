@@ -2,7 +2,7 @@
 // frontend/src/context/AuthContext.tsx
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, useCallback } from "react";
 
 export type User = {
   id: string;
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User>(null);
   const [loading, setLoading] = useState(true);
 
-  async function fetchMe() {
+  const fetchMe = useCallback(async () => {
     const res = await fetch("/api/auth/me", {
       credentials: "include",
       cache: "no-store",
@@ -70,9 +70,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       (profile && typeof profile === "object" && (profile.user || profile.data)) ||
       profile;
     setUser(u ?? null);
-  }
+  }, []);
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     try {
       // Thử refresh token trước nếu /auth/me fail
       try {
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       setUser(null);
     }
-  }
+  }, [fetchMe]);
 
   const refreshTimer = useRef<number | null>(null);
   const debouncedRefresh = useMemo(
@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           refreshTimer.current = null;
         }, 200); // debounce 200ms
       },
-    []
+    [refresh]
   );
 
   useEffect(() => {
@@ -139,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [fetchMe]);
 
   // Auto-refresh token trước khi hết hạn (mỗi 25 phút, token có 30 phút)
   useEffect(() => {
@@ -162,8 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, 25 * 60 * 1000); // Mỗi 25 phút
 
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, fetchMe]);
 
   // Lắng nghe các tín hiệu để luôn cập nhật không cần reload
   useEffect(() => {
@@ -210,31 +209,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         window.clearTimeout(refreshTimer.current);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [debouncedRefresh]);
 
-  function login(u: NonNullable<User>) {
+  const login = useCallback((u: NonNullable<User>) => {
     setUser(u); // sau khi /login trả về
     // phát tín hiệu để các nơi khác (đa tab/khác component) tự refresh
     announceUserChanged();
-  }
+  }, []);
 
-  async function logout() {
+  const logout = useCallback(async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     } catch {}
     setUser(null);
     announceUserChanged();
-  }
+  }, []);
 
-  const ctxValue: AuthContextType = {
-    user,
-    setUser,   // cho phép optimistic update từ ngoài nếu cần
-    login,
-    logout,
-    refresh,
-    loading,
-  };
+
+  const ctxValue: AuthContextType = useMemo(
+    () => ({
+      user,
+      setUser, // cho phép optimistic update từ ngoài nếu cần
+      login,
+      logout,
+      refresh,
+      loading,
+    }),
+    [user, loading, login, logout, refresh]
+  );
 
   return <AuthContext.Provider value={ctxValue}>{children}</AuthContext.Provider>;
 }

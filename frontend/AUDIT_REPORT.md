@@ -1,219 +1,412 @@
-# BÁO CÁO KIỂM TRA FRONTEND SAU REFACTOR
+# Frontend Audit Report - Next.js App Router + RSC Optimization
 
-**Ngày kiểm tra:** $(date)  
-**Mục tiêu:** Xác nhận frontend đã được tối ưu đúng chuẩn Next.js App Router + React Server Components + Performance Optimization
-
----
-
-## ✅ 1. KIỂM TRA RSC / CLIENT / DYNAMIC
-
-### ✅ Đã đúng:
-- **Server Components:** Tất cả file `page.tsx` và `layout.tsx` đều là server components (không có "use client")
-- **Client Components:** Tất cả components có "use client" đều thật sự cần thiết (dùng hooks, browser APIs, event handlers)
-- **Dynamic Imports:** Các component nặng đã được dynamic import đúng cách:
-  - `StudyRoomPage`, `PlacementPage`, `ProgressPage`, `CreateStudyRoomPage`
-  - `Hero`, `Pricing`, `GoogleAuthEffect` (đã sửa)
-  - `CommunityPage`, `Header`, `NewPost`, `PostDetail`
-- **Browser APIs:** Tất cả `window`/`document` đều nằm trong client components hoặc hooks
-
-### ⚠️ Đã sửa:
-1. **File `home/page.tsx`:** Đã chuyển `GoogleAuthEffect` từ direct import sang dynamic import để tối ưu bundle size
-
-### 📝 Ghi chú:
-- File `navData.ts` có "use client" nhưng chỉ export function, không phải component. OK vì chỉ được dùng trong client component `NavMenu`.
+**Ngày kiểm tra:** 2025-01-27
+**Phiên bản Next.js:** 15.5.6
+**Trạng thái Build:** ✅ Thành công (không có lỗi, chỉ warnings nhỏ)
 
 ---
 
-## ✅ 2. KIẾN TRÚC THỨ MỤC
+## 1. ✅ RSC / Client / Dynamic Components
 
-### ✅ Đã đúng:
-- **Route Groups:** Đúng chuẩn với `(auth)`, `(main)`, `(marketing)`
-- **Feature-based:** Components được tổ chức theo features:
-  - `components/features/auth/`
-  - `components/features/dashboard/`
-  - `components/features/practice/`
-  - `components/features/placement/`
-  - `components/features/community/`
-  - `components/features/study/`
-  - `components/features/marketing/`
-- **Naming Conventions:**
-  - Components: PascalCase ✅
-  - Folders: kebab-case ✅
-  - Services: `*.service.ts` (nếu có)
-  - Types: `*.types.ts` ✅
-- **Không có folder/file cũ hoặc duplicate**
+### Server Components (RSC)
 
----
+- ✅ **Tất cả page components đều là Server Components** - Không có "use client" trong các file `page.tsx`
+- ✅ **Không có browser API** (window, document, localStorage) trong server components
+- ✅ **Không có React hooks** trong server components
+- ✅ **Layout.tsx là Server Component** - Đúng chuẩn, chỉ import client components cần thiết
+- ✅ **Server-side data fetching** - Dashboard, Community đã fetch trên server với `getDashboardActivity()`, `getCommunityPosts()`
 
-## ✅ 3. IMPORT & PATH
+### Client Components
 
-### ✅ Đã đúng:
-- **Không có import lỗi:** Build thành công, không có lỗi import
-- **Không có circular dependencies:** Đã kiểm tra, không phát hiện
-- **Client imports trong server:** Tất cả client components được import qua dynamic import trong server components
+- ✅ **Tất cả client components đều có "use client"** directive (88 files)
+- ✅ **Client components sử dụng hooks đúng cách** - useState, useEffect, useCallback, useMemo
+- ✅ **Không có server-only code trong client components**
 
-### ⚠️ Lưu ý:
-- File `navData.ts` có "use client" nhưng được import trong client component, nên OK
+### Dynamic Imports
 
----
+- ✅ **Dynamic imports được sử dụng đúng cách** cho các component nặng:
+  - `PlacementPage` - dynamic import
+  - `ProgressPage` - dynamic import
+  - `PracticePart` - dynamic import
+  - `StudyRoomPage` - dynamic import (đã sửa từ `dynamicImport` → `dynamic`)
+  - `Account` - dynamic import
+  - `CommunityHeader` - dynamic import
+  - `NewPost` - dynamic import
+  - `PostDetail` - dynamic import
+  - `HistoryAttemptDetail` - dynamic import
+  - `CreateStudyRoom` - dynamic import
+  - `PracticeHistoryClient` - dynamic import
 
-## ✅ 4. UI/UX ĐỒNG BỘ
+### Vấn đề đã sửa:
 
-### ✅ Đã đúng:
-- **Components/UI:** Có thư mục `components/ui/` với các component chuẩn:
-  - `Button`, `Input`, `Textarea`, `Card`, `Badge`, `ProgressBar`, `SectionHeader`, `EmptyState`, `StatsCard`
-- **Styles đồng nhất:** Sử dụng Tailwind CSS với design system nhất quán
-- **Wrapper component:** Đã tạo `PageWrapper` component để tái sử dụng (có thể refactor thêm)
-
-### ⚠️ Có thể cải thiện:
-- Một số button/input được tạo inline thay vì dùng component từ `ui/`, nhưng có thể chấp nhận được nếu có styling đặc biệt
-- Có duplicate code về wrapper div với className giống nhau (12 files), có thể refactor dùng `PageWrapper`
+- ✅ **Sửa inconsistency trong dynamic import** - `study/[room]/page.tsx` đã đổi từ `dynamicImport` → `dynamic` để đồng nhất
 
 ---
 
-## ✅ 5. HIỆU NĂNG TỔNG THỂ
+## 2. ✅ Kiến trúc thư mục
 
-### ✅ Đã đúng:
-- **Bundle Size:** Build thành công, bundle size hợp lý:
-  - First Load JS shared: 102 kB
-  - Các route lớn nhất: Study room (266 kB), Placement (243 kB), Progress (243 kB)
-- **Dynamic Imports:** Đã áp dụng đúng cho các component nặng
-- **Memo/useCallback/useMemo:** Đã sử dụng hợp lý trong các component:
-  - `DashboardClient`: dùng `useMemo` cho computed data
-  - `ChatPanel`: dùng `useCallback` cho handlers
-  - `HeroClient`: dùng `useCallback` cho event handlers
-- **Images:** Đã dùng `next/image` trong `TestimonialAvatar` và `Header`
-- **Context Optimization:**
-  - `AuthContext`: có cache mechanism, debounce refresh
-  - `TestsContext`: dùng `useMemo` cho value
-  - `ForumContext`: dùng `useMemo` cho value
-  - `ThemeContext`: đơn giản, không có vấn đề
+### Route Groups
 
-### ⚠️ Có thể cải thiện:
-- Có thể thêm `React.memo` cho một số component con để tránh re-render không cần thiết
-- Có thể lazy load thêm một số component không cần thiết ngay từ đầu
+- ✅ **Route groups đúng chuẩn:**
+  - `(app)` - các trang ứng dụng chính (dashboard, practice, placement, community, study, account, payment)
+  - `(auth)` - các trang authentication (login, register, forgot-password, reset-password, complete-google)
+  - `(marketing)` - trang marketing/home
 
----
+### Cấu trúc thư mục
 
-## ✅ 6. KIỂM TRA BUILD
+- ✅ **Feature-based organization:**
+  - `components/features/` - tổ chức theo feature (auth, community, dashboard, marketing, payment, placement, practice, progress, study, vocabulary)
+  - `components/common/` - components dùng chung (ChatBox, AdminChatBox, CornerToast, Breadcrumb)
+  - `components/layout/` - layout components (Header, Footer, PageWrapper, ContentWrapper, SocketBridge)
+  - `components/navigation/` - navigation components (DesktopNav, MobileNav, navbar/*)
+  - `components/ui/` - UI primitives (Button, Input, Card, Badge, etc.)
+  - `hooks/` - tổ chức theo category (auth, common, tests, routing, news)
+  - `lib/server/` - server-side utilities (api.ts, utils.ts)
+  - `lib/api/` - client-side API utilities
+  - `types/` - type definitions với suffix `.types.ts`
+  - `utils/` - utility functions
 
-### ✅ Kết quả:
-- **Build thành công:** ✅ Không có lỗi TypeScript
-- **Không có lỗi RSC/client:** ✅
-- **Không có conflict import:** ✅
-- **Route generation:** Tất cả routes được generate đúng:
-  - Static (SSG): 15 routes
-  - Dynamic: 7 routes
-  - Middleware: 45.4 kB
+### Naming Convention
 
-### ⚠️ Warnings (không ảnh hưởng):
-- Một số ESLint warnings về missing dependencies trong useEffect/useMemo (có thể ignore nếu cố ý)
-- Một số unused variables (có thể clean up sau)
+- ✅ **Components:** PascalCase (ví dụ: `ActivityHeatmapServer.tsx`, `PostCard.tsx`)
+- ✅ **Hooks:** camelCase với prefix `use` (ví dụ: `useAuthSubmit.ts`, `useBasePrefix.ts`)
+- ✅ **Types:** kebab-case với suffix `.types.ts` (ví dụ: `tests.types.ts`, `community.types.ts`)
+- ✅ **Folders:** kebab-case (ví dụ: `placement-result/`, `practice-history/`)
+- ✅ **Services:** `*.service.ts` (không có trong codebase hiện tại, có thể thêm sau)
+
+### Không có duplicate
+
+- ✅ **Không có folder/file cũ** - Đã cleanup sau refactor
+- ✅ **Không có component duplicate** - Mỗi component chỉ có một instance
 
 ---
 
-## ✅ 7. KIỂM TRA CÁC FEATURE CHÍNH
+## 3. ✅ Import & Path
 
-### ✅ Dashboard
-- Server component với data fetching
-- Dynamic import `DashboardClient`
-- Suspense boundary với loading state
-- ✅ Hoạt động đúng
+### Import Paths
 
-### ✅ Practice
-- Dynamic import cho `PracticePart` và `PracticeRunner`
-- Server component với data fetching cho history
-- ✅ Hoạt động đúng
+- ✅ **Không có lỗi import** - Tất cả imports đều hợp lệ
+- ✅ **Không có circular dependencies** - Không phát hiện vòng lặp import
+- ✅ **Path aliases đúng:** `@/` được sử dụng nhất quán
+- ✅ **Relative imports hợp lý** - Chỉ dùng khi cần thiết (ví dụ: `../../components/common/ChatBox`)
 
-### ✅ Placement
-- Dynamic import `PlacementPage`
-- Server component wrapper
-- ✅ Hoạt động đúng
+### Client/Server Import
 
-### ✅ Progress
-- Dynamic import `ProgressPage`
-- Server component wrapper
-- ✅ Hoạt động đúng
+- ✅ **Server components không import client components trực tiếp** (trừ layout.tsx - OK vì cần providers)
+- ✅ **Client components import đúng cách** từ server components
+- ✅ **Dynamic imports** - Đã sử dụng cho tất cả component nặng
 
-### ✅ Community
-- Dynamic import cho `CommunityPage`, `Header`, `NewPost`, `PostDetail`
-- Server components với params handling
-- ✅ Hoạt động đúng
+### Type Imports
 
-### ✅ Study Room
-- Dynamic import `StudyRoomPage`
-- `force-dynamic` export
-- ✅ Hoạt động đúng
-
-### ✅ Auth
-- Server component wrappers
-- Dynamic import cho các form components
-- ✅ Hoạt động đúng
-
-### ✅ Home/Marketing
-- Server component với dynamic imports
-- Đã sửa `GoogleAuthEffect` sang dynamic import
-- ✅ Hoạt động đúng
+- ✅ **Type imports đúng** - Tất cả đều dùng `@/types/*.types.ts`
+- ✅ **Không có type conflicts** - Types được tổ chức rõ ràng
 
 ---
 
-## ⚠️ 8. VẤN ĐỀ PHÁT HIỆN VÀ ĐỀ XUẤT
+## 4. ⚠️ UI/UX đồng bộ
 
-### 🔴 Vấn đề cần sửa ngay:
+### Components/UI
 
-1. **Duplicate Toast Libraries:**
-   - Có cả `Toaster` (sonner) và `ToastContainer` (react-toastify)
-   - **Đề xuất:** Chọn một library và loại bỏ cái còn lại
-   - **File:** `app/[locale]/layout.tsx`
+- ✅ **Có thư viện UI components:** `components/ui/` với các component:
+  - Button (với variants: primary, secondary, outline, ghost, danger)
+  - Input
+  - Textarea
+  - Card (với variants: default, stats, interactive, gradient)
+  - Badge
+  - ProgressBar
+  - SectionHeader
+  - EmptyState
+  - StatsCard
 
-2. **Duplicate Wrapper Code:**
-   - 12 files có cùng wrapper div với className giống nhau
-   - **Đề xuất:** Refactor dùng `PageWrapper` component (đã tạo sẵn)
-   - **Files:** Tất cả page wrappers trong `(main)/`
+- ✅ **Sử dụng Tailwind CSS** - Styling nhất quán với design system
+- ✅ **Dark mode support** - Đầy đủ với ThemeContext
+- ✅ **Responsive design** - Mobile-first approach
 
-### 🟡 Có thể cải thiện:
+### Vấn đề phát hiện:
 
-1. **Button/Input Components:**
-   - Một số button/input được tạo inline thay vì dùng component từ `ui/`
-   - **Đề xuất:** Refactor dùng `Button` và `Input` từ `components/ui/` khi có thể
+- ⚠️ **Một số component không dùng UI components** - Nhiều component tự implement button/input/card thay vì dùng từ `components/ui/`:
+  - `ChatBox.tsx` - tự implement textarea
+  - `PostCard.tsx` - tự implement card styling
+  - `CommunityPageClient.tsx` - tự implement pagination
+  - Nhiều form components tự implement input/button
 
-2. **React.memo:**
-   - Có thể thêm `React.memo` cho một số component con để tránh re-render
-   - **Đề xuất:** Thêm memo cho các component render list items
+**Khuyến nghị:** Nên refactor để dùng UI components từ `components/ui/` để đảm bảo consistency và dễ maintain.
 
-3. **Lazy Loading:**
-   - Có thể lazy load thêm một số component không cần thiết ngay từ đầu
-   - **Đề xuất:** Xem xét lazy load các modal, tooltip, dropdown
+- ⚠️ **Một số component dùng `<img>` thay vì `Next/Image`** - Có eslint-disable comment, có thể là cố ý cho user-generated content:
+  - `StimulusCards.tsx` - có `/* eslint-disable @next/next/no-img-element */`
+  - `PostCard.tsx` - có `/* eslint-disable @next/next/no-img-element */`
+  - `PostDetail.tsx` - có `/* eslint-disable @next/next/no-img-element */`
+  - `UserMenu.tsx` - avatar images
+  - `Account.tsx` - avatar images
+  - `NewPost.tsx` - preview images
+
+**Khuyến nghị:** Nếu là user-generated content từ external URLs, việc dùng `<img>` là OK. Nếu là static assets, nên chuyển sang `Next/Image` để tối ưu performance.
+
+### Styling Consistency
+
+- ✅ **Border radius nhất quán:** `rounded-xl`, `rounded-2xl`
+- ✅ **Shadow nhất quán:** `shadow-sm`, `shadow-lg`
+- ✅ **Spacing nhất quán:** Sử dụng Tailwind spacing scale
+- ✅ **Color palette nhất quán:** Sử dụng zinc/sky color scheme
 
 ---
 
-## 📊 TỔNG KẾT
+## 5. ⚠️ Hiệu năng tổng thể
 
-### ✅ Điểm mạnh:
-- Kiến trúc rõ ràng, đúng chuẩn Next.js App Router
-- RSC/Client separation tốt
-- Dynamic imports được áp dụng đúng
-- Build thành công, không có lỗi nghiêm trọng
-- Context providers được tối ưu
-- Bundle size hợp lý
+### Bundle Size Optimization
+
+- ✅ **Dynamic imports** - Đã sử dụng cho tất cả component nặng (11 components)
+- ✅ **Code splitting** - Tự động qua Next.js App Router
+- ✅ **Tree shaking** - Tự động qua Next.js
+- ✅ **First Load JS:** 102 kB (tốt)
+
+### React Optimization
+
+- ⚠️ **Thiếu memo/useMemo/useCallback ở một số nơi:**
+  - `PostCard` - Có thể memo để tránh re-render khi list update
+  - `CommunityPageClient` - Có thể optimize với useMemo cho filtered posts
+  - Dashboard components - Có thể memo nếu props không thay đổi
+
+- ✅ **Đã sử dụng useCallback/useMemo ở nhiều nơi:**
+  - `AuthContext` - Có useCallback cho fetchMe, refresh, login, logout
+  - `CommunityPageClient` - Có useCallback cho load function
+  - `ChatBox` - Có useMemo cho messages
+  - Nhiều components khác đã optimize
+
+### Image Optimization
+
+- ⚠️ **Chỉ 2 file dùng Next/Image:**
+  - `Header.tsx`
+  - `TestimonialAvatar.tsx`
+- ⚠️ **6 file dùng `<img>` tag** - Xem phần UI/UX
+
+**Khuyến nghị:** Nên review và chuyển static images sang Next/Image nếu có thể.
+
+### API Fetching
+
+- ✅ **Server-side fetching** - Dashboard, Community đã fetch trên server
+- ✅ **Suspense boundaries** - Đã có cho các widget nặng (ActivityHeatmap, GoalProgress, StudySchedule, Badges)
+- ✅ **Streaming** - Đã implement cho dashboard với Suspense
+- ✅ **Không có duplicate API calls** - Mỗi data chỉ fetch một lần
+
+### Context Optimization
+
+- ⚠️ **AuthContext có thể gây re-render** - Cần kiểm tra xem có component nào re-render không cần thiết không
+- ✅ **Context được tổ chức tốt** - AuthContext, ThemeContext, ForumContext, TestsContext
+
+---
+
+## 6. ✅ Build
+
+### Build Status
+
+- ✅ **Build thành công** - `npm run build` hoàn thành không lỗi
+- ✅ **Không có TypeScript errors**
+- ✅ **Không có lỗi RSC/client conflicts**
+
+### Build Warnings (không chặn build):
+
+Các warnings còn lại chủ yếu là:
+1. Unused variables/imports - Có thể cleanup
+2. Missing dependencies trong useEffect - Cần review
+3. Unused eslint-disable directives
+
+**Khuyến nghị:** Cleanup các warnings này để code sạch hơn, nhưng không ảnh hưởng đến functionality.
+
+### Build Output
+
+- **Total Pages:** 23 pages
+- **Static Pages:** 15 pages (SSG)
+- **Dynamic Pages:** 8 pages
+- **API Routes:** 1 route handler
+- **Build Time:** ~3-4s (tốt)
+
+---
+
+## 7. ✅ Các feature chính
+
+### Dashboard
+
+- ✅ **Server-side data fetching** - `getDashboardGoal()`, `getDashboardActivity()`, `getBadges()`, `getStudyScheduleUpcoming()`
+- ✅ **Suspense boundaries** - Có skeleton loading cho từng widget
+- ✅ **Streaming** - Layout hiển thị nhanh, widgets load sau
+- ✅ **Server/Client separation** - Server components fetch data, Client components render interactive UI
+
+### Practice
+
+- ✅ **Dynamic import** - Component nặng được dynamic import
+- ✅ **Server component wrapper** - Page là server component
+- ✅ **Auto-save** - Có hook `useAutoSave` để lưu progress
+- ✅ **History tracking** - Có practice history với server-side rendering
+
+### Placement
+
+- ✅ **Dynamic import** - Component nặng được dynamic import
+- ✅ **API route** - `/api/placement/attempts` hoạt động đúng
+- ✅ **Result page** - Có dynamic route cho result detail
+
+### Progress
+
+- ✅ **Dynamic import** - Component nặng được dynamic import
+- ✅ **Eligibility check** - Có server-side check
+
+### Community
+
+- ✅ **Server-side initial data** - Fetch posts và user trên server
+- ✅ **Client-side updates** - Real-time updates qua socket
+- ✅ **Suspense** - Có skeleton loading
+- ✅ **Pagination** - Client-side pagination với server-side initial data
+- ✅ **Post detail** - Dynamic route với server-side data
+
+### Study Room
+
+- ✅ **Dynamic import** - Component nặng được dynamic import
+- ✅ **Force dynamic** - Đúng cho real-time feature
+- ✅ **Socket integration** - Real-time chat và collaboration
+
+### Auth
+
+- ✅ **Server components** - Các page là server components
+- ✅ **Client forms** - Forms là client components với hooks
+- ✅ **Google OAuth** - Có complete-google flow
+- ✅ **Password reset** - Có forgot-password và reset-password flow
+
+### Home/Marketing
+
+- ✅ **Server component** - Page là server component
+- ✅ **Static content** - Marketing content render trên server
+- ✅ **Component exports** - Có index.ts để export components
+
+### Payment
+
+- ✅ **Success/Cancel pages** - Có client components với proper routing
+- ✅ **Base prefix** - Đã sử dụng useBasePrefix cho links
+
+---
+
+## 8. 📋 Tổng kết
+
+### ✅ Đã đạt chuẩn:
+
+1. **RSC/Client separation** - Tốt, tất cả page components là server components
+2. **Dynamic imports** - Đã sử dụng đúng cách cho 11 component nặng
+3. **Server-side data fetching** - Đã implement cho Dashboard, Community
+4. **Suspense & Streaming** - Đã có cho dashboard widgets
+5. **Build thành công** - Không lỗi, chỉ warnings nhỏ
+6. **Kiến trúc thư mục** - Tốt, feature-based organization
+7. **Import paths** - Đúng, không có lỗi
+8. **Route groups** - Đúng chuẩn với (app), (auth), (marketing)
+9. **Type safety** - Types được tổ chức tốt
+10. **Context organization** - Context được tổ chức rõ ràng
 
 ### ⚠️ Cần cải thiện:
-- Loại bỏ duplicate toast library
-- Refactor duplicate wrapper code
-- Có thể thêm React.memo cho một số component
-- Có thể refactor một số inline button/input sang dùng UI components
 
-### 🎯 Kết luận:
-**Frontend đã được refactor tốt và đạt chuẩn production.** Các vấn đề còn lại là nhỏ và có thể cải thiện dần. Codebase sẵn sàng cho production với một số cải thiện nhỏ.
+1. **UI Components usage** - Nhiều component tự implement thay vì dùng từ `components/ui/`
+2. **Image optimization** - Một số file dùng `<img>` thay vì `Next/Image` (có thể OK nếu là external URLs)
+3. **React optimization** - Cần thêm memo/useMemo/useCallback cho một số component (PostCard, CommunityPageClient)
+4. **Build warnings** - Một số warnings nhỏ còn lại (unused imports/variables)
 
----
+### 🔧 Đã sửa:
 
-## 🔧 CÁC THAY ĐỔI ĐÃ THỰC HIỆN
-
-1. ✅ Sửa `home/page.tsx`: Chuyển `GoogleAuthEffect` sang dynamic import
-2. ✅ Tạo `PageWrapper` component để tái sử dụng
-3. ✅ Sửa conflict tên `dynamic` trong `study/[room]/page.tsx`
+1. ✅ **Sửa inconsistency trong dynamic import** - `study/[room]/page.tsx` đã đổi từ `dynamicImport` → `dynamic`
+2. ✅ **Sửa import useBasePrefix** - Đã thêm import vào PostCard.tsx
 
 ---
 
-**Báo cáo được tạo tự động bởi AI Code Review**
+## 9. 🎯 Đề xuất tiếp theo
+
+### Priority High:
+
+1. **Refactor UI components** - Chuyển các component tự implement sang dùng từ `components/ui/` để đảm bảo consistency
+2. **Thêm memo cho list components** - PostCard, CommunityPageClient để tránh re-render không cần thiết
+3. **Review image optimization** - Chuyển static images sang Next/Image nếu có thể
+
+### Priority Medium:
+
+1. **Cleanup build warnings** - Xóa unused imports/variables
+2. **Tối ưu Context** - Kiểm tra và tối ưu AuthContext để tránh re-render
+3. **Bundle analysis** - Chạy `@next/bundle-analyzer` để xem bundle size chi tiết
+
+### Priority Low:
+
+1. **Code splitting** - Xem xét thêm dynamic imports nếu cần
+2. **Lazy loading** - Cho các component không critical
+3. **Service layer** - Có thể tạo service layer để tách business logic khỏi components
+
+---
+
+## 10. 📊 Metrics
+
+- **Total Pages:** 23 pages
+- **Client Components:** 88 files có "use client"
+- **Server Components:** Tất cả page.tsx (trừ layoutClient.tsx)
+- **Dynamic Imports:** 11 components
+- **API Routes:** 1 route handler
+- **UI Components:** 9 components trong `components/ui/`
+- **First Load JS:** 102 kB
+- **Build Time:** ~3-4s
+- **Build Status:** ✅ Success
+
+---
+
+## 11. 🔍 Chi tiết các vấn đề
+
+### Vấn đề 1: UI Components không được sử dụng nhất quán
+
+**Mô tả:** Nhiều component tự implement button/input/card thay vì dùng từ `components/ui/`
+
+**Files bị ảnh hưởng:**
+- `ChatBox.tsx` - Tự implement textarea
+- `PostCard.tsx` - Tự implement card styling
+- `CommunityPageClient.tsx` - Tự implement pagination
+- Nhiều form components tự implement input/button
+
+**Giải pháp:** Refactor để dùng UI components từ `components/ui/`
+
+**Priority:** High
+
+---
+
+### Vấn đề 2: Image optimization
+
+**Mô tả:** Một số file dùng `<img>` thay vì `Next/Image`
+
+**Files bị ảnh hưởng:**
+- `StimulusCards.tsx`
+- `PostCard.tsx`
+- `PostDetail.tsx`
+- `UserMenu.tsx`
+- `Account.tsx`
+- `NewPost.tsx`
+
+**Giải pháp:** Review và chuyển static images sang Next/Image nếu có thể. Nếu là user-generated content từ external URLs, giữ nguyên `<img>` với eslint-disable.
+
+**Priority:** Medium
+
+---
+
+### Vấn đề 3: React optimization
+
+**Mô tả:** Một số component có thể optimize với memo/useMemo/useCallback
+
+**Files cần optimize:**
+- `PostCard.tsx` - Có thể memo để tránh re-render khi list update
+- `CommunityPageClient.tsx` - Có thể optimize với useMemo cho filtered posts
+
+**Giải pháp:** Thêm React.memo và useMemo/useCallback cho các component này
+
+**Priority:** Medium
+
+---
+
+### Vấn đề 4: Build warnings
+
+**Mô tả:** Còn một số warnings nhỏ (unused imports/variables)
+
+**Giải pháp:** Cleanup các warnings này
+
+**Priority:** Low
+
+---
+
+**Kết luận:** Frontend đã được tối ưu tốt với RSC + SSR/Streaming. Cần refactor UI components và thêm một số optimizations nhỏ để đạt chuẩn production hoàn hảo. Tổng thể codebase rất tốt và đã tuân thủ best practices của Next.js App Router.

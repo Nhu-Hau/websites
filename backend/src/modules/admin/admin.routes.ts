@@ -8,7 +8,7 @@ import {
   deleteCommunityPost, 
   listCommunityComments, 
   deleteCommunityComment 
-} from "./admin.community.controller";
+} from "./admin-community.controller";
 import {
   listParts,
   getPart,
@@ -25,7 +25,7 @@ import {
   updateStimulus,
   deleteStimulus,
   uploadStimulusMedia
-} from "./admin.parts.controller";
+} from "./admin-parts.controller";
 
 const router = Router();
 

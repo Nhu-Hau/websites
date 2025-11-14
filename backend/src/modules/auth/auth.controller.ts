@@ -1,7 +1,7 @@
 // src/controllers/auth.controller.ts
 import { Request, Response, NextFunction } from "express";
-import passport from "../lib/passport";
-import { User, IUser } from "../models/User";
+import passport from "../../config/passport";
+import { User, IUser } from "../../shared/models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
@@ -10,31 +10,31 @@ import {
   safeDeleteS3,
   BUCKET,
   uploadBufferToS3,
-} from "../lib/s3";
+} from "../../shared/services/storage.service";
 import {
   toSafeUser,
   issueAndStoreTokens,
   setAuthCookies,
   clearAuthCookies,
   refreshAccessToken,
-} from "../services/auth.service";
+} from "./auth.service";
 import {
   signGoogleSignupToken,
   verifyGoogleSignupToken,
   verifyRefreshToken,
   newJti,
   signRefreshToken,
-} from "../lib/jwt";
+} from "../../shared/services/jwt.service";
 import {
   signupCookieName,
   signupCookieOpts,
   refreshCookieName,
   refreshCookieOpts,
-} from "../config/cookies";
-import { ResetTokenModel } from "../models/ResetToken";
-import { sendMail } from "../lib/mailer";
-import { PasswordCodeModel } from "../models/PasswordCode";
-import { EmailVerificationCodeModel, IEmailVerificationCode } from "../models/EmailVerificationCode";
+} from "../../config/cookies";
+import { ResetTokenModel } from "../../shared/models/ResetToken";
+import { sendMail } from "../../shared/services/email.service";
+import { PasswordCodeModel } from "../../shared/models/PasswordCode";
+import { EmailVerificationCodeModel, IEmailVerificationCode } from "../../shared/models/EmailVerificationCode";
 
 const RESET_SECRET = process.env.RESET_SECRET!;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
@@ -251,7 +251,7 @@ export async function sendVerificationCode(req: Request, res: Response) {
         <p style="font-size:20px;font-weight:700;letter-spacing:3px">${code}</p>
         <p>Mã này có hiệu lực trong 10 phút.</p>
       `,
-    }).catch((err) => {
+    }).catch((err: any) => {
       console.error("[sendVerificationCode] Email send failed:", err);
       // Không throw để không ảnh hưởng response
     });

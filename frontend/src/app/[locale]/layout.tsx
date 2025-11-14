@@ -8,7 +8,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "sonner";
 import { ToastContainer } from "react-toastify";
 import CornerToast from "@/components/common/CornerToast";
-import SocketBridge from "@/components/common/SocketBridge";
+import SocketBridge from "@/components/layout/SocketBridge";
 import LayoutClient from "./layoutClient";
 
 export function generateStaticParams() {

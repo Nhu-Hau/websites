@@ -4,6 +4,7 @@ import { Github, Twitter, Youtube, Instagram, Globe } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useLocaleSwitch } from "@/hooks/routing/useLocaleSwitch";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -11,6 +12,7 @@ export default function Footer() {
 
   // dùng hook bạn cung cấp
   const { locale, hrefFor, switchLocale } = useLocaleSwitch();
+  const basePrefix = useBasePrefix();
 
   return (
     <footer className="border-t border-neutral-200 bg-white text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
@@ -19,7 +21,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
           {/* Brand */}
           <div className="col-span-3 md:col-span-3 lg:col-span-2">
-            <Link href="/homePage">
+            <Link href={`${basePrefix}/home`}>
               <div className="text-xl xl:text-2xl font-semibold text-zinc-900 dark:text-zinc-100 -tracking-tighter">
                 Toeic
                 <span className="text-sky-700">Prep</span>
@@ -70,7 +72,7 @@ export default function Footer() {
             <ul className="mt-3 space-y-2 text-sm">
               <li>
                 <Link
-                  href="/practice"
+                  href={`${basePrefix}/practice`}
                   className="hover:text-sky-500 dark:hover:text-sky-400"
                 >
                   {t("practice")}
@@ -78,7 +80,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/vocabulary"
+                  href={`${basePrefix}/vocabulary`}
                   className="hover:text-sky-500 dark:hover:text-sky-400"
                 >
                   {t("vocabulary")}
@@ -86,7 +88,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/forum"
+                  href={`${basePrefix}/community`}
                   className="hover:text-sky-500 dark:hover:text-sky-400"
                 >
                   {t("forum")}
@@ -100,7 +102,7 @@ export default function Footer() {
             <ul className="mt-3 space-y-2 text-sm">
               <li>
                 <Link
-                  href="/help-center"
+                  href={`${basePrefix}/help-center`}
                   className="hover:text-sky-500 dark:hover:text-sky-400"
                 >
                   {t("helpCenter")}
@@ -108,7 +110,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/contact"
+                  href={`${basePrefix}/contact`}
                   className="hover:text-sky-500 dark:hover:text-sky-400"
                 >
                   {t("contact")}
@@ -116,7 +118,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/faq"
+                  href={`${basePrefix}/faq`}
                   className="hover:text-sky-500 dark:hover:text-sky-400"
                 >
                   {t("faq")}
@@ -165,14 +167,14 @@ export default function Footer() {
           <p>{t("rights", { year })}</p>
           <div className="mt-4 sm:mt-0">
             <Link
-              href="/terms"
+              href={`${basePrefix}/terms`}
               className="hover:text-sky-500 dark:hover:text-sky-400"
             >
               {t("terms")}
             </Link>{" "}
             ·{" "}
             <Link
-              href="/privacy"
+              href={`${basePrefix}/privacy`}
               className="hover:text-sky-500 dark:hover:text-sky-400"
             >
               {t("privacy")}

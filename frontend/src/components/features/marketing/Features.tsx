@@ -1,5 +1,7 @@
+"use client";
 import React from "react";
 import Link from "next/link";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import SectionHeader from "./SectionHeader";
 import {
   Target,
@@ -12,12 +14,13 @@ import {
 } from "lucide-react";
 
 export default function Features() {
+  const basePrefix = useBasePrefix();
   const features = [
     {
       icon: Target,
       title: "Placement Test",
       desc: "Kiểm tra rút gọn để ước lượng điểm 0–990 và nhận lộ trình học cá nhân hoá.",
-      href: "/placement",
+      href: `${basePrefix}/placement`,
       cta: "Làm ngay",
       iconColor: "text-emerald-600 dark:text-emerald-400",
       bg: "bg-emerald-50 dark:bg-emerald-900/20",
@@ -26,7 +29,7 @@ export default function Features() {
       icon: Headphones,
       title: "Luyện đề đủ 7 Part",
       desc: "Ngân hàng đề bám sát thi thật; thống kê độ khó, phân tích lỗi theo Part.",
-      href: "/tests",
+      href: `${basePrefix}/practice`,
       cta: "Vào luyện đề",
       iconColor: "text-sky-600 dark:text-sky-400",
       bg: "bg-sky-50 dark:bg-sky-900/20",
@@ -35,7 +38,7 @@ export default function Features() {
       icon: MessageSquare,
       title: "Chat bot / Chat box",
       desc: "Hỏi đáp nhanh, giải thích ngữ pháp, gợi ý chiến lược làm bài theo ngữ cảnh.",
-      href: "/chat",
+      href: `${basePrefix}/chat`,
       cta: "Mở chat",
       iconColor: "text-indigo-600 dark:text-indigo-400",
       bg: "bg-indigo-50 dark:bg-indigo-900/20",
@@ -44,7 +47,7 @@ export default function Features() {
       icon: Users,
       title: "Cộng đồng",
       desc: "Chia sẻ kinh nghiệm, thảo luận mẹo làm bài và cập nhật tài nguyên mới.",
-      href: "/community",
+      href: `${basePrefix}/community`,
       cta: "Tham gia",
       iconColor: "text-violet-600 dark:text-violet-400",
       bg: "bg-violet-50 dark:bg-violet-900/20",
@@ -53,7 +56,7 @@ export default function Features() {
       icon: PlayCircle,
       title: "Học qua video",
       desc: "Bài giảng trọng tâm: từ vựng, ngữ pháp, chiến thuật từng Part.",
-      href: "/videos",
+      href: `${basePrefix}/videos`,
       cta: "Xem video",
       iconColor: "text-amber-600 dark:text-amber-400",
       bg: "bg-amber-50 dark:bg-amber-900/20",
@@ -62,7 +65,7 @@ export default function Features() {
       icon: BarChart3,
       title: "Dashboard tiến độ",
       desc: "Theo dõi điểm, thời gian, tỉ lệ đúng và streak; gợi ý bài kế tiếp.",
-      href: "/dashboard",
+      href: `${basePrefix}/dashboard`,
       cta: "Xem dashboard",
       iconColor: "text-rose-600 dark:text-rose-400",
       bg: "bg-rose-50 dark:bg-rose-900/20",
@@ -120,7 +123,7 @@ export default function Features() {
           <p className="text-base text-zinc-600 dark:text-zinc-400">
             Bắt đầu với{" "}
             <Link
-              href="/placement"
+              href={`${basePrefix}/placement`}
               className="font-medium text-emerald-600 dark:text-emerald-400 hover:underline underline-offset-4 transition-all"
             >
               Placement Test

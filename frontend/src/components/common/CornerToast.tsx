@@ -18,13 +18,15 @@ export default function CornerToast() {
     if (mountedOnceRef.current) return;     // ✅ tránh đăng ký lặp
     mountedOnceRef.current = true;
 
+    const seenSet = seenRef.current; // Copy ref value for cleanup
+
     const onToast = (e: Event) => {
       const detail = (e as CustomEvent).detail as Corner;
       if (!detail?.id) return;
 
       // ✅ de-dup theo id
-      if (seenRef.current.has(detail.id)) return;
-      seenRef.current.add(detail.id);
+      if (seenSet.has(detail.id)) return;
+      seenSet.add(detail.id);
 
       setToasts((prev) => [detail, ...prev].slice(0, 3));
 
@@ -35,7 +37,7 @@ export default function CornerToast() {
 
       // xóa dấu vết để không giữ mãi
       setTimeout(() => {
-        seenRef.current.delete(detail.id);
+        seenSet.delete(detail.id);
       }, 10000);
     };
 
@@ -43,7 +45,7 @@ export default function CornerToast() {
 
     return () => {
       window.removeEventListener("corner-toast", onToast as any);
-      seenRef.current.clear();
+      seenSet.clear();
       mountedOnceRef.current = false;
     };
   }, []);

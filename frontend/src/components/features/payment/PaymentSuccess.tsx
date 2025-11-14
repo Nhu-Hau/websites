@@ -6,11 +6,13 @@ import Link from "next/link";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { apiBase, apiGet } from "@/lib/api/client";
 import { useAuth } from "@/context/AuthContext";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 export default function PaymentSuccess() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { refresh } = useAuth();
+  const basePrefix = useBasePrefix();
 
   const orderCode = searchParams.get("orderCode");
 
@@ -20,11 +22,11 @@ export default function PaymentSuccess() {
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
   const [seconds, setSeconds] = useState(5);
-
+  
   // Prefetch trang đích để chuyển nhanh hơn
   useEffect(() => {
-    router.prefetch("/homePage");
-  }, [router]);
+    router.prefetch(`${basePrefix}/home`);
+  }, [router, basePrefix]);
 
   // Verify thanh toán (một lần)
   useEffect(() => {
@@ -74,9 +76,9 @@ export default function PaymentSuccess() {
   // Khi seconds == 0 thì điều hướng (KHÔNG gọi router.push trong setState)
   useEffect(() => {
     if (success && seconds === 0) {
-      router.push("/homePage");
+      router.push(`${basePrefix}/home`);
     }
-  }, [success, seconds, router]);
+  }, [success, seconds, router, basePrefix]);
 
   if (loading) {
     return (
@@ -109,7 +111,7 @@ export default function PaymentSuccess() {
 
           <div className="mt-6">
             <Link
-              href="/homePage"
+              href={`${basePrefix}/home`}
               className="inline-block w-full rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-700"
             >
               Quay về trang chủ ngay
@@ -135,7 +137,7 @@ export default function PaymentSuccess() {
         </p>
         <div className="mt-6">
           <Link
-            href="/homePage"
+            href={`${basePrefix}/home`}
             className="inline-block w-full rounded-lg bg-sky-600 px-4 py-2 font-semibold text-white transition hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600"
           >
             Quay lại trang chủ

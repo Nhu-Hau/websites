@@ -12,8 +12,8 @@ import GoogleButton from "@/components/features/auth/GoogleButton";
 import PasswordField from "@/components/features/auth/PasswordField";
 import FieldError from "@/components/features/auth/FieldError";
 import { Button, Input } from "@/components/ui";
-import { usePasswordToggle } from "@/hooks/common/usePasswordToggle";
-import { useAuthSubmit } from "@/hooks/common/useAuthSubmit";
+import { usePasswordToggle } from "@/hooks/auth/usePasswordToggle";
+import { useAuthSubmit } from "@/hooks/auth/useAuthSubmit";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 export default function LoginForm() {
@@ -38,7 +38,7 @@ export default function LoginForm() {
       const profile = res.ok ? await res.json() : null;
       if (profile) login(profile);
       toast.success("Đăng nhập thành công!");
-      router.push(`${basePrefix}/homePage`);
+      router.push(`${basePrefix}/home`);
     },
   });
 

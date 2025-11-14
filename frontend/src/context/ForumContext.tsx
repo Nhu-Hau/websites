@@ -7,13 +7,43 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import type {
-  ForumContextValue,
-  ForumState,
-  Post,
-  Comment,
-} from "../types/forumTypes";
-import { mockPosts, mockComments } from "../lib/data/forumData";
+// Types defined inline since forumTypes.ts doesn't exist
+type Post = {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  createdAt: string;
+  excerpt?: string;
+};
+
+type Comment = {
+  id: string;
+  postId: string;
+  author: string;
+  content: string;
+  createdAt: string;
+};
+
+type ForumState = {
+  posts: Post[];
+  comments: Comment[];
+};
+
+type ForumContextValue = {
+  posts: Post[];
+  comments: Comment[];
+  addPost: (data: { title: string; content: string; author?: string }) => Post;
+  addComment: (data: {
+    postId: string;
+    content: string;
+    author?: string;
+  }) => Comment;
+};
+
+// Mock data
+const mockPosts: Post[] = [];
+const mockComments: Comment[] = [];
 
 const STORAGE_KEY = "community-forum-state-v1";
 

@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react"; // Nếu dùng lucide-react
 
 import AuthLayout from "@/components/features/auth/AuthLayout";
 import PasswordField from "@/components/features/auth/PasswordField";
-import { usePasswordToggle } from "@/hooks/common/usePasswordToggle";
+import { usePasswordToggle } from "@/hooks/auth/usePasswordToggle";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 export default function ChangePasswordForm() {
@@ -59,7 +59,7 @@ export default function ChangePasswordForm() {
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         toast.success(data.message || "Đổi mật khẩu thành công!");
-        router.push(`${basePrefix}/homePage`);
+        router.push(`${basePrefix}/home`);
       } else {
         toast.error(data.message || "Đổi mật khẩu thất bại. Vui lòng thử lại.");
       }
@@ -175,7 +175,7 @@ export default function ChangePasswordForm() {
         {/* Back to Home */}
         <div className="flex justify-center">
           <Link
-            href={`${basePrefix}/homePage`}
+            href={`${basePrefix}/home`}
             className="inline-flex items-center gap-1.5 text-sm text-sky-600 dark:text-sky-400 
                        hover:text-sky-700 dark:hover:text-sky-300 
                        underline underline-offset-4 decoration-dashed 

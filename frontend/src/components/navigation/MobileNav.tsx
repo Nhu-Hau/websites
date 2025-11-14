@@ -1,4 +1,4 @@
-import NavMenu from "@/components/navigation/navbar/NavMenu";
+import NavMenu from "@/components/navigation/NavMenu";
 
 interface MobileNavProps {
   open: boolean;

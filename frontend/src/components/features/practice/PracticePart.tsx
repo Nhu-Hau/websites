@@ -5,14 +5,14 @@ import React from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-import LevelSwitcher from "@/components/parts/LevelSwitcher";
+import LevelSwitcher from "@/components/features/practice/LevelSwitcher";
 import TestCard, {
   AttemptSummary,
   TestCardSkeleton,
-} from "@/components/parts/TestCard";
+} from "@/components/features/practice/TestCard";
 import { History, Headphones, BookOpen, ChevronRight } from "lucide-react";
-import MandatoryPlacementModal from "@/components/parts/MandatoryPlacement"; 
-import LevelSuggestModal from "@/components/parts/LevelSuggestModal";
+import MandatoryPlacementModal from "@/components/features/practice/MandatoryPlacement"; 
+import LevelSuggestModal from "@/components/features/practice/LevelSuggestModal";
 import { useAuth } from "@/context/AuthContext";
 
 /* ====== META ====== */

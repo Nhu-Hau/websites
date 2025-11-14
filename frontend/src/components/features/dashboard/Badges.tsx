@@ -230,36 +230,13 @@ function BadgeItem({ badge }: { badge: Badge }) {
   );
 }
 
-export default function Badges({ onNewBadge }: BadgesProps) {
-  const [badges, setBadges] = useState<Badge[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [newBadges, setNewBadges] = useState<BadgeType[]>([]);
+export interface BadgesClientProps extends BadgesProps {
+  initialBadges: Badge[];
+}
 
-  // Fetch badges
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/badges", {
-          credentials: "include",
-          cache: "no-store",
-        });
-        if (!res.ok) throw new Error("Failed to fetch badges");
-        const data = await res.json();
-        if (mounted) {
-          setBadges(data.badges || []);
-        }
-      } catch (error) {
-        console.error("[Badges] Error fetching badges:", error);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
+  const [badges, setBadges] = useState<Badge[]>(initialBadges);
+  const [newBadges, setNewBadges] = useState<BadgeType[]>([]);
 
   // Kiểm tra badges mới khi component mount hoặc sau khi submit test
   useEffect(() => {
@@ -331,34 +308,6 @@ export default function Badges({ onNewBadge }: BadgesProps) {
       setNewBadges([]);
     }
   }, [newBadges, onNewBadge]);
-
-  if (loading) {
-    return (
-      <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-800">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-yellow-100 to-orange-50 dark:from-yellow-900/30 dark:to-orange-800/20">
-            <Trophy className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
-              Huy hiệu
-            </h3>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">
-              Đang tải...
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-3">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="w-14 h-14 rounded-xl bg-zinc-100 dark:bg-zinc-700 animate-pulse"
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   const earnedCount = badges.length;
   const totalCount = Object.keys(BADGE_CONFIG).length;
@@ -447,4 +396,8 @@ export default function Badges({ onNewBadge }: BadgesProps) {
     </div>
   );
 }
+
+// Export both as default (for backward compatibility) and named
+export default BadgesClient;
+export { BadgesClient };
 

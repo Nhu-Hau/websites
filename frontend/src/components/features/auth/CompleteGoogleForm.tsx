@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import AuthLayout from "@/components/features/auth/AuthLayout";
 import PasswordField from "@/components/features/auth/PasswordField";
 import FieldError from "@/components/features/auth/FieldError";
-import { usePasswordToggle } from "@/hooks/common/usePasswordToggle";
+import { usePasswordToggle } from "@/hooks/auth/usePasswordToggle";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 export default function CompleteGoogleForm() {
@@ -54,7 +54,7 @@ export default function CompleteGoogleForm() {
       if (res.status === 201) {
         if (json.user) login(json.user);
         toast.success(json.message || "Đăng ký bằng Google thành công!");
-        router.replace(`${basePrefix}/homePage`);
+        router.replace(`${basePrefix}/home`);
         return;
       }
 

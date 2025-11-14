@@ -2,21 +2,17 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { usePlacementTest } from "@/hooks/usePlacementTest";
-import { Sidebar } from "@/components/parts/Sidebar";
-import { ResultsPanel } from "@/components/parts/ResultsPanel";
+import { usePlacementTest } from "@/hooks/tests/usePlacementTest";
+import { Sidebar } from "@/components/features/practice/Sidebar";
+import { ResultsPanel } from "@/components/features/practice/ResultsPanel";
 import { groupByStimulus } from "@/utils/groupByStimulus";
-import { StimulusRowCard, StimulusColumnCard } from "@/components/parts/StimulusCards";
+import { StimulusRowCard, StimulusColumnCard } from "@/components/features/practice/StimulusCards";
 import { useAuth } from "@/context/AuthContext";
-import FocusHUD from "@/components/parts/FocusHUD";
+import FocusHUD from "@/components/features/practice/FocusHUD";
 import { toast } from "sonner";
 import {
   ListChecks,
   Timer,
-  Send,
-  Play,
-  Clock,
-  Focus,
   MessageSquare,
   Loader2,
 } from "lucide-react";
@@ -58,7 +54,6 @@ export default function PlacementPage() {
   const [focusMode, setFocusMode] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // State cho AI insight
   const [showInsight, setShowInsight] = useState(false);
@@ -458,7 +453,7 @@ export default function PlacementPage() {
         progressPercent={progress}
         onStart={handleStart}
         onSubmit={handleSubmit}
-        onOpenQuickNav={() => setMobileNavOpen(true)}
+        onOpenQuickNav={() => {}}
       />
     </div>
   );

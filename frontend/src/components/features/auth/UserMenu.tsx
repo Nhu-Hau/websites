@@ -13,7 +13,6 @@ import {
   Star,
   Crown,
   IdCard,
-  Gauge,
   ShieldCheck,
   Zap,
   ArrowRight,
@@ -132,7 +131,6 @@ export default function UserMenu() {
   const base = useBasePrefix(locale || "vi"); // 👈 DÙNG base prefix thống nhất
 
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [me, setMe] = useState<SafeUser | null>(null);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -159,9 +157,7 @@ export default function UserMenu() {
         setMe(null);
         return;
       }
-      setLoading(true);
       await fetchMe();
-      setLoading(false);
     })();
 
     const onVis = () => document.visibilityState === "visible" && fetchMe();
@@ -190,7 +186,7 @@ export default function UserMenu() {
     try {
       await logout();
       toast.success("Đăng xuất thành công");
-      router.push("/auth/login");
+      router.push(`${base}/auth/login`);
     } catch {
       toast.error("Lỗi khi đăng xuất");
     }
@@ -200,12 +196,12 @@ export default function UserMenu() {
     () => normalizePartLevels(me?.partLevels) ?? null,
     [me]
   );
-  const predictedOverall: number | undefined = React.useMemo(() => {
-    const val = me?.toeicPred?.overall;
-    return typeof val === "number" && Number.isFinite(val)
-      ? round5_990(val)
-      : undefined;
-  }, [me]);
+  // const predictedOverall: number | undefined = React.useMemo(() => {
+  //   const val = me?.toeicPred?.overall;
+  //   return typeof val === "number" && Number.isFinite(val)
+  //     ? round5_990(val)
+  //     : undefined;
+  // }, [me]);
 
   const userRole = (me?.role as Role | undefined) ?? "user";
   const userAccess = (me?.access as Access | undefined) ?? "free";

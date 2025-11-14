@@ -25,6 +25,9 @@ import {
   Crown,
   BadgePercent,
   X,
+  Star,
+  Zap,
+  Underline,
 } from "lucide-react";
 
 type PayResp = {
@@ -145,105 +148,105 @@ export default function Pricing() {
       {
         key: "practice",
         label: "Luyện đề",
-        icon: <Layers className="w-4 h-4" />,
+        icon: <Layers className="w-5 h-5" />,
         free: <>20 bài/tháng</>,
         pro: (
           <>
-            <InfinityIcon className="inline w-4 h-4 mr-1 -mt-0.5" />
-            Không giới hạn
+            <InfinityIcon className="inline w-5 h-5 mr-1 text-indigo-600 dark:text-indigo-400" />
+            <span className="font-black text-indigo-700 dark:text-indigo-400">Không giới hạn</span>
           </>
         ),
       },
       {
         key: "fulltest",
         label: "Full Test & giải chi tiết",
-        icon: <PlayCircle className="w-4 h-4" />,
+        icon: <PlayCircle className="w-5 h-5" />,
         free: (
-          <span className="inline-flex items-center gap-1 text-zinc-500">
-            <XCircle className="w-4 h-4" /> Không hỗ trợ
+          <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-zinc-500">
+            <XCircle className="w-5 h-5" /> Không hỗ trợ
           </span>
         ),
         pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-600">
-            <CheckCircle2 className="w-4 h-4" /> Có
+          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="w-5 h-5" /> Có
           </span>
         ),
       },
       {
         key: "ai",
         label: "Chat với AI (gia sư TOEIC)",
-        icon: <Bot className="w-4 h-4" />,
+        icon: <Bot className="w-5 h-5" />,
         free: (
-          <span className="inline-flex items-center gap-1 text-zinc-500">
-            <XCircle className="w-4 h-4" /> Bị khóa
+          <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-zinc-500">
+            <XCircle className="w-5 h-5" /> Bị khóa
           </span>
         ),
         pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-600">
-            <CheckCircle2 className="w-4 h-4" /> Mở khóa
+          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="w-5 h-5" /> Mở khóa
           </span>
         ),
       },
       {
         key: "adminchat",
         label: "Chat với Admin/Giảng viên",
-        icon: <MessageSquare className="w-4 h-4" />,
+        icon: <MessageSquare className="w-5 h-5" />,
         free: (
-          <span className="inline-flex items-center gap-1 text-zinc-500">
-            <XCircle className="w-4 h-4" /> Bị khóa
+          <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-zinc-500">
+            <XCircle className="w-5 h-5" /> Bị khóa
           </span>
         ),
         pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-600">
-            <CheckCircle2 className="w-4 h-4" /> Mở khóa
+          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="w-5 h-5" /> Mở khóa
           </span>
         ),
       },
       {
         key: "livestream",
-        label: "Bình luận trong livestream/phòng học",
-        icon: <MessageCircle className="w-4 h-4" />,
+        label: "Bình luận trong livestream",
+        icon: <MessageCircle className="w-5 h-5" />,
         free: (
           <>
-            Giới hạn <span className="text-zinc-400">(số lượt/buổi)</span>
+            Giới hạn <span className="text-slate-400 dark:text-zinc-500">(lượt/buổi)</span>
           </>
         ),
         pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-600">
-            <CheckCircle2 className="w-4 h-4" /> Không giới hạn
+          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="w-5 h-5" /> Không giới hạn
           </span>
         ),
       },
       {
         key: "download",
         label: "Tải file giảng viên gửi",
-        icon: <Download className="w-4 h-4" />,
+        icon: <Underline className="w-5 h-5" />,
         free: (
-          <span className="inline-flex items-center gap-1 text-zinc-500">
-            <XCircle className="w-4 h-4" /> Không hỗ trợ
+          <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-zinc-500">
+            <XCircle className="w-5 h-5" /> Không hỗ trợ
           </span>
         ),
         pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-600">
-            <CheckCircle2 className="w-4 h-4" /> Có
+          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="w-5 h-5" /> Có
           </span>
         ),
       },
       {
         key: "roadmap",
         label: "Lộ trình học cá nhân hoá",
-        icon: <Sparkles className="w-4 h-4" />,
+        icon: <Sparkles className="w-5 h-5" />,
         free: (
           <>
             Bản cơ bản{" "}
-            <span className="text-zinc-400">(gợi ý theo level/part)</span>
+            <span className="text-slate-400 dark:text-zinc-500">(theo level)</span>
           </>
         ),
         pro: (
           <>
             Bản nâng cao{" "}
-            <span className="text-zinc-400">
-              (điều chỉnh theo kết quả Practice/Progress)
+            <span className="text-slate-400 dark:text-zinc-500">
+              (theo tiến độ)
             </span>
           </>
         ),
@@ -251,253 +254,246 @@ export default function Pricing() {
       {
         key: "analytics",
         label: "Phân tích lỗi & báo cáo",
-        icon: <BarChart3 className="w-4 h-4" />,
+        icon: <BarChart3 className="w-5 h-5" />,
         free: <>Báo cáo cơ bản</>,
-        pro: <>Phân tích lỗi nâng cao - Theo dõi tiến bộ</>,
+        pro: <>Phân tích lỗi nâng cao</>,
       },
       {
         key: "support",
         label: "Hỗ trợ & ưu tiên",
-        icon: <ShieldCheck className="w-4 h-4" />,
+        icon: <ShieldCheck className="w-5 h-5" />,
         free: <>Chuẩn</>,
-        pro: <>Ưu tiên - Nhanh hơn</>,
+        pro: <>Ưu tiên</>,
       },
     ],
     []
   );
 
   return (
-    <section className="py-12 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+    <section className="py-16 bg-gradient-to-b from-white via-indigo-50/20 to-white dark:from-zinc-900 dark:via-zinc-900/95 dark:to-zinc-900">
+      <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <SectionHeader
           eyebrow="Bảng giá"
-          title="Chọn gói phù hợp với mục tiêu TOEIC"
-          desc="Bắt đầu miễn phí — nâng cấp khi cần để mở khoá toàn bộ tính năng học thông minh."
+          title="Chọn gói phù hợp"
+          desc="Miễn phí để bắt đầu — nâng cấp để học nhanh hơn."
+          align="center"
         />
 
-        {/* Cards trên cùng */}
+        {/* Cards */}
         <div className="mt-10 grid gap-6 sm:grid-cols-2">
           {/* Free */}
-          <div className="relative rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/70 shadow-sm hover:shadow-md transition-all">
-            <div className="p-6">
-              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+          <div className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl p-6 shadow-xl ring-2 ring-slate-200/60 dark:ring-zinc-700/60 transition-all duration-500 hover:shadow-2xl hover:ring-emerald-300 dark:hover:ring-emerald-600">
+            {/* Glow */}
+            <div className="absolute -inset-1 rounded-3xl" />
+
+            <div className="relative z-10 flex items-center justify-between">
+              <h3 className="text-lg font-black text-slate-900 dark:text-zinc-100">
                 Miễn phí
               </h3>
-              <div className="mt-3 text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">
-                0đ
-                <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg ring-2 ring-white/50">
+                <Star className="h-5 w-5 text-white" />
+              </div>
+            </div>
+
+            <div className="relative z-10 mt-3 text-4xl font-black text-slate-900 dark:text-zinc-100">
+              0đ
+              <span className="ml-1 text-sm font-bold text-slate-500 dark:text-zinc-400">
+                /tháng
+              </span>
+            </div>
+
+            <ul className="relative z-10 mt-6 space-y-3 text-sm text-slate-700 dark:text-zinc-300">
+              {[
+                "20 bài luyện/tháng",
+                "Mini test từng Part",
+                "Lộ trình cơ bản",
+                "Báo cáo cơ bản",
+                "Cập nhật hàng tuần",
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-2.5">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <span className="font-medium">{item}</span>
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              href={`${basePrefix}/auth/register`}
+              className="relative z-10 mt-8 inline-flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-emerald-500 bg-white dark:bg-zinc-800 px-5 py-3 text-sm font-black text-emerald-600 dark:text-emerald-400 shadow-lg transition-all hover:bg-emerald-50 dark:hover:bg-zinc-700"
+            >
+              Dùng thử
+            </Link>
+          </div>
+
+          {/* Premium */}
+          <div className="group relative rounded-3xl bg-gradient-to-br from-indigo-50/90 via-white to-indigo-50/80 dark:from-indigo-900/40 dark:via-zinc-800 dark:to-indigo-900/30 p-6 shadow-2xl ring-2 ring-indigo-300/70 dark:ring-indigo-600/70 transition-all duration-500 hover:shadow-3xl hover:ring-indigo-400 dark:hover:ring-indigo-500">
+            {/* Glow */}
+            <div className="absolute -inset-1 rounded-3xl" />
+
+            <div className="absolute -top-3 left-6 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-500 px-3 py-1 text-xs font-black text-white shadow-xl">
+              <Zap className="h-3.5 w-3.5" />
+              Phổ biến
+            </div>
+            {isPremium && (
+              <div className="absolute -top-3 right-6 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-3 py-1 text-xs font-black text-white shadow-xl">
+                <Crown className="h-3.5 w-3.5" />
+                Đang dùng
+              </div>
+            )}
+
+            <h3 className="relative z-10 text-lg font-black text-slate-900 dark:text-zinc-100">
+              Premium
+            </h3>
+
+            <div className="relative z-10 mt-3 flex items-end gap-3">
+              <div className="text-4xl font-black text-slate-900 dark:text-zinc-100">
+                {promo ? (
+                  <>
+                    <span className="mr-2 text-xl line-through text-slate-400">
+                      {Math.round(priceDisplay.base / 1000)}k
+                    </span>
+                    <span>{Math.round(priceDisplay.final / 1000)}k</span>
+                  </>
+                ) : (
+                  <>129k</>
+                )}
+                <span className="ml-1 text-sm font-bold text-slate-500 dark:text-zinc-400">
                   /tháng
                 </span>
               </div>
 
-              <ul className="mt-5 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  20 bài luyện/tháng
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  Mini test theo từng Part (miễn phí)
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  Lộ trình cá nhân hoá (cơ bản)
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  Báo cáo cơ bản
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  Cập nhật tính năng và đề luyện mới hàng tuần
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  Thống kê tiến bộ cá nhân theo từng Part
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  Trải nghiệm giao diện thân thiện – dễ sử dụng
-                </li>
-              </ul>
-
-              <Link
-                href={`${basePrefix}/auth/register`}
-                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold border border-zinc-300 text-zinc-800 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800 transition"
-              >
-                Dùng thử
-              </Link>
+              {promo && (
+                <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 px-2.5 py-1 text-[11px] font-black text-white shadow-md">
+                  <BadgePercent className="h-3.5 w-3.5" />
+                  {promo.code}
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* Pro / Premium */}
-          <div className="relative rounded-2xl border border-sky-300 bg-sky-50/60 shadow-md dark:border-sky-500 dark:bg-zinc-900/60 transition-all hover:shadow-lg">
-            <span className="absolute -top-3 left-6 rounded-full bg-sky-600 px-3 py-1 text-xs font-semibold text-white">
-              Phổ biến
-            </span>
-
-            {isPremium && (
-              <span className="absolute -top-3 right-6 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
-                <Crown className="w-3.5 h-3.5" /> Đang là Premium
-              </span>
+            {/* Promo */}
+            <div className="relative z-10 mt-5 flex gap-3">
+              <div className="relative flex-1">
+                <input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder="Mã khuyến mãi"
+                  className="w-full rounded-xl border-2 border-indigo-300 bg-white/80 dark:bg-zinc-800/80 px-3.5 py-2.5 text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-400 dark:border-indigo-600 dark:text-zinc-200 dark:placeholder:text-zinc-500 backdrop-blur-sm transition-all"
+                  disabled={!!promo || isPremium}
+                />
+                {promo && (
+                  <button
+                    onClick={clearCode}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all"
+                  >
+                    <X className="h-4 w-4 text-slate-500" />
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={onApplyCode}
+                disabled={!!promo || !code.trim() || checking || isPremium}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 px-5 py-2.5 text-sm font-black text-white shadow-lg hover:from-indigo-500 hover:to-indigo-400 disabled:opacity-60 transition-all"
+              >
+                {checking ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <BadgePercent className="h-4 w-4" />
+                )}
+                Áp dụng
+              </button>
+            </div>
+            {promoErr && (
+              <p className="relative z-10 mt-2 text-xs font-medium text-red-600 dark:text-red-400">
+                {promoErr}
+              </p>
+            )}
+            {promo && (
+              <p className="relative z-10 mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                Giá sau giảm:{" "}
+                <strong className="text-sm">
+                  {Math.round(priceDisplay.final / 1000)}.000đ
+                </strong>
+              </p>
             )}
 
-            <div className="p-6">
-              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                Premium
-              </h3>
+            {/* Features */}
+            <ul className="relative z-10 mt-6 space-y-3 text-sm text-slate-700 dark:text-zinc-300">
+              {[
+                "Không giới hạn luyện đề",
+                "Full Test & giải chi tiết",
+                "Chat AI + Admin",
+                "Tải file & phân tích lỗi",
+                "Lộ trình nâng cao",
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-2.5">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-md">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <span className="font-bold">{item}</span>
+                </li>
+              ))}
+            </ul>
 
-              {/* Giá + promo hiển thị */}
-              <div className="mt-3 flex items-end gap-3">
-                <div className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">
-                  {promo ? (
-                    <>
-                      <span className="line-through text-zinc-400 mr-2">
-                        {Math.round(priceDisplay.base / 1000)}k
-                      </span>
-                      <span>{Math.round(priceDisplay.final / 1000)}k</span>
-                    </>
-                  ) : (
-                    <>129k</>
-                  )}
-                  <span className="text-sm font-normal text-zinc-600 dark:text-zinc-400">
-                    /tháng
-                  </span>
-                </div>
-
-                {promo && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                    <BadgePercent className="w-3.5 h-3.5" />
-                    Đã áp dụng {promo.code}
-                  </span>
-                )}
-              </div>
-
-              {/* Ô nhập mã khuyến mãi */}
-              <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                <div className="relative flex-1">
-                  <input
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.toUpperCase())}
-                    placeholder="Nhập mã khuyến mãi"
-                    className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-400"
-                    disabled={!!promo || isPremium}
-                  />
-                  {promo && (
-                    <button
-                      onClick={clearCode}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      aria-label="Xoá mã"
-                    >
-                      <X className="w-4 h-4 text-zinc-500" />
-                    </button>
-                  )}
-                </div>
-                <button
-                  onClick={onApplyCode}
-                  disabled={!!promo || !code.trim() || checking || isPremium}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold bg-sky-600 text-white hover:bg-sky-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {checking ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Đang kiểm tra
-                    </>
-                  ) : (
-                    <>
-                      <BadgePercent className="w-4 h-4" />
-                      Áp dụng
-                    </>
-                  )}
-                </button>
-              </div>
-              {promoErr && (
-                <p className="mt-1 text-xs text-red-600">{promoErr}</p>
+            <button
+              onClick={handleUpgrade}
+              disabled={isPremium || loading}
+              className={`relative z-10 mt-8 inline-flex w-full items-center justify-center gap-2.5 rounded-2xl px-5 py-3 text-sm font-black text-white shadow-xl transition-all disabled:opacity-60 overflow-hidden
+                ${
+                  isPremium
+                    ? "bg-gradient-to-r from-emerald-600 to-emerald-500"
+                    : "bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400"
+                }`}
+            >
+              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isPremium ? (
+                <>
+                  <Crown className="h-4 w-4" /> Đã nâng cấp
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4" /> Nâng cấp
+                </>
               )}
-              {promo && (
-                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                  Giá sau giảm:{" "}
-                  <strong>{Math.round(priceDisplay.final / 1000)}.000đ</strong>
-                </p>
-              )}
+            </button>
 
-              {/* Tính năng */}
-              <ul className="mt-5 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  Không giới hạn luyện đề
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  Full Test & giải chi tiết
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  Chat với AI & Admin, bình luận livestream không giới hạn
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  Tải file giảng viên - Phân tích lỗi nâng cao
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4" />
-                  Lộ trình cá nhân hoá nâng cao
-                </li>
-              </ul>
-
-              {/* CTA nâng cấp */}
-              <button
-                onClick={handleUpgrade}
-                disabled={isPremium || loading}
-                className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed
-                  ${
-                    isPremium
-                      ? "bg-emerald-600 text-white"
-                      : "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-                  }`}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Đang xử lý…
-                  </>
-                ) : isPremium ? (
-                  <>
-                    <Crown className="w-4 h-4" /> Đã nâng cấp
-                  </>
-                ) : (
-                  "Nâng cấp"
-                )}
-              </button>
-
-              <p className="mt-3 text-[12px] text-zinc-500 dark:text-zinc-400">
-                Thanh toán bảo mật qua PayOS. Có thể huỷ bất cứ lúc nào.
-              </p>
-            </div>
+            <p className="relative z-10 mt-3 text-center text-xs font-medium text-slate-500 dark:text-zinc-400">
+              Thanh toán qua{" "}
+              <strong className="text-indigo-600 dark:text-indigo-400">
+                PayOS
+              </strong>
+              . Huỷ bất kỳ lúc nào.
+            </p>
           </div>
         </div>
 
-        {/* Bảng so sánh chi tiết */}
-        <div className="mt-10 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/70 shadow-sm overflow-hidden">
-          <div className="px-4 sm:px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            <h4 className="text-sm font-semibold">
-              So sánh chi tiết tính năng
+        {/* Comparison Table */}
+        <div className="mt-12 rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-slate-200/60 dark:ring-zinc-700/60">
+          <div className="flex items-center gap-3 border-b border-slate-200 dark:border-zinc-700 pb-4">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg">
+              <Sparkles className="h-5 w-5 text-white" />
+            </div>
+            <h4 className="text-lg font-black text-slate-900 dark:text-zinc-100">
+              So sánh tính năng
             </h4>
           </div>
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <div className="mt-5 divide-y divide-slate-100 dark:divide-zinc-700">
             {rows.map((r) => (
               <div
                 key={r.key}
-                className="px-4 sm:px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center"
+                className="grid grid-cols-1 items-center gap-4 py-4 sm:grid-cols-3"
               >
-                <div className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                <div className="flex items-center gap-3 text-sm font-bold text-slate-800 dark:text-zinc-200">
                   {r.icon}
                   {r.label}
                 </div>
-                <div className="text-sm text-zinc-600 dark:text-zinc-300">
+                <div className="text-sm text-slate-600 dark:text-zinc-400">
                   {r.free}
                 </div>
-                <div className="text-sm text-zinc-900 dark:text-zinc-100 font-semibold">
+                <div className="text-sm font-black text-indigo-700 dark:text-indigo-400">
                   {r.pro}
                 </div>
               </div>
@@ -505,33 +501,31 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* CTA dưới cùng */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Link
-              href={`${basePrefix}/practice`}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
-            >
-              Khám phá bài luyện miễn phí
-            </Link>
-            <button
-              onClick={handleUpgrade}
-              disabled={isPremium || loading}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition
-                ${
-                  isPremium
-                    ? "bg-emerald-600 text-white"
-                    : "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-                } disabled:opacity-60 disabled:cursor-not-allowed`}
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Crown className="w-4 h-4" />
-              )}
-              {isPremium ? "Bạn đang là Premium" : "Nâng cấp Premium"}
-            </button>
-          </div>
+        {/* Bottom CTA */}
+        <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <Link
+            href={`${basePrefix}/practice`}
+            className="inline-flex items-center gap-2.5 rounded-2xl border-2 border-slate-300 bg-white dark:bg-zinc-800 px-7 py-3 text-sm font-black text-slate-800 dark:text-zinc-200 shadow-lg transition-all hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-zinc-700"
+          >
+            Khám phá miễn phí
+          </Link>
+          <button
+            onClick={handleUpgrade}
+            disabled={isPremium || loading}
+            className={`inline-flex items-center gap-2.5 rounded-2xl px-7 py-3 text-sm font-black text-white shadow-xl transition-all disabled:opacity-60
+              ${
+                isPremium
+                  ? "bg-gradient-to-r from-emerald-600 to-emerald-500"
+                  : "bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400"
+              }`}
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Crown className="h-4 w-4" />
+            )}
+            {isPremium ? "Đang dùng" : "Nâng cấp"}
+          </button>
         </div>
       </div>
     </section>

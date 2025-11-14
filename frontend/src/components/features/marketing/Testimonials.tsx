@@ -1,6 +1,7 @@
 import React from "react";
 import SectionHeader from "./SectionHeader";
 import { TestimonialAvatar } from "./TestimonialAvatar";
+import { Quote, TrendingUp } from "lucide-react";
 
 type Testimonial = {
   avatar: string;
@@ -38,35 +39,74 @@ export default function Testimonials() {
   ];
 
   return (
-    <section className="bg-slate-50 py-10 dark:bg-zinc-900">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <section className="bg-gradient-to-b from-white via-sky-50/20 to-white dark:from-zinc-900 dark:via-zinc-900/95 dark:to-zinc-900">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <SectionHeader
           eyebrow="Cảm nhận người học"
           title="Hàng nghìn người đã tăng điểm"
           desc="Kinh nghiệm thật – kết quả thật."
+          align="center"
         />
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
+
+        <div className="mt-16 grid gap-8 md:grid-cols-3">
           {items.map((t) => (
             <figure
               key={t.name}
-              className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-800"
+              className="relative overflow-hidden rounded-3xl bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-8 shadow-xl ring-2 ring-slate-200/70 dark:ring-zinc-700/70"
             >
-              <blockquote className="text-sm leading-6 text-slate-700 dark:text-zinc-300">
-                &ldquo;{t.quote}&rdquo;
+              {/* Quote icon tĩnh, không opacity thay đổi */}
+              <div className="pointer-events-none absolute -right-6 -top-6 opacity-20">
+                <Quote className="h-32 w-32 text-sky-600 dark:text-sky-500" />
+              </div>
+
+              {/* Quote content */}
+              <blockquote className="relative text-base leading-7 text-slate-700 dark:text-zinc-300">
+                <span className="absolute -left-2 -top-1 text-6xl font-black text-sky-200 dark:text-sky-800">
+                  “
+                </span>
+                <p className="relative pl-6 font-medium">{t.quote}</p>
               </blockquote>
-              <figcaption className="mt-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <TestimonialAvatar src={t.avatar} alt={t.name} />
-                  <div className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
-                    {t.name}
+
+              {/* Author + Score */}
+              <figcaption className="mt-8 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <TestimonialAvatar src={t.avatar} alt={t.name} />
+                    {/* Không overlay khi hover */}
+                  </div>
+                  <div>
+                    <div className="text-base font-black tracking-tight text-slate-900 dark:text-zinc-100">
+                      {t.name}
+                    </div>
+                    <div className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                      Học viên TOEIC
+                    </div>
                   </div>
                 </div>
-                <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400">
+
+                {/* Score badge – tĩnh, không glow, không hover */}
+                <span className="rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-sm font-black text-white shadow-md">
                   {t.score}
                 </span>
               </figcaption>
             </figure>
           ))}
+        </div>
+
+        {/* Stats bar – tĩnh, sạch sẽ */}
+        <div className="mt-16 text-center">
+          <p className="text-lg font-bold text-slate-700 dark:text-zinc-300">
+            <span className="text-2xl text-sky-600 dark:text-sky-400">98%</span>{" "}
+            học viên cải thiện điểm số sau{" "}
+            <span className="text-2xl text-emerald-600 dark:text-emerald-400">
+              4 tuần
+            </span>{" "}
+            luyện tập đều đặn.
+          </p>
+          <div className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-zinc-400">
+            <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            Dữ liệu từ 12.000+ học viên
+          </div>
         </div>
       </div>
     </section>

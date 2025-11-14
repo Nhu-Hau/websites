@@ -29,8 +29,15 @@
         "part7": "Part 7: Đọc hiểu"
       }
     },
-    "forum": "Cộng đồng",
-    "createStudyRoom": "Phòng học",
+    "study": {
+      "title": "Học tập",
+      "study": {
+        "forum": "Cộng đồng",
+        "createStudyRoom": "Phòng học",
+        "vocabulary": "Học từ vựng",
+        "news": "Học qua tin tức"
+      }
+    },
     "dashboard": "Bảng điều khiển"
   },
   "UserMenu": {

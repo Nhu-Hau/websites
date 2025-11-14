@@ -10,8 +10,16 @@ import TestCard, {
   AttemptSummary,
   TestCardSkeleton,
 } from "@/components/features/practice/TestCard";
-import { History, Headphones, BookOpen, ChevronRight } from "lucide-react";
-import MandatoryPlacementModal from "@/components/features/practice/MandatoryPlacement"; 
+import {
+  History,
+  Headphones,
+  BookOpen,
+  ChevronRight,
+  Sparkles,
+  Star,
+  Trophy,
+} from "lucide-react";
+import MandatoryPlacementModal from "@/components/features/practice/MandatoryPlacement";
 import LevelSuggestModal from "@/components/features/practice/LevelSuggestModal";
 import { useAuth } from "@/context/AuthContext";
 
@@ -76,25 +84,20 @@ export default function PracticePart() {
   const [tests, setTests] = React.useState<number[]>([]);
   const [progressByTest, setProgressByTest] = React.useState<AttemptMap>({});
 
-  // gợi ý level (có thể null nếu chưa có) — giữ logic cũ
   const [suggestedLevel, setSuggestedLevel] = React.useState<
     L | null | undefined
   >(undefined);
   const [loading, setLoading] = React.useState<boolean>(true);
 
-  // Modal chọn level lệch — giữ
   const [showSuggestModal, setShowSuggestModal] = React.useState(false);
   const [pendingLink, setPendingLink] = React.useState<string | null>(null);
 
-  // NEW —— trạng thái bắt buộc placement
   const [mustDoPlacement, setMustDoPlacement] = React.useState<boolean | null>(
     null
   );
   const [showPlacementModal, setShowPlacementModal] = React.useState(false);
 
-  // ---- Fetch trạng thái placement (NEW) - chỉ khi user đã đăng nhập
   React.useEffect(() => {
-    // Nếu chưa đăng nhập hoặc đang loading auth, không kiểm tra placement
     if (authLoading || !user) {
       setMustDoPlacement(false);
       setShowPlacementModal(false);
@@ -104,8 +107,6 @@ export default function PracticePart() {
     let mounted = true;
     (async () => {
       try {
-        // Xác định đã làm placement hay chưa dựa vào lịch sử attempts
-        // Nếu có ít nhất 1 attempt -> coi như đã làm
         const r = await fetch("/api/placement/attempts?limit=1", {
           credentials: "include",
           cache: "no-store",
@@ -118,12 +119,9 @@ export default function PracticePart() {
         }
         if (!mounted) return;
         setMustDoPlacement(!done);
-        if (!done) {
-          setShowPlacementModal(true);
-        }
+        if (!done) setShowPlacementModal(true);
       } catch {
         if (!mounted) return;
-        // Nếu lỗi, an toàn: yêu cầu placement (chỉ khi đã đăng nhập)
         setMustDoPlacement(true);
         setShowPlacementModal(true);
       }
@@ -133,7 +131,6 @@ export default function PracticePart() {
     };
   }, [user, authLoading]);
 
-  // ---- Fetch gợi ý level theo user (giữ nguyên)
   React.useEffect(() => {
     let mounted = true;
     (async () => {
@@ -157,7 +154,6 @@ export default function PracticePart() {
     };
   }, [partKey]);
 
-  // ---- Fetch tests + progress (giữ nguyên)
   React.useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -207,50 +203,71 @@ export default function PracticePart() {
   const isListening = /^part\.[1-4]$/.test(partKey);
   const locale = base.slice(1) || "vi";
 
-  // Handler vào placement (NEW)
   const goPlacement = React.useCallback(() => {
     router.push(`${base}/placement`);
   }, [router, base]);
 
   return (
-    <div className="relative min-h-screen bg-zinc-50 bg-gradient-to-b dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 transition-colors duration-300">
-      {/* background decor giữ nguyên */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_50%_at_50%_-10%,rgba(24,24,27,0.12),transparent)] dark:bg-[radial-gradient(80%_50%_at_50%_-10%,rgba(255,255,255,0.06),transparent)]" />
+    <div className="relative min-h-screen bg-[#DFD0B8] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 transition-all duration-700 overflow-hidden">
 
       <div className="relative mx-auto max-w-[1350px] px-4 xs:px-6 py-10 pt-16">
         {/* ===== Header ===== */}
-        <header>
+        <header className="relative z-10">
           <div className="mx-auto">
-            <div className="flex flex-col gap-6 py-6 xl:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-col gap-6 pt-6 xl:flex-row xl:items-start xl:justify-between">
               {/* Left */}
-              <div className="flex-1 space-y-4">
-                <div className="group inline-flex items-center gap-2.5 rounded-full border px-3 py-2 xs:px-4 xs:py-2 backdrop-blur-sm shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+              <div className="flex flex-col items-start gap-4">
+                {/* Tag: Luyện Nghe / Đọc */}
+                <div className="group relative inline-flex items-center gap-3 rounded-2xl bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl px-3 py-2.5 shadow-lg ring-1 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-xl hover:scale-[1.01] hover:ring-amber-300 dark:hover:ring-amber-600">
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   {isListening ? (
                     <>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30 transition-transform duration-300 group-hover:scale-110">
-                        <Headphones className="h-[18px] w-[18px] text-blue-600 dark:text-blue-400" />
+                      <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-md ring-2 ring-white/50">
+                        <div className="absolute inset-0 rounded-full bg-white/30 blur-md" />
+                        <Headphones className="h-5 w-5 text-white relative z-10" />
                       </div>
-                      <span className="text-sm font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">
+                      <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-700 dark:text-blue-300">
                         Luyện Nghe
                       </span>
                     </>
                   ) : (
                     <>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 transition-transform duration-300 group-hover:scale-110">
-                        <BookOpen className="h-[18px] w-[18px] text-emerald-600 dark:text-emerald-400" />
+                      <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md ring-2 ring-white/50">
+                        <div className="absolute inset-0 rounded-full bg-white/30 blur-md" />
+                        <BookOpen className="h-5 w-5 text-white relative z-10" />
                       </div>
-                      <span className="text-sm font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                      <span className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-300">
                         Luyện Đọc
                       </span>
                     </>
                   )}
+                  <Sparkles className="h-3 w-3 text-amber-500 absolute -top-1 -right-1 animate-pulse" />
                 </div>
 
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-zinc-900 dark:text-zinc-50">
-                  {meta.title}
-                </h1>
+                {/* Title với hiệu ứng 3D ánh kim – thu nhỏ */}
+                <div className="group relative inline-flex items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-50/90 to-orange-50/90 dark:from-zinc-800/70 dark:to-zinc-700/70 px-4 py-3 shadow-xl ring-1 ring-amber-200/50 dark:ring-amber-700/40 backdrop-blur-xl transition-all duration-700 hover:shadow-2xl hover:scale-[1.01] hover:ring-amber-400 dark:hover:ring-amber-500">
+                  {/* Glow 3D */}
+                  <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-br from-amber-400/30 to-orange-600/30 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-                <p className="text-base xs:text-lg leading-relaxed text-zinc-600 dark:text-zinc-300">
+                  {/* Icon P 3D */}
+                  <div className="relative">
+                    <div className="absolute inset-0 scale-110 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 blur-lg opacity-60 group-hover:opacity-85 transition-opacity duration-500" />
+                    <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-600 shadow-xl ring-3 ring-white/60">
+                      <span className="text-2xl font-black text-white drop-shadow-lg">
+                        P
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <h1 className="relative bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-900 dark:from-zinc-50 dark:via-zinc-200 dark:to-zinc-50 bg-clip-text text-3xl sm:text-4xl lg:text-[2.6rem] font-black leading-tight text-transparent drop-shadow-md">
+                    {meta.title}
+                    <span className="absolute -inset-2 bg-gradient-to-r from-amber-400/25 to-orange-500/25 blur-2xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                  </h1>
+                </div>
+
+                {/* Mô tả – nhỏ nhẹ hơn */}
+                <p className="max-w-2xl text-base leading-relaxed text-zinc-800 dark:text-zinc-200 font-normal">
                   Chọn cấp độ và đề thi để luyện tập hiệu quả. Hệ thống sẽ{" "}
                   <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                     lưu tiến độ
@@ -259,7 +276,7 @@ export default function PracticePart() {
                   <span className="font-semibold text-sky-600 dark:text-sky-400">
                     gợi ý cải thiện
                   </span>{" "}
-                  phù hợp.
+                  phù hợp với khả năng của bạn.
                 </p>
               </div>
 
@@ -283,15 +300,16 @@ export default function PracticePart() {
                     href={`${base}/practice/history?partKey=${encodeURIComponent(
                       partKey
                     )}&level=${level}`}
-                    className="group flex items-center justify-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm border border-zinc-200/70 dark:border-zinc-700/70 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
+                    className="group relative flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl border border-white/30 dark:border-zinc-700/50 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30 transition-transform duration-300 group-hover:scale-110">
-                      <History className="h-4.5 w-4.5 text-amber-600 dark:text-amber-400" />
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-amber-400/18 to-orange-500/18 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-md ring-2 ring-white/50">
+                      <History className="h-4 w-4 text-white" />
                     </div>
                     <span className="text-sm font-semibold text-zinc-900 dark:text-white">
                       Lịch sử
                     </span>
-                    <ChevronRight className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400 transition-all duration-300 group-hover:translate-x-1" />
+                    <ChevronRight className="h-4 w-4 text-zinc-600 dark:text-zinc-400 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </div>
               </div>
@@ -300,29 +318,32 @@ export default function PracticePart() {
         </header>
 
         {/* ===== Grid Tests ===== */}
-        <section className="space-y-8">
+        <section className="space-y-10 pt-6">
           {loading ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {Array.from({ length: Math.max(tests?.length ?? 0, 9) }).map(
                 (_, i) => (
-                <TestCardSkeleton key={i} />
+                  <TestCardSkeleton key={i} />
                 )
               )}
             </div>
           ) : tests.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="mb-4 rounded-full bg-zinc-100 dark:bg-zinc-900 p-6 ring-1 ring-zinc-200/60 dark:ring-zinc-800">
-                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-zinc-300 to-zinc-400 dark:from-zinc-700 dark:to-zinc-600" />
+            <div className="flex flex-col items-center justify-center py-32 text-center">
+              <div className="relative mb-6">
+                <div className="absolute inset-0 scale-150 rounded-full bg-gradient-to-br from-amber-400/30 to-orange-500/30 blur-3xl animate-pulse" />
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-zinc-800 dark:to-zinc-700 shadow-2xl ring-8 ring-white/50">
+                  <Star className="h-12 w-12 text-amber-600 dark:text-amber-400" />
+                </div>
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-zinc-700 dark:text-zinc-200">
+              <h3 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
                 Chưa có đề thi
               </h3>
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-base text-zinc-600 dark:text-zinc-400">
                 Level {level} hiện chưa có bài tập. Vui lòng thử cấp độ khác.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {tests.map((testNum) => {
                 const p = progressByTest[testNum];
                 const href = `${base}/practice/${partKey}/${level}/${testNum}`;
@@ -330,10 +351,9 @@ export default function PracticePart() {
                 return (
                   <div
                     key={testNum}
-                    className={`cursor-pointer ${
-                      mustDoPlacement ? "opacity-90" : ""
+                    className={`cursor-pointer transition-all duration-300 ${
+                      mustDoPlacement ? "opacity-70" : ""
                     }`}
-                    // NEW: chặn click nếu chưa làm placement
                     onClickCapture={(e) => {
                       if (mustDoPlacement) {
                         e.preventDefault();
@@ -341,7 +361,6 @@ export default function PracticePart() {
                         setShowPlacementModal(true);
                         return;
                       }
-                      // logic lệch level (giữ nguyên)
                       if (suggestedLevel != null && level !== suggestedLevel) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -378,6 +397,8 @@ export default function PracticePart() {
           )}
         </section>
       </div>
+
+      {/* Modals */}
       <MandatoryPlacementModal
         open={!!showPlacementModal}
         onGoPlacement={goPlacement}

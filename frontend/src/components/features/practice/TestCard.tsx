@@ -6,19 +6,20 @@ import Link from "next/link";
 import {
   Timer,
   ListChecks,
-  CheckCircle2,
   RotateCcw,
   Play,
   Target,
   CalendarDays,
+  Sparkles,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /* ============ Types ============ */
 export type AttemptSummary = {
   lastAt: string;
   correct: number;
   total: number;
-  acc: number; // 0..1
+  acc: number;
   count: number;
   bestAcc?: number;
   streak?: number;
@@ -33,38 +34,45 @@ type Props = {
   totalQuestions?: number;
   durationMin?: number;
   attemptSummary?: AttemptSummary;
-
-  // NEW
   disabled?: boolean;
   disabledHint?: string;
 };
 
-/* ============ Utils ============ */
-function cn(...args: Array<string | false | null | undefined>) {
-  return args.filter(Boolean).join(" ");
-}
-
-const TONE: Record<
+/* ============ Refined EdTech Palette ============ */
+const LEVEL_COLORS: Record<
   1 | 2 | 3,
-  { grad: string; soft: string; text: string; border: string }
+  {
+    primary: string;
+    light: string;
+    text: string;
+    border: string;
+    gradient: string;
+    glow: string;
+  }
 > = {
   1: {
-    grad: "bg-gradient-to-r from-amber-500 to-amber-600",
-    soft: "bg-amber-50 dark:bg-amber-950/30",
-    text: "text-amber-700 dark:text-amber-300",
-    border: "border-amber-200 dark:border-amber-900/40",
+    primary: "bg-[#347433]",
+    light: "bg-[#347433]/10 dark:bg-[#347433]/15",
+    text: "text-[#347433] dark:text-[#347433]/90",
+    border: "border-[#347433]/30 dark:border-[#347433]/40",
+    gradient: "bg-gradient-to-r from-[#347433] to-[#3d8a3d]",
+    glow: "shadow-[0_0_20px_rgba(52,116,51,0.4)]",
   },
   2: {
-    grad: "bg-gradient-to-r from-sky-500 to-sky-600",
-    soft: "bg-sky-50 dark:bg-sky-950/30",
-    text: "text-sky-700 dark:text-sky-300",
-    border: "border-sky-200 dark:border-sky-900/40",
+    primary: "bg-[#27548A]",
+    light: "bg-[#27548A]/10 dark:bg-[#27548A]/15",
+    text: "text-[#27548A] dark:text-[#27548A]/90",
+    border: "border-[#27548A]/30 dark:border-[#27548A]/40",
+    gradient: "bg-gradient-to-r from-[#27548A] to-[#2d62a0]",
+    glow: "shadow-[0_0_20px_rgba(39,84,138,0.4)]",
   },
   3: {
-    grad: "bg-gradient-to-r from-violet-500 to-violet-600",
-    soft: "bg-violet-50 dark:bg-violet-950/30",
-    text: "text-violet-700 dark:text-violet-300",
-    border: "border-violet-200 dark:border-violet-900/40",
+    primary: "bg-[#BB3E00]",
+    light: "bg-[#BB3E00]/10 dark:bg-[#BB3E00]/15",
+    text: "text-[#BB3E00] dark:text-[#BB3E00]/90",
+    border: "border-[#BB3E00]/30 dark:border-[#BB3E00]/40",
+    gradient: "bg-gradient-to-r from-[#BB3E00] to-[#d14800]",
+    glow: "shadow-[0_0_20px_rgba(187,62,0,0.4)]",
   },
 };
 
@@ -76,8 +84,6 @@ export default function TestCard({
   totalQuestions = 10,
   durationMin = 10,
   attemptSummary,
-
-  // NEW
   disabled = false,
   disabledHint,
 }: Props) {
@@ -86,7 +92,7 @@ export default function TestCard({
   const accuracy = attemptSummary ? Math.round(attemptSummary.acc * 100) : 0;
 
   const href = `/${locale}/practice/${partKey}/${level}/${test}`;
-  const tone = TONE[level];
+  const color = LEVEL_COLORS[level];
 
   const levelLabel =
     level === 1 ? "Beginner" : level === 2 ? "Intermediate" : "Advanced";
@@ -97,214 +103,296 @@ export default function TestCard({
     if (!iso) return "—";
     try {
       return new Intl.DateTimeFormat(locale || "vi-VN", {
-        dateStyle: "medium",
+        dateStyle: "short",
       }).format(new Date(iso));
     } catch {
       return iso;
     }
   }, [attemptSummary?.lastAt, locale]);
 
-  // NEW: chặn điều hướng khi disabled
   const goDoTest = () => {
     if (disabled) return;
     router.push(href);
   };
 
-  // NEW: tooltip/aria cho trạng thái khóa
   const titleAttr = disabled
     ? disabledHint || "Vui lòng làm Placement Test trước"
     : undefined;
 
-  return (
+return (
+  <div
+    onClick={goDoTest}
+    role="button"
+    tabIndex={disabled ? -1 : 0}
+    aria-disabled={disabled}
+    title={titleAttr}
+    className={cn(
+      "group relative rounded-3xl p-6 overflow-hidden",
+      "bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl",
+      "border border-white/20 dark:border-zinc-700/50",
+      "shadow-xl hover:shadow-2xl transition-all duration-500",
+      // Giữ full height trong grid
+      "flex flex-col h-full",
+      "before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/10 before:to-transparent before:opacity-0 before:transition-opacity before:duration-500 group-hover:before:opacity-100",
+      disabled
+        ? "cursor-not-allowed opacity-60"
+        : "cursor-pointer hover:-translate-y-2 hover:scale-[1.02] hover:ring-2 hover:ring-white/30"
+    )}
+    style={{
+      background:
+        "linear-gradient(145deg, rgba(255,255,255,0.9), rgba(245,245,245,0.7))",
+    }}
+  >
+    {/* Glow Effect */}
     <div
-      onClick={goDoTest}
-      role="button"
-      tabIndex={disabled ? -1 : 0} // NEW
-      aria-disabled={disabled} // NEW
-      title={titleAttr} // NEW
       className={cn(
-        "group relative rounded-2xl p-5",
-        "border border-zinc-200 bg-white shadow-sm",
-        "dark:border-zinc-700 dark:bg-zinc-800/50",
-        "transition-all duration-300",
-        disabled
-          ? "cursor-not-allowed opacity-60" // NEW
-          : "cursor-pointer hover:-translate-y-[2px] hover:shadow-lg hover:ring-2 hover:ring-zinc-900/10 dark:hover:ring-white/10",
-        "flex flex-col"
+        "absolute -inset-1 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700",
+        color.glow
       )}
-    >
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
-          <h3 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            TEST {test}
-          </h3>
-          {done && (
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-          )}
+    />
+
+    {/* Header */}
+    <div className="flex items-center justify-between mb-5 relative z-10">
+      <div className="flex items-center gap-3">
+        <div className="relative p-2 rounded-2xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-700 shadow-inner">
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent" />
+          <Target className="w-5 h-5 text-zinc-700 dark:text-zinc-300 relative z-10" />
         </div>
-
-        <span
-          className={cn(
-            "inline-flex items-center gap-2 rounded-full px-3 py-1",
-            "text-xs font-semibold uppercase",
-            tone.soft,
-            tone.text,
-            "border",
-            tone.border
-          )}
-          title={levelLabel}
-        >
-          <span className="flex items-end gap-0.5" aria-hidden="true">
-            {[1, 2, 3].map((i) => {
-              const active = i <= bars;
-              const colorActive =
-                level === 1
-                  ? "bg-amber-700"
-                  : level === 2
-                  ? "bg-sky-700"
-                  : "bg-violet-700";
-              const colorInactive = "bg-zinc-300 dark:bg-zinc-600";
-              return (
-                <span
-                  key={i}
-                  className={cn(
-                    "w-1.5 rounded-full transition-all duration-300",
-                    i === 1 ? "h-2.5" : i === 2 ? "h-3.5" : "h-5",
-                    active ? colorActive : colorInactive
-                  )}
-                />
-              );
-            })}
-          </span>
-          {levelLabel}
-        </span>
-      </div>
-
-      <div className="flex flex-wrap gap-3 text-sm text-zinc-600 dark:text-zinc-400">
-        <span className="flex items-center gap-1.5">
-          <ListChecks className="w-4 h-4" /> {totalQuestions} câu hỏi
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Timer className="w-4 h-4" /> {durationMin} phút
-        </span>
-        {done && (
-          <span className="flex items-center gap-1.5">
-            <CalendarDays className="w-4 h-4" /> {lastAtLabel}
-          </span>
-        )}
-      </div>
-
-      <div className="min-h-[70px]">
-        {done ? (
-          <>
-            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
-              <div
-                className={cn(
-                  "h-full",
-                  tone.grad,
-                  "transition-all duration-700"
-                )}
-                style={{ width: `${accuracy}%` }}
-              />
-            </div>
-            <div className="mt-3 flex items-center justify-between text-sm">
-              <span className="font-medium text-zinc-600 dark:text-zinc-400">
-                {attemptSummary!.correct}/{attemptSummary!.total} đúng
-              </span>
-              <span className="font-bold text-zinc-900 dark:text-zinc-100">
-                {accuracy}%
-              </span>
-            </div>
-          </>
-        ) : (
-          <div className="mt-2 rounded-xl border border-zinc-200 bg-zinc-50 py-3 text-center text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-300">
-            Chưa có lượt làm. Hãy bắt đầu để lưu lịch sử.
+        <h3 className="text-xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">
+          TEST {test}
+        </h3>
+        {accuracy >= 90 && (
+          <div className="ml-1 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-md">
+            <Sparkles className="h-3 w-3" />
+            <span>VIP</span>
           </div>
         )}
       </div>
 
-      <div className="mt-auto pt-4">
-        <div className="flex items-center justify-between min-h-[48px]">
-          {!done ? (
-            // NEW: nếu disabled → không render Link, thay bằng nút “khóa”
-            disabled ? (
+      {/* Level Badge - Glass + Glow (nhỏ lại) */}
+      <div
+        className={cn(
+          "group/badge relative inline-flex items-center gap-1.5 rounded-full px-2 py-1",
+          "bg-white/70 dark:bg-zinc-800/70 backdrop-blur-md",
+          "border border-white/40 dark:border-zinc-600/50",
+          "shadow-md ring-1 ring-white/30 dark:ring-white/10",
+          color.light,
+          color.text,
+          "text-[10px] font-bold uppercase tracking-[0.16em]"
+        )}
+        title={levelLabel}
+      >
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover/badge:opacity-100 transition-opacity" />
+        <span className="flex items-end gap-0.5" aria-hidden="true">
+          {[1, 2, 3].map((i) => {
+            const active = i <= bars;
+            const activeColor =
+              level === 1
+                ? "bg-[#347433]"
+                : level === 2
+                ? "bg-[#27548A]"
+                : "bg-[#BB3E00]";
+            return (
+              <span
+                key={i}
+                className={cn(
+                  "w-1 rounded-full transition-all duration-500",
+                  i === 1 ? "h-1.5" : i === 2 ? "h-2.5" : "h-3",
+                  active
+                    ? `${activeColor} shadow-md`
+                    : "bg-white/40 dark:bg-zinc-600/40"
+                )}
+              />
+            );
+          })}
+        </span>
+        {levelLabel}
+      </div>
+    </div>
+
+    {/* Stats */}
+    <div className="flex flex-wrap gap-4 text-sm text-zinc-700 dark:text-zinc-300">
+      <div className="flex items-center gap-2">
+        <div className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+          <ListChecks className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+        </div>
+        <span className="font-semibold">{totalQuestions} câu</span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+          <Timer className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+        </div>
+        <span className="font-semibold">{durationMin} phút</span>
+      </div>
+
+      {/* Luôn giữ slot thứ 3 để chiều cao stats giống nhau */}
+      {done ? (
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+            <CalendarDays className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+          </div>
+          <span className="font-semibold text-xs">{lastAtLabel}</span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 opacity-0">
+          <div className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+            <CalendarDays className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+          </div>
+          <span className="font-semibold text-xs">placeholder</span>
+        </div>
+      )}
+    </div>
+
+    {/* Progress / Empty State */}
+    <div className="flex-1 min-h-[70px] flex flex-col justify-center relative z-10">
+      {done ? (
+        <div className="space-y-3">
+          <div className="relative h-3 w-full overflow-hidden rounded-full bg-gradient-to-r from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-600 shadow-inner">
+            <div
+              className={cn(
+                "absolute inset-y-0 left-0 h-full rounded-full",
+                color.gradient,
+                "shadow-lg transition-all duration-1000 ease-out"
+              )}
+              style={{ width: `${accuracy}%` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-50" />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400">
+              {attemptSummary!.correct}/{attemptSummary!.total}
+            </span>
+            <span
+              className={cn(
+                "text-lg font-black",
+                accuracy >= 80
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : accuracy >= 60
+                  ? "text-amber-600 dark:text-amber-400"
+                  : "text-rose-600 dark:text-rose-400"
+              )}
+            >
+              {accuracy}%
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-600 bg-gradient-to-br from-zinc-50/50 to-zinc-100/50 dark:from-zinc-800/50 dark:to-zinc-700/50 p-4 text-center backdrop-blur-sm">
+          <p className="text-sm font-bold text-zinc-600 dark:text-zinc-300">
+            Chưa làm bài
+          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+            Bắt đầu ngay!
+          </p>
+        </div>
+      )}
+    </div>
+
+    {/* Action Footer */}
+    <div className="mt-5 border-t border-white/30 dark:border-zinc-700/50 relative z-10">
+      <div className="flex items-center justify-between">
+        {!done ? (
+          disabled ? (
+            <button
+              type="button"
+              disabled
+              title={titleAttr}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-zinc-400 to-zinc-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg cursor-not-allowed opacity-70"
+            >
+              <Play className="w-4 h-4" />
+              Làm bài ngay
+            </button>
+          ) : (
+            <Link
+              href={href}
+              onClick={(e) => e.stopPropagation()}
+              className={cn(
+                "group/btn inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-all duration-300",
+                "hover:shadow-2xl hover:scale-105 active:scale-95",
+                color.primary,
+                "bg-gradient-to-r",
+                color.gradient
+              )}
+            >
+              <Play className="w-4 h-4 transition-transform group-hover/btn:translate-x-0.5" />
+              Làm bài ngay
+            </Link>
+          )
+        ) : (
+          <div className="flex w-full justify-start">
+            {disabled ? (
               <button
                 type="button"
                 disabled
                 title={titleAttr}
-                className="inline-flex items-center gap-2 rounded-xl bg-zinc-400/60 px-5 py-3 text-sm font-semibold text-white shadow"
+                className="inline-flex items-center gap-2 rounded-xl py-2 px-4 text-sm font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 cursor-not-allowed"
               >
-                <Play className="w-4 h-4" />
-                Làm bài ngay
+                <RotateCcw className="w-4 h-4" />
+                Làm lại
               </button>
             ) : (
               <Link
                 href={href}
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white shadow transition-all hover:scale-105 dark:bg-zinc-100 dark:text-zinc-900"
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-xl py-2.5 px-5 text-sm font-bold",
+                  "text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/40",
+                  "border border-emerald-200 dark:border-emerald-800",
+                  "transition-all duration-300 hover:shadow-md"
+                )}
               >
-                <Play className="w-4 h-4" /> Làm bài ngay
+                <RotateCcw className="w-4 h-4" />
+                Làm lại
               </Link>
-            )
-          ) : (
-            <div className="flex w-full justify-start gap-2">
-              {disabled ? (
-                <button
-                  type="button"
-                  disabled
-                  title={titleAttr}
-                  className="inline-flex items-center gap-2 rounded-xl py-2.5 px-4 text-sm font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-200/50 dark:bg-zinc-800/50 cursor-not-allowed"
-                >
-                  <RotateCcw className="w-4 h-4" /> Làm lại
-                </button>
-              ) : (
-                <Link
-                  href={href}
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-2 rounded-xl py-2.5 px-4 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-900/30"
-                >
-                  <RotateCcw className="w-4 h-4" /> Làm lại
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* overlay chỉ khi hover và không disabled */}
-      {!disabled && (
-        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100 dark:from-white/5 dark:to-transparent" />
-      )}
     </div>
-  );
+
+    {/* Floating Particles */}
+    {!disabled && (
+      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
+        <div className="absolute top-4 right-4 h-2 w-2 rounded-full bg-white/60 animate-ping" />
+        <Sparkles className="absolute bottom-8 left-6 h-4 w-4 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+      </div>
+    )}
+  </div>
+);
 }
 
 /* ================= Skeleton ================= */
 export function TestCardSkeleton() {
   return (
-    <div className="rounded-2xl p-5 border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900 animate-pulse">
-      {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="h-5 w-5 rounded bg-zinc-200 dark:bg-zinc-700" />
-          <div className="h-5 w-24 rounded bg-zinc-200 dark:bg-zinc-700" />
+    <div className="rounded-3xl p-6 bg-white/90 dark:bg-zinc-900/90 border border-white/20 dark:border-zinc-700/50 shadow-xl animate-pulse h-full flex flex-col backdrop-blur-xl">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-2xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-700">
+            <div className="h-5 w-5 rounded bg-zinc-300 dark:bg-zinc-600" />
+          </div>
+          <div className="h-7 w-24 rounded bg-gradient-to-r from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-600" />
         </div>
-        <div className="h-6 w-28 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700" />
+        <div className="h-8 w-28 rounded-full bg-gradient-to-r from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-700 border border-white/30" />
       </div>
 
-      {/* Stats */}
-      <div className="flex gap-3">
-        <div className="h-4 w-28 rounded bg-zinc-200 dark:bg-zinc-700" />
-        <div className="h-4 w-24 rounded bg-zinc-200 dark:bg-zinc-700" />
-        <div className="h-4 w-32 rounded bg-zinc-200 dark:bg-zinc-700" />
+      <div className="flex gap-4 mb-5">
+        <div className="h-8 w-24 rounded bg-gradient-to-r from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-600" />
+        <div className="h-8 w-20 rounded bg-gradient-to-r from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-600" />
+        <div className="h-8 w-28 rounded bg-gradient-to-r from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-600" />
       </div>
 
-      {/* Progress */}
-      <div className="mt-4 h-2 w-full rounded-full bg-zinc-200 dark:bg-zinc-700" />
+      <div className="flex-1 min-h-[70px] flex flex-col justify-center">
+        <div className="h-3 w-full rounded-full bg-gradient-to-r from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-600 mb-3" />
+        <div className="flex justify-between">
+          <div className="h-5 w-20 rounded bg-gradient-to-r from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-600" />
+          <div className="h-6 w-12 rounded bg-gradient-to-r from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-600" />
+        </div>
+      </div>
 
-      {/* Footer */}
-      <div className="mt-6 h-10 w-32 rounded-xl bg-zinc-200 dark:bg-zinc-700" />
+      <div className="mt-5 pt-4 border-t border-white/30 dark:border-zinc-700/50">
+        <div className="h-12 w-36 rounded-2xl bg-gradient-to-r from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-600" />
+      </div>
     </div>
   );
 }

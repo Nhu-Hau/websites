@@ -16,6 +16,9 @@ import {
   Pencil,
   Trash2,
   ChevronRight,
+  Loader2,
+  Trophy,
+  Target,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,12 +43,12 @@ type StudyStatus =
 
 type Recurrence = {
   mode: "once" | "daily" | "weekdays" | "custom";
-  days?: number[]; // 0=Sun..6=Sat (for custom)
+  days?: number[];
 };
 
 interface StudyScheduleData {
   _id: string;
-  startAt: string; // ISO UTC từ BE
+  startAt: string;
   durationMin: number;
   plan: StudyPlan;
   status: StudyStatus;
@@ -56,21 +59,25 @@ interface StudyScheduleData {
   recurrence?: Recurrence;
 }
 
-const PLAN_OPTIONS: { value: StudyPlan; label: string }[] = [
-  { value: "auto", label: "Tự động (Smart Auto)" },
-  { value: "progress", label: "Progress Test" },
-  { value: "mini_progress", label: "Mini-Progress" },
-  { value: "practice_p1", label: "Luyện Part 1" },
-  { value: "practice_p2", label: "Luyện Part 2" },
-  { value: "practice_p3", label: "Luyện Part 3" },
-  { value: "practice_p4", label: "Luyện Part 4" },
-  { value: "practice_p5", label: "Luyện Part 5" },
-  { value: "practice_p6", label: "Luyện Part 6" },
-  { value: "practice_p7", label: "Luyện Part 7" },
+const PLAN_OPTIONS: { value: StudyPlan; label: string; color: string }[] = [
+  { value: "auto", label: "Tự động (Smart Auto)", color: "from-indigo-600 to-indigo-500" },
+  { value: "progress", label: "Progress Test", color: "from-emerald-600 to-emerald-500" },
+  { value: "mini_progress", label: "Mini-Progress", color: "from-teal-600 to-teal-500" },
+  { value: "practice_p1", label: "Luyện Part 1", color: "from-violet-600 to-violet-500" },
+  { value: "practice_p2", label: "Luyện Part 2", color: "from-purple-600 to-purple-500" },
+  { value: "practice_p3", label: "Luyện Part 3", color: "from-rose-600 to-rose-500" },
+  { value: "practice_p4", label: "Luyện Part 4", color: "from-amber-600 to-amber-500" },
+  { value: "practice_p5", label: "Luyện Part 5", color: "from-sky-600 to-sky-500" },
+  { value: "practice_p6", label: "Luyện Part 6", color: "from-lime-600 to-lime-500" },
+  { value: "practice_p7", label: "Luyện Part 7", color: "from-cyan-600 to-cyan-500" },
 ];
 
 const PLAN_LABELS = Object.fromEntries(
   PLAN_OPTIONS.map((o) => [o.value, o.label])
+) as Record<StudyPlan, string>;
+
+const PLAN_COLORS = Object.fromEntries(
+  PLAN_OPTIONS.map((o) => [o.value, o.color])
 ) as Record<StudyPlan, string>;
 
 const DURATIONS = [15, 20, 30, 45, 60, 90] as const;
@@ -82,7 +89,6 @@ function pad2(n: number) {
   return String(n).padStart(2, "0");
 }
 
-/** Build local “YYYY-MM-DDTHH:mm” string for today/tomorrow/custom (no timezone suffix) */
 function buildLocalDateTimeStr(
   target: "today" | "tomorrow" | Date,
   timeHHmm: string
@@ -113,8 +119,8 @@ function isoPrettyDay(iso: string) {
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
-  if (isSame(d, today)) return "hôm nay";
-  if (isSame(d, tmw)) return "ngày mai";
+  if (isSame(d, today)) return "Hôm nay";
+  if (isSame(d, tmw)) return "Ngày mai";
   return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
 }
 
@@ -131,14 +137,16 @@ function DayPill({
     <button
       type="button"
       onClick={onClick}
-      className={[
-        "px-2.5 py-1 rounded-lg text-xs font-semibold border transition",
+      className={`group relative px-3 py-1.5 rounded-full text-xs font-black transition-all duration-200 ${
         active
-          ? "bg-emerald-600 text-white border-emerald-600"
-          : "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700",
-      ].join(" ")}
+          ? "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg"
+          : "bg-white/80 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-2 border-white/40 dark:border-zinc-700 hover:bg-white dark:hover:bg-zinc-700 hover:shadow-md hover:scale-[1.02]"
+      }`}
     >
       {label}
+      {active && (
+        <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+      )}
     </button>
   );
 }
@@ -148,32 +156,22 @@ export interface StudyScheduleClientProps {
 }
 
 export default function StudyScheduleClient({ initialUpcoming }: StudyScheduleClientProps) {
-  // ---- Form state
-  const [whenType, setWhenType] = useState<"today" | "tomorrow" | "date">(
-    "tomorrow"
-  );
-  const [customDate, setCustomDate] = useState<string>(""); // yyyy-MM-dd
+  const [whenType, setWhenType] = useState<"today" | "tomorrow" | "date">("tomorrow");
+  const [customDate, setCustomDate] = useState<string>("");
   const [timeHHmm, setTimeHHmm] = useState("20:00");
   const [durationMin, setDurationMin] = useState<Duration>(60);
   const [plan, setPlan] = useState<StudyPlan>("practice_p3");
-
-  const [remindMinutes, setRemindMinutes] =
-    useState<(typeof REMIND_MINUTES)[number]>(10);
+  const [remindMinutes, setRemindMinutes] = useState<(typeof REMIND_MINUTES)[number]>(10);
   const [notifyEmail, setNotifyEmail] = useState(true);
   const [notifyWeb, setNotifyWeb] = useState(true);
-
-  const [recurrenceMode, setRecurrenceMode] =
-    useState<Recurrence["mode"]>("once");
-  const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]); // for custom
-
+  const [recurrenceMode, setRecurrenceMode] = useState<Recurrence["mode"]>("once");
+  const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
 
-  // ---- Upcoming
   const [upcoming, setUpcoming] = useState<StudyScheduleData | null>(initialUpcoming);
   const [loadingUpcoming, setLoadingUpcoming] = useState(false);
-  const [editing, setEditing] = useState(false); // inline edit upcoming
+  const [editing, setEditing] = useState(false);
 
-  // ---- Fetch upcoming
   const fetchUpcoming = async () => {
     try {
       setLoadingUpcoming(true);
@@ -190,11 +188,9 @@ export default function StudyScheduleClient({ initialUpcoming }: StudyScheduleCl
     }
   };
 
-  // ---- Helpers for payload
   const startLocal = useMemo(() => {
     if (whenType === "date") {
       if (!customDate) return buildLocalDateTimeStr("tomorrow", timeHHmm);
-      // customDate is yyyy-MM-dd
       return `${customDate}T${timeHHmm}`;
     }
     return buildLocalDateTimeStr(whenType, timeHHmm);
@@ -209,13 +205,12 @@ export default function StudyScheduleClient({ initialUpcoming }: StudyScheduleCl
     return undefined;
   }, [recurrenceMode, recurrenceDays]);
 
-  // ---- Submit create/update
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
       const body: any = {
-        startLocal, // "YYYY-MM-DDTHH:mm" (local, no Z)
+        startLocal,
         durationMin,
         plan,
         remindMinutes,
@@ -282,468 +277,432 @@ export default function StudyScheduleClient({ initialUpcoming }: StudyScheduleCl
     }
   };
 
-  // ---- Recurrence UI helpers
   const weekdayLabels = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 
-return (
-  <div className="space-y-6">
-    {/* ===== Card Schedule ===== */}
-    <div className="rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-5 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-indigo-900/30 dark:to-blue-900/30">
-            <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+  return (
+    <div className="space-y-7">
+      {/* ===== Card Schedule ===== */}
+      <div className="rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-8 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
+        <div className="flex items-center justify-between mb-7">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-600 shadow-xl ring-2 ring-white/50">
+              <Calendar className="h-7 w-7 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-zinc-900 dark:text-white">
+                Lên lịch học
+              </h2>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                Thiết lập buổi học tự động, thông minh
+              </p>
+            </div>
           </div>
-          <h2 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-white">
-            Lên lịch học
-          </h2>
         </div>
+
+        <form onSubmit={submit} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left: When */}
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-3">
+                Lặp lịch
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { k: "once", label: "Một lần" },
+                  { k: "daily", label: "Hàng ngày" },
+                  { k: "weekdays", label: "Thứ 2–6" },
+                  { k: "custom", label: "Tuỳ chọn" },
+                ].map(({ k, label }) => {
+                  const active = recurrenceMode === (k as typeof recurrenceMode);
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => setRecurrenceMode(k as typeof recurrenceMode)}
+                      className={`group relative px-4 py-2 rounded-2xl text-sm font-black transition-all duration-300 ${
+                        active
+                          ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg"
+                          : "bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 hover:shadow-md hover:scale-[1.02]"
+                      }`}
+                    >
+                      {label}
+                      {active && (
+                        <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              {recurrenceMode === "custom" && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {weekdayLabels.map((lb, idx) => (
+                    <DayPill
+                      key={idx}
+                      label={lb}
+                      active={recurrenceDays.includes(idx)}
+                      onClick={() =>
+                        setRecurrenceDays((prev) =>
+                          prev.includes(idx)
+                            ? prev.filter((d) => d !== idx)
+                            : [...prev, idx]
+                        )
+                      }
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-3">
+                Ngày & giờ
+              </label>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {[
+                  { k: "today", label: "Hôm nay" },
+                  { k: "tomorrow", label: "Ngày mai" },
+                  { k: "date", label: "Chọn ngày" },
+                ].map(({ k, label }) => {
+                  const active = whenType === (k as typeof whenType);
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => setWhenType(k as typeof whenType)}
+                      className={`group relative px-4 py-2 rounded-2xl text-sm font-black transition-all duration-300 ${
+                        active
+                          ? "bg-gradient-to-r from-teal-600 to-teal-500 text-white shadow-lg"
+                          : "bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 hover:shadow-md hover:scale-[1.02]"
+                      }`}
+                    >
+                      {label}
+                      {active && (
+                        <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </button>
+                  );
+                })}
+                {whenType === "date" && (
+                  <input
+                    type="date"
+                    value={customDate}
+                    onChange={(e) => setCustomDate(e.target.value)}
+                    className="px-4 py-2 rounded-2xl border-2 border-white/40 bg-white/80 dark:bg-zinc-900/80 text-sm font-bold focus:ring-4 focus:ring-teal-500/30 focus:border-teal-500 outline-none transition-all"
+                  />
+                )}
+              </div>
+              <div className="relative">
+                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-400 dark:text-zinc-500" />
+                <input
+                  type="time"
+                  value={timeHHmm}
+                  onChange={(e) => setTimeHHmm(e.target.value)}
+                  className="w-full pl-12 pr-5 py-3.5 rounded-2xl border-2 border-white/40 bg-white/80 dark:bg-zinc-900/80 text-lg font-black text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-4 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Plan + Options */}
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-3">
+                Loại buổi học
+              </label>
+              <div className="relative">
+                <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-400 dark:text-zinc-500" />
+                <select
+                  value={plan}
+                  onChange={(e) => setPlan(e.target.value as StudyPlan)}
+                  className={`w-full pl-12 pr-5 py-3.5 rounded-2xl border-2 border-white/40 bg-white/80 dark:bg-zinc-900/80 text-lg font-black appearance-none focus:ring-4 focus:ring-${PLAN_COLORS[plan].split(" ")[1].split("-")[1]}-500/30 focus:border-${PLAN_COLORS[plan].split(" ")[1].split("-")[1]}-500 outline-none transition-all`}
+                  style={{
+                    backgroundImage: `linear-gradient(to right, ${PLAN_COLORS[plan].split("from-")[1].split(" ")[0]}, ${PLAN_COLORS[plan].split("to-")[1].split(" ")[0]})`,
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  {PLAN_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-2">
+                  Thời lượng
+                </label>
+                <select
+                  value={durationMin}
+                  onChange={(e) => setDurationMin(Number(e.target.value) as Duration)}
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-white/40 bg-white/80 dark:bg-zinc-900/80 text-base font-black focus:ring-4 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all"
+                >
+                  {DURATIONS.map((d) => (
+                    <option key={d} value={d}>
+                      {d} phút
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-2">
+                  Nhắc trước
+                </label>
+                <select
+                  value={remindMinutes}
+                  onChange={(e) => setRemindMinutes(Number(e.target.value) as any)}
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-white/40 bg-white/80 dark:bg-zinc-900/80 text-base font-black focus:ring-4 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all"
+                >
+                  {REMIND_MINUTES.map((m) => (
+                    <option key={m} value={m}>
+                      {m} phút
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-5">
+              <label className="flex items-center gap-3 text-sm font-bold">
+                <input
+                  type="checkbox"
+                  checked={notifyEmail}
+                  onChange={(e) => setNotifyEmail(e.target.checked)}
+                  className="w-5 h-5 rounded border-2 border-white/40 text-indigo-600 focus:ring-4 focus:ring-indigo-500/30"
+                />
+                <Bell className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Email
+              </label>
+              <label className="flex items-center gap-3 text-sm font-bold">
+                <input
+                  type="checkbox"
+                  checked={notifyWeb}
+                  onChange={(e) => setNotifyWeb(e.target.checked)}
+                  className="w-5 h-5 rounded border-2 border-white/40 text-teal-600 focus:ring-4 focus:ring-teal-500/30"
+                />
+                <BellRing className="w-5 h-5 text-teal-600 dark:text-teal-400" /> Web
+              </label>
+            </div>
+          </div>
+
+          <div className="lg:col-span-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="group w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-black text-lg shadow-lg transition-all hover:shadow-xl hover:scale-[1.01] disabled:opacity-50"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  Đang lưu...
+                </>
+              ) : (
+                <>
+                  <Save className="h-6 w-6 transition-transform group-hover:scale-110" />
+                  Lưu lịch học
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
 
-      {/* Form: chia 12 cột để canh tỉ lệ tốt hơn */}
-      <form
-        onSubmit={submit}
-        className="grid grid-cols-1 md:grid-cols-8 gap-4"
-      >
-        {/* When (Ngày & giờ) */}
-        <div className="md:col-span-4">
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-            Lặp lịch
-          </label>
-          <div className="flex flex-wrap items-center gap-2">
-            {[
-              { k: "once", label: "Một lần" },
-              { k: "daily", label: "Hàng ngày" },
-              { k: "weekdays", label: "Thứ 2–6" },
-              { k: "custom", label: "Tuỳ chọn" },
-            ].map(({ k, label }) => {
-              const active = recurrenceMode === (k as typeof recurrenceMode);
-              return (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() =>
-                    setRecurrenceMode(k as typeof recurrenceMode)
-                  }
-                  className={[
-                    "px-3 py-1.5 rounded-lg text-sm border transition",
-                    active
-                      ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700/40",
-                  ].join(" ")}
-                >
-                  {label}
-                </button>
-              );
-            })}
+      {/* ===== Upcoming ===== */}
+      {loadingUpcoming ? (
+        <div className="rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-8 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-10 w-10 animate-spin text-indigo-600 dark:text-indigo-400" />
+          </div>
+        </div>
+      ) : !upcoming ? (
+        <div className="rounded-3xl border-2 border-dashed border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-10 text-center shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
+          <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner flex items-center justify-center mb-5">
+            <AlarmClock className="h-10 w-10 text-slate-400 dark:text-zinc-500" />
+          </div>
+          <p className="text-base font-black text-zinc-700 dark:text-zinc-300">
+            Chưa có lịch sắp tới
+          </p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+            Hãy tạo lịch học ở trên để bắt đầu!
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-8 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-600 shadow-xl ring-2 ring-white/50">
+              <AlarmClock className="h-7 w-7 text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-zinc-900 dark:text-white">
+                Lịch sắp tới
+              </h3>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                {upcoming.status === "completed" ? "Đã hoàn thành" : upcoming.status === "missed" ? "Đã bỏ lỡ" : "Sắp diễn ra"}
+              </p>
+            </div>
           </div>
 
-          {recurrenceMode === "custom" && (
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              {weekdayLabels.map((lb, idx) => {
-                const active = recurrenceDays.includes(idx);
-                return (
-                  <DayPill
-                    key={idx}
-                    label={lb}
-                    active={active}
-                    onClick={() =>
-                      setRecurrenceDays((prev) =>
-                        prev.includes(idx)
-                          ? prev.filter((d) => d !== idx)
-                          : [...prev, idx]
-                      )
-                    }
-                  />
-                );
-              })}
+          {upcoming.status === "completed" ? (
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 border-2 border-emerald-200 dark:border-emerald-800 shadow-inner">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                <div>
+                  <p className="text-base font-black text-emerald-900 dark:text-emerald-100">
+                    Hoàn thành!
+                  </p>
+                  <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">
+                    {isoToLocalHHmm(upcoming.startAt)} {isoPrettyDay(upcoming.startAt)} • {upcoming.durationMin} phút • {PLAN_LABELS[upcoming.plan]}
+                  </p>
+                  {upcoming.streak > 0 && (
+                    <p className="text-sm font-bold text-emerald-700/90 dark:text-emerald-300/90 mt-1 flex items-center gap-2">
+                      <Trophy className="h-5 w-5" /> Chuỗi: {upcoming.streak} ngày
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : upcoming.status === "missed" ? (
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30 border-2 border-rose-200 dark:border-rose-800 shadow-inner">
+              <div className="flex items-center gap-3">
+                <XCircle className="h-8 w-8 text-rose-600 dark:text-rose-400" />
+                <div>
+                  <p className="text-base font-black text-rose-900 dark:text-rose-100">
+                    Bạn đã bỏ lỡ buổi học
+                  </p>
+                  <p className="text-sm font-bold text-rose-700 dark:text-rose-300">
+                    {isoToLocalHHmm(upcoming.startAt)} • {upcoming.durationMin} phút • {PLAN_LABELS[upcoming.plan]}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 border-2 border-indigo-200 dark:border-indigo-800 shadow-inner">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                  <p className="text-base font-black text-indigo-900 dark:text-indigo-100">
+                    {isoToLocalHHmm(upcoming.startAt)} {isoPrettyDay(upcoming.startAt)} • {upcoming.durationMin} phút
+                  </p>
+                  <p className="text-sm font-bold text-indigo-700 dark:text-indigo-300 mt-1">
+                    {PLAN_LABELS[upcoming.plan]}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-2">
+                    {upcoming.remindMinutes && (
+                      <span className="flex items-center gap-1">
+                        <Bell className="h-4 w-4" /> {upcoming.remindMinutes} phút
+                      </span>
+                    )}
+                    {upcoming.notifyEmail && <span>Email</span>}
+                    {upcoming.notifyWeb && <span>Web</span>}
+                  </div>
+                  {upcoming.recurrence?.mode && (
+                    <p className="text-xs font-bold text-indigo-600/90 dark:text-indigo-400/90 mt-1 flex items-center gap-1">
+                      <Repeat className="h-4 w-4" />
+                      {upcoming.recurrence.mode === "daily" ? "Hàng ngày" :
+                       upcoming.recurrence.mode === "weekdays" ? "Thứ 2–6" :
+                       `Ngày: ${(upcoming.recurrence.days || []).map(d => weekdayLabels[d]).join(", ")}`}
+                    </p>
+                  )}
+                  {upcoming.streak > 0 && (
+                    <p className="text-xs font-bold text-indigo-600/90 dark:text-indigo-400/90 mt-1">
+                      Chuỗi: {upcoming.streak} ngày
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setEditing(true);
+                      setWhenType("tomorrow");
+                      setTimeHHmm(isoToLocalHHmm(upcoming.startAt));
+                      setDurationMin(upcoming.durationMin as Duration);
+                      setPlan(upcoming.plan);
+                      setNotifyEmail(!!upcoming.notifyEmail);
+                      setNotifyWeb(!!upcoming.notifyWeb);
+                      setRemindMinutes((upcoming.remindMinutes as any) ?? 10);
+                      if (upcoming.recurrence?.mode) {
+                        setRecurrenceMode(upcoming.recurrence.mode);
+                        setRecurrenceDays(upcoming.recurrence.days ?? []);
+                      } else {
+                        setRecurrenceMode("once");
+                        setRecurrenceDays([]);
+                      }
+                    }}
+                    className="group px-5 py-3 rounded-2xl bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 text-sm font-black hover:bg-white dark:hover:bg-zinc-700 hover:shadow-md hover:scale-[1.02] transition-all flex items-center gap-2"
+                  >
+                    <Pencil className="h-5 w-5 transition-transform group-hover:scale-110" />
+                    Sửa
+                  </button>
+                  <button
+                    onClick={cancelUpcoming}
+                    className="group px-5 py-3 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 text-white text-sm font-black hover:from-rose-500 hover:to-pink-500 hover:shadow-lg hover:scale-[1.02] transition-all flex items-center gap-2"
+                  >
+                    <Trash2 className="h-5 w-5 transition-transform group-hover:scale-110" />
+                    Huỷ
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mt-4 mb-2">
-            Ngày & giờ
-          </label>
-
-          {/* Quick selectors */}
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            {[
-              { k: "today", label: "Hôm nay" },
-              { k: "tomorrow", label: "Ngày mai" },
-              { k: "date", label: "Chọn ngày" },
-            ].map(({ k, label }) => {
-              const active = whenType === (k as typeof whenType);
-              return (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setWhenType(k as typeof whenType)}
-                  className={[
-                    "px-3 py-1.5 rounded-lg text-sm border transition",
-                    active
-                      ? "bg-teal-600 text-white border-teal-600 shadow-sm"
-                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700/40",
-                  ].join(" ")}
-                >
-                  {label}
-                </button>
-              );
-            })}
-            {whenType === "date" && (
-              <input
-                type="date"
-                value={customDate}
-                onChange={(e) => setCustomDate(e.target.value)}
-                className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
-              />
-            )}
-          </div>
-
-          {/* Time input */}
-          <div className="relative">
-            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-500" />
-            <input
-              type="time"
-              value={timeHHmm}
-              onChange={(e) => setTimeHHmm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
-              required
-            />
-          </div>
-        </div>
-
-        {/* Plan + Duration + Remind + Channels */}
-        <div className="md:col-span-4">
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-            Loại buổi học & tuỳ chọn
-          </label>
-
-          {/* Plan */}
-          <div className="relative">
-            <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 dark:text-zinc-500" />
-            <select
-              value={plan}
-              onChange={(e) => setPlan(e.target.value as StudyPlan)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
-            >
-              {PLAN_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Duration + Remind */}
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                Thời lượng
-              </label>
-              <select
-                value={durationMin}
-                onChange={(e) =>
-                  setDurationMin(Number(e.target.value) as Duration)
-                }
-                className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
-              >
-                {DURATIONS.map((d) => (
-                  <option key={d} value={d}>
-                    {d} phút
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                Nhắc trước
-              </label>
-              <select
-                value={remindMinutes}
-                onChange={(e) =>
-                  setRemindMinutes(
-                    Number(e.target.value) as (typeof REMIND_MINUTES)[number]
-                  )
-                }
-                className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
-              >
-                {REMIND_MINUTES.map((m) => (
-                  <option key={m} value={m}>
-                    {m} phút
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Channels */}
-          <div className="mt-8 flex items-center gap-3">
-            <label className="inline-flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={notifyEmail}
-                onChange={(e) => setNotifyEmail(e.target.checked)}
-                className="rounded border-zinc-300 dark:border-zinc-600 text-indigo-600 focus:ring-indigo-500"
-              />
-              <Bell className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Email
-            </label>
-            <label className="inline-flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={notifyWeb}
-                onChange={(e) => setNotifyWeb(e.target.checked)}
-                className="rounded border-zinc-300 dark:border-zinc-600 text-teal-600 focus:ring-teal-500"
-              />
-              <BellRing className="w-4 h-4 text-teal-600 dark:text-teal-400" /> Web
-            </label>
-          </div>
-        </div>
-
-        {/* Submit */}
-        <div className="md:col-span-8">
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg font-medium hover:from-indigo-700 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-          >
-            {saving ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Đang lưu</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                <span>Lưu lịch học</span>
-              </>
-            )}
-          </button>
-        </div>
-      </form>
-    </div>
-
-    {/* ===== Upcoming ===== */}
-    {loadingUpcoming ? (
-      <div className="rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
-        <div className="flex items-center justify-center py-4">
-          <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-        </div>
-      </div>
-    ) : !upcoming ? (
-      <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 p-6 text-sm text-zinc-600 dark:text-zinc-400 text-center">
-        Chưa có lịch sắp tới. Hãy tạo lịch phía trên nhé.
-      </div>
-    ) : (
-      <div className="rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-6 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
-        <div className="flex items-center gap-2.5 mb-4">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-indigo-900/30 dark:to-blue-900/30">
-            <AlarmClock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-white">
-            Lịch sắp tới
-          </h3>
-        </div>
-
-        {/* Status card */}
-        {upcoming.status === "completed" ? (
-          <div className="flex items-start gap-3 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">
-                Hoàn thành
-              </p>
-              <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">
-                {isoToLocalHHmm(upcoming.startAt)}{" "}
-                {isoPrettyDay(upcoming.startAt)} • {upcoming.durationMin} phút
-                • {PLAN_LABELS[upcoming.plan]}
-              </p>
-              {upcoming.streak > 0 && (
-                <p className="text-xs text-emerald-700/90 dark:text-emerald-300/90 mt-0.5">
-                  Chuỗi: {upcoming.streak} ngày
-                </p>
-              )}
-            </div>
-          </div>
-        ) : upcoming.status === "missed" ? (
-          <div className="flex items-start gap-3 p-4 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800">
-            <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-rose-900 dark:text-rose-100">
-                Bạn đã bỏ lỡ buổi học
-              </p>
-              <p className="text-xs text-rose-700 dark:text-rose-300 mt-0.5">
-                {isoToLocalHHmm(upcoming.startAt)} • {upcoming.durationMin}{" "}
-                phút • {PLAN_LABELS[upcoming.plan]}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
-            <div className="text-sm text-indigo-900 dark:text-indigo-100">
-              <div className="font-semibold">
-                {isoToLocalHHmm(upcoming.startAt)}{" "}
-                {isoPrettyDay(upcoming.startAt)} • {upcoming.durationMin} phút
-                • {PLAN_LABELS[upcoming.plan]}
-              </div>
-              <div className="flex items-center gap-2 text-xs mt-0.5 text-indigo-800/90 dark:text-indigo-200/90">
-                {upcoming.remindMinutes ? (
-                  <>
-                    <Bell className="w-3.5 h-3.5" /> Nhắc trước{" "}
-                    {upcoming.remindMinutes} phút
-                  </>
-                ) : null}
-                {upcoming.notifyEmail ? (
-                  <>
-                    <ChevronRight className="w-3 h-3 opacity-60" /> Email
-                  </>
-                ) : null}
-                {upcoming.notifyWeb ? (
-                  <>
-                    <ChevronRight className="w-3 h-3 opacity-60" /> Web
-                  </>
-                ) : null}
-              </div>
-              {upcoming.recurrence?.mode && (
-                <div className="text-xs mt-0.5 opacity-90">
-                  <Repeat className="w-3.5 h-3.5 inline mr-1" />
-                  {upcoming.recurrence.mode === "daily"
-                    ? "Lặp hàng ngày"
-                    : upcoming.recurrence.mode === "weekdays"
-                    ? "Lặp thứ 2–6"
-                    : upcoming.recurrence.mode === "custom"
-                    ? `Lặp ngày: ${(upcoming.recurrence.days || [])
-                        .map(
-                          (d) => ["CN", "T2", "T3", "T4", "T5", "T6", "T7"][d]
-                        )
-                        .join(", ")}`
-                    : "Một lần"}
-                </div>
-              )}
-              {upcoming.streak > 0 && (
-                <div className="text-xs mt-0.5 opacity-90">
-                  Chuỗi hiện tại: {upcoming.streak} ngày
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setEditing(true);
-                  setWhenType("tomorrow");
-                  setTimeHHmm(isoToLocalHHmm(upcoming.startAt));
-                  setDurationMin(upcoming.durationMin as Duration);
-                  setPlan(upcoming.plan);
-                  setNotifyEmail(!!upcoming.notifyEmail);
-                  setNotifyWeb(!!upcoming.notifyWeb);
-                  setRemindMinutes((upcoming.remindMinutes as any) ?? 10);
-                  if (upcoming.recurrence?.mode) {
-                    setRecurrenceMode(upcoming.recurrence.mode);
-                    setRecurrenceDays(upcoming.recurrence.days ?? []);
-                  } else {
-                    setRecurrenceMode("once");
-                    setRecurrenceDays([]);
-                  }
-                }}
-                className="px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition flex items-center gap-1.5"
-              >
-                <Pencil className="w-4 h-4" />
-                Sửa
-              </button>
-              <button
-                type="button"
-                onClick={cancelUpcoming}
-                className="px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition flex items-center gap-1.5"
-              >
-                <Trash2 className="w-4 h-4" />
-                Huỷ
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Inline quick edit */}
-        {editing &&
-          upcoming?.status !== "completed" &&
-          upcoming?.status !== "missed" && (
-            <div className="mt-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50">
-              <div className="text-sm font-semibold mb-3">
-                Chỉnh sửa nhanh
-              </div>
+          {editing && upcoming?.status !== "completed" && upcoming?.status !== "missed" && (
+            <div className="mt-6 p-5 rounded-2xl bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 shadow-inner">
+              <p className="text-sm font-black text-zinc-700 dark:text-zinc-300 mb-4">Chỉnh sửa nhanh</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs mb-1">Giờ</label>
+                  <label className="block text-xs font-bold mb-2">Giờ</label>
                   <input
                     type="time"
                     value={timeHHmm}
                     onChange={(e) => setTimeHHmm(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-white/40 bg-white/80 dark:bg-zinc-900/80 text-base font-black focus:ring-4 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs mb-1">Thời lượng</label>
+                  <label className="block text-xs font-bold mb-2">Thời lượng</label>
                   <select
                     value={durationMin}
-                    onChange={(e) =>
-                      setDurationMin(Number(e.target.value) as Duration)
-                    }
-                    className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    onChange={(e) => setDurationMin(Number(e.target.value) as Duration)}
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-white/40 bg-white/80 dark:bg-zinc-900/80 text-base font-black focus:ring-4 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all"
                   >
                     {DURATIONS.map((d) => (
-                      <option key={d} value={d}>
-                        {d} phút
-                      </option>
+                      <option key={d} value={d}>{d} phút</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs mb-1">Loại</label>
+                  <label className="block text-xs font-bold mb-2">Loại</label>
                   <select
                     value={plan}
                     onChange={(e) => setPlan(e.target.value as StudyPlan)}
-                    className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-white/40 bg-white/80 dark:bg-zinc-900/80 text-base font-black focus:ring-4 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none transition-all"
                   >
                     {PLAN_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
                 </div>
               </div>
-              <div className="mt-3 flex items-center gap-2">
+              <div className="mt-4 flex gap-2">
                 <button
-                  type="button"
-                  onClick={() =>
-                    patchUpcoming({
-                      startAt: startLocal,
-                      durationMin,
-                      plan,
-                      remindMinutes,
-                      notifyEmail,
-                      notifyWeb,
-                      recurrence: recurrence as any,
-                    } as any)
-                  }
-                  className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
+                  onClick={() => patchUpcoming({ startAt: startLocal, durationMin, plan, remindMinutes, notifyEmail, notifyWeb, recurrence: recurrence as any } as any)}
+                  className="flex-1 px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-black hover:from-indigo-500 hover:to-blue-500 hover:shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
                 >
-                  <Save className="w-4 h-4" />
-                  Lưu thay đổi
+                  <Save className="h-5 w-5" /> Lưu
                 </button>
                 <button
-                  type="button"
                   onClick={() => setEditing(false)}
-                  className="px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition"
+                  className="px-5 py-3 rounded-2xl border-2 border-white/40 bg-white/80 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 font-black hover:bg-white dark:hover:bg-zinc-700 hover:scale-[1.02] transition-all"
                 >
                   Huỷ
                 </button>
               </div>
             </div>
           )}
-      </div>
-    )}
-  </div>
-);
+        </div>
+      )}
+    </div>
+  );
 }

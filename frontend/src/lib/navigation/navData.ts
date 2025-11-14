@@ -43,9 +43,28 @@ export function MenuNav(): NavItemType[] {
         },
       ],
     },
-    { label: t("forum"), href: `/${locale}/community` },
+    {
+      label: t("study.title"),
+      children: [
+        {
+          label: t("study.study.forum"),
+          href: `/${locale}/community`,
+        },
+        {
+          label: t("study.study.createStudyRoom"),
+          href: `/${locale}/study/create`,
+        },
+        {
+          label: t("study.study.vocabulary"),
+          href: `/${locale}/vocabulary`,
+        },
+        {
+          label: t("study.study.news"),
+          href: `/${locale}/news`,
+        },
+      ],
+    },
     { label: t("dashboard"), href: `/${locale}/dashboard` },
-    { label: t("createStudyRoom"), href: `/${locale}/study/create` },
   ];
 
   return items;

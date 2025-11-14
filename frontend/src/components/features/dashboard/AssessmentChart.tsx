@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
 
 import React from "react";
@@ -13,7 +12,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { Gauge } from "lucide-react";
+import { Gauge, TrendingUp, Target, Loader2 } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 /* ===================== Types ===================== */
@@ -67,18 +66,13 @@ function round5_990(n: number) {
 function fmtTimeLabel(iso?: string) {
   if (!iso) return "";
   const d = new Date(iso);
-  return `${d.getDate()}/${d.getMonth() + 1} ${String(d.getHours()).padStart(
-    2,
-    "0"
-  )}:${String(d.getMinutes()).padStart(2, "0")}`;
+  return `${d.getDate()}/${d.getMonth() + 1} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
 /* ===================== Component ===================== */
 export default function AssessmentChart() {
   const basePrefix = useBasePrefix("vi");
-  const [placementHist, setPlacementHist] = React.useState<
-    PlacementAttemptLite[]
-  >([]);
+  const [placementHist, setPlacementHist] = React.useState<PlacementAttemptLite[]>([]);
   const [progressHist, setProgressHist] = React.useState<ProgressAttempt[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -228,42 +222,30 @@ export default function AssessmentChart() {
 
   /* ===================== Render ===================== */
   return (
-    <section className="max-h-96 flex flex-col rounded-2xl border border-zinc-200/80 dark:border-zinc-700/80 p-4 sm:p-5 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+    <section className="max-h-96 flex flex-col rounded-3xl border-2 border-white/30 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30">
-            <Gauge className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-xl ring-2 ring-white/50">
+            <Gauge className="h-7 w-7 text-white" />
           </div>
-          <h2 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white">
-            Assessment
-          </h2>
-        </div>
-
-        {/* Links */}
-        <div className="flex items-center gap-2 text-[11px] sm:text-xs flex-wrap">
-          <Link
-            href={`${basePrefix}/placement/result/last`}
-            className="underline text-violet-600 dark:text-violet-400 hover:opacity-80"
-          >
-            Kết quả Placement gần nhất
-          </Link>
-          <span className="text-zinc-300 dark:text-zinc-600">•</span>
-          <Link
-            href={`${basePrefix}/progress`}
-            className="underline text-emerald-600 dark:text-emerald-400 hover:opacity-80"
-          >
-            Làm Progress Test
-          </Link>
+          <div>
+            <h2 className="text-xl font-black text-zinc-900 dark:text-white">
+              Assessment
+            </h2>
+            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Theo dõi điểm Listening, Reading & Overall
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Chart */}
       <div className="relative flex-1 min-h-[210px]">
         {loading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-            <div className="w-6 h-6 border-2 border-violet-600 border-t-transparent rounded-full animate-spin mb-2" />
-            <p className="text-[13px] font-medium text-zinc-600 dark:text-zinc-400">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-violet-600 dark:text-violet-400" />
+            <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
               Đang tải dữ liệu...
             </p>
           </div>
@@ -272,54 +254,52 @@ export default function AssessmentChart() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={assessmentLineData}
-                margin={{ top: 6, right: 8, left: 0, bottom: 0 }}
+                margin={{ top: 8, right: 12, left: 4, bottom: 4 }}
               >
                 <CartesianGrid
-                  strokeDasharray="3 3"
+                  strokeDasharray="4 4"
                   stroke="#e5e7eb"
-                  className="dark:stroke-zinc-700 opacity-40"
+                  className="dark:stroke-zinc-700 opacity-50"
                 />
                 <XAxis
                   dataKey="at"
                   interval="preserveStartEnd"
-                  tick={{ fill: "#6b7280", fontSize: 10 }}
+                  tick={{ fill: "#6b7280", fontSize: 11, fontWeight: 600 }}
                   axisLine={{ stroke: "#d1d5db" }}
                   tickLine={{ stroke: "#d1d5db" }}
-                  minTickGap={18}
+                  minTickGap={20}
                 />
                 <YAxis
                   domain={[0, 990]}
                   ticks={[0, 200, 400, 600, 800, 990]}
-                  tick={{ fill: "#6b7280", fontSize: 10 }}
+                  tick={{ fill: "#6b7280", fontSize: 11, fontWeight: 600 }}
                   axisLine={{ stroke: "#d1d5db" }}
                   tickLine={{ stroke: "#d1d5db" }}
-                  width={30}
+                  width={36}
                 />
                 <ChartTooltip
                   contentStyle={{
-                    backgroundColor: "#ffffff",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "10px",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                    padding: "6px 10px",
+                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                    border: "2px solid #e5e7eb",
+                    borderRadius: "12px",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                    padding: "10px 14px",
+                    backdropFilter: "blur(8px)",
                   }}
                   labelStyle={{
-                    color: "#6b7280",
-                    fontWeight: 600,
-                    fontSize: 11,
+                    color: "#374151",
+                    fontWeight: 700,
+                    fontSize: 12,
                   }}
-                  itemStyle={{ fontSize: 11 }}
+                  itemStyle={{ fontSize: 12, fontWeight: 600 }}
                   cursor={{
-                    stroke: "#d1d5db",
-                    strokeWidth: 1,
-                    strokeDasharray: "4 4",
+                    stroke: "#6366f1",
+                    strokeWidth: 2,
+                    strokeDasharray: "6 6",
                   }}
                   formatter={(value: number, name: string, props: any) => {
                     const rounded5 = Math.round(value / 5) * 5;
-                    const kind =
-                      props?.payload?.kind === "progress"
-                        ? "Progress Test"
-                        : "Placement Test";
+                    const kind = props?.payload?.kind === "progress" ? "Progress Test" : "Placement Test";
                     return [`${rounded5} điểm`, `${name} • ${kind}`];
                   }}
                 />
@@ -328,102 +308,92 @@ export default function AssessmentChart() {
                   type="monotone"
                   dataKey="Listening"
                   stroke="#10b981"
-                  strokeWidth={2}
+                  strokeWidth={3}
                   dot={{
-                    r: 3,
-                    stroke: "#10b981",
-                    strokeWidth: 1.5,
-                    fill: "#fff",
-                  }}
-                  activeDot={{
                     r: 5,
                     stroke: "#10b981",
                     strokeWidth: 2,
                     fill: "#fff",
                   }}
-                  animationDuration={700}
+                  activeDot={{
+                    r: 7,
+                    stroke: "#10b981",
+                    strokeWidth: 3,
+                    fill: "#fff",
+                  }}
+                  animationDuration={800}
                 />
                 <Line
                   type="monotone"
                   dataKey="Reading"
                   stroke="#f59e0b"
-                  strokeWidth={2}
+                  strokeWidth={3}
                   dot={{
-                    r: 3,
-                    stroke: "#f59e0b",
-                    strokeWidth: 1.5,
-                    fill: "#fff",
-                  }}
-                  activeDot={{
                     r: 5,
                     stroke: "#f59e0b",
                     strokeWidth: 2,
                     fill: "#fff",
                   }}
-                  animationDuration={700}
+                  activeDot={{
+                    r: 7,
+                    stroke: "#f59e0b",
+                    strokeWidth: 3,
+                    fill: "#fff",
+                  }}
+                  animationDuration={800}
                 />
                 <Line
                   type="monotone"
                   dataKey="Overall"
                   stroke="#6366f1"
-                  strokeWidth={2}
+                  strokeWidth={3}
                   dot={{
-                    r: 3,
-                    stroke: "#6366f1",
-                    strokeWidth: 1.5,
-                    fill: "#fff",
-                  }}
-                  activeDot={{
                     r: 5,
                     stroke: "#6366f1",
                     strokeWidth: 2,
                     fill: "#fff",
                   }}
-                  animationDuration={700}
+                  activeDot={{
+                    r: 7,
+                    stroke: "#6366f1",
+                    strokeWidth: 3,
+                    fill: "#fff",
+                  }}
+                  animationDuration={800}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-            <div className="p-3 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-2">
-              <Gauge className="w-6 h-6 text-zinc-400 dark:text-zinc-600" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner">
+              <Gauge className="h-10 w-10 text-slate-400 dark:text-zinc-500" />
             </div>
-            <p className="text-[13px] font-medium text-zinc-600 dark:text-zinc-400">
+            <p className="text-base font-black text-zinc-800 dark:text-zinc-200">
               Chưa có dữ liệu Assessment
             </p>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-500 mt-1">
-              Hãy làm Placement/Progress để xem biểu đồ này.
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 text-center max-w-xs">
+              Hãy làm Placement hoặc Progress Test để xem biểu đồ này.
             </p>
           </div>
         )}
       </div>
 
       {/* Legend */}
-      <div className="mt-3 flex items-center justify-center gap-4 text-[11px] text-zinc-500 dark:text-zinc-400">
-        <div className="flex items-center gap-1.5">
-          <div
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ backgroundColor: "#10b981" }}
-          />
-          <span>Listening</span>
+      <div className="mt-5 flex items-center justify-center gap-6 text-sm font-bold">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-full bg-emerald-500 shadow-md" />
+          <span className="text-emerald-700 dark:text-emerald-400">Listening</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ backgroundColor: "#f59e0b" }}
-          />
-          <span>Reading</span>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-full bg-amber-500 shadow-md" />
+          <span className="text-amber-700 dark:text-amber-400">Reading</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ backgroundColor: "#6366f1" }}
-          />
-          <span>Overall</span>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-full bg-indigo-600 shadow-md" />
+          <span className="text-indigo-700 dark:text-indigo-400">Overall</span>
         </div>
       </div>
     </section>
   );
 }
-

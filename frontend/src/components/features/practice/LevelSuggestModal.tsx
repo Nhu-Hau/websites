@@ -2,6 +2,7 @@
 "use client";
 
 import { AlertCircle, ArrowRight, X, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type L = 1 | 2 | 3;
 
@@ -48,14 +49,20 @@ export default function LevelSuggestModal({
   const suggestedConfig = LEVEL_CONFIG[suggestedLevel];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in-0">
-      <div className="relative w-[90%] max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 animate-in zoom-in-95">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-6 shadow-xl">
         {/* Close */}
         {onCancel && (
           <button
             onClick={onCancel}
             aria-label="Đóng"
-            className="absolute right-3 top-3 text-zinc-400 transition hover:text-zinc-600 dark:hover:text-zinc-300"
+            className={cn(
+              "absolute right-4 top-4",
+              "p-1.5 rounded-lg",
+              "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300",
+              "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+              "transition-colors duration-200"
+            )}
           >
             <X className="h-5 w-5" />
           </button>
@@ -68,21 +75,29 @@ export default function LevelSuggestModal({
           </div>
         </div>
 
-        <h3 className="mb-3 text-center text-lg font-bold text-zinc-900 dark:text-zinc-100">
+        <h3 className="mb-4 text-center text-lg font-bold text-zinc-900 dark:text-zinc-100">
           Bạn đang chọn Level không phù hợp
         </h3>
 
-        <div className="mb-4 space-y-3">
+        <div className="mb-6 space-y-3">
           {/* Current Level */}
-          <div className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
+          <div className={cn(
+            "flex items-center gap-3",
+            "rounded-xl border border-zinc-200 dark:border-zinc-700",
+            "bg-zinc-50 dark:bg-zinc-800/50",
+            "p-3"
+          )}>
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${currentConfig.bgColor}`}
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-full",
+                currentConfig.bgColor
+              )}
             >
-              <span className={`text-sm font-bold ${currentConfig.color}`}>
+              <span className={cn("text-sm font-bold", currentConfig.color)}>
                 {currentLevel}
               </span>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 {currentConfig.label}
               </div>
@@ -93,14 +108,22 @@ export default function LevelSuggestModal({
           </div>
 
           {/* Suggested Level */}
-          <div className="flex items-center gap-3 rounded-lg border-2 border-emerald-200 bg-emerald-50/50 p-3 dark:border-emerald-800 dark:bg-emerald-900/20">
+          <div className={cn(
+            "flex items-center gap-3",
+            "rounded-xl border-2 border-emerald-200 dark:border-emerald-800",
+            "bg-emerald-50/50 dark:bg-emerald-900/20",
+            "p-3"
+          )}>
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${suggestedConfig.bgColor}`}
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-full",
+                suggestedConfig.bgColor
+              )}
             >
-              <CheckCircle2 className={`h-5 w-5 ${suggestedConfig.color}`} />
+              <CheckCircle2 className={cn("h-5 w-5", suggestedConfig.color)} />
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
                 <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   {suggestedConfig.label}
                 </span>
@@ -115,7 +138,7 @@ export default function LevelSuggestModal({
           </div>
         </div>
 
-        <p className="mb-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mb-6 text-center text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
           Hệ thống gợi ý bạn nên luyện tập ở{" "}
           <span className="font-semibold text-emerald-600 dark:text-emerald-400">
             {suggestedConfig.label}
@@ -128,14 +151,28 @@ export default function LevelSuggestModal({
           {onCancel && (
             <button
               onClick={onCancel}
-              className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 transition-all hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+              className={cn(
+                "flex-1 rounded-xl border border-zinc-300 dark:border-zinc-600",
+                "bg-white dark:bg-zinc-800",
+                "px-4 py-2.5 text-sm font-semibold",
+                "text-zinc-700 dark:text-zinc-200",
+                "hover:bg-zinc-50 dark:hover:bg-zinc-700",
+                "transition-colors duration-200"
+              )}
             >
               Hủy
             </button>
           )}
           <button
             onClick={onContinue}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-indigo-500"
+            className={cn(
+              "flex flex-1 items-center justify-center gap-2",
+              "rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500",
+              "hover:from-indigo-500 hover:to-indigo-400",
+              "px-4 py-2.5 text-sm font-semibold text-white",
+              "shadow-sm hover:shadow-md",
+              "transition-all duration-200 active:scale-[0.98]"
+            )}
           >
             <ArrowRight className="h-4 w-4" />
             Tiếp tục với Level {currentLevel}

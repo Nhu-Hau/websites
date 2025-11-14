@@ -4,6 +4,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Item, ChoiceId } from "@/types/tests.types";
 import { Play, Eye, EyeOff, Focus as FocusIcon, Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 function fmtMMSS(sec: number) {
   const safe = Math.max(0, sec | 0);
@@ -132,16 +133,21 @@ export function Sidebar({
   const canSubmit = started && !resp;
 
   // Classes
-  const asideBase =
-    "hidden lg:flex flex-col fixed top-20 left-0 h-[calc(100vh-5rem)] bg-white/95 dark:bg-zinc-900/95 border-r border-zinc-200 dark:border-zinc-800 backdrop-blur-sm shadow-sm z-40 transition-all duration-300";
-  const asideSize = focusMode ? "w-[52px] px-2 py-3" : "w-[240px] px-3 py-4";
+  const asideBase = cn(
+    "hidden lg:flex flex-col fixed top-20 left-0",
+    "h-[calc(100vh-5rem)]",
+    "bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl",
+    "border-r border-zinc-200 dark:border-zinc-700",
+    "shadow-sm z-40 transition-all duration-300"
+  );
+  const asideSize = focusMode ? "w-[52px] px-2 py-3" : "w-[240px] px-4 py-4";
   const contentHiddenCls = focusMode
     ? "opacity-0 pointer-events-none select-none"
     : "opacity-100";
 
   return (
     <aside
-      className={`${asideBase} ${asideSize}`}
+      className={cn(asideBase, asideSize)}
       role="complementary"
       aria-label="Sidebar"
       aria-expanded={!focusMode}
@@ -151,27 +157,41 @@ export function Sidebar({
         type="button"
         onClick={onToggleFocus}
         title="Focus mode (phím F)"
-        className={`group flex w-full items-center justify-center rounded-xl p-2 transition-all duration-300 ${
+        className={cn(
+          "group flex w-full items-center justify-center gap-2",
+          "rounded-xl p-2.5",
+          "transition-all duration-200",
           focusMode
             ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300"
             : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-        }`}
+        )}
       >
         <FocusIcon className="h-4 w-4 transition-transform group-hover:scale-110" />
-        {!focusMode && <span className="ml-2 text-xs font-bold">Focus</span>}
+        {!focusMode && <span className="text-xs font-semibold">Focus</span>}
       </button>
 
       {/* Nội dung */}
-      <div className={`mt-4 space-y-4 transition-opacity ${contentHiddenCls}`}>
+      <div className={cn("mt-4 space-y-4 transition-opacity", contentHiddenCls)}>
         {/* Start Banner */}
         {!started && !resp && (
-          <div className="rounded-2xl border border-emerald-200 dark:border-emerald-700 bg-gradient-to-br from-emerald-50/80 to-emerald-100/80 dark:from-emerald-900/20 dark:to-emerald-800/20 p-3 backdrop-blur-sm">
-            <p className="text-xs font-medium text-emerald-800 dark:text-emerald-300 leading-tight">
+          <div className={cn(
+            "rounded-2xl border border-emerald-200 dark:border-emerald-700",
+            "bg-gradient-to-br from-emerald-50/80 to-emerald-100/80 dark:from-emerald-900/20 dark:to-emerald-800/20",
+            "p-3 backdrop-blur-sm"
+          )}>
+            <p className="text-xs font-medium text-emerald-800 dark:text-emerald-300 leading-relaxed">
               Thời gian bắt đầu khi bạn nhấn <strong>Bắt đầu</strong>.
             </p>
             <button
               onClick={() => (isAuthed ? onStart() : onLoginRequest?.())}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs py-2 transition-all hover:scale-105 active:scale-95 shadow-md"
+              className={cn(
+                "mt-3 flex w-full items-center justify-center gap-2",
+                "rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500",
+                "hover:from-emerald-500 hover:to-emerald-400",
+                "text-white font-semibold text-xs py-2",
+                "shadow-sm hover:shadow-md",
+                "transition-all duration-200 active:scale-[0.98]"
+              )}
             >
               <Play className="h-3.5 w-3.5" />
               Bắt đầu
@@ -180,10 +200,14 @@ export function Sidebar({
         )}
 
         {/* Stats */}
-        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-3 shadow-sm">
+        <div className={cn(
+          "rounded-2xl border border-zinc-200 dark:border-zinc-700",
+          "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
+          "p-3 shadow-sm"
+        )}>
           {!resp ? (
             <>
-              <div className="flex items-center justify-between text-xs font-bold">
+              <div className="flex items-center justify-between text-xs font-semibold mb-2">
                 <span className="text-zinc-700 dark:text-zinc-300">
                   {answered}/{total}
                 </span>
@@ -192,7 +216,7 @@ export function Sidebar({
                   {countdownLabel}
                 </span>
               </div>
-              <div className="mt-2 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+              <div className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden mb-3">
                 <div
                   className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
                   style={{ width: `${progress}%` }}
@@ -204,23 +228,42 @@ export function Sidebar({
                   onSubmitWithLeftSec?.(leftSec);
                 }}
                 disabled={!canSubmit}
-                className="mt-3 w-full rounded-xl bg-gradient-to-r from-zinc-900 to-zinc-900 hover:from-zinc-700/50 hover:to-zinc-700/50 text-white font-bold text-xs py-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                className={cn(
+                  "w-full rounded-xl",
+                  "bg-gradient-to-r from-zinc-900 to-zinc-800",
+                  "hover:from-zinc-800 hover:to-zinc-700",
+                  "text-white font-semibold text-xs py-2",
+                  "shadow-sm hover:shadow-md",
+                  "transition-all duration-200",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "active:scale-[0.98]"
+                )}
               >
                 Nộp bài
               </button>
             </>
           ) : (
             <>
-              <div className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
+              <div className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 mb-3">
                 <Clock className="h-3.5 w-3.5" />
-                Thời gian:{" "}
-                <strong className="text-zinc-900 dark:text-white">
-                  {timeLabel}
-                </strong>
+                <span>
+                  Thời gian:{" "}
+                  <strong className="text-zinc-900 dark:text-white">
+                    {timeLabel}
+                  </strong>
+                </span>
               </div>
               <button
                 onClick={onToggleDetails}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-xs font-medium transition-all hover:bg-zinc-50 dark:hover:bg-zinc-700 dark:text-white"
+                className={cn(
+                  "flex w-full items-center justify-center gap-2",
+                  "rounded-xl border border-zinc-300 dark:border-zinc-600",
+                  "px-3 py-2 text-xs font-medium",
+                  "bg-white dark:bg-zinc-800",
+                  "text-zinc-700 dark:text-zinc-200",
+                  "hover:bg-zinc-50 dark:hover:bg-zinc-700",
+                  "transition-colors duration-200"
+                )}
               >
                 {showDetails ? (
                   <>
@@ -239,8 +282,12 @@ export function Sidebar({
         </div>
 
         {/* Question Grid */}
-        <div className="flex-1 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-3 shadow-sm overflow-hidden">
-          <p className="mb-2 text-xs font-bold text-zinc-800 dark:text-zinc-200">
+        <div className={cn(
+          "flex-1 rounded-2xl border border-zinc-200 dark:border-zinc-700",
+          "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
+          "p-3 shadow-sm overflow-hidden"
+        )}>
+          <p className="mb-3 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
             Câu hỏi
           </p>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(2rem,1fr))] gap-1.5">
@@ -250,21 +297,43 @@ export function Sidebar({
                 | ChoiceId
                 | undefined;
 
-              let cls =
-                "group relative flex h-8 w-8 items-center justify-center rounded-xl border-2 text-[11px] font-bold transition-all duration-200";
+              const baseCls = cn(
+                "group relative flex h-8 w-8 items-center justify-center",
+                "rounded-xl border-2 text-[11px] font-semibold",
+                "transition-all duration-200"
+              );
 
+              let cls = baseCls;
               if (!resp) {
-                cls += picked
-                  ? " bg-black text-white border-black dark:bg-zinc-700 dark:border-zinc-600"
-                  : " border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:scale-110";
+                cls = cn(
+                  baseCls,
+                  picked
+                    ? "bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-700 dark:border-zinc-600"
+                    : cn(
+                        "border-zinc-300 dark:border-zinc-600",
+                        "text-zinc-700 dark:text-zinc-300",
+                        "hover:bg-zinc-100 dark:hover:bg-zinc-700",
+                        "hover:scale-110"
+                      )
+                );
               } else {
                 if (!picked) {
-                  cls +=
-                    " border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400";
+                  cls = cn(
+                    baseCls,
+                    "border-zinc-300 dark:border-zinc-600",
+                    "bg-zinc-100 dark:bg-zinc-700",
+                    "text-zinc-500 dark:text-zinc-400"
+                  );
                 } else if (picked === correct) {
-                  cls += " bg-emerald-600 text-white border-emerald-600";
+                  cls = cn(
+                    baseCls,
+                    "bg-emerald-600 text-white border-emerald-600"
+                  );
                 } else {
-                  cls += " bg-red-600 text-white border-red-600";
+                  cls = cn(
+                    baseCls,
+                    "bg-red-600 text-white border-red-600"
+                  );
                 }
               }
 

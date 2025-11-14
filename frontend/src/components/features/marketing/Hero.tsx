@@ -10,6 +10,7 @@ import {
   FiTarget,
   FiLoader,
 } from "react-icons/fi";
+import { Trophy, Sparkles } from 'lucide-react';
 import { toast, Toaster } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
@@ -25,20 +26,25 @@ function Stat({
   number,
   label,
   icon,
+  glowColor,
 }: {
   number: string;
   label: string;
   icon: React.ReactNode;
+  glowColor: string;
 }) {
   return (
-    <div className="group flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-5 transition-all hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800">
-      <div className="mb-2 text-3xl text-sky-500 transition-transform group-hover:scale-110 dark:text-sky-400">
+    <div className="group relative flex flex-col items-center justify-center rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl p-6 shadow-2xl ring-1 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-3xl hover:scale-[1.03] hover:ring-sky-300 dark:hover:ring-sky-600">
+      {/* Glow */}
+      <div className={`absolute -inset-1 rounded-3xl bg-gradient-to-br ${glowColor} blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700`} />
+      
+      <div className="relative z-10 mb-4 text-4xl text-sky-600 dark:text-sky-400 transition-transform duration-300 group-hover:scale-125">
         {icon}
       </div>
-      <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100">
+      <div className="relative z-10 text-3xl font-black tracking-tighter text-zinc-900 dark:text-white">
         {number}
       </div>
-      <div className="mt-1 text-xs font-medium text-slate-600 dark:text-zinc-400">
+      <div className="relative z-10 mt-2 text-sm font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
         {label}
       </div>
     </div>
@@ -63,62 +69,80 @@ function PlacementModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-slate-900/90 via-sky-900/80 to-slate-900/90 p-4 backdrop-blur-2xl transition-all animate-in fade-in duration-500"
     >
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-all animate-in zoom-in-95 duration-200 dark:bg-zinc-800 dark:ring-white/10">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-zinc-700">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
-            Mini TOEIC – Placement Test
-          </h2>
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white/95 dark:bg-zinc-800/95 backdrop-blur-2xl shadow-3xl ring-2 ring-white/30 dark:ring-zinc-700/50 transition-all animate-in zoom-in-90 duration-500">
+        {/* Glow Border */}
+        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-sky-400/50 to-sky-600/50 blur-2xl opacity-70" />
+        
+        <div className="relative z-10 flex items-center justify-between border-b border-white/30 dark:border-zinc-700/50 px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-sky-600 shadow-xl ring-4 ring-white/50">
+              <Trophy className="h-7 w-7 text-white" />
+            </div>
+            <h2 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
+              Mini TOEIC – Placement Test
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-zinc-400 dark:hover:bg-zinc-700"
+            className="rounded-2xl p-3 text-zinc-500 transition-all hover:bg-white/50 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700/50"
             aria-label="Đóng"
           >
-            ✕
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
-        <div className="space-y-4 px-6 py-5 text-sm text-slate-700 dark:text-zinc-300">
-          <p className="flex items-center gap-2.5 font-medium text-slate-800 dark:text-zinc-200">
-            <FiClock className="text-sky-600 dark:text-sky-500" />
-            <span className="font-bold">35 phút</span> •{" "}
-            <span className="font-bold">55 câu</span>
+        <div className="space-y-6 px-8 py-8 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
+          <div className="flex items-center gap-4 font-bold text-zinc-800 dark:text-zinc-200">
+            <FiClock className="text-2xl text-sky-600 dark:text-sky-400" />
+            <span className="text-xl">35 phút</span>
+            <span className="text-zinc-400">•</span>
+            <span className="text-xl">55 câu</span>
+          </div>
+          <p className="text-lg">
+            Gồm cả <strong className="text-sky-600 dark:text-sky-400">Listening & Reading</strong> (đề rút gọn, mô phỏng cấu trúc thi thật).
           </p>
-          <p className="leading-relaxed">
-            Gồm cả <strong>Listening & Reading</strong> (đề rút gọn, mô phỏng
-            cấu trúc thi thật).
+          <p className="text-lg">
+            Hoàn thành <strong className="text-sky-600 dark:text-sky-400">Mini TOEIC 55 câu</strong>, hệ thống sẽ ước lượng{" "}
+            <strong className="text-sky-600 dark:text-sky-400">điểm TOEIC (0–990)</strong> và xếp bạn vào{" "}
+            <strong className="text-sky-600 dark:text-sky-400">Level 1–3</strong>, kèm gợi ý{" "}
+            <span className="font-black text-sky-600 dark:text-sky-400">
+              lộ trình học cá nhân hóa
+            </span>.
           </p>
-          <p className="leading-relaxed">
-            Hoàn thành <strong>Mini TOEIC 55 câu</strong>, hệ thống sẽ ước lượng{" "}
-            <strong>điểm TOEIC (0–990)</strong> và xếp bạn vào{" "}
-            <strong>Level 1–3</strong>, kèm gợi ý{" "}
-            <strong className="text-sky-600 dark:text-sky-400">
-              lộ trình học phù hợp
-            </strong>
-            .
-          </p>
+          <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 px-4 py-2 text-sm font-bold uppercase tracking-widest text-amber-700 dark:text-amber-300">
+            <Sparkles className="h-4 w-4" />
+            <span>Nhận báo cáo chi tiết qua email</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 border-t border-slate-200 px-6 py-5 dark:border-zinc-700">
+        <div className="grid grid-cols-2 gap-4 border-t border-white/30 dark:border-zinc-700/50 px-8 py-6">
           <button
             onClick={onClose}
             disabled={loading}
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-all hover:bg-slate-50 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600"
+            className="rounded-2xl border border-white/50 bg-white/80 dark:bg-zinc-800/80 px-6 py-4 text-base font-bold text-zinc-700 dark:text-zinc-300 transition-all hover:bg-white dark:hover:bg-zinc-700 disabled:opacity-50 backdrop-blur-sm"
           >
             Để sau
           </button>
           <button
             onClick={onStart}
             disabled={loading}
-            className="flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-sky-500 disabled:opacity-70"
+            className="group relative flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-sky-600 to-sky-500 px-6 py-4 text-base font-black text-white shadow-2xl transition-all hover:from-sky-500 hover:to-sky-400 hover:shadow-3xl disabled:opacity-70 overflow-hidden"
           >
+            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             {loading ? (
               <>
-                <FiLoader className="animate-spin" /> Đang kiểm tra...
+                <FiLoader className="animate-spin text-xl" />
+                Đang kiểm tra...
               </>
             ) : (
-              "Làm ngay"
+              <>
+                <FiPlayCircle className="text-xl transition-transform group-hover:scale-110" />
+                Làm ngay
+              </>
             )}
           </button>
         </div>
@@ -165,7 +189,6 @@ export default function Hero() {
     } catch {}
 
     if (!user) {
-      // ✅ push sang trang đăng nhập nếu chưa đăng nhập
       customToast.error("Vui lòng đăng nhập để làm Mini TOEIC 55 câu", {
         duration: 2500,
       });
@@ -232,105 +255,100 @@ export default function Hero() {
 
   return (
     <>
-      {/* Toaster cấu hình chuẩn màu web */}
       <Toaster
         position="top-center"
         richColors
         toastOptions={{
           classNames: {
-            toast:
-              "rounded-xl shadow-lg border border-slate-200 dark:border-zinc-700",
-            success: "bg-emerald-600 text-white",
-            error: "bg-red-600 text-white",
-            info: "bg-sky-600 text-white",
-            actionButton: "bg-white/20 hover:bg-white/30",
+            toast: "rounded-3xl shadow-2xl border border-white/30 backdrop-blur-xl",
+            success: "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white",
+            error: "bg-gradient-to-r from-red-600 to-red-500 text-white",
+            info: "bg-gradient-to-r from-sky-600 to-sky-500 text-white",
+            actionButton: "bg-white/30 hover:bg-white/40 rounded-2xl font-bold",
           },
         }}
       />
 
-      <section className="relative overflow-hidden bg-gradient-to-b from-white via-sky-50/30 to-white dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-32 h-96 bg-[radial-gradient(700px_300px_at_50%_-100px,rgba(14,165,233,0.15),transparent)] dark:bg-[radial-gradient(700px_300px_at_50%_-100px,rgba(14,165,233,0.08),transparent)]"
-        />
+      <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-white to-sky-50 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900">
 
-        <PlacementModal
-          open={openPrompt}
-          onClose={handleClose}
-          onStart={handleStart}
-          loading={checking}
-        />
+        <PlacementModal open={openPrompt} onClose={handleClose} onStart={handleStart} loading={checking} />
 
-        <div className="mx-auto max-w-[1350px] px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 pt-20 pb-10 lg:gap-16">
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="grid items-center gap-20 py-24 lg:gap-24">
             <div className="text-left">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-sky-700 backdrop-blur-sm dark:border-sky-800/50 dark:bg-zinc-800/80 dark:text-sky-400">
-                <FiShield className="text-lg" /> Cấu trúc bám sát đề thi thật
+              {/* Badge */}
+              <div className="group relative mb-8 inline-flex items-center gap-3 rounded-full bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl px-6 py-3 shadow-xl ring-2 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-2xl hover:scale-105">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-sky-600 shadow-lg ring-2 ring-white/50">
+                  <FiShield className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-base font-black uppercase tracking-widest text-sky-700 dark:text-sky-300">
+                  Cấu trúc bám sát đề thi thật
+                </span>
+                <Sparkles className="h-5 w-5 text-amber-500 animate-pulse" />
               </div>
 
-              <h1 className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text dark:bg-none dark:text-white text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              {/* Title */}
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-zinc-900 dark:text-white leading-tight">
                 Xác định trình độ trong{" "}
-                <span className="text-sky-600 dark:text-sky-400">35 phút</span>
+                <span className="relative inline-block">
+                  <span className="relative z-10 bg-gradient-to-r from-sky-600 via-sky-500 to-sky-400 bg-clip-text text-transparent">
+                    35 phút
+                  </span>
+                  <span className="absolute -inset-1 bg-gradient-to-r from-sky-400/30 to-sky-600/30 blur-2xl -z-10 opacity-70" />
+                </span>
               </h1>
 
-              <p className="mt-6 max-w-3xl text-base leading-7 text-slate-600 dark:text-zinc-400 lg:text-lg">
-                Bài <strong>Mini TOEIC 55 câu</strong> (Listening & Reading)
-                giúp bạn ước lượng <strong>điểm TOEIC (0–990)</strong>, xếp{" "}
-                <strong>Level 1–3</strong> và đề xuất{" "}
-                <strong className="text-sky-600 dark:text-sky-400">
+              {/* Description */}
+              <p className="mt-8 max-w-4xl text-xl leading-relaxed text-zinc-700 dark:text-zinc-300 font-medium">
+                Bài <strong className="text-sky-600 dark:text-sky-400">Mini TOEIC 55 câu</strong> (Listening & Reading) giúp bạn ước lượng{" "}
+                <strong className="text-sky-600 dark:text-sky-400">điểm TOEIC (0–990)</strong>, xếp{" "}
+                <strong className="text-sky-600 dark:text-sky-400">Level 1–3</strong> và đề xuất{" "}
+                <span className="font-black text-sky-600 dark:text-sky-400">
                   lộ trình học cá nhân hóa
-                </strong>
-                .
+                </span>.
               </p>
 
-              <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
+              {/* CTA Buttons */}
+              <div className="mt-12 flex flex-col gap-5 sm:flex-row">
                 <button
                   onClick={handleStart}
                   disabled={checking}
-                  className="group inline-flex items-center gap-2.5 rounded-xl bg-sky-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-all hover:bg-sky-500 hover:shadow-xl disabled:opacity-70"
+                  className="group relative inline-flex items-center justify-center gap-4 rounded-3xl bg-gradient-to-r from-sky-600 to-sky-500 px-9 py-5 text-lg font-black text-white shadow-2xl transition-all hover:from-sky-500 hover:to-sky-400 hover:shadow-3xl hover:scale-105 disabled:opacity-70 overflow-hidden"
                 >
+                  <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   {checking ? (
-                    <FiLoader className="animate-spin" />
+                    <FiLoader className="animate-spin text-2xl" />
                   ) : (
-                    <FiPlayCircle className="text-xl transition-transform group-hover:scale-110" />
+                    <FiPlayCircle className="text-2xl transition-transform group-hover:scale-110" />
                   )}
                   {checking ? "Đang kiểm tra..." : "Làm Placement Test"}
                 </button>
 
                 <button
                   onClick={() => router.push(`${base}/practice/part.1?level=1`)}
-                  className="inline-flex items-center gap-2.5 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-base font-medium text-slate-800 transition-all hover:bg-slate-50 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                  className="group relative inline-flex items-center justify-center gap-4 rounded-3xl border-2 border-white/50 bg-white/80 dark:bg-zinc-800/80 px-9 py-5 text-lg font-bold text-zinc-800 dark:text-zinc-200 shadow-xl backdrop-blur-xl transition-all hover:bg-white dark:hover:bg-zinc-700 hover:shadow-2xl hover:scale-105"
                 >
-                  Xem bộ đề{" "}
-                  <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-sky-400/20 to-sky-600/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  Xem bộ đề
+                  <FiArrowRight className="transition-transform group-hover:translate-x-2" />
                 </button>
               </div>
 
-              <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
-                <Stat
-                  number="55 câu"
-                  label="Số lượng câu hỏi"
-                  icon={<FiCheckCircle />}
-                />
-                <Stat
-                  number="35 phút"
-                  label="Thời gian làm bài"
-                  icon={<FiClock />}
-                />
-                <Stat
-                  number="0–990"
-                  label="Điểm TOEIC ước lượng"
-                  icon={<FiTarget />}
-                />
+              {/* Stats */}
+              <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-3">
+                <Stat number="55 câu" label="Số lượng câu hỏi" icon={<FiCheckCircle />} glowColor="from-emerald-400/30 to-emerald-600/30" />
+                <Stat number="35 phút" label="Thời gian làm bài" icon={<FiClock />} glowColor="from-amber-400/30 to-orange-600/30" />
+                <Stat number="0–990" label="Điểm TOEIC ước lượng" icon={<FiTarget />} glowColor="from-sky-400/30 to-sky-600/30" />
               </div>
 
-              <p className="mt-6 text-center text-xs text-slate-500 dark:text-zinc-500 lg:text-left">
+              {/* Footer Note */}
+              <p className="mt-12 text-center text-base font-medium text-zinc-600 dark:text-zinc-400 lg:text-left">
                 * Hoàn thành bài kiểm tra để nhận{" "}
-                <span className="font-semibold text-sky-600 dark:text-sky-400">
+                <span className="font-black text-sky-600 dark:text-sky-400">
                   đánh giá chi tiết
                 </span>{" "}
                 và{" "}
-                <span className="font-semibold text-sky-600 dark:text-sky-400">
+                <span className="font-black text-sky-600 dark:text-sky-400">
                   lộ trình cá nhân hoá
                 </span>{" "}
                 qua email.

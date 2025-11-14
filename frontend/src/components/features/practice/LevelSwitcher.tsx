@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Sparkles, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Star } from "lucide-react";
 
 /* =========================
    Constants & Types
@@ -15,43 +15,49 @@ function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+/* ============ Refined EdTech Palette ============ */
 const levelConfig: Record<
   L,
   {
     label: string;
-    gradient: string; // gradient cho indicator
-    bars: number; // số cột "độ cao"
-    desc: string; // mô tả ngắn
-    textColor: string; // dùng cho hint/badge
-    badgeTint: string; // nền + border cho hint/badge
+    gradient: string;
+    bars: number;
+    desc: string;
+    textColor: string;
+    badgeTint: string;
+    primary: string;
+    glow: string;
   }
 > = {
   1: {
     label: "Level 1",
-    gradient: "from-amber-500 to-amber-600",
+    gradient: "from-[#347433] to-[#3d8a3d]",
     bars: 1,
     desc: "Beginner",
-    textColor: "text-yellow-700 dark:text-amber-300",
-    badgeTint:
-      "bg-amber-50 dark:bg-amber-950/30 border-amber-200/70 dark:border-amber-800/40",
+    textColor: "text-[#347433] dark:text-[#347433]/90",
+    badgeTint: "bg-[#347433]/10 dark:bg-[#347433]/15",
+    primary: "text-white",
+    glow: "shadow-[0_0_20px_rgba(52,116,51,0.5)]",
   },
   2: {
     label: "Level 2",
-    gradient: "from-sky-500 to-sky-600",
+    gradient: "from-[#27548A] to-[#2d62a0]",
     bars: 2,
     desc: "Intermediate",
-    textColor: "text-sky-700 dark:text-sky-300",
-    badgeTint:
-      "bg-sky-50 dark:bg-sky-950/30 border-sky-200/70 dark:border-sky-800/40",
+    textColor: "text-[#27548A] dark:text-[#27548A]/90",
+    badgeTint: "bg-[#27548A]/10 dark:bg-[#27548A]/15",
+    primary: "text-white",
+    glow: "shadow-[0_0_20px_rgba(39,84,138,0.5)]",
   },
   3: {
     label: "Level 3",
-    gradient: "from-violet-500 to-violet-600",
+    gradient: "from-[#BB3E00] to-[#d14800]",
     bars: 3,
     desc: "Advanced",
-    textColor: "text-violet-700 dark:text-violet-300",
-    badgeTint:
-      "bg-violet-50 dark:bg-violet-950/30 border-violet-200/70 dark:border-violet-800/40",
+    textColor: "text-[#BB3E00] dark:text-[#BB3E00]/90",
+    badgeTint: "bg-[#BB3E00]/10 dark:bg-[#BB3E00]/15",
+    primary: "text-white",
+    glow: "shadow-[0_0_20px_rgba(187,62,0,0.5)]",
   },
 };
 
@@ -61,19 +67,19 @@ const levelConfig: Record<
 function LevelSwitcherSkeleton() {
   return (
     <div className="flex flex-col items-center sm:items-end gap-2">
-      <div className="relative inline-flex items-center gap-2 rounded-2xl p-2 border border-zinc-200/70 dark:border-zinc-700/70 bg-white/80 dark:bg-zinc-800/70 backdrop-blur-md shadow-sm">
+      <div className="relative inline-flex items-center gap-2 rounded-3xl p-2.5 border border-white/30 dark:border-zinc-700/50 bg-white/70 dark:bg-zinc-800/70 backdrop-blur-xl shadow-xl">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="h-11 w-32 rounded-xl overflow-hidden relative"
+            className="h-12 w-32 rounded-2xl overflow-hidden relative"
           >
-            <div className="absolute inset-0 bg-zinc-200 dark:bg-zinc-700" />
-            <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.2s_infinite] bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-600" />
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/50 dark:via-white/20 to-transparent" />
           </div>
         ))}
       </div>
-      <div className="h-5 w-52 rounded bg-zinc-200 dark:bg-zinc-700 overflow-hidden relative">
-        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.2s_infinite] bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent" />
+      <div className="h-6 w-64 rounded-full bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-600 overflow-hidden relative">
+        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/50 dark:via-white/20 to-transparent" />
       </div>
       <style jsx>{`
         @keyframes shimmer {
@@ -85,20 +91,17 @@ function LevelSwitcherSkeleton() {
     </div>
   );
 }
+
 export default function LevelSwitcher({
   level,
   suggestedLevel,
-  partLoading = false, // chỉ true khi đổi part: hiển thị skeleton
-
-  // NEW: khóa chuyển level + tooltip
+  partLoading = false,
   disabled = false,
   tooltip,
 }: {
   level: L;
   suggestedLevel?: L | null;
   partLoading?: boolean;
-
-  // NEW
   disabled?: boolean;
   tooltip?: string;
 }) {
@@ -112,7 +115,6 @@ export default function LevelSwitcher({
     React.useState<React.CSSProperties>({});
   const [mounted, setMounted] = React.useState(false);
 
-  // Lấy gợi ý từ query (fallback khi chưa pass prop)
   const suggestedFromQueryRaw =
     search.get("suggestedLevel") ?? search.get("suggested");
   const suggestedFromQuery = suggestedFromQueryRaw
@@ -126,12 +128,12 @@ export default function LevelSwitcher({
 
   const setLevel = useCallback(
     (next: L) => {
-      if (disabled) return; // NEW: chặn chuyển khi khóa
+      if (disabled) return;
       const params = new URLSearchParams(search.toString());
       params.set("level", String(next));
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
-    [router, pathname, search, disabled] // NEW: phụ thuộc disabled
+    [router, pathname, search, disabled]
   );
 
   const updateIndicator = useCallback(() => {
@@ -146,18 +148,12 @@ export default function LevelSwitcher({
     }
   }, [level]);
 
-  // mount + cập nhật lần đầu (tránh FOUC)
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  useEffect(() => setMounted(true), []);
   useEffect(() => {
     updateIndicator();
     const timer = setTimeout(updateIndicator, 50);
     return () => clearTimeout(timer);
   }, [updateIndicator, resolvedSuggested]);
-
-  // lắng nghe resize để indicator không lệch
   useEffect(() => {
     if (!containerRef.current) return;
     const observer = new ResizeObserver(updateIndicator);
@@ -165,7 +161,6 @@ export default function LevelSwitcher({
     return () => observer.disconnect();
   }, [updateIndicator]);
 
-  // Keyboard support (ArrowLeft/Right) — NEW: tắt khi disabled
   useEffect(() => {
     const el = containerRef.current;
     if (!el || disabled) return;
@@ -182,40 +177,50 @@ export default function LevelSwitcher({
     };
     el.addEventListener("keydown", handler);
     return () => el.removeEventListener("keydown", handler);
-  }, [level, setLevel, disabled]); // NEW
+  }, [level, setLevel, disabled]);
 
   const cfg = levelConfig[level];
 
   return (
-    <div className="flex flex-col gap-1.5">
-      {/* Switcher container */}
+    <div className="flex flex-col gap-2" title={disabled ? tooltip : undefined}>
+      {/* Switcher - Glass + 3D */}
       <div
         ref={containerRef}
         className={cn(
-          "relative inline-flex items-center gap-1.5 rounded-xl p-1.5",
-          "border border-zinc-200/70 dark:border-zinc-700/70",
-          "bg-white/80 dark:bg-zinc-800/70 backdrop-blur-md",
-          "shadow-sm ring-1 ring-black/5 dark:ring-white/10",
-          "transition-colors duration-200"
+          "group/switcher relative inline-flex items-center gap-2.5 rounded-2xl px-4 py-2 min-h-[3.2rem]",
+          "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl",
+          "border border-white/30 dark:border-zinc-700/50",
+          "shadow-2xl ring-2 ring-white/20 dark:ring-white/10",
+          "transition-all duration-500",
+          disabled
+            ? "opacity-60 cursor-not-allowed"
+            : "hover:shadow-3xl hover:ring-white/40 dark:hover:ring-white/20"
         )}
-        role="tablist"
-        aria-label="Chọn level luyện tập"
-        tabIndex={0}
       >
-        {/* Gradient Indicator */}
+        {/* Glow Background */}
         <div
           className={cn(
-            "absolute inset-y-1 rounded-lg shadow-md",
+            "absolute -inset-1 rounded-3xl opacity-0 group-hover/switcher:opacity-100 transition-opacity duration-700",
+            cfg.glow
+          )}
+        />
+
+        {/* Gradient Indicator 3D */}
+        <div
+          className={cn(
+            "absolute inset-y-2.5 rounded-2xl shadow-2xl",
             "bg-gradient-to-r",
             cfg.gradient,
-            mounted ? "transition-all duration-300 ease-out" : "transition-none"
+            mounted ? "transition-all duration-500 ease-out" : "transition-none"
           )}
           style={{
             ...indicatorStyle,
             transition:
-              "left var(--dur, .32s) cubic-bezier(0.4, 0, 0.2, 1), width var(--dur, .32s) cubic-bezier(0.4, 0, 0.2, 1)",
+              "left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
           }}
-        />
+        >
+          <div className="absolute inset-0 rounded-2xl bg-white/20 blur-md" />
+        </div>
 
         {/* Buttons */}
         {LEVELS.map((lv) => {
@@ -231,66 +236,71 @@ export default function LevelSwitcher({
               aria-selected={active}
               aria-label={c.label}
               onClick={() => setLevel(lv)}
+              disabled={disabled}
               className={cn(
-                "group relative z-10 flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold outline-none",
-                "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-600",
+                // 🔧 chỉnh padding cho nút level để tương đương nút "Lịch sử"
+                "group/btn relative z-20 flex items-center gap-2.5 rounded-2xl px-4 py-2.5 text-sm font-black outline-none transition-all duration-300",
+                "focus-visible:ring-4 focus-visible:ring-white/50",
                 active
-                  ? "text-white drop-shadow-sm"
+                  ? c.primary + " drop-shadow-lg"
                   : "text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100"
               )}
             >
-              {/* Bars */}
-              <span className="flex items-end gap-0.5" aria-hidden="true">
+              {/* Bars 3D */}
+              <span className="flex items-end gap-1" aria-hidden="true">
                 {[1, 2, 3].map((i) => (
                   <span
                     key={i}
                     className={cn(
-                      "w-1 rounded-full transition-all", // ⬅ mảnh hơn
-                      i === 1 ? "h-2" : i === 2 ? "h-3" : "h-4",
+                      "w-1.5 rounded-full transition-all duration-500",
+                      i === 1 ? "h-2.5" : i === 2 ? "h-4" : "h-5.5",
                       active
                         ? i <= c.bars
-                          ? "bg-white/95 shadow-sm"
-                          : "bg-white/30"
+                          ? "bg-white/95 shadow-lg"
+                          : "bg-white/40"
                         : i <= c.bars
-                        ? "bg-zinc-500/70"
-                        : "bg-zinc-300/50 dark:bg-zinc-600/50"
+                        ? "bg-zinc-500/80 shadow-md"
+                        : "bg-zinc-300/60 dark:bg-zinc-600/60"
                     )}
                   />
                 ))}
               </span>
 
-              <span className="tracking-tight">{c.label}</span>
+              <span className="tracking-tighter">{c.label}</span>
 
-              {/* Suggested icon */}
-              {isSuggested && (
-                <Sparkles
-                  className={cn(
-                    "h-3.5 w-3.5 transition-opacity",
-                    active ? "text-white/90" : "text-amber-500"
-                  )}
-                />
+              {/* Suggested VIP */}
+              {isSuggested && !active && (
+                <Star className="h-4 w-4 text-amber-500 animate-pulse" />
+              )}
+              {isSuggested && active && (
+                <Star className="h-4 w-4 text-white animate-pulse" />
               )}
             </button>
           );
         })}
       </div>
 
-      {/* Suggested hint */}
+      {/* Hint Badge - Mini Glass */}
       {resolvedSuggested && (
-        <div className="w-full flex items-end">
-          <div
-            className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border",
-              levelConfig[resolvedSuggested].badgeTint,
-              "shadow-sm"
-            )}
-          >
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-zinc-800 dark:text-zinc-200">
+        <div className="w-full flex justify-end">
+          <div className="group/hint relative inline-flex items-center gap-1.5 rounded-full bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl px-2.5 py-1 border border-white/30 dark:border-zinc-700/50 shadow-md transition-all duration-300 hover:shadow-lg hover:scale-[1.03]">
+            {/* Glow */}
+            <div className="absolute -inset-[3px] rounded-full bg-gradient-to-br from-emerald-400/30 to-emerald-600/30 blur-lg opacity-0 group-hover/hint:opacity-100 transition-opacity duration-500" />
+
+            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md ring-2 ring-white/40">
+              <CheckCircle2 className="h-3 w-3 text-white" />
+            </div>
+
+            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-800 dark:text-zinc-200">
               Gợi ý:{" "}
-              <strong className={levelConfig[resolvedSuggested].textColor}>
+              <span
+                className={cn(
+                  "font-black",
+                  levelConfig[resolvedSuggested].textColor
+                )}
+              >
                 {levelConfig[resolvedSuggested].label}
-              </strong>{" "}
+              </span>{" "}
               – {levelConfig[resolvedSuggested].desc}
             </span>
           </div>

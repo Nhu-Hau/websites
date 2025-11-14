@@ -29,13 +29,16 @@
         "part7": "Part 7: Reading Comprehension"
       }
     },
-    "mockTests": {
-      "title": "Tests",
-      "practiceTests": "Practice Mode",
-      "realTest": "Test Mode"
+    "study": {
+      "title": "Học tập",
+      "study": {
+        "forum": "Community",
+        "createStudyRoom": "Studyroom",
+        "vocabulary": "Learn vocabulary",
+        "news": "Learn "
+      }
     },
-    "forum": "Forum",
-    "createStudyRoom": "Create Study Room"
+    "dashboard": "Dashboard"
   },
   "UserMenu": {
     "login": "Login",

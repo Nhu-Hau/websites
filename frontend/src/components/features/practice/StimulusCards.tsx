@@ -5,6 +5,7 @@
 import React from "react";
 import type { Stimulus, Item, ChoiceId } from "@/types/tests.types";
 import { Volume2, FileText } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type ChoiceLike = { id: ChoiceId; text?: string; content?: string | any };
 
@@ -35,13 +36,17 @@ function YellowInfoBlock({
   icon?: any;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/20 p-1 shadow-sm">
+    <div className={cn(
+      "group relative overflow-hidden rounded-xl",
+      "bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/20",
+      "p-1 shadow-sm"
+    )}>
       <div className="rounded-lg bg-white dark:bg-zinc-900 p-4">
-        <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-semibold text-sm">
+        <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-semibold text-sm mb-2">
           {Icon && <Icon className="h-4 w-4" />}
           {title}
         </div>
-        <pre className="mt-2 text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed font-medium">
+        <pre className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed font-medium">
           {content}
         </pre>
       </div>
@@ -100,7 +105,7 @@ function ChoiceRow({
   return (
     <div id={anchorId} className="space-y-3 scroll-mt-24">
       <div className="flex items-center justify-between">
-        <span className="font-bold text-zinc-900 dark:text-white">
+        <span className="font-semibold text-zinc-900 dark:text-white">
           Câu {displayIndex}:
         </span>
         {locked ? (
@@ -118,24 +123,25 @@ function ChoiceRow({
             </span>
           )
         ) : picked ? (
-          <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+          <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-medium">
             Đã chọn: {picked}
           </span>
         ) : (
-          <span className="text-xs text-zinc-400">Chưa chọn</span>
+          <span className="text-xs text-zinc-400 dark:text-zinc-500">Chưa chọn</span>
         )}
       </div>
 
       {item.stem && (
-        <p className="font-bold text-zinc-800 dark:text-zinc-200">
+        <p className="font-semibold text-zinc-800 dark:text-zinc-200">
           {String(item.stem)}
         </p>
       )}
 
       <div
-        className={`flex flex-col gap-2 ${
+        className={cn(
+          "flex flex-col gap-2",
           isHalfWidth ? "w-full sm:w-1/2" : "w-full"
-        }`}
+        )}
       >
         {((item.choices ?? []) as ChoiceLike[]).map((ch) => {
           const isCorrect = ch.id === correct;
@@ -144,18 +150,34 @@ function ChoiceRow({
           const label =
             typeof labelRaw === "string" ? labelRaw : JSON.stringify(labelRaw);
 
-          let cls =
-            "flex items-center gap-3 rounded-lg px-4 py-2 text-left text-base font-medium transition-all";
+          const baseCls = cn(
+            "flex items-center gap-3 rounded-xl px-4 py-2.5 text-left text-base font-medium",
+            "transition-all duration-200"
+          );
+
+          let cls = baseCls;
           if (!locked) {
-            cls += isPicked
-              ? " bg-zinc-900 text-white"
-              : " bg-zinc-50 dark:bg-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-600 text-zinc-800 dark:text-zinc-200";
+            cls = cn(
+              baseCls,
+              isPicked
+                ? "bg-zinc-900 text-white dark:bg-zinc-800"
+                : cn(
+                    "bg-zinc-50 dark:bg-zinc-800",
+                    "hover:bg-zinc-100 dark:hover:bg-zinc-700",
+                    "text-zinc-800 dark:text-zinc-200"
+                  )
+            );
           } else {
-            if (isCorrect) cls += " bg-emerald-600 text-white";
-            else if (isPicked && !isCorrect) cls += " bg-rose-600 text-white";
-            else
-              cls +=
-                " bg-zinc-100 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200";
+            if (isCorrect) {
+              cls = cn(baseCls, "bg-emerald-600 text-white");
+            } else if (isPicked && !isCorrect) {
+              cls = cn(baseCls, "bg-rose-600 text-white");
+            } else {
+              cls = cn(
+                baseCls,
+                "bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200"
+              );
+            }
           }
 
           return (
@@ -219,8 +241,12 @@ function CardFullWidth({
   showPerItemExplain,
 }: BaseProps) {
   return (
-    <section className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-6 shadow-sm">
-      <div className="space-y-5">
+    <section className={cn(
+      "rounded-2xl bg-white dark:bg-zinc-900",
+      "border border-zinc-200 dark:border-zinc-700",
+      "p-6 shadow-sm"
+    )}>
+      <div className="space-y-6">
         {items.map((it, iIdx) => {
           const displayIndex = (itemIndexMap.get(it.id) ?? iIdx) + 1;
           const correct = pickCorrect(correctMap, it.id);
@@ -260,10 +286,19 @@ function CardSticky(props: BaseProps) {
   const audios = toArray((stimulus as any)?.media?.audio);
 
   return (
-    <section className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-6 shadow-sm">
+    <section className={cn(
+      "rounded-2xl bg-white dark:bg-zinc-900",
+      "border border-zinc-200 dark:border-zinc-700",
+      "p-6 shadow-sm"
+    )}>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3">
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3 shadow-sm lg:sticky lg:top-24 max-h-[100vh] overflow-auto">
+          <div className={cn(
+            "rounded-xl border border-zinc-200 dark:border-zinc-700",
+            "bg-white dark:bg-zinc-900 p-4",
+            "shadow-sm lg:sticky lg:top-24",
+            "max-h-[100vh] overflow-auto"
+          )}>
             {audios.length > 0 && (
               <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mb-4">
                 {audios.map((src, i) => (
@@ -271,7 +306,7 @@ function CardSticky(props: BaseProps) {
                     key={i}
                     controls
                     src={src}
-                    className="w-full h-9 rounded-md mb-3"
+                    className="w-full h-9 rounded-lg"
                   />
                 ))}
               </div>
@@ -295,7 +330,7 @@ function CardSticky(props: BaseProps) {
             )}
           </div>
         </div>
-        <div className="lg:col-span-2 space-y-5">
+        <div className="lg:col-span-2 space-y-6">
           {items.map((it, iIdx) => {
             const displayIndex = (itemIndexMap.get(it.id) ?? iIdx) + 1;
             const correct = pickCorrect(correctMap, it.id);
@@ -334,21 +369,25 @@ function CardColumnNoSticky(props: BaseProps) {
   const audios = toArray((stimulus as any)?.media?.audio);
 
   return (
-    <section className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-6 shadow-sm">
+    <section className={cn(
+      "rounded-2xl bg-white dark:bg-zinc-900",
+      "border border-zinc-200 dark:border-zinc-700",
+      "p-6 shadow-sm"
+    )}>
       <div className="space-y-3 mb-6">
         {audios.map((src, i) => (
           <audio
             key={i}
             controls
             src={src}
-            className="w-full h-9 rounded-md mb-3"
+            className="w-full h-9 rounded-lg"
           />
         ))}
         {locked && showStimulusDetails && (
           <StimulusYellowPanel stimulus={stimulus} />
         )}
       </div>
-      <div className="space-y-5">
+      <div className="space-y-6">
         {items.map((it, iIdx) => {
           const displayIndex = (itemIndexMap.get(it.id) ?? iIdx) + 1;
           const correct = pickCorrect(correctMap, it.id);

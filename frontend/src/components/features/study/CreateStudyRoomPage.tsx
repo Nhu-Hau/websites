@@ -205,7 +205,7 @@ export default function CreateStudyRoomPage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-64 bg-[#DFD0B8] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900">
+      <div className="flex items-center justify-center min-h-64 bg-[#DFD0B8] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 mt-16">
         <div className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 p-8 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005] hover:ring-blue-300/50 dark:hover:ring-blue-600/50 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
           <div className="relative flex items-center justify-center">
@@ -219,7 +219,7 @@ export default function CreateStudyRoomPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 pt-20 bg-[#DFD0B8] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 min-h-screen">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 mt-16 bg-[#DFD0B8] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 min-h-screen">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="group">

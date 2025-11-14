@@ -178,11 +178,7 @@ export default async function DashboardPage() {
             {/* Text Content */}
             <div className="relative">
               {/* Title với gradient + 3D shadow */}
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-900 dark:from-white dark:via-zinc-100 dark:to-white drop-shadow-md transition-all duration-300 group-hover:drop-shadow-lg">
-                Bảng điều khiển
-              </h1>
-              {/* 3D Shadow Layer */}
-              <h1 className="absolute -left-0.5 top-0.5 text-2xl sm:text-3xl font-black bg-clip-text bg-gradient-to-r from-amber-500 via-orange-600 to-amber-600 opacity-0 group-hover:opacity-30 blur-sm transition-all duration-400">
+              <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-900 dark:from-white dark:via-zinc-100 dark:to-white drop-shadow-md transition-all duration-300 group-hover:drop-shadow-lg">
                 Bảng điều khiển
               </h1>
             </div>

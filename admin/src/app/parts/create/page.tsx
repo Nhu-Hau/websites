@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { adminCreateTest, adminUploadStimulusMedia } from "@/lib/apiClient";
 import { Plus, X, ArrowLeft, Upload } from "lucide-react";
 import Link from "next/link";
+import { useToast } from "@/components/common/ToastProvider";
 
 export default function CreateTestPage() {
   const router = useRouter();
   const [busy, setBusy] = React.useState(false);
   const [uploading, setUploading] = React.useState<{ type: 'image' | 'audio' | null; index: number }>({ type: null, index: -1 });
+  const toast = useToast();
 
   const [form, setForm] = React.useState({
     part: "part.1",
@@ -197,10 +199,10 @@ export default function CreateTestPage() {
     try {
       const result = await adminUploadStimulusMedia(file);
       handleUpdateStimulusMedia(index, type === 'image' ? 'image' : 'audio', result.url);
-      alert(`Upload ${type} thành công!`);
+      toast.success(`Upload ${type} thành công!`);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : `Upload ${type} thất bại`;
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setUploading({ type: null, index: -1 });
     }
@@ -210,12 +212,12 @@ export default function CreateTestPage() {
     e.preventDefault();
     
     if (!form.test) {
-      alert("Vui lòng nhập Test Number");
+      toast.error("Vui lòng nhập Test Number");
       return;
     }
 
     if (form.items.length === 0) {
-      alert("Vui lòng thêm ít nhất 1 item");
+      toast.error("Vui lòng thêm ít nhất 1 item");
       return;
     }
 
@@ -258,11 +260,11 @@ export default function CreateTestPage() {
 
       await adminCreateTest(requestBody);
 
-      alert("Tạo test thành công!");
+      toast.success("Tạo test thành công!");
       router.push("/parts");
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : "Lỗi tạo test";
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setBusy(false);
     }

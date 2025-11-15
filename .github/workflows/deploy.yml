@@ -1,0 +1,75 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - "**/*.md"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (for reading ecosystem etc.)
+        uses: actions/checkout@v4
+
+      - name: Prepare SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy over SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          PROJECT_DIR: ${{ secrets.PROJECT_DIR }}
+          GIT_REPO: ${{ secrets.GIT_REPO }}
+          BRANCH: ${{ secrets.BRANCH || 'main' }}
+        run: |
+          ssh $VPS_USER@$VPS_HOST bash -lc '
+            set -e
+
+            # clone lần đầu nếu chưa có
+            if [ ! -d "$PROJECT_DIR/.git" ]; then
+              git clone $GIT_REPO "$PROJECT_DIR"
+            fi
+
+            cd "$PROJECT_DIR"
+            git fetch --all --prune
+            git checkout $BRANCH
+            git reset --hard origin/$BRANCH
+
+            # cài & build backend
+            cd backend
+            npm ci
+            npm run build
+
+            # cài & build frontend
+            cd ../frontend
+            npm ci
+            npm run build
+
+            # cài & build admin
+            cd ../admin
+            npm ci
+            npm run build
+
+            # khởi động / reload PM2
+            cd ..
+            if ! pm2 list | grep -q "api"; then
+              pm2 start ecosystem.config.js
+            else
+              pm2 reload ecosystem.config.js
+            fi
+            pm2 save
+          '

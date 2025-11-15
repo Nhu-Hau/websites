@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
-import LogoutButton from "./components/LogoutButton";
-import AdminChatLink from "./components/AdminChatLink";
+import LogoutButton from "@/components/auth/LogoutButton";
+import AdminChatLink from "@/components/common/AdminChatLink";
+import { ToastProvider } from "@/components/common/ToastProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,9 +28,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ToastProvider>
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b">
           <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
             <Link href="/" className="font-semibold text-tealCustom">
@@ -54,6 +54,7 @@ export default function RootLayout({
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4">{children}</main>
+        </ToastProvider>
       </body>
     </html>
   );

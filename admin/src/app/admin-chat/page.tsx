@@ -3,7 +3,10 @@
 
 import React from "react";
 import { FaUserTie } from "react-icons/fa";
-import { FiSend, FiMessageSquare } from "react-icons/fi";
+import { FiSend, FiMessageSquare, FiTrash2 } from "react-icons/fi";
+import { AlertTriangle } from "lucide-react";
+import { useToast } from "@/components/common/ToastProvider";
+import { adminDeleteChatConversation, adminDeleteChatMessage } from "@/lib/apiClient";
 import { useSocket } from "../../hooks/useSocket";
 
 interface Conversation {
@@ -30,6 +33,16 @@ interface Message {
   createdAt: string;
 }
 
+type ConfirmDialogState = {
+  title: string;
+  description: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm: () => Promise<void>;
+  successMessage?: string;
+  errorMessage?: string;
+};
+
 export default function AdminChatPage() {
   const { socket } = useSocket();
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
@@ -41,6 +54,9 @@ export default function AdminChatPage() {
   const [sending, setSending] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [unreadCount, setUnreadCount] = React.useState(0);
+  const [confirmDialog, setConfirmDialog] = React.useState<ConfirmDialogState | null>(null);
+  const [confirmLoading, setConfirmLoading] = React.useState(false);
+  const toast = useToast();
 
   React.useEffect(() => {
     (async () => {
@@ -223,15 +239,15 @@ export default function AdminChatPage() {
     // Join admin room để nhận tin nhắn từ tất cả conversations
     socket.emit("admin:join-conversation", "admin");
 
-    socket.on("new-message", handleNewMessage);
-    socket.on("admin-message", handleAdminMessage);
-    socket.on("conversation-updated", handleConversationUpdate);
+    socket.on("admin-chat:new-message", handleNewMessage);
+    socket.on("admin-chat:admin-message", handleAdminMessage);
+    socket.on("admin-chat:conversation-updated", handleConversationUpdate);
 
     return () => {
       console.log("Admin chat page: Cleaning up socket listeners");
-      socket.off("new-message", handleNewMessage);
-      socket.off("admin-message", handleAdminMessage);
-      socket.off("conversation-updated", handleConversationUpdate);
+      socket.off("admin-chat:new-message", handleNewMessage);
+      socket.off("admin-chat:admin-message", handleAdminMessage);
+      socket.off("admin-chat:conversation-updated", handleConversationUpdate);
       socket.emit("admin:leave-conversation", "admin");
     };
   }, [socket, loadConversations]);
@@ -272,163 +288,327 @@ export default function AdminChatPage() {
     }
   };
 
+  const handleConfirmAction = async () => {
+    if (!confirmDialog) return;
+    setConfirmLoading(true);
+    try {
+      await confirmDialog.onConfirm();
+      if (confirmDialog.successMessage) {
+        toast.success(confirmDialog.successMessage);
+      }
+      setConfirmDialog(null);
+    } catch (error) {
+      const fallbackMessage =
+        confirmDialog.errorMessage ||
+        (error instanceof Error && error.message) ||
+        "Đã xảy ra lỗi";
+      toast.error(fallbackMessage);
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  const handleDeleteConversation = (sessionId: string) => {
+    const conv = conversations.find((c) => c._id === sessionId);
+    setConfirmDialog({
+      title: "Xóa cuộc trò chuyện",
+      description: `Bạn có chắc muốn xóa toàn bộ tin nhắn của ${conv?.user?.name || conv?.user?.email || "người dùng"}? Hành động này không thể hoàn tác.`,
+      confirmText: "Xóa cuộc trò chuyện",
+      cancelText: "Hủy",
+      successMessage: "Đã xóa cuộc trò chuyện thành công",
+      errorMessage: "Lỗi khi xóa cuộc trò chuyện",
+      onConfirm: async () => {
+        await adminDeleteChatConversation(sessionId);
+        setMessages([]);
+        setSelectedConversation(null);
+        await loadConversations();
+        setUnreadCount((prev) => {
+          const convToDelete = conversations.find((c) => c._id === sessionId);
+          if (!convToDelete) return prev;
+          return Math.max(0, prev - (convToDelete.unreadCount || 0));
+        });
+      },
+    });
+  };
+
+  const handleDeleteMessage = (msg: Message) => {
+    setConfirmDialog({
+      title: "Xóa tin nhắn",
+      description: "Bạn có chắc muốn xóa tin nhắn này? Hành động này không thể hoàn tác.",
+      confirmText: "Xóa tin nhắn",
+      cancelText: "Hủy",
+      successMessage: "Đã xóa tin nhắn thành công",
+      errorMessage: "Lỗi khi xóa tin nhắn",
+      onConfirm: async () => {
+        await adminDeleteChatMessage(msg._id);
+        await loadMessages(msg.sessionId);
+        await loadConversations();
+      },
+    });
+  };
+
   if (loadingMe) return <div className="p-6">Đang kiểm tra quyền…</div>;
   if (!me || me.role !== 'admin') return <div className="p-6 text-red-600">Chỉ dành cho Admin</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-900">
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <FaUserTie className="h-6 w-6" />
-            Quản lý Chat với Admin
-            {unreadCount > 0 && (
-              <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Trả lời tin nhắn từ người dùng
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-          {/* Conversations List */}
-          <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="font-semibold text-gray-900 dark:text-white">Cuộc trò chuyện</h2>
-            </div>
-            <div className="overflow-y-auto h-[calc(100%-60px)]">
-              {conversations.length === 0 ? (
-                <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                  Chưa có cuộc trò chuyện nào
+    <>
+      <div className="h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 flex flex-col overflow-hidden">
+        <div className="max-w-7xl mx-auto w-full h-full flex flex-col p-6 gap-6">
+          <header className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl p-3 shadow-lg">
+                  <FaUserTie className="h-6 w-6 text-white" />
                 </div>
-              ) : (
-                conversations.map((conv) => (
-                  <div
-                    key={conv._id}
-                    onClick={() => setSelectedConversation(conv._id)}
-                    className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-700 ${
-                      selectedConversation === conv._id ? "bg-blue-50 dark:bg-blue-900/20" : ""
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                          {conv.user?.name || 'User'}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                          {conv.user?.email || conv.userId}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                          {conv.lastMessage}
-                        </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
-                          {new Date(conv.lastMessageAt).toLocaleString()}
-                        </p>
+                <div>
+                  <h1 className="text-3xl font-bold text-zinc-900 flex items-center gap-3">
+                    Quản lý Chat với Admin
+                    {unreadCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full animate-pulse shadow-md">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </h1>
+                  <p className="text-sm text-zinc-600 mt-1">
+                    Trả lời tin nhắn từ người dùng
+                  </p>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+            {/* Conversations List */}
+            <div className="bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden flex flex-col h-full">
+              <div className="p-5 border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-white flex-shrink-0">
+                <h2 className="font-bold text-lg text-zinc-900">Cuộc trò chuyện</h2>
+              </div>
+              <div className="overflow-y-auto flex-1 min-h-0">
+                {conversations.length === 0 ? (
+                  <div className="p-8 text-center text-zinc-500">
+                    <FiMessageSquare className="h-12 w-12 text-zinc-300 mx-auto mb-3" />
+                    <p className="font-medium">Chưa có cuộc trò chuyện nào</p>
+                  </div>
+                ) : (
+                  conversations.map((conv) => (
+                    <div
+                      key={conv._id}
+                      onClick={() => setSelectedConversation(conv._id)}
+                      className={`p-4 border-b border-zinc-100 cursor-pointer transition-all ${
+                        selectedConversation === conv._id 
+                          ? "bg-gradient-to-r from-teal-50 to-blue-50 border-l-4 border-l-teal-500" 
+                          : "hover:bg-zinc-50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-zinc-900 truncate">
+                            {conv.user?.name || 'User'}
+                          </p>
+                          <p className="text-xs text-zinc-500 truncate mt-1">
+                            {conv.user?.email || conv.userId}
+                          </p>
+                          <p className="text-xs text-zinc-600 truncate mt-2 line-clamp-1">
+                            {conv.lastMessage}
+                          </p>
+                          <p className="text-xs text-zinc-400 mt-1">
+                            {new Date(conv.lastMessageAt).toLocaleString('vi-VN')}
+                          </p>
+                        </div>
+                        {conv.unreadCount > 0 && (
+                          <span className="ml-2 bg-red-500 text-white text-xs font-bold rounded-full px-2.5 py-1 shadow-md">
+                            {conv.unreadCount}
+                          </span>
+                        )}
                       </div>
-                      {conv.unreadCount > 0 && (
-                        <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-1">
-                          {conv.unreadCount}
-                        </span>
-                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="lg:col-span-2 bg-white rounded-xl shadow-lg border border-zinc-200 flex flex-col overflow-hidden h-full">
+              {selectedConversation ? (
+                <>
+                  <div className="p-5 border-b border-zinc-200 bg-gradient-to-r from-teal-50 to-blue-50 flex-shrink-0 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <h3 className="font-bold text-lg text-zinc-900">
+                        Cuộc trò chuyện với {conversations.find(c => c._id === selectedConversation)?.user?.name || 'User'}
+                      </h3>
+                      <p className="text-sm text-zinc-600 mt-1">
+                        {conversations.find(c => c._id === selectedConversation)?.user?.email}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteConversation(selectedConversation)}
+                      className="self-start md:self-auto px-4 py-2 text-sm rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-2"
+                    >
+                      <FiTrash2 className="h-4 w-4" />
+                      Xóa cuộc trò chuyện
+                    </button>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-zinc-50 to-white min-h-0">
+                    {loading ? (
+                      <div className="text-center text-zinc-500 py-12">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent mx-auto mb-3"></div>
+                        <p className="font-medium">Đang tải tin nhắn...</p>
+                      </div>
+                    ) : messages.length === 0 ? (
+                      <div className="text-center text-zinc-500 py-12">
+                        <FiMessageSquare className="h-12 w-12 text-zinc-300 mx-auto mb-3" />
+                        <p className="font-medium text-lg">Chưa có tin nhắn nào</p>
+                      </div>
+                    ) : (
+                      messages.map((msg) => {
+                        const isAdminMessage = msg.role === "admin";
+                        return (
+                          <div
+                            key={msg._id}
+                            className={`flex ${isAdminMessage ? "justify-end" : "justify-start"}`}
+                          >
+                            <div
+                              className={`max-w-[70%] rounded-xl px-4 py-3 shadow-md ${
+                                isAdminMessage
+                                  ? "bg-gradient-to-r from-teal-500 to-blue-600 text-white"
+                                  : "bg-white border border-zinc-200 text-zinc-900"
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-3 mb-2">
+                                <div className="flex items-center gap-2">
+                                  {isAdminMessage ? (
+                                    <FaUserTie className="h-4 w-4" />
+                                  ) : (
+                                    <FiMessageSquare className="h-4 w-4" />
+                                  )}
+                                  <span className="text-xs font-semibold">
+                                    {isAdminMessage ? "Admin" : "User"}
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteMessage(msg);
+                                  }}
+                                  aria-label="Xóa tin nhắn"
+                                  className={`p-1.5 rounded-md transition-colors ${
+                                    isAdminMessage
+                                      ? "text-white/80 hover:bg-white/20"
+                                      : "text-zinc-500 hover:bg-zinc-100"
+                                  }`}
+                                >
+                                  <FiTrash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                              <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                              <p className={`text-xs mt-2 ${isAdminMessage ? "opacity-80" : "text-zinc-500"}`}>
+                                {new Date(msg.createdAt).toLocaleString('vi-VN')}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Message Input */}
+                  <div className="p-5 border-t border-zinc-200 bg-white flex-shrink-0">
+                    <div className="flex gap-3">
+                      <textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Nhập tin nhắn trả lời..."
+                        rows={2}
+                        className="flex-1 resize-none rounded-lg border border-zinc-300 bg-white text-zinc-900 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                      />
+                      <button
+                        onClick={sendMessage}
+                        disabled={!newMessage.trim() || sending}
+                        className="px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-600 text-white rounded-lg hover:from-teal-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-2 font-medium"
+                      >
+                        {sending ? (
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
+                        ) : (
+                          <FiSend className="h-4 w-4" />
+                        )}
+                        Gửi
+                      </button>
                     </div>
                   </div>
-                ))
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-zinc-500 overflow-hidden">
+                  <div className="text-center px-6">
+                    <FiMessageSquare className="h-16 w-16 text-zinc-300 mx-auto mb-4" />
+                    <p className="text-lg font-medium">Chọn một cuộc trò chuyện để xem tin nhắn</p>
+                  </div>
+                </div>
               )}
             </div>
           </div>
-
-          {/* Messages */}
-          <div className="lg:col-span-2 bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col">
-            {selectedConversation ? (
-              <>
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    Cuộc trò chuyện với {conversations.find(c => c._id === selectedConversation)?.user?.name || 'User'}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {conversations.find(c => c._id === selectedConversation)?.user?.email}
-                  </p>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {loading ? (
-                    <div className="text-center text-gray-500 dark:text-gray-400">
-                      Đang tải tin nhắn...
-                    </div>
-                  ) : messages.length === 0 ? (
-                    <div className="text-center text-gray-500 dark:text-gray-400">
-                      Chưa có tin nhắn nào
-                    </div>
-                  ) : (
-                    messages.map((msg) => (
-                      <div
-                        key={msg._id}
-                        className={`flex ${msg.role === "admin" ? "justify-end" : "justify-start"}`}
-                      >
-                        <div
-                          className={`max-w-[70%] rounded-lg px-3 py-2 ${
-                            msg.role === "admin"
-                              ? "bg-blue-500 text-white"
-                              : "bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            {msg.role === "admin" ? (
-                              <FaUserTie className="h-3 w-3" />
-                            ) : (
-                              <FiMessageSquare className="h-3 w-3" />
-                            )}
-                            <span className="text-xs font-medium">
-                              {msg.role === "admin" ? "Admin" : "User"}
-                            </span>
-                          </div>
-                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                          <p className="text-xs opacity-70 mt-1">
-                            {new Date(msg.createdAt).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Message Input */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex gap-2">
-                    <textarea
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Nhập tin nhắn trả lời..."
-                      rows={2}
-                      className="flex-1 resize-none rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-700 text-gray-900 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button
-                      onClick={sendMessage}
-                      disabled={!newMessage.trim() || sending}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {sending ? (
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
-                      ) : (
-                        <FiSend className="h-4 w-4" />
-                      )}
-                      Gửi
-                    </button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                Chọn một cuộc trò chuyện để xem tin nhắn
-              </div>
-            )}
-          </div>
         </div>
       </div>
-    </div>
+
+      {confirmDialog && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+          style={{ animation: "fadeIn 0.2s ease-out" }}
+          onClick={() => {
+            if (!confirmLoading) {
+              setConfirmDialog(null);
+            }
+          }}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-6"
+            style={{ animation: "slideUp 0.3s ease-out" }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-red-100 text-red-600">
+                <AlertTriangle className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900">{confirmDialog.title}</h3>
+                <p className="text-sm text-zinc-600 mt-1 leading-relaxed">{confirmDialog.description}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => {
+                  if (!confirmLoading) {
+                    setConfirmDialog(null);
+                  }
+                }}
+                disabled={confirmLoading}
+                className="flex-1 px-4 py-2.5 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {confirmDialog.cancelText ?? "Hủy"}
+              </button>
+              <button
+                onClick={handleConfirmAction}
+                disabled={confirmLoading}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition-all shadow-md font-medium flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {confirmLoading ? (
+                  <>
+                    <span className="h-4 w-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  <>
+                    <FiTrash2 className="h-4 w-4" />
+                    {confirmDialog.confirmText ?? "Xác nhận"}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

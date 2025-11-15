@@ -16,13 +16,23 @@ import {
   AdminPartsStats,
   AdminStimulus,
 } from "@/lib/apiClient";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText, BarChart3, Plus, Edit, Trash2, Home, Filter, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import EditStimulusModal from "@/components/EditStimulusModal";
-import EditQuestionModal from "@/components/EditQuestionModal";
-import AddQuestionModal from "@/components/AddQuestionModal";
-import AddStimulusModal from "@/components/AddStimulusModal";
-import Swal from "sweetalert2";
+import EditStimulusModal from "@/components/parts/EditStimulusModal";
+import EditQuestionModal from "@/components/parts/EditQuestionModal";
+import AddQuestionModal from "@/components/parts/AddQuestionModal";
+import AddStimulusModal from "@/components/parts/AddStimulusModal";
+import { useToast } from "@/components/common/ToastProvider";
+
+type ConfirmDialogState = {
+  title: string;
+  description: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm: () => Promise<void>;
+  successMessage?: string;
+  errorMessage?: string;
+};
 
 export default function PartsPage() {
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
@@ -33,6 +43,9 @@ export default function PartsPage() {
   const [testStimuli, setTestStimuli] = React.useState<Record<string, Record<string, AdminStimulus>>>({});
   const [stats, setStats] = React.useState<AdminPartsStats | null>(null);
   const [busy, setBusy] = React.useState(false);
+  const toast = useToast();
+  const [confirmDialog, setConfirmDialog] = React.useState<ConfirmDialogState | null>(null);
+  const [confirmLoading, setConfirmLoading] = React.useState(false);
 
   // Modal states
   const [editStimulus, setEditStimulus] = React.useState<AdminStimulus | null>(null);
@@ -59,8 +72,10 @@ export default function PartsPage() {
   const load = React.useCallback(async () => {
     setBusy(true);
     try {
+      // Nếu part là số, tự động thêm "part." vào trước
+      const partValue = part ? (part.match(/^\d+$/) ? `part.${part}` : part) : undefined;
       const data = await adminListTests({
-        part: part || undefined,
+        part: partValue,
         level: level ? parseInt(level) : undefined,
       });
       setTests(data.tests);
@@ -126,29 +141,46 @@ export default function PartsPage() {
     }
   }, [me, load, loadStats]);
 
-  const handleDelete = async (item: AdminPart) => {
-    const result = await Swal.fire({
-      title: "Xóa item?",
-      text: `Xóa item ${item.id}?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
-      confirmButtonColor: "#ef4444",
-    });
-    if (!result.isConfirmed) return;
+  const handleConfirmAction = async () => {
+    if (!confirmDialog) return;
+    setConfirmLoading(true);
     try {
-      await adminDeletePart(item.id);
-      const key = Object.entries(testItems).find(([_, items]) => 
-        items.some(i => i.id === item.id)
-      )?.[0];
-      if (key) {
-        setTestItems({ ...testItems, [key]: testItems[key].filter(i => i.id !== item.id) });
+      await confirmDialog.onConfirm();
+      if (confirmDialog.successMessage) {
+        toast.success(confirmDialog.successMessage);
       }
-      void load();
-    } catch (e: any) {
-      alert(e?.message || "Lỗi xóa item");
+      setConfirmDialog(null);
+    } catch (error: any) {
+      const fallbackMessage =
+        confirmDialog.errorMessage ||
+        error?.message ||
+        (error instanceof Error && error.message) ||
+        "Đã xảy ra lỗi";
+      toast.error(fallbackMessage);
+    } finally {
+      setConfirmLoading(false);
     }
+  };
+
+  const handleDelete = (item: AdminPart) => {
+    setConfirmDialog({
+      title: "Xóa câu hỏi",
+      description: `Bạn có chắc muốn xóa câu hỏi ${item.id}? Hành động này không thể hoàn tác.`,
+      confirmText: "Xóa câu hỏi",
+      cancelText: "Hủy",
+      successMessage: "Đã xóa câu hỏi thành công",
+      errorMessage: "Lỗi xóa câu hỏi",
+      onConfirm: async () => {
+        await adminDeletePart(item.id);
+        const key = Object.entries(testItems).find(([_, items]) =>
+          items.some(i => i.id === item.id)
+        )?.[0];
+        if (key) {
+          setTestItems({ ...testItems, [key]: testItems[key].filter(i => i.id !== item.id) });
+        }
+        void load();
+      },
+    });
   };
 
   const handleUpdate = async (item: AdminPart, newData: Partial<AdminPart>) => {
@@ -164,111 +196,186 @@ export default function PartsPage() {
         });
       }
     } catch (e: any) {
-      alert(e?.message || "Lỗi cập nhật item");
+      toast.error(e?.message || "Lỗi cập nhật item");
     }
   };
 
-  const handleDeleteTest = async (test: AdminTest, e: React.MouseEvent) => {
+  const handleDeleteTest = (test: AdminTest, e: React.MouseEvent) => {
     e.stopPropagation();
-    const result = await Swal.fire({
-      title: "Xóa test?",
-      text: `Xóa toàn bộ test ${test.part} - Level ${test.level} - Test ${test.test}? (${test.itemCount} câu hỏi sẽ bị xóa)`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
-      confirmButtonColor: "#ef4444",
+    setConfirmDialog({
+      title: "Xóa Test",
+      description: `Xóa toàn bộ test ${test.part} - Level ${test.level} - Test ${test.test}? (${test.itemCount} câu hỏi sẽ bị xóa)`,
+      confirmText: "Xóa Test",
+      cancelText: "Hủy",
+      successMessage: "Đã xóa test thành công",
+      errorMessage: "Lỗi xóa test",
+      onConfirm: async () => {
+        await adminDeleteTest({
+          part: test.part,
+          level: test.level,
+          test: test.test,
+        });
+        const key = `${test.part}-${test.level}-${test.test}`;
+        setTestItems({ ...testItems, [key]: undefined as any });
+        setExpandedTest(null);
+        void load();
+      },
     });
-    if (!result.isConfirmed) return;
-    try {
-      await adminDeleteTest({
-        part: test.part,
-        level: test.level,
-        test: test.test,
-      });
-      const key = `${test.part}-${test.level}-${test.test}`;
-      setTestItems({ ...testItems, [key]: undefined as any });
-      setExpandedTest(null);
-      void load();
-    } catch (e: any) {
-      alert(e?.message || "Lỗi xóa test");
-    }
   };
 
   if (loadingMe) return <div className="p-6">Đang kiểm tra quyền…</div>;
   if (!me || me.role !== "admin") return <div className="p-6 text-red-600">Chỉ dành cho Admin</div>;
 
   return (
-    <div className="p-6 space-y-4">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Quản lý Parts (Theo Test)</h1>
-        <Link
-          href="/parts/create"
-          className="px-4 py-2 rounded bg-tealCustom  bg-black text-white flex items-center gap-2 hover:bg-opacity-90"
-        >
-          Thêm Test
-        </Link>
+    <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 space-y-6">
+      <header className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl p-3 shadow-lg">
+              <FileText className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-zinc-900">Quản lý Parts (Theo Test)</h1>
+              <p className="text-sm text-zinc-600 mt-1">Quản lý các bài test và câu hỏi</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/parts/create"
+              className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-2 font-medium"
+            >
+              <Plus className="h-4 w-4" /> Thêm Test
+            </Link>
+            <Link
+              href="/"
+              className="px-4 py-2.5 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors flex items-center gap-2 text-sm font-medium"
+            >
+              <Home className="h-4 w-4" /> Trang chủ
+            </Link>
+          </div>
+        </div>
       </header>
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-4 gap-4">
-          <div className="rounded border p-4">
-            <div className="text-sm text-zinc-500">Tổng số items</div>
-            <div className="text-2xl font-semibold">{stats.total}</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-teal-100 rounded-lg p-2">
+                <BarChart3 className="h-5 w-5 text-teal-600" />
+              </div>
+              <div className="text-sm font-medium text-zinc-600">Tổng số items</div>
+            </div>
+            <div className="text-3xl font-bold text-zinc-900">{stats.total}</div>
           </div>
-          <div className="rounded border p-4">
-            <div className="text-sm text-zinc-500">Theo Level</div>
-            <div className="text-xs mt-1">
-              {stats.byLevel.map((l) => `L${l._id}: ${l.count}`).join(", ")}
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-blue-100 rounded-lg p-2">
+                <FileText className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="text-sm font-medium text-zinc-600">Theo Level</div>
+            </div>
+            <div className="text-xs text-zinc-700 mt-1 space-y-1">
+              {stats.byLevel.map((l) => (
+                <div key={l._id} className="flex items-center gap-2">
+                  <span className="font-semibold">L{l._id}:</span>
+                  <span>{l.count}</span>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="rounded border p-4">
-            <div className="text-sm text-zinc-500">Theo Part</div>
-            <div className="text-xs mt-1">
-              {stats.byPart.slice(0, 3).map((p) => `${p._id}: ${p.count}`).join(", ")}
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-purple-100 rounded-lg p-2">
+                <FileText className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="text-sm font-medium text-zinc-600">Theo Part</div>
+            </div>
+            <div className="text-xs text-zinc-700 mt-1 space-y-1">
+              {(() => {
+                // Tính số lượng test cho từng part
+                const testCountByPart = new Map<string, Set<string>>();
+                tests.forEach((test) => {
+                  if (!testCountByPart.has(test.part)) {
+                    testCountByPart.set(test.part, new Set());
+                  }
+                  // Tạo key duy nhất cho mỗi test: part-level-test
+                  const testKey = `${test.part}-${test.level}-${test.test}`;
+                  testCountByPart.get(test.part)!.add(testKey);
+                });
+                
+                // Sắp xếp các part theo thứ tự
+                const sortedParts = Array.from(testCountByPart.entries())
+                  .sort((a, b) => {
+                    // So sánh part.1, part.2, ... theo số
+                    const numA = parseInt(a[0].replace('part.', '') || '0');
+                    const numB = parseInt(b[0].replace('part.', '') || '0');
+                    return numA - numB;
+                  });
+                
+                return sortedParts.map(([partName, testSet]) => (
+                  <div key={partName} className="flex items-center gap-2">
+                    <span className="font-semibold">{partName}:</span>
+                    <span>{testSet.size}</span>
+                  </div>
+                ));
+              })()}
             </div>
           </div>
-          <div className="rounded border p-4">
-            <div className="text-sm text-zinc-500">Số lượng Test</div>
-            <div className="text-2xl font-semibold">{tests.length}</div>
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-yellow-100 rounded-lg p-2">
+                <FileText className="h-5 w-5 text-yellow-600" />
+              </div>
+              <div className="text-sm font-medium text-zinc-600">Số lượng Test</div>
+            </div>
+            <div className="text-3xl font-bold text-zinc-900">{tests.length}</div>
           </div>
         </div>
       )}
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2 items-end">
-        <div className="flex flex-col">
-          <label className="text-sm text-zinc-600">Part</label>
-          <input
-            value={part}
-            onChange={(e) => setPart(e.target.value)}
-            placeholder="part.1"
-            className="border px-3 py-2 rounded w-32"
-          />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-sm text-zinc-600">Level</label>
-          <select
-            value={level}
-            onChange={(e) => setLevel(e.target.value)}
-            className="border px-3 py-2 rounded"
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
+        <div className="flex flex-wrap gap-4 items-end">
+          <div className="flex flex-col min-w-[150px]">
+            <label className="text-sm font-medium text-zinc-700 mb-2">Part</label>
+            <input
+              type="number"
+              value={part}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Chỉ cho phép nhập số
+                if (value === '' || /^\d+$/.test(value)) {
+                  setPart(value);
+                }
+              }}
+              placeholder="1"
+              className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+            />
+          </div>
+          <div className="flex flex-col min-w-[150px]">
+            <label className="text-sm font-medium text-zinc-700 mb-2">Level</label>
+            <select
+              value={level}
+              onChange={(e) => setLevel(e.target.value)}
+              className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+            >
+              <option value="">Tất cả</option>
+              <option value="1">Level 1</option>
+              <option value="2">Level 2</option>
+              <option value="3">Level 3</option>
+            </select>
+          </div>
+          <button
+            onClick={() => {
+              void load();
+            }}
+            disabled={busy}
+            className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-2 font-medium"
           >
-            <option value="">Tất cả</option>
-            <option value="1">Level 1</option>
-            <option value="2">Level 2</option>
-            <option value="3">Level 3</option>
-          </select>
+            <Filter className="h-4 w-4" /> Lọc
+          </button>
         </div>
-        <button
-          onClick={() => {
-            void load();
-          }}
-          disabled={busy}
-          className="px-4 py-2 rounded bg-zinc-900 text-white disabled:opacity-60"
-        >
-          Lọc
-        </button>
       </div>
 
       {/* Tests List */}
@@ -279,48 +386,50 @@ export default function PartsPage() {
           const items = testItems[key] || [];
 
           return (
-            <div key={key} className="border rounded">
+            <div key={key} className="bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden">
               <div
-                className="p-4 cursor-pointer hover:bg-zinc-50 flex items-center justify-between"
+                className="p-5 cursor-pointer hover:bg-zinc-50 transition-colors flex items-center justify-between border-b border-zinc-100"
                 onClick={() => toggleTest(test)}
               >
-                <div className="flex items-center gap-3">
-                  {isExpanded ? (
-                    <ChevronDown className="w-5 h-5 text-zinc-600" />
-                  ) : (
-                    <ChevronRight className="w-5 h-5 text-zinc-600" />
-                  )}
+                <div className="flex items-center gap-4">
+                  <div className="bg-teal-100 rounded-lg p-2">
+                    {isExpanded ? (
+                      <ChevronDown className="w-5 h-5 text-teal-600" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5 text-teal-600" />
+                    )}
+                  </div>
                   <div>
-                    <div className="font-semibold">
+                    <div className="font-bold text-lg text-zinc-900">
                       {test.part} - Level {test.level} - Test {test.test}
                     </div>
-                    <div className="text-sm text-zinc-600">
-                      {test.itemCount} câu hỏi  {/*• ID đầu tiên: {test.firstItemId}*/}
+                    <div className="text-sm text-zinc-600 mt-1">
+                      {test.itemCount} câu hỏi
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={(e) => handleDeleteTest(test, e)}
-                  className="px-3 py-1.5 text-sm rounded border text-red-600 hover:bg-red-50"
+                  className="px-4 py-2 text-sm rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-2"
                 >
-                  Xóa Test
+                  <Trash2 className="h-4 w-4" /> Xóa Test
                 </button>
               </div>
 
               {isExpanded && (
-                <div className="border-t bg-zinc-50">
-                  <div className="p-4 space-y-4">
+                <div className="bg-gradient-to-br from-zinc-50 to-white">
+                  <div className="p-6 space-y-5">
                     {/* Action buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           const currentItemsCount = testItems[key]?.length || 0;
                           setAddQuestionModal({ isOpen: true, part: test.part, level: test.level, test: test.test, itemsCount: currentItemsCount });
                         }}
-                        className="px-3 py-1.5 text-sm rounded border bg-white hover:bg-zinc-50"
+                        className="px-4 py-2.5 text-sm rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 transition-colors font-medium flex items-center gap-2 shadow-sm"
                       >
-                        + Thêm câu hỏi
+                        <Plus className="h-4 w-4" /> Thêm câu hỏi
                       </button>
                       <button
                         onClick={(e) => {
@@ -328,45 +437,36 @@ export default function PartsPage() {
                           const currentStimuliCount = testStimuli[key] ? Object.keys(testStimuli[key]).length : 0;
                           setAddStimulusModal({ isOpen: true, part: test.part, level: test.level, test: test.test, stimuliCount: currentStimuliCount });
                         }}
-                        className="px-3 py-1.5 text-sm rounded border bg-white hover:bg-zinc-50"
+                        className="px-4 py-2.5 text-sm rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 transition-colors font-medium flex items-center gap-2 shadow-sm"
                       >
-                        + Thêm stimulus
+                        <Plus className="h-4 w-4" /> Thêm stimulus
                       </button>
                     </div>
 
                     {/* Stimuli section */}
                     {testStimuli[key] && Object.keys(testStimuli[key]).length > 0 && (
-                      <div>
-                        <div className="text-sm font-medium mb-2">Các stimuli đang dùng trong test này:</div>
+                      <div className="bg-white rounded-lg p-4 border border-zinc-200">
+                        <div className="text-sm font-semibold text-zinc-900 mb-3">Các stimuli đang dùng trong test này:</div>
                         <div className="flex flex-wrap gap-2">
                           {Object.values(testStimuli[key]).map((stimulus) => (
-                            <div key={stimulus.id} className="border rounded px-3 py-1 bg-white text-xs font-mono flex items-center gap-2">
-                              {stimulus.id}
+                            <div key={stimulus.id} className="border border-zinc-300 rounded-lg px-3 py-2 bg-zinc-50 text-xs font-mono flex items-center gap-2 shadow-sm">
+                              <span className="font-semibold text-zinc-700">{stimulus.id}</span>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setEditStimulus(stimulus);
                                 }}
-                                className="text-xs text-blue-600 hover:underline"
+                                className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
                               >
-                                Sửa
+                                <Edit className="h-3 w-3" /> Sửa
                               </button>
                               <button
                                 onClick={async (e) => {
                                   e.stopPropagation();
-                                  const result = await Swal.fire({
-                                    title: "Xóa stimulus?",
-                                    text: `Xóa stimulus ${stimulus.id}?`,
-                                    icon: "warning",
-                                    showCancelButton: true,
-                                    confirmButtonText: "Xóa",
-                                    cancelButtonText: "Hủy",
-                                    confirmButtonColor: "#ef4444",
-                                  });
-                                  if (result.isConfirmed) {
+                                  if (confirm(`Xóa stimulus ${stimulus.id}?`)) {
                                     try {
                                       await adminDeleteStimulus(stimulus.id);
-                                      alert("Đã xóa stimulus thành công");
+                                      toast.success("Đã xóa stimulus thành công");
                                       // Reload test data
                                       const [part, level, test] = key.split('-');
                                       const result = await adminGetTestItems({
@@ -377,13 +477,13 @@ export default function PartsPage() {
                                       setTestItems({ ...testItems, [key]: result.items });
                                       setTestStimuli({ ...testStimuli, [key]: result.stimulusMap });
                                     } catch (err: any) {
-                                      alert(err?.message || "Lỗi xóa stimulus");
+                                      toast.error(err?.message || "Lỗi xóa stimulus");
                                     }
                                   }
                                 }}
-                                className="text-xs text-red-600 hover:underline"
+                                className="text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
                               >
-                                Xóa
+                                <Trash2 className="h-3 w-3" /> Xóa
                               </button>
                             </div>
                           ))}
@@ -391,53 +491,59 @@ export default function PartsPage() {
                       </div>
                     )}
                     
-                    <div className="text-sm font-medium mb-3">Chi tiết câu hỏi:</div>
-                    <div className="overflow-auto max-h-[400px]">
-                      <table className="w-full text-sm">
-                        <thead className="bg-white">
-                          <tr className="text-left">
-                            <th className="p-2 border-b">ID</th>
-                            <th className="p-2 border-b">Stem</th>
-                            <th className="p-2 border-b">StimulusId</th>
-                            <th className="p-2 border-b">Answer</th>
-                            <th className="p-2 border-b w-32">Hành động</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {items.map((item) => (
-                            <tr key={item._id || item.id} className="border-b hover:bg-white">
-                              <td className="p-2 font-mono text-xs">{item.id}</td>
-                              <td className="p-2 text-xs max-w-xs truncate">
-                                {item.stem || "—"}
-                              </td>
-                              <td className="p-2 font-mono text-xs">
-                                {item.stimulusId || "—"}
-                              </td>
-                              <td className="p-2 font-semibold">{item.answer}</td>
-                              <td className="p-2">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditQuestion(item);
-                                  }}
-                                  className="px-2 py-1 text-xs rounded border hover:bg-white mr-1"
-                                >
-                                  Sửa
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    void handleDelete(item);
-                                  }}
-                                  className="px-2 py-1 text-xs rounded border text-red-600 hover:bg-white"
-                                >
-                                  Xóa
-                                </button>
-                              </td>
+                    <div className="bg-white rounded-lg border border-zinc-200 overflow-hidden">
+                      <div className="p-4 border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-white">
+                        <div className="text-sm font-semibold text-zinc-900">Chi tiết câu hỏi:</div>
+                      </div>
+                      <div className="overflow-auto max-h-[400px]">
+                        <table className="w-full text-sm">
+                          <thead className="bg-zinc-50 border-b border-zinc-200">
+                            <tr className="text-left">
+                              <th className="p-3 font-semibold text-zinc-700">ID</th>
+                              <th className="p-3 font-semibold text-zinc-700">Stem</th>
+                              <th className="p-3 font-semibold text-zinc-700">StimulusId</th>
+                              <th className="p-3 font-semibold text-zinc-700">Answer</th>
+                              <th className="p-3 font-semibold text-zinc-700 w-32">Hành động</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {items.map((item) => (
+                              <tr key={item._id || item.id} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
+                                <td className="p-3 font-mono text-xs text-zinc-700">{item.id}</td>
+                                <td className="p-3 text-xs max-w-xs truncate text-zinc-600">
+                                  {item.stem || "—"}
+                                </td>
+                                <td className="p-3 font-mono text-xs text-zinc-700">
+                                  {item.stimulusId || "—"}
+                                </td>
+                                <td className="p-3 font-semibold text-zinc-900">{item.answer}</td>
+                                <td className="p-3">
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditQuestion(item);
+                                      }}
+                                      className="px-2 py-1 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-100 transition-colors font-medium flex items-center gap-1"
+                                    >
+                                      <Edit className="h-3 w-3" /> Sửa
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        void handleDelete(item);
+                                      }}
+                                      className="px-2 py-1 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1"
+                                    >
+                                      <Trash2 className="h-3 w-3" /> Xóa
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -447,8 +553,11 @@ export default function PartsPage() {
         })}
         
         {tests.length === 0 && (
-          <div className="text-center p-12 text-zinc-500 border rounded">
-            Không có dữ liệu
+          <div className="bg-white rounded-xl shadow-lg border border-zinc-200 text-center p-12">
+            <div className="flex flex-col items-center gap-3">
+              <FileText className="h-16 w-16 text-zinc-300" />
+              <p className="text-lg font-medium text-zinc-500">Không có dữ liệu</p>
+            </div>
           </div>
         )}
       </div>
@@ -516,6 +625,65 @@ export default function PartsPage() {
         test={addQuestionModal.test}
         itemsCount={addQuestionModal.itemsCount}
       />
+
+      {confirmDialog && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+          style={{ animation: "fadeIn 0.2s ease-out" }}
+          onClick={() => {
+            if (!confirmLoading) {
+              setConfirmDialog(null);
+            }
+          }}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-6"
+            style={{ animation: "slideUp 0.3s ease-out" }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-red-100 text-red-600">
+                <AlertTriangle className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900">{confirmDialog.title}</h3>
+                <p className="text-sm text-zinc-600 mt-1 leading-relaxed">{confirmDialog.description}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => {
+                  if (!confirmLoading) {
+                    setConfirmDialog(null);
+                  }
+                }}
+                disabled={confirmLoading}
+                className="flex-1 px-4 py-2.5 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {confirmDialog.cancelText ?? "Hủy"}
+              </button>
+              <button
+                onClick={handleConfirmAction}
+                disabled={confirmLoading}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition-all shadow-md font-medium flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {confirmLoading ? (
+                  <>
+                    <span className="h-4 w-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    {confirmDialog.confirmText ?? "Xác nhận"}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AddStimulusModal
         isOpen={addStimulusModal.isOpen}

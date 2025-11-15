@@ -25,6 +25,8 @@ import {
   dashboardRoutes,
   badgeRoutes,
   studyScheduleRoutes,
+  newsRoutes,
+  vocabularyRoutes,
 } from "./modules";
 
 import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
@@ -111,6 +113,12 @@ app.use("/api/badges", badgeRoutes);
 
 // Study Schedules
 app.use("/api/study-schedules", studyScheduleRoutes);
+
+// News
+app.use("/api/news", newsRoutes);
+
+// Vocabulary
+app.use("/api/vocabulary", vocabularyRoutes);
 
 //404 CHO API (tuỳ chọn)
 app.use((req, res, next) => {

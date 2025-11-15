@@ -2,19 +2,22 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { usePlacementTest } from "@/hooks/tests/usePlacementTest";
+import { usePracticeTest } from "@/hooks/tests/usePracticeTest";
 import { Sidebar } from "./Sidebar";
 import { ResultsPanel } from "./ResultsPanel";
 import { groupByStimulus } from "@/utils/groupByStimulus";
 import { StimulusRowCard, StimulusColumnCard } from "./StimulusCards";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import {
   ListChecks,
   Timer,
-  Focus,
   Play,
   Clock,
+  BookOpen,
+  Headphones,
 } from "lucide-react";
 
 function fmtTime(totalSec: number) {
@@ -23,7 +26,14 @@ function fmtTime(totalSec: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export default function PlacementPage() {
+function partLabel(partKey: string) {
+  const n = partKey.match(/\d+/)?.[0];
+  return n ? `Part ${n}` : partKey;
+}
+
+export default function PracticeRunner() {
+  const router = useRouter();
+  const base = useBasePrefix("vi");
   const {
     items,
     stimulusMap,
@@ -39,7 +49,10 @@ export default function PlacementPage() {
     answered,
     started,
     setStarted,
-  } = usePlacementTest();
+    partKey,
+    level,
+    test,
+  } = usePracticeTest();
 
   const { user } = useAuth();
   const isAuthed = !!user;
@@ -48,9 +61,7 @@ export default function PlacementPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const durationMin = 35;
-  const countdownTotal = durationMin * 60;
-  const leftSec = Math.max(0, countdownTotal - timeSec);
+  const isListening = /^part\.[1-4]$/.test(partKey);
   const progress = total ? Math.round((answered / total) * 100) : 0;
 
   // Group items
@@ -77,6 +88,7 @@ export default function PlacementPage() {
     setIsSubmitting(true);
     try {
       await submit();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setIsSubmitting(false);
     }
@@ -104,14 +116,33 @@ export default function PlacementPage() {
     }, 100);
   };
 
-  // Header (đã cải thiện trước đó)
+  // Header
   const Header = () => (
     <header className="mb-8">
       <div className="mx-auto">
         <div className="flex flex-col gap-5 xl:flex-row sm:justify-between py-6">
-          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">
-            Bài kiểm tra xếp trình độ
-          </h1>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              {isListening ? (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                  <Headphones className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase">
+                    Luyện Nghe
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                  <BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase">
+                    Luyện Đọc
+                  </span>
+                </div>
+              )}
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">
+              {partLabel(partKey)} - Level {level} - Test {test}
+            </h1>
+          </div>
           <div className="flex flex-wrap items-center gap-4">
             <div className="group flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white/80 dark:bg-zinc-800/70 backdrop-blur-sm border border-zinc-200/70 dark:border-zinc-700/70 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30 transition-transform duration-300 group-hover:scale-110">
@@ -136,7 +167,7 @@ export default function PlacementPage() {
                   Thời gian
                 </p>
                 <p className="text-base font-bold text-zinc-900 dark:text-white">
-                  {durationMin} phút
+                  {fmtTime(timeSec)}
                 </p>
               </div>
             </div>
@@ -144,11 +175,7 @@ export default function PlacementPage() {
         </div>
 
         <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-300 leading-relaxed">
-          Kiểm tra rút gọn giúp ước lượng điểm TOEIC từ{" "}
-          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-            0–990
-          </span>{" "}
-          và nhận lộ trình học cá nhân hóa phù hợp nhất với bạn.
+          Luyện tập {partLabel(partKey)} ở Level {level} - Test {test}. Hoàn thành bài làm và xem kết quả chi tiết.
         </p>
       </div>
     </header>
@@ -168,7 +195,7 @@ export default function PlacementPage() {
         onJump={jumpTo}
         onToggleDetails={() => setShowDetails((s: any) => !s)}
         showDetails={showDetails}
-        countdownSec={countdownTotal}
+        countdownSec={35 * 60}
         started={started}
         onStart={handleStart}
         isAuthed={isAuthed}
@@ -203,7 +230,7 @@ export default function PlacementPage() {
                 để làm bài
               </h2>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Thời gian: <strong>{durationMin} phút</strong> • {total} câu hỏi
+                {total} câu hỏi • Làm bài theo tốc độ của bạn
               </p>
             </div>
           </div>
@@ -249,7 +276,7 @@ export default function PlacementPage() {
 
             {resp && (
               <ResultsPanel
-                resp={resp}
+                resp={resp as any}
                 timeLabel={fmtTime(resp.timeSec)}
                 onToggleDetails={() => setShowDetails((s: any) => !s)}
                 showDetails={showDetails}
@@ -259,16 +286,39 @@ export default function PlacementPage() {
         )}
       </main>
 
+      {focusMode && started && !resp && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden lg:flex items-center gap-4 rounded-full bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-300 dark:border-zinc-700 px-5 py-2.5 shadow-2xl text-sm font-bold">
+          <span className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200">
+            Câu
+            <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
+              {currentIndex + 1}
+            </span>
+            / {total}
+          </span>
+          <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+            <Clock className="w-4 h-4" />
+            {fmtTime(timeSec)}
+          </span>
+          <div className="w-32 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <button
+            onClick={() => setFocusMode(false)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all hover:scale-105"
+          >
+            Mở lại
+          </button>
+        </div>
+      )}
+
       {/* Mobile HUD - Chưa bắt đầu */}
       {!resp && !started && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 lg:hidden w-[calc(100%-2rem)] max-w-md">
           <div className="flex items-center justify-between gap-4 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-300 dark:border-zinc-700 px-5 py-4 shadow-2xl">
             <div className="flex items-center gap-4 text-sm font-medium">
-              <span className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
-                <Timer className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                {durationMin} phút
-              </span>
-              <span className="text-zinc-600 dark:text-zinc-400">•</span>
               <span className="text-zinc-700 dark:text-zinc-300">
                 {total} câu
               </span>
@@ -295,9 +345,9 @@ export default function PlacementPage() {
               </span>
               / {total}
             </div>
-            <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400">
+            <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
               <Clock className="w-3.5 h-3.5" />
-              {fmtTime(leftSec)}
+              {fmtTime(timeSec)}
             </div>
             <div className="flex-1 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
               <div
@@ -312,36 +362,6 @@ export default function PlacementPage() {
               Nộp
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Focus Mode HUD */}
-      {focusMode && started && !resp && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden lg:flex items-center gap-4 rounded-full bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-300 dark:border-zinc-700 px-5 py-2.5 shadow-2xl text-sm font-bold">
-          <span className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200">
-            Câu
-            <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
-              {currentIndex + 1}
-            </span>
-            / {total}
-          </span>
-          <span className="flex items-center gap-1 text-red-600 dark:text-red-400">
-            <Clock className="w-4 h-4" />
-            {fmtTime(leftSec)}
-          </span>
-          <div className="w-32 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <button
-            onClick={() => setFocusMode(false)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all hover:scale-105"
-          >
-            <Focus className="w-4 h-4" />
-            Mở lại
-          </button>
         </div>
       )}
     </div>

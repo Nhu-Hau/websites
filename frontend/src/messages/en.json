@@ -114,10 +114,31 @@
   },
   "completeGoogle": {
     "title": "Complete Google Registration",
-    "subtitle": "You’ve signed in with Google. Please create a password to complete your account setup.",
+    "subtitle": "You've signed in with Google. Please create a password to complete your account setup.",
     "password": "Password",
     "confirm": "Confirm Password",
     "submit": "Complete Registration",
     "processing": "Processing..."
+  },
+  "news": {
+    "title": "News & Articles",
+    "noNews": "No news available",
+    "notFound": "News not found",
+    "previous": "Previous",
+    "next": "Next",
+    "premiumHint": "Upgrade to Premium to access word translation and vocabulary features!",
+    "category": {
+      "all": "All",
+      "education": "Education",
+      "politics": "Politics",
+      "travel": "Travel",
+      "technology": "Technology",
+      "sports": "Sports",
+      "entertainment": "Entertainment",
+      "business": "Business",
+      "society": "Society",
+      "health": "Health",
+      "culture": "Culture"
+    }
   }
 }

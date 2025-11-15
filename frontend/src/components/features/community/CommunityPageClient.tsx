@@ -1,3 +1,4 @@
+// frontend/src/components/features/community/CommunityPageClient.tsx
 "use client";
 
 import React from "react";
@@ -11,10 +12,6 @@ import { getSocket } from "@/lib/socket";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 const PAGE_SIZE = 5;
-
-// MÀU CHỦ ĐẠO
-const PRIMARY = "#1C6EA4";
-const SECONDARY = "#3D8FC7";
 
 interface CommunityPageClientProps {
   initialPosts: {
@@ -54,12 +51,12 @@ export default function CommunityPageClient({
           cache: "no-store",
         }
       );
-      if (!r.ok) throw new Error("Không thể tải bài viết");
+      if (!r.ok) throw new Error("Failed to load posts");
       const j = await r.json();
       setTotal(j.total || 0);
       setPosts(j.items ?? []);
     } catch (e) {
-      toast.error("Lỗi khi tải bài viết");
+      toast.error("Error loading posts");
       console.error("[load] ERROR", e);
     } finally {
       setLoading(false);
@@ -169,19 +166,22 @@ export default function CommunityPageClient({
     ));
   }, [posts, handlePostChanged, currentUserId]);
 
-  const showBottomPager = total >= 4;
+  const showBottomPager = total >= PAGE_SIZE;
 
   return (
-    <div className="space-y-6">
-      {postsList}
+    <div className="space-y-8">
+      {/* Posts List */}
+      {postsList.length > 0 ? (
+        <div className="space-y-4">{postsList}</div>
+      ) : null}
 
       {/* Loading State */}
       {loading && (
-        <div className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl p-8 shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#1C6EA4] border-t-transparent" />
-            <p className="text-sm font-black text-zinc-600 dark:text-zinc-400">
-              Đang tải…
+        <div className="flex items-center justify-center py-16">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
+            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Loading...
             </p>
           </div>
         </div>
@@ -189,48 +189,34 @@ export default function CommunityPageClient({
 
       {/* Empty State */}
       {!loading && total === 0 && (
-        <div className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl p-12 shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 text-center overflow-hidden">
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1C6EA4]/5 via-[#3D8FC7]/5 to-[#6BA9D9]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
-
-          <div className="relative">
-            {/* Icon 3D với hiệu ứng glow */}
-            <div className="relative mx-auto w-24 h-24 mb-6 transform-gpu transition-all duration-400 group-hover:scale-110 group-hover:-rotate-3">
-              <div
-                className={`flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[${PRIMARY}] to-[${SECONDARY}] shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50`}
-              >
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/30 backdrop-blur-md">
-                  <svg
-                    className="h-10 w-10 text-white drop-shadow-md"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#3D8FC7]/40 to-[#6BA9D9]/40 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            </div>
-
-            <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mb-2">
-              Chưa có bài viết
-            </p>
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-              Hãy là người đầu tiên chia sẻ với cộng đồng!
-            </p>
+        <div className="flex flex-col items-center justify-center px-4 text-center">
+          <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
+            <svg
+              className="w-8 h-8 text-zinc-400 dark:text-zinc-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
+            </svg>
           </div>
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+            No posts yet
+          </h3>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-sm">
+            Be the first to share with the community!
+          </p>
         </div>
       )}
 
       {/* Pagination */}
       {showBottomPager && (
-        <div className="mt-10">
+        <div className="flex justify-center pt-4">
           <Pagination
             page={page}
             total={total}

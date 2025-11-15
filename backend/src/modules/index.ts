@@ -18,6 +18,8 @@ import progressRoutes from "./progress/progress.routes";
 import dashboardRoutes from "./dashboard/dashboard.routes";
 import badgeRoutes from "./badge/badge.routes";
 import studyScheduleRoutes from "./study-schedule/study-schedule.routes";
+import { newsRoutes } from "./news/news.routes";
+import vocabularyRoutes from "./vocabulary/vocabulary.routes";
 
 export {
   authRoutes,
@@ -37,5 +39,7 @@ export {
   dashboardRoutes,
   badgeRoutes,
   studyScheduleRoutes,
+  newsRoutes,
+  vocabularyRoutes,
 };
 

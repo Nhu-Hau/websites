@@ -204,6 +204,57 @@ export async function postJsonWithAuth<T = any>(
   return json;
 }
 
+/**
+ * putJson với auto-refresh
+ */
+export async function putJsonWithAuth<T = any>(
+  pathOrUrl: string,
+  data?: any,
+  init?: RequestInit
+): Promise<T> {
+  const res = await fetchWithAuth(resolveUrl(pathOrUrl), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+    body: data != null ? JSON.stringify(data) : undefined,
+    ...init,
+  });
+
+  const json = (await parseMaybeJson(res)) as T & { message?: string; code?: string };
+  if (!res.ok) {
+    const error = new Error(
+      json?.message || `PUT ${res.status} ${res.statusText}`
+    );
+    (error as any).code = json?.code;
+    (error as any).status = res.status;
+    throw error;
+  }
+  return json;
+}
+
+/**
+ * deleteJson với auto-refresh
+ */
+export async function deleteJsonWithAuth<T = any>(
+  pathOrUrl: string,
+  init?: RequestInit
+): Promise<T> {
+  const res = await fetchWithAuth(resolveUrl(pathOrUrl), {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+    ...init,
+  });
+
+  const json = (await parseMaybeJson(res)) as T & { message?: string };
+  if (!res.ok) {
+    const error = new Error(
+      json?.message || `DELETE ${res.status} ${res.statusText}`
+    );
+    (error as any).status = res.status;
+    throw error;
+  }
+  return json;
+}
+
 // ==================== Legacy API Methods (from api.ts) ====================
 
 export async function apiGet<T>(path: string) {
@@ -343,3 +394,31 @@ export function demoUserHeaders(u: { id: string; name?: string; role?: 'admin'|'
     'x-user-role': u.role ?? 'student',
   };
 }
+
+// ==================== API Client Object ====================
+
+/**
+ * API Client object với interface giống axios
+ * Wraps các hàm auth-enabled methods và trả về { data }
+ */
+export const apiClient = {
+  async get<T = any>(pathOrUrl: string, init?: RequestInit): Promise<{ data: T }> {
+    const data = await getJsonWithAuth<T>(pathOrUrl, init);
+    return { data };
+  },
+
+  async post<T = any>(pathOrUrl: string, data?: any, init?: RequestInit): Promise<{ data: T }> {
+    const result = await postJsonWithAuth<T>(pathOrUrl, data, init);
+    return { data: result };
+  },
+
+  async put<T = any>(pathOrUrl: string, data?: any, init?: RequestInit): Promise<{ data: T }> {
+    const result = await putJsonWithAuth<T>(pathOrUrl, data, init);
+    return { data: result };
+  },
+
+  async delete<T = any>(pathOrUrl: string, init?: RequestInit): Promise<{ data: T }> {
+    const result = await deleteJsonWithAuth<T>(pathOrUrl, init);
+    return { data: result };
+  },
+};

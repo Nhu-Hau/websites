@@ -206,18 +206,18 @@ function BadgeItem({ badge }: { badge: Badge }) {
       <div
         data-tooltip-id={tooltipId}
         data-tooltip-content={detailedDescription}
-          className={`
-          group relative flex items-center justify-center
-          w-12 h-12 rounded-xl border-2 transition-all duration-300
-          bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl
+        className={`
+          relative flex items-center justify-center
+          w-12 h-12 rounded-lg border transition-all
+          bg-white dark:bg-zinc-800
           ${config.borderColor}
-          hover:scale-105 hover:shadow-xl hover:ring-2 hover:ring-white/30
+          hover:shadow-md
           cursor-pointer
         `}
       >
-        <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${config.gradient} opacity-20 group-hover:opacity-30 transition-opacity`} />
-        <Icon className={`relative z-10 w-6 h-6 ${config.textColor} drop-shadow-md`} />
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full border-2 border-white dark:border-zinc-900 shadow-md flex items-center justify-center">
+        <div className={`absolute inset-0 rounded-lg bg-gradient-to-br ${config.gradient} opacity-10`} />
+        <Icon className={`relative z-10 w-6 h-6 ${config.textColor}`} />
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full border-2 border-white dark:border-zinc-800 shadow-sm flex items-center justify-center">
           <Trophy className="w-2.5 h-2.5 text-white" />
         </div>
       </div>
@@ -226,8 +226,7 @@ function BadgeItem({ badge }: { badge: Badge }) {
         place="top"
         positionStrategy="fixed"
         offset={12}
-        className="!bg-zinc-900/95 !text-white !text-xs !font-bold !rounded-xl !px-4 !py-2.5 !max-w-xs !z-50 backdrop-blur-md border border-white/20"
-        style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}
+        className="!bg-zinc-900 !text-white !text-xs !font-semibold !rounded-lg !px-3 !py-2 !max-w-xs !z-50 border border-zinc-700"
       />
     </>
   );
@@ -243,20 +242,20 @@ function LockedBadgeItem({ badgeType }: { badgeType: BadgeType }) {
       <div
         data-tooltip-id={tooltipId}
         data-tooltip-content={`Chưa đạt: ${config.description}`}
-          className={`
-          group relative flex items-center justify-center
-          w-12 h-12 rounded-xl border-2 border-dashed transition-all duration-300
-          bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl
+        className={`
+          relative flex items-center justify-center
+          w-12 h-12 rounded-lg border border-dashed transition-all
+          bg-white dark:bg-zinc-800
           ${config.borderColor}
           opacity-50 grayscale
-          hover:opacity-70 hover:grayscale-0 hover:scale-105 hover:shadow-md
+          hover:opacity-70 hover:grayscale-0
           cursor-not-allowed
         `}
       >
-        <div className="absolute inset-0 rounded-xl bg-gradient-to-br opacity-10" />
+        <div className={`absolute inset-0 rounded-lg bg-gradient-to-br ${config.gradient} opacity-5`} />
         <Icon className={`w-6 h-6 ${config.textColor} opacity-40`} />
         <div className="absolute inset-0 flex items-center justify-center">
-          <Lock className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+          <Lock className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
         </div>
       </div>
       <Tooltip
@@ -264,7 +263,7 @@ function LockedBadgeItem({ badgeType }: { badgeType: BadgeType }) {
         place="top"
         positionStrategy="fixed"
         offset={12}
-        className="!bg-zinc-800/95 !text-white !text-xs !font-bold !rounded-xl !px-4 !py-2.5 !max-w-xs !z-50 backdrop-blur-md border border-white/10"
+        className="!bg-zinc-800 !text-white !text-xs !font-semibold !rounded-lg !px-3 !py-2 !max-w-xs !z-50 border border-zinc-700"
       />
     </>
   );
@@ -316,24 +315,21 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
         const config = BADGE_CONFIG[badgeType];
         if (config) {
           toast.success(
-            <div className="flex items-center gap-4 p-1">
-              <div className={`p-3 rounded-2xl bg-gradient-to-br ${config.gradient} shadow-xl ring-2 ring-white/50`}>
-                <config.icon className="w-7 h-7 text-white" />
+            <div className="flex items-center gap-3 p-1">
+              <div className={`p-2 rounded-lg bg-gradient-to-br ${config.gradient}`}>
+                <config.icon className="w-5 h-5 text-white" />
               </div>
               <div>
-                <div className="text-lg font-black text-zinc-900 dark:text-white">
+                <div className="text-base font-semibold text-zinc-900 dark:text-white">
                   Chúc mừng!
                 </div>
-                <div className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
-                  Bạn đã mở khóa: <span className="text-transparent bg-clip-text bg-gradient-to-r ${config.gradient}">{config.name}</span>
+                <div className="text-sm text-zinc-700 dark:text-zinc-300">
+                  Bạn đã mở khóa: {config.name}
                 </div>
               </div>
             </div>,
             {
               duration: 6000,
-              classNames: {
-                toast: "border-2 border-white/30 backdrop-blur-xl shadow-2xl",
-              },
             }
           );
           if (onNewBadge) onNewBadge(badgeType);
@@ -347,82 +343,73 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
   const totalCount = Object.keys(BADGE_CONFIG).length;
 
   return (
-    <div className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005] hover:ring-amber-300/50 dark:hover:ring-amber-600/50 overflow-hidden">
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="relative">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="relative transform-gpu transition-all duration-400 group-hover:scale-110 group-hover:-rotate-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/30 backdrop-blur-md">
-                  <Trophy className="h-7 w-7 text-white drop-shadow-md" />
-                </div>
-              </div>
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-400/40 to-orange-400/40 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-zinc-900 dark:text-white">
-                Bộ sưu tập huy hiệu
-              </h2>
-              <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
-                {earnedCount} / {totalCount} huy hiệu đã mở khóa
-              </p>
-            </div>
+    <div className="rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-6 shadow-sm hover:shadow-md transition-shadow">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-700">
+            <Trophy className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
           </div>
+          <div>
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
+              Bộ sưu tập huy hiệu
+            </h2>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              {earnedCount} / {totalCount} huy hiệu đã mở khóa
+            </p>
+          </div>
+        </div>
         {earnedCount > 0 && (
-          <div className="px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900/30 dark:to-amber-900/30 border-2 border-yellow-300 dark:border-yellow-700 shadow-md">
-            <span className="text-sm font-black text-yellow-700 dark:text-yellow-300">
+          <div className="px-3 py-1.5 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700">
+            <span className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
               {earnedCount}
             </span>
           </div>
         )}
       </div>
 
-          {checking ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-amber-600 dark:text-amber-400" />
+      {checking ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-zinc-600 dark:text-zinc-400" />
+        </div>
+      ) : badges.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="mx-auto w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center mb-4">
+            <Trophy className="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
           </div>
-        ) : badges.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="mx-auto w-24 h-24 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner flex items-center justify-center mb-6">
-              <Trophy className="h-12 w-12 text-slate-400 dark:text-zinc-500" />
-            </div>
-            <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mb-2">
-              Chưa có huy hiệu nào
-            </p>
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-8">
-              Hãy bắt đầu luyện tập để mở khóa huy hiệu đầu tiên!
-            </p>
-          </div>
+          <p className="text-base font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+            Chưa có huy hiệu nào
+          </p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Hãy bắt đầu luyện tập để mở khóa huy hiệu đầu tiên!
+          </p>
+        </div>
       ) : (
         <>
-            {/* Earned Badges */}
-            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3 mb-6">
+          {/* Earned Badges */}
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3 mb-6">
             {badges.map((badge) => (
               <BadgeItem key={badge._id} badge={badge} />
             ))}
           </div>
 
-            {/* Locked Badges */}
-            {badges.length < totalCount && (
-              <div className="pt-6 border-t-2 border-white/20 dark:border-zinc-700/50">
-                <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-4 text-center">
-                  Huy hiệu chưa mở khóa
-                </p>
-                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
+          {/* Locked Badges */}
+          {badges.length < totalCount && (
+            <div className="pt-6 border-t border-zinc-200 dark:border-zinc-700">
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-4 text-center">
+                Huy hiệu chưa mở khóa
+              </p>
+              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
                 {Object.keys(BADGE_CONFIG)
                   .filter((type) => !badges.some((b) => b.badgeType === type))
                   .map((type) => (
                     <LockedBadgeItem key={type} badgeType={type as BadgeType} />
                   ))}
-                </div>
               </div>
-            )}
-          </>
-        )}
-      </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

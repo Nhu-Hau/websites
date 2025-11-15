@@ -16,7 +16,7 @@ import type {
   Encryption_Type,
 } from "livekit-client";
 import { RoomEvent } from "livekit-client";
-import { Send, Upload, Download, X, AlertCircle, Trash2 } from "lucide-react";
+import { Send, Upload, Download, X, AlertCircle, Trash2, MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
@@ -332,7 +332,7 @@ export default function ChatPanel({ me, roomName }: Props) {
           toast.success("Đã gửi tài liệu vào chat");
         } catch (err) {
           console.error("Send doc message failed:", err);
-          toast.error("Không 보내 được tin nhắn tài liệu");
+          toast.error("Không thể gửi tin nhắn tài liệu");
         }
       } catch (err) {
         console.error("Upload error:", err);
@@ -406,12 +406,6 @@ export default function ChatPanel({ me, roomName }: Props) {
   const items = useMemo(() => {
     return msgs.map((m) => {
       const isMe = m.fromId === me.id;
-      const base =
-        "group/msg relative max-w-[85%] rounded-2xl px-3.5 py-2 text-sm shadow-lg border-2 transition-all duration-300";
-
-      const bubble = isMe
-        ? "bg-gradient-to-tr from-sky-600 to-indigo-600 text-white border-sky-700 rounded-tr-sm"
-        : "bg-white/90 dark:bg-zinc-800/90 text-zinc-900 dark:text-zinc-100 border-white/30 dark:border-zinc-700/50 rounded-tl-sm backdrop-blur-sm";
 
       if (m.kind === "text") {
         return (
@@ -420,17 +414,19 @@ export default function ChatPanel({ me, roomName }: Props) {
             className={`flex ${isMe ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`${base} ${bubble}`}
+              className={`relative max-w-[85%] rounded-lg px-3 py-2 text-sm shadow-sm transition-all duration-200 ${
+                isMe
+                  ? "bg-blue-600 text-white rounded-tr-sm"
+                  : "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700 rounded-tl-sm"
+              }`}
               title={new Date(m.ts).toLocaleString("vi-VN")}
             >
               {!isMe && (
-                <div className="text-xs opacity-80 mb-0.5 font-black">
+                <div className="text-xs font-medium opacity-75 mb-1">
                   {m.fromName} • <span className="capitalize">{m.role}</span>
                 </div>
               )}
-              <div className="whitespace-pre-wrap break-words font-medium">
-                {m.text}
-              </div>
+              <div className="whitespace-pre-wrap break-words">{m.text}</div>
             </div>
           </div>
         );
@@ -442,34 +438,34 @@ export default function ChatPanel({ me, roomName }: Props) {
           className={`flex ${isMe ? "justify-end" : "justify-start"}`}
         >
           <div
-            className={`${base} ${
+            className={`relative max-w-[85%] rounded-lg px-3 py-2 text-sm shadow-sm border transition-all duration-200 ${
               isMe
-                ? "bg-gradient-to-br from-sky-50 to-indigo-50 text-sky-900 border-sky-200"
-                : "bg-white/90 dark:bg-zinc-900/90 border-white/30 dark:border-zinc-700/50 backdrop-blur-sm"
+                ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100"
+                : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white"
             }`}
             title={new Date(m.ts).toLocaleString("vi-VN")}
           >
             {!isMe && (
-              <div className="text-xs opacity-80 mb-0.5 font-black">
-                {m.fromName} - {m.role}
+              <div className="text-xs font-medium opacity-75 mb-1">
+                {m.fromName} • <span className="capitalize">{m.role}</span>
               </div>
             )}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-br from-sky-100 to-indigo-100 text-sky-700 shadow-inner">
-                  <Upload className="w-4 h-4" />
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-700">
+                  <Upload className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
                 </div>
                 <div className="min-w-[80px] max-w-[110px]">
                   <div
-                    className="text-sm font-black truncate text-ellipsis overflow-hidden"
+                    className="text-sm font-medium truncate"
                     title={m.docName || "Tệp tin"}
                   >
                     {m.docName?.length && m.docName.length > 20
                       ? m.docName.slice(0, 17) + "..."
                       : m.docName || "Tệp tin"}
                   </div>
-                  <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                    Tài liệu đính kèm
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Tài liệu
                   </div>
                 </div>
               </div>
@@ -477,7 +473,7 @@ export default function ChatPanel({ me, roomName }: Props) {
               {canDownload && m.docId ? (
                 <button
                   onClick={() => handleDownload(m.docId!)}
-                  className="ml-auto flex items-center gap-1 text-xs font-black px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-400 hover:to-teal-400 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                   title="Tải xuống"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -485,11 +481,11 @@ export default function ChatPanel({ me, roomName }: Props) {
                 </button>
               ) : (
                 <span
-                  className="ml-auto flex items-center gap-1 text-xs font-black px-2.5 py-1.5 rounded-lg border-2 border-zinc-300 dark:border-zinc-600 text-zinc-400 cursor-not-allowed"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-400 dark:text-zinc-500 text-xs cursor-not-allowed"
                   title="Chỉ Premium hoặc Teacher/Admin"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  Khoá
+                  Khóa
                 </span>
               )}
             </div>
@@ -500,45 +496,42 @@ export default function ChatPanel({ me, roomName }: Props) {
   }, [msgs, me.id, canDownload, handleDownload]);
 
   return (
-    <aside className="group relative h-[calc(100dvh-5rem)] md:h-[calc(100dvh-6rem)] border-l-2 border-white/30 dark:border-zinc-700/50 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl flex flex-col shadow-2xl ring-2 ring-white/20 dark:ring-zinc-700/50 transition-all duration-500 hover:ring-blue-300/50 dark:hover:ring-blue-600/50 overflow-hidden">
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-      
+    <aside className="flex flex-col h-[calc(100dvh-5rem)] md:h-[calc(100dvh-6rem)] border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
       {/* Header */}
-      <div className="relative px-4 py-3 border-b-2 border-white/30 dark:border-zinc-700/50 flex items-center justify-between bg-gradient-to-r from-blue-50/90 to-indigo-50/90 dark:from-blue-900/30 dark:to-indigo-900/20">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
         <div>
-          <div className="text-sm font-black text-zinc-900 dark:text-white">
-            Bình luận livestream
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+            <span className="text-sm font-semibold text-zinc-900 dark:text-white">
+              Bình luận
+            </span>
           </div>
-          <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-0.5">
             #{roomName}
           </div>
         </div>
-        <div className="relative flex items-center gap-2">
-          {canDeleteRoom && (
-            <button
-              onClick={handleDeleteRoom}
-              className="group/del relative p-2 rounded-xl bg-red-50/80 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 transition-all duration-300 hover:scale-110 shadow-md hover:shadow-lg overflow-hidden"
-              title="Xóa phòng"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-rose-500/5 opacity-0 group-hover/del:opacity-100 transition-opacity duration-300" />
-              <Trash2 className="w-4 h-4 relative z-10 transition-transform group-hover/del:rotate-12" />
-            </button>
-          )}
-        </div>
+        {canDeleteRoom && (
+          <button
+            onClick={handleDeleteRoom}
+            className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            title="Xóa phòng"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Messages */}
       <div
         ref={listRef}
-        className="relative flex-1 px-3 py-3 space-y-2 overflow-y-auto bg-gradient-to-b from-transparent to-white/30 dark:to-zinc-800/50"
+        className="flex-1 px-4 py-4 space-y-3 overflow-y-auto"
       >
         {items.length ? (
           items
         ) : (
-          <div className="relative text-center mt-6">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 mb-3 shadow-inner ring-4 ring-white/30 dark:ring-zinc-700/30">
-              <Send className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 mb-4">
+              <Send className="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
             </div>
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
               Hãy là người bình luận đầu tiên!
@@ -548,8 +541,8 @@ export default function ChatPanel({ me, roomName }: Props) {
       </div>
 
       {/* Input row */}
-      <div className="relative p-3 border-t-2 border-white/30 dark:border-zinc-700/50 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md">
-        <form onSubmit={onSubmit} className="relative flex items-center gap-2">
+      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+        <form onSubmit={onSubmit} className="flex items-end gap-2">
           {canUpload && (
             <>
               <input
@@ -562,11 +555,10 @@ export default function ChatPanel({ me, roomName }: Props) {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="group/upload relative p-2 rounded-xl bg-white/90 dark:bg-zinc-700/90 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 overflow-hidden"
+                className="p-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 title="Tải tệp lên và gửi vào chat"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 opacity-0 group-hover/upload:opacity-100 transition-opacity duration-300" />
-                <Upload className="w-5 h-5 text-blue-600 dark:text-blue-400 relative z-10 transition-transform group-hover/upload:scale-110" />
+                <Upload className="w-4 h-4" />
               </button>
             </>
           )}
@@ -579,21 +571,20 @@ export default function ChatPanel({ me, roomName }: Props) {
                 : "Nhập tin nhắn…"
             }
             disabled={!isPremium && commentCount >= commentLimit}
-            className="flex-1 rounded-2xl border-2 border-white/30 dark:border-zinc-700/50 bg-white/90 dark:bg-zinc-700/90 px-3 py-2 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500/50 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-white transition-all duration-300 shadow-md"
+            className="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <button
             type="submit"
             disabled={
               !input.trim() || (!isPremium && commentCount >= commentLimit)
             }
-            className="group/btn relative inline-flex items-center justify-center gap-2 rounded-2xl px-3.5 py-2 text-sm font-black bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 disabled:opacity-60 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 overflow-hidden"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
-            <Send className="w-4 h-4 relative z-10 transition-transform group-hover/btn:translate-x-0.5" />
+            <Send className="w-4 h-4" />
           </button>
         </form>
         {!isPremium && (
-          <div className="relative mt-2 text-center text-xs font-black text-zinc-500 dark:text-zinc-400">
+          <div className="mt-2 text-center text-xs text-zinc-500 dark:text-zinc-500">
             Comment: {commentCount}/{commentLimit}
           </div>
         )}

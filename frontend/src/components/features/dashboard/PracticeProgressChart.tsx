@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { BarChart3, Loader2 } from "lucide-react";
+import { TrendingUp, Loader2 } from "lucide-react";
 
 /* ===================== Types ===================== */
 type Lvl = 1 | 2 | 3;
@@ -188,196 +188,167 @@ export default function PracticeProgressChart() {
     return map;
   }, [practiceHist]);
 
+  const chartData = lineByPart[selectedPart] || [];
+
   /* ===================== Render ===================== */
   return (
-    <section className="group relative h-full flex flex-col rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl p-6 shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005] hover:ring-indigo-300/50 dark:hover:ring-indigo-600/50 overflow-hidden">
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="relative flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-4">
-            <div className="relative transform-gpu transition-all duration-400 group-hover:scale-110 group-hover:-rotate-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/30 backdrop-blur-md">
-                  <BarChart3 className="h-7 w-7 text-white drop-shadow-md" />
-                </div>
-              </div>
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-400/40 to-blue-400/40 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-zinc-900 dark:text-white">
-                Tiến bộ luyện tập
-              </h2>
-              <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
-                Theo dõi accuracy theo từng Part
-              </p>
-            </div>
+    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/20">
+            <TrendingUp className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
           </div>
-        </div>
-
-        {/* Part chips */}
-        <div className="mb-6">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {PARTS.map((p) => {
-              const isSel = selectedPart === p;
-              return (
-                <button
-                  key={p}
-                  onClick={() => setSelectedPart(p)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-black transition-all duration-200
-                    ${
-                      isSel
-                        ? "bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg"
-                        : "bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 hover:shadow-md hover:scale-[1.02]"
-                    }`}
-                >
-                  {PART_LABEL[p]}
-                </button>
-              );
-            })}
+          <div>
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
+              Tiến bộ luyện tập
+            </h3>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Theo dõi accuracy theo từng Part
+            </p>
           </div>
-        </div>
-
-        {/* Chart */}
-        <div className="relative flex-1 min-h-[200px]">
-          {loading ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
-              <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400">
-                Đang tải dữ liệu...
-              </p>
-            </div>
-          ) : lineByPart[selectedPart]?.length > 0 ? (
-            <div className="absolute inset-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={lineByPart[selectedPart]}
-                  margin={{ top: 8, right: 12, left: 4, bottom: 4 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="4 4"
-                    stroke="#e5e7eb"
-                    className="dark:stroke-zinc-700 opacity-50"
-                  />
-                  <XAxis
-                    dataKey="at"
-                    interval="preserveStartEnd"
-                    tick={{ fill: "#6b7280", fontSize: 11, fontWeight: 600 }}
-                    axisLine={{ stroke: "#d1d5db" }}
-                    tickLine={{ stroke: "#d1d5db" }}
-                    minTickGap={20}
-                  />
-                  <YAxis
-                    domain={[0, 100]}
-                    ticks={[0, 25, 50, 75, 100]}
-                    tick={{ fill: "#6b7280", fontSize: 11, fontWeight: 600 }}
-                    axisLine={{ stroke: "#d1d5db" }}
-                    tickLine={{ stroke: "#d1d5db" }}
-                    width={36}
-                  />
-                  <ChartTooltip
-                    contentStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.95)",
-                      border: "2px solid #e5e7eb",
-                      borderRadius: "12px",
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                      padding: "10px 14px",
-                      backdropFilter: "blur(8px)",
-                    }}
-                    labelStyle={{
-                      color: "#374151",
-                      fontWeight: 700,
-                      fontSize: 12,
-                    }}
-                    itemStyle={{ fontSize: 12, fontWeight: 600 }}
-                    cursor={{
-                      stroke: "#6366f1",
-                      strokeWidth: 2,
-                      strokeDasharray: "6 6",
-                    }}
-                    formatter={(value: number, name: string, props: any) => {
-                      const payload = props.payload;
-                      const level = payload?.level
-                        ? ` • Level${payload.level}`
-                        : "";
-                      const test =
-                        payload?.test != null ? ` • Test${payload.test}` : "";
-                      return [
-                        `${Math.round(value)}%${level}${test}`,
-                        "Accuracy",
-                      ];
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="acc"
-                    stroke="#6366f1"
-                    strokeWidth={3}
-                    dot={{
-                      r: 5,
-                      stroke: "#6366f1",
-                      strokeWidth: 2,
-                      fill: "#fff",
-                    }}
-                    activeDot={{
-                      r: 7,
-                      stroke: "#6366f1",
-                      strokeWidth: 3,
-                      fill: "#fff",
-                    }}
-                    animationDuration={800}
-                  />
-                  {lineByPart[selectedPart]?.some(
-                    (d) => d.movingAvg != null
-                  ) && (
-                    <Line
-                      type="monotone"
-                      dataKey="movingAvg"
-                      stroke="#94a3b8"
-                      strokeWidth={2}
-                      strokeDasharray="5 4"
-                      dot={false}
-                      activeDot={false}
-                      animationDuration={800}
-                    />
-                  )}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6">
-              <div className="mx-auto w-24 h-24 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 dark:from-zinc-800 dark:to-zinc-700 shadow-inner flex items-center justify-center mb-6">
-                <BarChart3 className="h-12 w-12 text-slate-400 dark:text-zinc-500" />
-              </div>
-              <p className="text-lg font-black text-zinc-700 dark:text-zinc-300 mb-2">
-                Chưa có dữ liệu luyện tập
-              </p>
-              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 text-center max-w-xs">
-                Hãy làm bài Practice để xem biểu đồ tiến bộ này.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Legend */}
-        <div className="mt-6 flex items-center justify-center gap-6 text-sm font-bold">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-indigo-500 shadow-md" />
-            <span className="text-indigo-700 dark:text-indigo-400">
-              Accuracy
-            </span>
-          </div>
-          {lineByPart[selectedPart]?.some((d) => d.movingAvg != null) && (
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-0.5 bg-slate-400 dark:bg-slate-500" />
-              <span className="text-slate-600 dark:text-zinc-400">
-                Moving Avg
-              </span>
-            </div>
-          )}
         </div>
       </div>
-    </section>
+
+      {/* Part Selector */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        {PARTS.map((p) => {
+          const isSel = selectedPart === p;
+          return (
+            <button
+              key={p}
+              onClick={() => setSelectedPart(p)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150 ${
+                isSel
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+              }`}
+            >
+              {PART_LABEL[p]}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Chart */}
+      <div className="relative h-[205px]">
+        {loading ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin text-zinc-400 dark:text-zinc-500" />
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Đang tải dữ liệu...
+            </p>
+          </div>
+        ) : chartData.length > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={chartData}
+              margin={{ top: 8, right: 8, left: 0, bottom: 8 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#e5e7eb"
+                className="dark:stroke-zinc-800"
+              />
+              <XAxis
+                dataKey="at"
+                interval="preserveStartEnd"
+                tick={{ fill: "#71717a", fontSize: 11 }}
+                axisLine={{ stroke: "#d4d4d8" }}
+                tickLine={{ stroke: "#d4d4d8" }}
+                minTickGap={20}
+              />
+              <YAxis
+                domain={[0, 100]}
+                ticks={[0, 25, 50, 75, 100]}
+                tick={{ fill: "#71717a", fontSize: 11 }}
+                axisLine={{ stroke: "#d4d4d8" }}
+                tickLine={{ stroke: "#d4d4d8" }}
+                width={40}
+              />
+              <ChartTooltip
+                contentStyle={{
+                  backgroundColor: "rgba(255, 255, 255, 0.98)",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  padding: "8px 12px",
+                }}
+                labelStyle={{
+                  color: "#18181b",
+                  fontWeight: 600,
+                  fontSize: 11,
+                }}
+                itemStyle={{ fontSize: 11, fontWeight: 500 }}
+                cursor={{ stroke: "#6366f1", strokeWidth: 1 }}
+                formatter={(value: number, name: string, props: any) => {
+                  const payload = props.payload;
+                  const level = payload?.level
+                    ? ` • Level${payload.level}`
+                    : "";
+                  const test =
+                    payload?.test != null ? ` • Test${payload.test}` : "";
+                  return [
+                    `${Math.round(value)}%${level}${test}`,
+                    "Accuracy",
+                  ];
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="acc"
+                stroke="#6366f1"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, stroke: "#6366f1", strokeWidth: 2 }}
+                animationDuration={400}
+              />
+              {chartData.some((d) => d.movingAvg != null) && (
+                <Line
+                  type="monotone"
+                  dataKey="movingAvg"
+                  stroke="#94a3b8"
+                  strokeWidth={1.5}
+                  strokeDasharray="4 3"
+                  dot={false}
+                  activeDot={false}
+                  animationDuration={400}
+                />
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center p-6">
+            <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+              <TrendingUp className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-zinc-900 dark:text-white mb-1">
+                Chưa có dữ liệu luyện tập
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Hãy làm bài Practice để xem biểu đồ tiến bộ này
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Legend */}
+      {chartData.length > 0 && (
+        <div className="mt-4 flex items-center justify-center gap-6 text-xs text-zinc-600 dark:text-zinc-400">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-0.5 bg-indigo-600" />
+            <span>Accuracy</span>
+          </div>
+          {chartData.some((d) => d.movingAvg != null) && (
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-0.5 border-t border-dashed border-zinc-400" />
+              <span>Moving Avg</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

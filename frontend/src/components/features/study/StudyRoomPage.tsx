@@ -80,15 +80,12 @@ function LeaveRoomButton() {
   return (
     <button
       onClick={leave}
-      className="group absolute top-4 left-4 z-50 inline-flex items-center gap-2.5 rounded-2xl px-4 py-2.5 text-sm font-black bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl border-2 border-white/30 dark:border-zinc-700/50 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 ring-2 ring-white/20 dark:ring-zinc-800/50"
+      className="absolute top-4 left-4 z-50 inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 shadow-sm"
       aria-label="Rời phòng"
     >
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-rose-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      <LogOut className="w-4.5 h-4.5 text-rose-600 dark:text-rose-400 relative z-10 transition-transform group-hover:translate-x-0.5" />
-      <span className="text-zinc-900 dark:text-white relative z-10">Rời phòng</span>
-      <span className="ml-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 relative z-10">
-        (Esc)
-      </span>
+      <LogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
+      <span>Rời phòng</span>
+      <span className="ml-1 text-xs text-zinc-500 dark:text-zinc-500">(Esc)</span>
     </button>
   );
 }
@@ -121,14 +118,13 @@ function HostTile({ hostIdentity }: { hostIdentity: string }) {
 
   if (!hostP) {
     return (
-      <div className="flex items-center justify-center h-[calc(100dvh-6rem)] bg-gradient-to-br from-zinc-900 via-zinc-800 to-black text-white">
+      <div className="flex items-center justify-center h-[calc(100dvh-6rem)] bg-zinc-900 text-white">
         <div className="text-center space-y-4">
-          <div className="relative inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 shadow-2xl ring-4 ring-white/10 dark:ring-zinc-700/50">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400/40 to-indigo-400/40 blur-xl animate-pulse" />
-            <Crown className="h-12 w-12 text-white relative z-10" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-blue-600 mx-auto">
+            <Crown className="h-8 w-8 text-white" />
           </div>
-          <p className="text-xl font-black text-white">Đang chờ chủ phòng…</p>
-          <p className="text-sm font-medium text-zinc-400">
+          <p className="text-lg font-semibold text-white">Đang chờ chủ phòng…</p>
+          <p className="text-sm text-zinc-400">
             Khi giáo viên tham gia, video sẽ hiển thị ở đây.
           </p>
         </div>
@@ -156,45 +152,45 @@ function HostTile({ hostIdentity }: { hostIdentity: string }) {
         ) : (
           <div className="flex items-center justify-center h-full text-white">
             <div className="text-center space-y-3">
-              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center mx-auto shadow-2xl ring-4 ring-white/10">
-                <span className="text-3xl font-black text-zinc-300">
+              <div className="w-20 h-20 rounded-xl bg-zinc-800 flex items-center justify-center mx-auto">
+                <span className="text-2xl font-semibold text-zinc-300">
                   {initials(nameLabel)}
                 </span>
               </div>
-              <p className="text-lg font-black">{nameLabel}</p>
-              <p className="text-sm font-medium text-zinc-400 flex items-center gap-1.5 justify-center">
-                <VideoOff className="w-4.5 h-4.5" /> Camera chưa bật
+              <p className="text-base font-semibold">{nameLabel}</p>
+              <p className="text-sm text-zinc-400 flex items-center gap-1.5 justify-center">
+                <VideoOff className="w-4 h-4" /> Camera chưa bật
               </p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Overlay: tên + trạng thái */}
-      <div className="absolute bottom-4 left-4 flex items-center gap-3 px-4 py-2 rounded-2xl bg-black/80 dark:bg-zinc-900/80 backdrop-blur-xl text-white shadow-2xl border-2 border-white/20 dark:border-zinc-700/50 ring-2 ring-white/10 dark:ring-zinc-700/30">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg ring-2 ring-white/30">
-          <Crown className="w-4 h-4 text-white" />
+      {/* Overlay: name + status */}
+      <div className="absolute bottom-4 left-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-black/80 backdrop-blur-sm text-white border border-white/10">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600">
+          <Crown className="w-3.5 h-3.5 text-white" />
         </div>
-        <span className="text-sm font-black">{nameLabel}</span>
-        <span className="mx-2 opacity-60">•</span>
-        <span className="text-xs flex items-center gap-2.5 font-medium">
+        <span className="text-sm font-medium">{nameLabel}</span>
+        <span className="mx-1 opacity-60">•</span>
+        <span className="text-xs flex items-center gap-2">
           {hasCam ? (
-            <Video className="w-4 h-4 text-emerald-400" />
+            <Video className="w-3.5 h-3.5 text-green-400" />
           ) : (
-            <VideoOff className="w-4 h-4 text-rose-400" />
+            <VideoOff className="w-3.5 h-3.5 text-red-400" />
           )}
           {hasMic ? (
-            <Mic className="w-4 h-4 text-emerald-400" />
+            <Mic className="w-3.5 h-3.5 text-green-400" />
           ) : (
-            <MicOff className="w-4 h-4 text-rose-400" />
+            <MicOff className="w-3.5 h-3.5 text-red-400" />
           )}
         </span>
       </div>
 
-      {/* Góc phải: icon trạng thái */}
-      <div className="absolute bottom-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/70 dark:bg-zinc-900/70 backdrop-blur-md text-white border border-white/10 dark:border-zinc-700/50">
-        <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-        <Signal className="w-4 h-4 text-emerald-400" />
+      {/* Status indicator */}
+      <div className="absolute bottom-4 right-4 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/80 backdrop-blur-sm text-white border border-white/10">
+        <Radio className="w-3.5 h-3.5 text-green-400 animate-pulse" />
+        <Signal className="w-3.5 h-3.5 text-green-400" />
       </div>
     </div>
   );
@@ -247,31 +243,28 @@ function HostControls({ }: { roomName: string }) {
 
   return (
     <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-      <div className="group relative pointer-events-auto flex items-center gap-3 rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl border-2 border-white/30 dark:border-zinc-700/50 px-4 py-3 shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-3xl hover:scale-[1.02] hover:ring-blue-300/50 dark:hover:ring-blue-600/50 overflow-hidden">
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
-        
+      <div className="pointer-events-auto flex items-center gap-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 shadow-lg">
         <TrackToggle
           source={Track.Source.Camera}
-          className="group relative z-10 inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all duration-300 shadow-md hover:shadow-xl hover:scale-105"
+          className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-200"
         />
         <TrackToggle
           source={Track.Source.Microphone}
-          className="group relative z-10 inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all duration-300 shadow-md hover:shadow-xl hover:scale-105"
+          className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-200"
         />
         <button
           onClick={toggleScreenShare}
-          className={`group relative z-10 inline-flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-105 ${
+          className={`inline-flex items-center justify-center w-10 h-10 rounded-lg border transition-colors duration-200 ${
             isSharing
-              ? "bg-gradient-to-br from-rose-500 to-red-600 text-white hover:from-rose-400 hover:to-red-500"
-              : "bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30"
+              ? "bg-red-600 border-red-600 text-white hover:bg-red-700"
+              : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800"
           }`}
           title={isSharing ? "Dừng chia sẻ màn hình" : "Chia sẻ màn hình"}
         >
           {isSharing ? (
-            <MonitorOff className="w-5.5 h-5.5 transition-transform group-hover:scale-110" />
+            <MonitorOff className="w-5 h-5" />
           ) : (
-            <Monitor className="w-5.5 h-5.5 transition-transform group-hover:scale-110" />
+            <Monitor className="w-5 h-5" />
           )}
         </button>
       </div>
@@ -319,39 +312,35 @@ function ParticipantsList({ roomName }: { roomName: string }) {
     <div className="absolute top-4 right-4 z-50">
       <button
         onClick={() => setShowList(!showList)}
-        className="group relative inline-flex items-center gap-2.5 rounded-2xl px-4 py-2.5 text-sm font-black bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl border-2 border-white/30 dark:border-zinc-700/50 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 ring-2 ring-white/20 dark:ring-zinc-800/50 overflow-hidden"
+        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
       >
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <Users className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400 relative z-10 transition-transform group-hover:scale-110" />
-        <span className="text-zinc-900 dark:text-white relative z-10">{participants.length}</span>
+        <Users className="w-4 h-4" />
+        <span>{participants.length}</span>
       </button>
       
       {showList && (
-        <div className="group absolute top-full right-0 mt-3 w-72 rounded-3xl bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl border-2 border-white/30 dark:border-zinc-700/50 shadow-2xl p-4 max-h-96 overflow-y-auto ring-2 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-3xl hover:ring-blue-300/50 dark:hover:ring-blue-600/50">
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
-          
-          <div className="relative text-sm font-black mb-3 text-zinc-700 dark:text-zinc-300">
+        <div className="absolute top-full right-0 mt-2 w-72 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-lg p-3 max-h-96 overflow-y-auto">
+          <div className="text-sm font-semibold mb-2 text-zinc-700 dark:text-zinc-300">
             Người tham gia ({participants.length})
           </div>
-          <div className="relative space-y-2">
+          <div className="space-y-1">
             {participants.map((p) => {
               const isMe = p.identity === user?.id;
               return (
                 <div
                   key={p.identity}
-                  className="flex items-center justify-between p-3 rounded-2xl hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-200 border border-transparent hover:border-blue-200/50 dark:hover:border-blue-700/50"
+                  className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-200"
                 >
-                  <span className="text-sm font-medium truncate flex-1 text-zinc-900 dark:text-zinc-100">
-                    {p.name || p.identity} {isMe && <span className="text-blue-600 dark:text-blue-400 font-black">(Bạn)</span>}
+                  <span className="text-sm truncate flex-1 text-zinc-900 dark:text-zinc-100">
+                    {p.name || p.identity} {isMe && <span className="text-blue-600 dark:text-blue-400 font-medium">(Bạn)</span>}
                   </span>
                   {!isMe && (
                     <button
                       onClick={() => handleKick(p.identity, p.name || p.identity)}
-                      className="group/kick p-2 rounded-xl bg-rose-50/80 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 transition-all duration-300 hover:scale-110"
+                      className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors duration-200"
                       title="Kick"
                     >
-                      <Ban className="w-4.5 h-4.5 transition-transform group-hover/kick:rotate-12" />
+                      <Ban className="w-4 h-4" />
                     </button>
                   )}
                 </div>
@@ -423,10 +412,10 @@ function HeartReaction({ }: { roomName: string }) {
     <>
       <button
         onClick={sendHeart}
-        className="group absolute bottom-20 right-4 z-50 inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-2xl hover:from-rose-400 hover:to-pink-500 hover:scale-110 transition-all duration-300"
+        className="absolute bottom-20 right-4 z-50 inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
         title="Thả tim"
       >
-        <Heart className="w-7 h-7 fill-current transition-transform group-hover:scale-125" />
+        <Heart className="w-6 h-6 fill-current" />
       </button>
       
       <div className="absolute inset-0 pointer-events-none z-30">
@@ -440,7 +429,7 @@ function HeartReaction({ }: { roomName: string }) {
               animation: "float-up 3s ease-out forwards",
             }}
           >
-            <Heart className="w-9 h-9 text-rose-500 fill-current drop-shadow-lg" />
+            <Heart className="w-8 h-8 text-red-500 fill-current drop-shadow-lg" />
           </div>
         ))}
       </div>
@@ -520,10 +509,10 @@ function LikeReaction({ roomName }: { roomName: string }) {
     <>
       <button
         onClick={sendLike}
-        className="group absolute bottom-32 right-4 z-50 inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-2xl hover:from-blue-400 hover:to-cyan-500 hover:scale-110 transition-all duration-300"
+        className="absolute bottom-32 right-4 z-50 inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         title="Thả like"
       >
-        <ThumbsUp className="w-7 h-7 fill-current transition-transform group-hover:scale-125 group-hover:rotate-12" />
+        <ThumbsUp className="w-6 h-6 fill-current" />
       </button>
       
       <div className="absolute inset-0 pointer-events-none z-30">
@@ -537,7 +526,7 @@ function LikeReaction({ roomName }: { roomName: string }) {
               animation: "float-up 3s ease-out forwards",
             }}
           >
-            <ThumbsUp className="w-9 h-9 text-blue-500 fill-current drop-shadow-lg" />
+            <ThumbsUp className="w-8 h-8 text-blue-500 fill-current drop-shadow-lg" />
           </div>
         ))}
       </div>
@@ -631,25 +620,28 @@ export default function StudyRoomPage() {
 
   if (err) {
     return (
-      <div className="pt-16 md:pt-20 min-h-[60vh] flex items-center justify-center bg-[#DFD0B8] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900">
-        <div className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 p-6 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005] hover:ring-rose-300/50 dark:hover:ring-rose-600/50 overflow-hidden max-w-md mx-4">
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
-          
-          <div className="relative flex items-center gap-3 mb-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50">
-              <AlertCircle className="h-7 w-7 text-white" />
+      <div className="pt-16 md:pt-20 min-h-[60vh] flex items-center justify-center bg-zinc-50 dark:bg-zinc-900">
+        <div className="relative rounded-2xl border border-red-200 dark:border-red-800/50 bg-white dark:bg-zinc-900 p-6 shadow-sm max-w-md mx-4">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 dark:bg-red-900/20">
+                <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
             </div>
-            <h2 className="text-xl font-black text-zinc-900 dark:text-white">Không thể vào phòng</h2>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-1">
+                Không thể vào phòng
+              </h2>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">{err}</p>
+              <button
+                onClick={() => fetchToken()}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
+              >
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Thử lại</span>
+              </button>
+            </div>
           </div>
-          <p className="text-sm font-medium mb-5 text-zinc-700 dark:text-zinc-300">{err}</p>
-          <button
-            onClick={() => fetchToken()}
-            className="group inline-flex items-center gap-2.5 rounded-2xl px-5 py-3 text-sm font-black text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-          >
-            <Loader2 className="w-4.5 h-4.5 animate-spin transition-transform group-hover:scale-110" />
-            Thử lại
-          </button>
         </div>
       </div>
     );
@@ -657,19 +649,14 @@ export default function StudyRoomPage() {
 
   if (loading || !data) {
     return (
-      <div className="pt-16 md:pt-20 min-h-[60vh] grid place-items-center bg-[#DFD0B8] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900">
-        <div className="group relative rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl shadow-2xl ring-2 ring-white/30 dark:ring-zinc-700/50 p-8 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005] hover:ring-blue-300/50 dark:hover:ring-blue-600/50 overflow-hidden">
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
-          
-          <div className="relative text-center space-y-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50 mx-auto">
-              <Loader2 className="h-8 w-8 text-white animate-spin" />
-            </div>
-            <p className="text-lg font-black text-zinc-700 dark:text-zinc-300">
-              Đang kết nối phòng…
-            </p>
+      <div className="pt-16 md:pt-20 min-h-[60vh] grid place-items-center bg-zinc-50 dark:bg-zinc-900">
+        <div className="text-center space-y-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/20 mx-auto">
+            <Loader2 className="h-6 w-6 text-blue-600 dark:text-blue-400 animate-spin" />
           </div>
+          <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+            Đang kết nối phòng…
+          </p>
         </div>
       </div>
     );
@@ -679,7 +666,7 @@ export default function StudyRoomPage() {
   const hostIdentity = data.hostIdentity || data.identity;
 
   return (
-    <div className="pt-16 md:pt-20 min-h-[calc(100dvh-4rem)] md:min-h-[calc(100dvh-5rem)] bg-[#DFD0B8] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900">
+    <div className="pt-16 md:pt-20 min-h-[calc(100dvh-4rem)] md:min-h-[calc(100dvh-5rem)] bg-zinc-50 dark:bg-zinc-900">
       <LiveKitRoom
         serverUrl={data.wsUrl}
         token={data.token}

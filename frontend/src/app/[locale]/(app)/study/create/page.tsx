@@ -1,15 +1,22 @@
 // frontend/src/app/[locale]/study/create/page.tsx
 import dynamic from "next/dynamic";
-import PageWrapper from "@/components/layout/PageWrapper";
 
 // Dynamic import client component nặng để tối ưu bundle size
 const CreateStudyRoomPage = dynamic(() => import("@/components/features/study/CreateStudyRoomPage"));
 
-export default function CreateStudyRoomWrapper() {
+export default async function CreateStudyRoomWrapper({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+
   return (
-    <PageWrapper>
-      <CreateStudyRoomPage />
-    </PageWrapper>
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <main className="">
+        <CreateStudyRoomPage />
+      </main>
+    </div>
   );
 }
 

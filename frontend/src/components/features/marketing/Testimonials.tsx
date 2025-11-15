@@ -39,53 +39,55 @@ export default function Testimonials() {
   ];
 
   return (
-    <section className="bg-gradient-to-b from-white via-sky-50/20 to-white dark:from-zinc-900 dark:via-zinc-900/95 dark:to-zinc-900">
+    <section className="bg-zinc-50 dark:bg-zinc-950 border-y border-zinc-200 dark:border-zinc-900 py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <SectionHeader
           eyebrow="Cảm nhận người học"
           title="Hàng nghìn người đã tăng điểm"
-          desc="Kinh nghiệm thật – kết quả thật."
+          desc="Kinh nghiệm thật – kết quả thật từ những học viên đã sử dụng nền tảng của chúng tôi."
           align="center"
         />
 
         <div className="mt-16 grid gap-8 md:grid-cols-3">
-          {items.map((t) => (
+          {items.map((t, index) => (
             <figure
-              key={t.name}
-              className="relative overflow-hidden rounded-3xl bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl p-8 shadow-xl ring-2 ring-slate-200/70 dark:ring-zinc-700/70"
+              key={index}
+              className="relative overflow-hidden rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm border border-zinc-200 dark:border-zinc-800 transition-all duration-300 hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700"
             >
-              {/* Quote icon tĩnh, không opacity thay đổi */}
-              <div className="pointer-events-none absolute -right-6 -top-6 opacity-20">
-                <Quote className="h-32 w-32 text-sky-600 dark:text-sky-500" />
+              {/* Quote icon - subtle background */}
+              <div className="pointer-events-none absolute -right-4 -top-4 opacity-5">
+                <Quote className="h-24 w-24 text-zinc-900 dark:text-white" />
               </div>
 
               {/* Quote content */}
-              <blockquote className="relative text-base leading-7 text-slate-700 dark:text-zinc-300">
-                <span className="absolute -left-2 -top-1 text-6xl font-black text-sky-200 dark:text-sky-800">
-                  “
+              <blockquote className="relative mb-6">
+                <span className="absolute -left-1 -top-2 text-4xl font-bold text-zinc-200 dark:text-zinc-800 leading-none">
+                  "
                 </span>
-                <p className="relative pl-6 font-medium">{t.quote}</p>
+                <p className="relative pl-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 font-medium">
+                  {t.quote}
+                </p>
               </blockquote>
 
               {/* Author + Score */}
-              <figcaption className="mt-8 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
+              <figcaption className="flex items-center justify-between gap-4 pt-6 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="flex items-center gap-3">
+                  <div className="relative shrink-0">
                     <TestimonialAvatar src={t.avatar} alt={t.name} />
-                    {/* Không overlay khi hover */}
+                    <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-900 bg-emerald-500" />
                   </div>
                   <div>
-                    <div className="text-base font-black tracking-tight text-slate-900 dark:text-zinc-100">
+                    <div className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
                       {t.name}
                     </div>
-                    <div className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                    <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                       Học viên TOEIC
                     </div>
                   </div>
                 </div>
 
-                {/* Score badge – tĩnh, không glow, không hover */}
-                <span className="rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-sm font-black text-white shadow-md">
+                {/* Score badge */}
+                <span className="shrink-0 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm">
                   {t.score}
                 </span>
               </figcaption>
@@ -93,18 +95,18 @@ export default function Testimonials() {
           ))}
         </div>
 
-        {/* Stats bar – tĩnh, sạch sẽ */}
+        {/* Stats bar */}
         <div className="mt-16 text-center">
-          <p className="text-lg font-bold text-slate-700 dark:text-zinc-300">
-            <span className="text-2xl text-sky-600 dark:text-sky-400">98%</span>{" "}
+          <p className="text-base font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="text-2xl font-bold text-sky-600 dark:text-sky-400">98%</span>{" "}
             học viên cải thiện điểm số sau{" "}
-            <span className="text-2xl text-emerald-600 dark:text-emerald-400">
+            <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
               4 tuần
             </span>{" "}
             luyện tập đều đặn.
           </p>
-          <div className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-zinc-400">
-            <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+            <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             Dữ liệu từ 12.000+ học viên
           </div>
         </div>

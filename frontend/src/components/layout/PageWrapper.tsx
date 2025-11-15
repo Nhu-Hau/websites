@@ -22,7 +22,7 @@ export default function PageWrapper({
   variant = "default",
 }: PageWrapperProps) {
   return (
-    <div className={`${variantClasses[variant]} ${className}bg-[#DFD0B8]`}>
+    <div className={`${variantClasses[variant]} ${className}`}>
       {children}
     </div>
   );

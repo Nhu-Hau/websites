@@ -119,5 +119,26 @@
     "confirm": "Xác nhận mật khẩu",
     "submit": "Hoàn tất đăng ký",
     "processing": "Đang xử lý..."
+  },
+  "news": {
+    "title": "Tin tức & Bài viết",
+    "noNews": "Không có tin tức",
+    "notFound": "Không tìm thấy tin tức",
+    "previous": "Trước",
+    "next": "Tiếp",
+    "premiumHint": "Nâng cấp lên Premium để sử dụng tính năng dịch từ và luyện từ vựng!",
+    "category": {
+      "all": "Tất cả",
+      "education": "Giáo dục",
+      "politics": "Chính trị",
+      "travel": "Du lịch",
+      "technology": "Công nghệ",
+      "sports": "Thể thao",
+      "entertainment": "Giải trí",
+      "business": "Kinh doanh",
+      "society": "Xã hội",
+      "health": "Sức khỏe",
+      "culture": "Văn hóa"
+    }
   }
 }

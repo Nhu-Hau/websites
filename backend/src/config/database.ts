@@ -39,3 +39,16 @@ export async function connectMongo(customUri?: string) {
 // QUAN TRỌNG: Export đúng instance để các model dùng.
 // => Ở tất cả các file model, import mongoose từ đây, KHÔNG import trực tiếp "mongoose".
 export { mongoose };
+
+// Get MongoDB native driver database instance
+// Useful for models that need to use MongoDB native driver APIs
+export async function getDb() {
+  // Ensure connection is established
+  await connectMongo();
+  
+  if (!mongoose.connection.db) {
+    throw new Error("Database connection not established");
+  }
+  
+  return mongoose.connection.db;
+}

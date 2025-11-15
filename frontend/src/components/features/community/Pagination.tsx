@@ -1,6 +1,8 @@
-//frontend/src/components/community/Pagination.tsx
+// frontend/src/components/features/community/Pagination.tsx
 "use client";
+
 import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Props = {
   page: number;
@@ -9,7 +11,12 @@ type Props = {
   onChange: (p: number) => void;
 };
 
-export default function Pagination({ page, total, pageSize, onChange }: Props) {
+export default function Pagination({
+  page,
+  total,
+  pageSize,
+  onChange,
+}: Props) {
   const totalPages = Math.max(1, Math.ceil((total || 0) / pageSize));
   if (totalPages <= 1) return null;
 
@@ -32,19 +39,25 @@ export default function Pagination({ page, total, pageSize, onChange }: Props) {
     onChange(Math.min(totalPages, page + 1));
   }, [onChange, page, totalPages]);
 
-  const handlePage = React.useCallback((p: number) => {
-    onChange(p);
-  }, [onChange]);
+  const handlePage = React.useCallback(
+    (p: number) => {
+      onChange(p);
+    },
+    [onChange]
+  );
 
   return (
-    <nav className="flex items-center justify-center gap-2 select-none flex-wrap">
+    <nav
+      className="flex items-center justify-center gap-1"
+      aria-label="Pagination"
+    >
       <button
         onClick={handlePrev}
         disabled={page <= 1}
-        className="group relative px-4 py-2.5 rounded-2xl text-sm font-black bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 hover:shadow-md hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
+        className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        aria-label="Previous page"
       >
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-400/10 to-violet-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <span className="relative z-10">← Trước</span>
+        <ChevronLeft className="h-5 w-5" />
       </button>
 
       {pages.map((p, i) => {
@@ -54,27 +67,20 @@ export default function Pagination({ page, total, pageSize, onChange }: Props) {
         return (
           <React.Fragment key={p}>
             {dots && (
-              <span className="px-2 text-sm font-bold text-zinc-500 dark:text-zinc-400">
+              <span className="inline-flex items-center justify-center w-10 h-10 text-sm text-zinc-500 dark:text-zinc-400">
                 …
               </span>
             )}
             <button
               onClick={() => handlePage(p)}
               aria-current={isActive ? "page" : undefined}
-              className={`group relative px-4 py-2.5 rounded-2xl text-sm font-black transition-all duration-300 hover:scale-[1.05] ${
+              className={`inline-flex items-center justify-center w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-gradient-to-r from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-700 text-white shadow-lg ring-2 ring-white/30 dark:ring-indigo-800/50"
-                  : "bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 hover:shadow-md"
+                  ? "bg-blue-600 dark:bg-blue-500 text-white"
+                  : "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100"
               }`}
             >
-              <div
-                className={`absolute inset-0 rounded-2xl ${
-                  isActive
-                    ? "bg-gradient-to-r from-indigo-400/40 to-violet-400/40 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    : "bg-gradient-to-br from-indigo-400/10 to-violet-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                }`}
-              />
-              <span className="relative z-10">{p}</span>
+              {p}
             </button>
           </React.Fragment>
         );
@@ -83,10 +89,10 @@ export default function Pagination({ page, total, pageSize, onChange }: Props) {
       <button
         onClick={handleNext}
         disabled={page >= totalPages}
-        className="group relative px-4 py-2.5 rounded-2xl text-sm font-black bg-white/80 dark:bg-zinc-800/80 border-2 border-white/40 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 hover:shadow-md hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
+        className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        aria-label="Next page"
       >
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-400/10 to-violet-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <span className="relative z-10">Sau →</span>
+        <ChevronRight className="h-5 w-5" />
       </button>
     </nav>
   );

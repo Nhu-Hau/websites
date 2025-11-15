@@ -2,8 +2,10 @@ import React from "react";
 import {
   Hero,
   Features,
+  WorkflowSection,
   Testimonials,
   Pricing,
+  FAQSection,
   FinalCTA,
 } from "@/components/features/marketing";
 import { GoogleAuthEffect } from "@/components/features/auth/GoogleAuthEffect";
@@ -17,12 +19,14 @@ export default async function HomePage({
   const auth = typeof sp.auth === "string" ? sp.auth : undefined;
 
   return (
-    <main className="min-h-screen bg-white antialiased">
+    <main className="min-h-screen bg-white dark:bg-zinc-950 antialiased">
       <GoogleAuthEffect auth={auth} />
       <Hero />
       <Features />
+      <WorkflowSection />
       <Testimonials />
       <Pricing />
+      <FAQSection />
       <FinalCTA />
     </main>
   );

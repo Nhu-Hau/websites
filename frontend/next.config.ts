@@ -17,10 +17,18 @@ const nextConfig = {
   reactStrictMode: false,
 
   images: {
-    // vẫn giữ các domain cũ
-    domains: ["images.unsplash.com", "images.pexels.com"],
-    // thêm quyền cho ảnh S3 của bạn
+    // Sử dụng remotePatterns thay vì domains (deprecated)
     remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.pexels.com",
+        pathname: "/**",
+      },
       {
         protocol: "https",
         hostname: "s3.ap-southeast-2.amazonaws.com",

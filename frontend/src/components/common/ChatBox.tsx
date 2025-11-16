@@ -21,8 +21,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-import { Textarea } from "@/components/ui";
-import { Button } from "@/components/ui";
 
 type Msg = {
   _id?: string;
@@ -428,6 +426,17 @@ export default function ChatBox() {
             };
           }
         );
+        // Emit event nếu có Learning Insight mới (trước khi set state)
+        const prevLearningInsightCount = messages.filter(m => m.isLearningInsight).length;
+        const learningInsights = formattedMessages.filter(m => m.isLearningInsight);
+        
+        if (learningInsights.length > prevLearningInsightCount && typeof window !== "undefined") {
+          // Có Learning Insight mới, emit event
+          window.dispatchEvent(new CustomEvent("learning-insight:received", {
+            detail: { count: learningInsights.length }
+          }));
+        }
+
         setMessages(formattedMessages);
 
         // Cập nhật unread count: so sánh với số lượng đã đọc
@@ -844,8 +853,7 @@ export default function ChatBox() {
           <div
             ref={listRef}
             className="px-3 xs:px-4 py-4 space-y-4
-            max-h-[65vh] xs:max-h-[70vh] sm:max-h-[60vh]
-            min-h-[38vh] xs:min-h-[40vh]
+            h-[38vh] xs:h-[40vh] sm:h-[50vh]
             overflow-y-auto
             bg-gradient-to-b from-transparent to-gray-50/30
             dark:from-transparent dark:to-zinc-900/50"

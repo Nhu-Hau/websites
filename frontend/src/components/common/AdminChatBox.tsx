@@ -510,7 +510,7 @@ export default function AdminChatBox() {
           {/* Messages */}
           <div
             ref={listRef}
-            className="max-h-[60vh] min-h-[40vh] overflow-y-auto px-3 sm:px-4 py-4 space-y-4 bg-gradient-to-b from-transparent to-orange-50/20 dark:from-transparent dark:to-zinc-900/50"
+            className="h-[38vh] xs:h-[40vh] sm:h-[50vh] overflow-y-auto px-3 sm:px-4 py-4 space-y-4 bg-gradient-to-b from-transparent to-orange-50/20 dark:from-transparent dark:to-zinc-900/50"
           >
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-10">

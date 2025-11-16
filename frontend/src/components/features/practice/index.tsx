@@ -286,8 +286,8 @@ export default function PracticePage() {
               <span className="font-semibold text-sky-600 dark:text-sky-400">
                 kỹ năng Nghe
               </span>{" "}
-              ở <span className="font-semibold">Level {level}</span> – Test{" "}
-              <span className="font-semibold">{test}</span>. Hoàn thành bài để
+              ở <span className="font-semibold">Level {level}</span> – {" "}
+              <span className="font-semibold">Test {test}</span>. Hoàn thành bài để
               xem phân tích chi tiết từng câu hỏi.
             </>
           ) : (

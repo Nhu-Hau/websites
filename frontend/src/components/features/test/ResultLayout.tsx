@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -35,7 +36,7 @@ export function ResultLayout({
   onToggleFocus,
 }: ResultLayoutProps) {
   return (
-    <div className="mt-16 min-h-[calc(100vh-4rem)] bg-slate-50/70 pb-24 dark:bg-zinc-950/80">
+    <div className="pt-16 min-h-[calc(100vh-4rem)] bg-slate-50/70 pb-24 dark:bg-zinc-950/80">
       <div className="w-full">
         {/* Sidebar */}
         <Sidebar

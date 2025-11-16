@@ -298,7 +298,7 @@ export default function PlacementResult() {
 
   if (!attempt) {
     return (
-      <div className="mt-16 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50/70 dark:bg-zinc-950/80">
+      <div className="pt-16 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50/70 dark:bg-zinc-950/80">
         <div className="max-w-md w-full rounded-2xl border border-zinc-200/70 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-900/95 px-5 py-6 shadow-lg text-center">
           <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
             Không tìm thấy kết quả.

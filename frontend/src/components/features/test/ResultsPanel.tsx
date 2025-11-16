@@ -92,14 +92,14 @@ export function ResultsPanel({
               <p className="text-[11px] sm:text-xs font-medium uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
                 TOEIC ƯỚC LƯỢNG
               </p>
-              <p className="text-2xl sm:text-3xl font-black text-zinc-950 dark:text-zinc-50 leading-tight">
+              <p className="text-xl sm:text-2xl font-black text-zinc-950 dark:text-zinc-50 leading-tight">
                 {predictedOverall}
                 <span className="ml-1 text-sm sm:text-base font-semibold text-zinc-500 dark:text-zinc-400">
                   / 990
                 </span>
               </p>
               <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
-                Tổng hợp từ Listening + Reading, quy đổi theo bậc 5 điểm.
+                Tổng hợp từ Listening + Reading
               </p>
             </div>
           </div>

@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 import { User } from "../../shared/models/User";
 import { PlacementAttempt } from "../../shared/models/PlacementAttempt";
+import { ProgressAttempt } from "../../shared/models/ProgressAttempt";
+import { PracticeAttempt } from "../../shared/models/PracticeAttempt";
 
 export async function listUsers(req: Request, res: Response) {
   try {
@@ -201,6 +204,280 @@ export async function userScores(_req: Request, res: Response) {
     return res.json({ users: userScores });
   } catch (e) {
     return res.status(500).json({ message: "Lỗi khi lấy điểm người dùng" });
+  }
+}
+
+// GET /api/admin/analytics/user-toeic-pred
+export async function userToeicPred(_req: Request, res: Response) {
+  try {
+    const users = await User.find({ toeicPred: { $ne: null } })
+      .select("_id name email level toeicPred")
+      .lean();
+
+    const userToeicPreds = users
+      .map((u: any) => ({
+        _id: u._id,
+        name: u.name,
+        email: u.email,
+        level: u.level,
+        toeicPred: u.toeicPred || { overall: null, listening: null, reading: null },
+      }))
+      .sort((a: any, b: any) => {
+        const aOverall = a.toeicPred?.overall ?? 0;
+        const bOverall = b.toeicPred?.overall ?? 0;
+        return bOverall - aOverall;
+      });
+
+    return res.json({ users: userToeicPreds });
+  } catch (e) {
+    return res.status(500).json({ message: "Lỗi khi lấy điểm TOEIC dự đoán" });
+  }
+}
+
+// GET /api/admin/analytics/visitor-count
+export async function visitorCount(_req: Request, res: Response) {
+  try {
+    const totalUsers = await User.countDocuments();
+    
+    // Unique visitors trong 30 ngày gần nhất (users có placement attempt trong 30 ngày)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const recentAttempts = await PlacementAttempt.find({
+      submittedAt: { $gte: thirtyDaysAgo }
+    })
+      .select("userId")
+      .lean();
+    
+    const uniqueUserIds = new Set(recentAttempts.map((a: any) => String(a.userId)));
+    const uniqueVisitorsLast30Days = uniqueUserIds.size;
+
+    return res.json({
+      totalVisits: totalUsers, // Tổng số users đã đăng ký
+      uniqueVisitorsLast30Days,
+    });
+  } catch (e) {
+    return res.status(500).json({ message: "Lỗi khi lấy số lượng visitor" });
+  }
+}
+
+// GET /api/admin/analytics/online-users
+export async function onlineUsersCount(_req: Request, res: Response) {
+  try {
+    // Đếm users có hoạt động trong 5 phút gần nhất (dựa trên tất cả các loại attempts)
+    const fiveMinutesAgo = new Date();
+    fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+    
+    const [placementAttempts, progressAttempts, practiceAttempts] = await Promise.all([
+      PlacementAttempt.find({
+        submittedAt: { $gte: fiveMinutesAgo }
+      }).select("userId").lean(),
+      ProgressAttempt.find({
+        submittedAt: { $gte: fiveMinutesAgo }
+      }).select("userId").lean(),
+      PracticeAttempt.find({
+        submittedAt: { $gte: fiveMinutesAgo }
+      }).select("userId").lean(),
+    ]);
+    
+    const uniqueUserIds = new Set<string>();
+    [...placementAttempts, ...progressAttempts, ...practiceAttempts].forEach((a: any) => {
+      if (a.userId) uniqueUserIds.add(String(a.userId));
+    });
+    
+    const onlineUsers = uniqueUserIds.size;
+
+    return res.json({ onlineUsers });
+  } catch (e) {
+    return res.status(500).json({ message: "Lỗi khi lấy số lượng người dùng online" });
+  }
+}
+
+// GET /api/admin/attempts/placement
+export async function listPlacementAttempts(req: Request, res: Response) {
+  try {
+    const page = Math.max(1, parseInt(String(req.query.page || "1"), 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(String(req.query.limit || "20"), 10) || 20));
+    const userId = String(req.query.userId || "").trim();
+
+    const filter: any = {};
+    if (userId && mongoose.isValidObjectId(userId)) {
+      filter.userId = new mongoose.Types.ObjectId(userId);
+    }
+
+    const skip = (page - 1) * limit;
+    const [attempts, total] = await Promise.all([
+      PlacementAttempt.find(filter)
+        .populate("userId", "name email")
+        .sort({ submittedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      PlacementAttempt.countDocuments(filter),
+    ]);
+
+    const toToeic = (acc: number) => Math.max(0, Math.min(495, Math.round((acc || 0) * 495)));
+
+    const items = attempts.map((a: any) => ({
+      _id: String(a._id),
+      userId: String(a.userId?._id || a.userId),
+      userName: a.userId?.name || "Unknown",
+      userEmail: a.userId?.email || "",
+      total: a.total || 0,
+      correct: a.correct || 0,
+      acc: a.acc || 0,
+      listening: {
+        total: a.listening?.total || 0,
+        correct: a.listening?.correct || 0,
+        acc: a.listening?.acc || 0,
+        score: toToeic(a.listening?.acc || 0),
+      },
+      reading: {
+        total: a.reading?.total || 0,
+        correct: a.reading?.correct || 0,
+        acc: a.reading?.acc || 0,
+        score: toToeic(a.reading?.acc || 0),
+      },
+      level: a.level || 1,
+      predicted: a.predicted || null,
+      overall: toToeic(a.listening?.acc || 0) + toToeic(a.reading?.acc || 0),
+      submittedAt: a.submittedAt ? a.submittedAt.toISOString() : new Date().toISOString(),
+    }));
+
+    return res.json({
+      items,
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: "Lỗi khi lấy danh sách placement attempts" });
+  }
+}
+
+// GET /api/admin/attempts/progress
+export async function listProgressAttempts(req: Request, res: Response) {
+  try {
+    const page = Math.max(1, parseInt(String(req.query.page || "1"), 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(String(req.query.limit || "20"), 10) || 20));
+    const userId = String(req.query.userId || "").trim();
+
+    const filter: any = {};
+    if (userId && mongoose.isValidObjectId(userId)) {
+      filter.userId = new mongoose.Types.ObjectId(userId);
+    }
+
+    const skip = (page - 1) * limit;
+    const [attempts, total] = await Promise.all([
+      ProgressAttempt.find(filter)
+        .populate("userId", "name email")
+        .sort({ submittedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      ProgressAttempt.countDocuments(filter),
+    ]);
+
+    const toToeic = (acc: number) => Math.max(0, Math.min(495, Math.round((acc || 0) * 495)));
+
+    const items = attempts.map((a: any) => ({
+      _id: String(a._id),
+      userId: String(a.userId?._id || a.userId),
+      userName: a.userId?.name || "Unknown",
+      userEmail: a.userId?.email || "",
+      total: a.total || 0,
+      correct: a.correct || 0,
+      acc: a.acc || 0,
+      listening: {
+        total: a.listening?.total || 0,
+        correct: a.listening?.correct || 0,
+        acc: a.listening?.acc || 0,
+        score: toToeic(a.listening?.acc || 0),
+      },
+      reading: {
+        total: a.reading?.total || 0,
+        correct: a.reading?.correct || 0,
+        acc: a.reading?.acc || 0,
+        score: toToeic(a.reading?.acc || 0),
+      },
+      level: a.level || 1,
+      predicted: a.predicted || null,
+      overall: toToeic(a.listening?.acc || 0) + toToeic(a.reading?.acc || 0),
+      submittedAt: a.submittedAt ? a.submittedAt.toISOString() : new Date().toISOString(),
+    }));
+
+    return res.json({
+      items,
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: "Lỗi khi lấy danh sách progress attempts" });
+  }
+}
+
+// GET /api/admin/attempts/practice
+export async function listPracticeAttempts(req: Request, res: Response) {
+  try {
+    const page = Math.max(1, parseInt(String(req.query.page || "1"), 10) || 1);
+    const limit = Math.max(1, Math.min(1000, parseInt(String(req.query.limit || "20"), 10) || 20));
+    const userId = String(req.query.userId || "").trim();
+    const partKey = String(req.query.partKey || "").trim();
+    const level = req.query.level ? parseInt(String(req.query.level), 10) : undefined;
+
+    const filter: any = {};
+    if (userId && mongoose.isValidObjectId(userId)) {
+      filter.userId = new mongoose.Types.ObjectId(userId);
+    }
+    if (partKey) {
+      filter.partKey = partKey;
+    }
+    if (level !== undefined && [1, 2, 3].includes(level)) {
+      filter.level = level;
+    }
+
+    const skip = (page - 1) * limit;
+    const [attempts, total] = await Promise.all([
+      PracticeAttempt.find(filter)
+        .populate("userId", "name email")
+        .sort({ submittedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      PracticeAttempt.countDocuments(filter),
+    ]);
+
+    const items = attempts.map((a: any) => ({
+      _id: String(a._id),
+      userId: String(a.userId?._id || a.userId),
+      userName: a.userId?.name || "Unknown",
+      userEmail: a.userId?.email || "",
+      partKey: a.partKey || "",
+      level: a.level || 1,
+      test: a.test || null,
+      total: a.total || 0,
+      correct: a.correct || 0,
+      acc: a.acc || 0,
+      timeSec: a.timeSec || 0,
+      submittedAt: a.submittedAt ? a.submittedAt.toISOString() : new Date().toISOString(),
+      isRetake: a.isRetake || false,
+    }));
+
+    return res.json({
+      items,
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: "Lỗi khi lấy danh sách practice attempts" });
   }
 }
 

@@ -18,26 +18,86 @@ import {
   Sparkles,
   Star,
   Trophy,
+  Lightbulb,
+  ArrowRight,
 } from "lucide-react";
 import LevelSuggestModal from "@/components/features/test/LevelSuggestModal";
 import { useAuth } from "@/context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 /* ====== META ====== */
 const PART_META: Record<
   string,
   { title: string; defaultQuestions: number; defaultDuration: number }
 > = {
-  "part.1": { title: "Part 1", defaultQuestions: 6, defaultDuration: 6 },
-  "part.2": { title: "Part 2", defaultQuestions: 25, defaultDuration: 11 },
-  "part.3": { title: "Part 3", defaultQuestions: 39, defaultDuration: 20 },
-  "part.4": { title: "Part 4", defaultQuestions: 30, defaultDuration: 13 },
-  "part.5": { title: "Part 5", defaultQuestions: 30, defaultDuration: 17 },
-  "part.6": { title: "Part 6", defaultQuestions: 16, defaultDuration: 12 },
-  "part.7": { title: "Part 7", defaultQuestions: 54, defaultDuration: 55 },
+  "part.1": {
+    title: "Part 1 – Photographs",
+    defaultQuestions: 6,
+    defaultDuration: 6,
+  },
+  "part.2": {
+    title: "Part 2 – Question–Response",
+    defaultQuestions: 25,
+    defaultDuration: 11,
+  },
+  "part.3": {
+    title: "Part 3 – Conversations",
+    defaultQuestions: 39,
+    defaultDuration: 20,
+  },
+  "part.4": {
+    title: "Part 4 – Talks",
+    defaultQuestions: 30,
+    defaultDuration: 13,
+  },
+  "part.5": {
+    title: "Part 5 – Incomplete Sentences",
+    defaultQuestions: 30,
+    defaultDuration: 17,
+  },
+  "part.6": {
+    title: "Part 6 – Text Completion",
+    defaultQuestions: 16,
+    defaultDuration: 12,
+  },
+  "part.7": {
+    title: "Part 7 – Reading Comprehension",
+    defaultQuestions: 54,
+    defaultDuration: 55,
+  },
 };
 
 type L = 1 | 2 | 3;
 type AttemptMap = Record<number, AttemptSummary>;
+
+const levelConfig: Record<
+  L,
+  {
+    label: string;
+    desc: string;
+    textColor: string;
+    bgColor: string;
+  }
+> = {
+  1: {
+    label: "Level 1",
+    desc: "Beginner",
+    textColor: "text-[#347433] dark:text-[#4C9C43]",
+    bgColor: "bg-[#4C9C43]/10 dark:bg-[#4C9C43]/20",
+  },
+  2: {
+    label: "Level 2",
+    desc: "Intermediate",
+    textColor: "text-[#27548A] dark:text-[#2E5EB8]",
+    bgColor: "bg-[#2E5EB8]/10 dark:bg-[#2E5EB8]/20",
+  },
+  3: {
+    label: "Level 3",
+    desc: "Advanced",
+    textColor: "text-[#BB3E00] dark:text-[#C44E1D]",
+    bgColor: "bg-[#C44E1D]/10 dark:bg-[#C44E1D]/20",
+  },
+};
 
 function normalizePartLevels(raw: any): Partial<Record<string, L>> {
   const out: Partial<Record<string, L>> = {};
@@ -62,6 +122,60 @@ function normalizePartLevels(raw: any): Partial<Record<string, L>> {
   }
   return out;
 }
+
+/* Motion variants */
+const headerVariants = {
+  hidden: { opacity: 0, y: -12 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      type: "spring",
+      stiffness: 100,
+      damping: 15,
+      mass: 0.8,
+    } 
+  },
+};
+
+const bannerVariants = {
+  hidden: { opacity: 0, y: -8 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      type: "spring",
+      stiffness: 120,
+      damping: 18,
+      mass: 0.7,
+    } 
+  },
+};
+
+const gridVariants = {
+  hidden: { opacity: 0 },
+  visible: (stagger: number = 0.06) => ({
+    opacity: 1,
+    transition: {
+      staggerChildren: stagger,
+      delayChildren: 0.1,
+    },
+  }),
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: -10 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      type: "spring",
+      stiffness: 110,
+      damping: 16,
+      mass: 0.75,
+    } 
+  },
+};
 
 /* ====== PAGE ====== */
 export default function PracticePart() {
@@ -95,8 +209,11 @@ export default function PracticePart() {
     null
   );
 
+  // Kiểm tra đã có placement test chưa
   React.useEffect(() => {
-    if (authLoading || !user) {
+    if (authLoading) return;
+
+    if (!user) {
       setMustDoPlacement(false);
       return;
     }
@@ -126,6 +243,7 @@ export default function PracticePart() {
     };
   }, [user, authLoading]);
 
+  // Lấy suggested level theo part
   React.useEffect(() => {
     let mounted = true;
     (async () => {
@@ -136,8 +254,8 @@ export default function PracticePart() {
         });
         if (!r.ok) throw new Error("me-failed");
         const j = await r.json();
-        const user = j?.user ?? j?.data ?? j;
-        const levels = normalizePartLevels(user?.partLevels);
+        const me = j?.user ?? j?.data ?? j;
+        const levels = normalizePartLevels(me?.partLevels);
         const sl = (levels[partKey] ?? null) as L | null;
         if (mounted) setSuggestedLevel(sl);
       } catch {
@@ -149,6 +267,7 @@ export default function PracticePart() {
     };
   }, [partKey]);
 
+  // Load danh sách test + progress
   React.useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -198,125 +317,240 @@ export default function PracticePart() {
   const isListening = /^part\.[1-4]$/.test(partKey);
   const locale = base.slice(1) || "vi";
 
+  const placementHref = `${base}/placement`;
 
   return (
-    <div className="relative min-h-screen bg-[#DFD0B8] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 transition-all duration-700 overflow-hidden">
+    <div className="relative min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-hidden">
+      {/* subtle grid background */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.1),_transparent_45%),radial-gradient(circle_at_bottom,_rgba(251,191,36,0.12),_transparent_50%)]" />
 
-      <div className="relative mx-auto max-w-[1350px] px-4 xs:px-6 py-10 pt-16">
-        {/* ===== Header ===== */}
-        <header className="relative z-10">
-          <div className="mx-auto">
-            <div className="flex flex-col gap-6 pt-6 xl:flex-row xl:items-start xl:justify-between">
-              {/* Left */}
-              <div className="flex flex-col items-start gap-4">
-                {/* Tag: Luyện Nghe / Đọc */}
-                <div className="group relative inline-flex items-center gap-3 rounded-2xl bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl px-3 py-2.5 shadow-lg ring-1 ring-white/30 dark:ring-zinc-700/50 transition-all duration-500 hover:shadow-xl hover:scale-[1.01] hover:ring-amber-300 dark:hover:ring-amber-600">
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="relative mx-auto max-w-6xl xl:max-w-7xl px-4 xs:px-6 py-10 pt-20">
+        {/* ===== HEADER ===== */}
+        <motion.header
+          className="mb-8 sm:mb-10"
+          variants={headerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            {/* Left block */}
+            <div className="space-y-4 max-w-2xl">
+              {/* Tag (Nghe / Đọc) */}
+              <div className="inline-flex items-center gap-3 rounded-2xl bg-white/90 dark:bg-zinc-900/80 backdrop-blur-xl px-3 py-2 shadow-md ring-1 ring-white/60 dark:ring-zinc-700/70">
+                <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-sky-600 shadow-lg ring-2 ring-white/60">
+                  <div className="absolute inset-0 rounded-full bg-white/40 blur-md" />
                   {isListening ? (
-                    <>
-                      <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-md ring-2 ring-white/50">
-                        <div className="absolute inset-0 rounded-full bg-white/30 blur-md" />
-                        <Headphones className="h-5 w-5 text-white relative z-10" />
-                      </div>
-                      <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-700 dark:text-blue-300">
-                        Luyện Nghe
-                      </span>
-                    </>
+                    <Headphones className="h-5 w-5 text-white relative z-10" />
                   ) : (
-                    <>
-                      <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md ring-2 ring-white/50">
-                        <div className="absolute inset-0 rounded-full bg-white/30 blur-md" />
-                        <BookOpen className="h-5 w-5 text-white relative z-10" />
-                      </div>
-                      <span className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-300">
-                        Luyện Đọc
-                      </span>
-                    </>
+                    <BookOpen className="h-5 w-5 text-white relative z-10" />
                   )}
-                  <Sparkles className="h-3 w-3 text-amber-500 absolute -top-1 -right-1 animate-pulse" />
                 </div>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-700 dark:text-sky-300">
+                  {isListening ? "Luyện Nghe TOEIC" : "Luyện Đọc TOEIC"}
+                </span>
+              </div>
 
-                {/* Title với hiệu ứng 3D ánh kim – thu nhỏ */}
-                <div className="group relative inline-flex items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-50/90 to-orange-50/90 dark:from-zinc-800/70 dark:to-zinc-700/70 px-4 py-3 shadow-xl ring-1 ring-amber-200/50 dark:ring-amber-700/40 backdrop-blur-xl transition-all duration-700 hover:shadow-2xl hover:scale-[1.01] hover:ring-amber-400 dark:hover:ring-amber-500">
-                  {/* Glow 3D */}
-                  <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-br from-amber-400/30 to-orange-600/30 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-
-                  {/* Icon P 3D */}
-                  <div className="relative">
-                    <div className="absolute inset-0 scale-110 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 blur-lg opacity-60 group-hover:opacity-85 transition-opacity duration-500" />
-                    <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-600 shadow-xl ring-3 ring-white/60">
-                      <span className="text-2xl font-black text-white drop-shadow-lg">
-                        P
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Title */}
-                  <h1 className="relative bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-900 dark:from-zinc-50 dark:via-zinc-200 dark:to-zinc-50 bg-clip-text text-3xl sm:text-4xl lg:text-[2.6rem] font-black leading-tight text-transparent drop-shadow-md">
+              {/* Title row */}
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h1 className="text-3xl sm:text-4xl font-black tracking-tight dark:text-zinc-100">
                     {meta.title}
-                    <span className="absolute -inset-2 bg-gradient-to-r from-amber-400/25 to-orange-500/25 blur-2xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                   </h1>
                 </div>
 
-                {/* Mô tả – nhỏ nhẹ hơn */}
-                <p className="max-w-2xl text-base leading-relaxed text-zinc-800 dark:text-zinc-200 font-normal">
-                  Chọn cấp độ và đề thi để luyện tập hiệu quả. Hệ thống sẽ{" "}
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    lưu tiến độ
-                  </span>{" "}
-                  và{" "}
-                  <span className="font-semibold text-sky-600 dark:text-sky-400">
-                    gợi ý cải thiện
-                  </span>{" "}
-                  phù hợp với khả năng của bạn.
+                <p className="text-sm sm:text-base text-zinc-700 dark:text-zinc-300 max-w-xl leading-relaxed">
+                  Mỗi Part được chia thành <strong>3 cấp độ</strong>. Chọn Level
+                  phù hợp, luyện đề theo thời gian chuẩn TOEIC, và theo dõi tiến
+                  độ ngay trên hệ thống.
                 </p>
               </div>
 
-              {/* Right: Level + History */}
-              <div className="flex flex-col sm:flex-row items-stretch gap-3">
-                <div className="flex justify-center">
+              {/* Nếu bắt buộc placement */}
+              <AnimatePresence>
+                {mustDoPlacement && (
+                  <motion.div
+                    className="inline-flex items-center gap-2 rounded-2xl bg-amber-50 dark:bg-amber-900/20 px-3 py-2 text-xs sm:text-sm text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-700"
+                    variants={bannerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit={{ 
+                      opacity: 0, 
+                      y: 4, 
+                      transition: { 
+                        type: "spring",
+                        stiffness: 150,
+                        damping: 20,
+                        mass: 0.6,
+                      } 
+                    }}
+                  >
+                    <Star className="w-4 h-4 text-amber-500" />
+                    <span>
+                      Nên làm{" "}
+                      <Link
+                        href={placementHref}
+                        className="font-semibold underline underline-offset-4"
+                      >
+                        Placement Test
+                      </Link>{" "}
+                      trước để hệ thống gợi ý lộ trình chính xác hơn.
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Right block: Level switcher + history */}
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:gap-4 min-w-[230px]">
+              <div className="flex justify-start sm:justify-end">
+                <motion.div
+                  className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/50 dark:border-zinc-800/80 shadow-lg px-4 py-3 w-full sm:w-auto"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ 
+                    type: "spring",
+                    stiffness: 120,
+                    damping: 18,
+                    mass: 0.7,
+                    delay: 0.05 
+                  }}
+                >
+                  <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-[0.16em]">
+                    Cấp độ luyện tập
+                  </p>
                   <LevelSwitcher
                     level={level}
                     suggestedLevel={suggestedLevel ?? undefined}
                     disabled={false}
                     tooltip={undefined}
                   />
-                </div>
-
-                <div className="flex-col h-full">
-                  <Link
-                    href={`${base}/practice/history?partKey=${encodeURIComponent(
-                      partKey
-                    )}&level=${level}`}
-                    className="group relative flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xl border border-white/30 dark:border-zinc-700/50 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
-                  >
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-amber-400/18 to-orange-500/18 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-md ring-2 ring-white/50">
-                      <History className="h-4 w-4 text-white" />
-                    </div>
-                    <span className="text-sm font-semibold text-zinc-900 dark:text-white">
-                      Lịch sử
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-zinc-600 dark:text-zinc-400 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </div>
+                </motion.div>
               </div>
+
+              <motion.div
+                className="flex justify-start sm:justify-end"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 120,
+                  damping: 18,
+                  mass: 0.7,
+                  delay: 0.08 
+                }}
+              >
+                <Link
+                  href={`${base}/practice/history?partKey=${encodeURIComponent(
+                    partKey
+                  )}&level=${level}`}
+                  className="group inline-flex items-center gap-2.5 rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/50 dark:border-zinc-800/80 px-4 py-2.5 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-zinc-900 to-zinc-700 dark:from-zinc-200 dark:to-zinc-400">
+                    <History className="h-4 w-4 text-white dark:text-zinc-900" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                      Lịch sử luyện tập
+                    </span>
+                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                      Xem lại kết quả
+                    </span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-zinc-500 dark:text-zinc-400 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </motion.div>
             </div>
           </div>
-        </header>
+        </motion.header>
 
-        {/* ===== Grid Tests ===== */}
-        <section className="space-y-10 pt-6">
+        {/* ===== GRID TESTS ===== */}
+        <section className="space-y-8">
+          {/* Banner gợi ý level */}
+          <AnimatePresence>
+            {suggestedLevel != null && (
+              <motion.div
+                className="rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-white/60 dark:border-zinc-800/80 backdrop-blur-xl px-4 py-3 flex flex-wrap gap-3 items-center justify-between shadow-sm"
+                variants={bannerVariants}
+                initial="hidden"
+                animate="visible"
+                exit={{ 
+                  opacity: 0, 
+                  y: 6, 
+                  transition: { 
+                    type: "spring",
+                    stiffness: 150,
+                    damping: 20,
+                    mass: 0.6,
+                  } 
+                }}
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg ring-2 ring-amber-200/50 dark:ring-amber-500/30">
+                    <Lightbulb className="h-5 w-5 text-white" />
+                    <div className="absolute inset-0 rounded-xl bg-white/20 blur-sm" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-zinc-800 dark:text-zinc-200 leading-relaxed flex items-center gap-3">
+                      <div className="font-semibold text-amber-600 dark:text-amber-400">
+                        Gợi ý từ hệ thống:
+                      </div>
+                      <div
+                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg font-semibold ${levelConfig[suggestedLevel].textColor} ${levelConfig[suggestedLevel].bgColor} border border-current/20`}
+                      >
+                        {levelConfig[suggestedLevel].label}
+                        <span className="text-xs opacity-80">
+                          ({levelConfig[suggestedLevel].desc})
+                        </span>
+                      </div>{" "}
+                      phù hợp nhất với trình độ hiện tại của bạn.
+                    </div>
+                  </div>
+                </div>
+                {level !== suggestedLevel && (
+                  <button
+                    onClick={() => {
+                      router.push(
+                        `${base}/practice/${partKey}?level=${suggestedLevel}`
+                      );
+                    }}
+                    className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-md hover:shadow-lg hover:from-amber-400 hover:to-orange-400 transition-all duration-200 hover:-translate-y-0.5"
+                  >
+                    <span>
+                      Chuyển sang {levelConfig[suggestedLevel].label}
+                    </span>
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {loading ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: Math.max(tests?.length ?? 0, 9) }).map(
-                (_, i) => (
-                  <TestCardSkeleton key={i} />
-                )
-              )}
-            </div>
+            <motion.div
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              variants={gridVariants}
+              initial="hidden"
+              animate="visible"
+              custom={0.06}
+            >
+              {Array.from({ length: 8 }).map((_, i) => (
+                <motion.div key={i} variants={itemVariants}>
+                  <TestCardSkeleton />
+                </motion.div>
+              ))}
+            </motion.div>
           ) : tests.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-32 text-center">
+            <motion.div
+              className="flex flex-col items-center justify-center py-24 text-center"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ 
+                type: "spring",
+                stiffness: 100,
+                damping: 15,
+                mass: 0.8,
+              }}
+            >
               <div className="relative mb-6">
                 <div className="absolute inset-0 scale-150 rounded-full bg-gradient-to-br from-amber-400/30 to-orange-500/30 blur-3xl animate-pulse" />
                 <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-zinc-800 dark:to-zinc-700 shadow-2xl ring-8 ring-white/50">
@@ -324,24 +558,32 @@ export default function PracticePart() {
                 </div>
               </div>
               <h3 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
-                Chưa có đề thi
+                Chưa có đề thi cho Level {level}
               </h3>
-              <p className="mt-2 text-base text-zinc-600 dark:text-zinc-400">
-                Level {level} hiện chưa có bài tập. Vui lòng thử cấp độ khác.
+              <p className="mt-2 text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-md">
+                Hãy thử cấp độ khác hoặc quay lại sau. Admin có thể đang cập
+                nhật thêm đề cho Part này.
               </p>
-            </div>
+            </motion.div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <motion.div
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              variants={gridVariants}
+              initial="hidden"
+              animate="visible"
+              custom={0.06}
+            >
               {tests.map((testNum) => {
                 const p = progressByTest[testNum];
                 const href = `${base}/practice/${partKey}/${level}/${testNum}`;
 
                 return (
-                  <div
+                  <motion.div
                     key={testNum}
-                    className="cursor-pointer transition-all duration-300"
+                    className="h-full"
+                    variants={itemVariants}
                     onClickCapture={(e) => {
-                      // Cho phép vào trang test cụ thể, modal sẽ hiện ở đó nếu chưa làm placement
+                      // Nếu có suggestedLevel khác level đang chọn, show modal gợi ý
                       if (suggestedLevel != null && level !== suggestedLevel) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -350,8 +592,7 @@ export default function PracticePart() {
                       }
                     }}
                     onClick={() => {
-                      // Cho phép vào trang test cụ thể ngay cả khi chưa làm placement
-                      // Modal sẽ hiện trong trang test cụ thể
+                      // Cho vào trang test cụ thể nếu level trùng gợi ý
                       if (suggestedLevel == null || level === suggestedLevel) {
                         router.push(href);
                       }
@@ -368,16 +609,15 @@ export default function PracticePart() {
                       disabled={false}
                       disabledHint={undefined}
                     />
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           )}
         </section>
       </div>
 
-      {/* Modals */}
-      {/* MandatoryPlacementModal chỉ hiện trong trang test cụ thể, không hiện ở đây */}
+      {/* ===== MODALS ===== */}
       {suggestedLevel != null && (
         <LevelSuggestModal
           open={showSuggestModal}

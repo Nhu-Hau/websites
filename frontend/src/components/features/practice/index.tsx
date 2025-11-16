@@ -17,6 +17,7 @@ import { TestHeader } from "../test/TestHeader";
 import { TestLoadingState } from "../test/TestLoadingState";
 import { TestStartScreen } from "../test/TestStartScreen";
 import { MobileQuickNavSheet } from "../test/MobileQuickNavSheet";
+import { CheckCircle2 } from "lucide-react";
 
 /* ====== META ====== */
 const PART_META: Record<
@@ -42,6 +43,57 @@ function partLabel(partKey: string) {
   const n = partKey.match(/\d+/)?.[0];
   return n ? `Part ${n}` : partKey;
 }
+
+type Level = 1 | 2 | 3;
+
+function normalizePartLevels(raw: any): Partial<Record<string, Level>> {
+  const out: Partial<Record<string, Level>> = {};
+  if (!raw || typeof raw !== "object") return out;
+  const parts = [
+    "part.1",
+    "part.2",
+    "part.3",
+    "part.4",
+    "part.5",
+    "part.6",
+    "part.7",
+  ];
+  for (const p of parts) {
+    const num = p.split(".")[1];
+    let v: any = raw[p];
+    if (v == null && raw.part && typeof raw.part === "object")
+      v = raw.part[num];
+    if (v == null && raw[num] != null) v = raw[num];
+    const n = Number(v);
+    if (n === 1 || n === 2 || n === 3) out[p] = n as Level;
+  }
+  return out;
+}
+
+const levelConfig: Record<
+  Level,
+  {
+    label: string;
+    desc: string;
+    textColor: string;
+  }
+> = {
+  1: {
+    label: "Level 1",
+    desc: "Beginner",
+    textColor: "text-[#347433] dark:text-[#347433]/90",
+  },
+  2: {
+    label: "Level 2",
+    desc: "Intermediate",
+    textColor: "text-[#27548A] dark:text-[#27548A]/90",
+  },
+  3: {
+    label: "Level 3",
+    desc: "Advanced",
+    textColor: "text-[#BB3E00] dark:text-[#BB3E00]/90",
+  },
+};
 
 export default function PracticePage() {
   const {
@@ -76,6 +128,7 @@ export default function PracticePage() {
   const [isRetake, setIsRetake] = useState<boolean | null>(null);
   const [mustDoPlacement, setMustDoPlacement] = useState<boolean | null>(null);
   const [showPlacementModal, setShowPlacementModal] = useState(false);
+  const [suggestedLevel, setSuggestedLevel] = useState<Level | null>(null);
 
   const isListening = /^part\.[1-4]$/.test(partKey);
   const progress = total ? Math.round((answered / total) * 100) : 0;
@@ -213,6 +266,35 @@ export default function PracticePage() {
     };
   }, [user, authLoading]);
 
+  // Lấy suggested level theo part
+  useEffect(() => {
+    if (!user || !partKey) {
+      setSuggestedLevel(null);
+      return;
+    }
+
+    let mounted = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!r.ok) throw new Error("me-failed");
+        const j = await r.json();
+        const me = j?.user ?? j?.data ?? j;
+        const levels = normalizePartLevels(me?.partLevels);
+        const sl = (levels[partKey] ?? null) as Level | null;
+        if (mounted) setSuggestedLevel(sl);
+      } catch {
+        if (mounted) setSuggestedLevel(null);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [user, partKey]);
+
   const onLoginRequest = () =>
     toast.error("Vui lòng đăng nhập để bắt đầu làm bài");
 
@@ -231,7 +313,6 @@ export default function PracticePage() {
       document.getElementById("q-1")?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
-
 
   return (
     <TestLayout
@@ -275,7 +356,9 @@ export default function PracticePage() {
     >
       <TestHeader
         badge={{
-          label: `Luyện tập TOEIC • ${partLabel(partKey)} • Level ${level} • Test ${test}`,
+          label: `Luyện tập TOEIC • ${partLabel(
+            partKey
+          )} • Level ${level} • Test ${test}`,
           dotColor: "bg-sky-500",
         }}
         title={`Bài luyện tập ${partLabel(partKey)}`}
@@ -286,9 +369,9 @@ export default function PracticePage() {
               <span className="font-semibold text-sky-600 dark:text-sky-400">
                 kỹ năng Nghe
               </span>{" "}
-              ở <span className="font-semibold">Level {level}</span> – {" "}
-              <span className="font-semibold">Test {test}</span>. Hoàn thành bài để
-              xem phân tích chi tiết từng câu hỏi.
+              ở <span className="font-semibold">Level {level}</span> –{" "}
+              <span className="font-semibold">Test {test}</span>. Hoàn thành bài
+              để xem phân tích chi tiết từng câu hỏi.
             </>
           ) : (
             <>
@@ -305,7 +388,8 @@ export default function PracticePage() {
         stats={{
           totalQuestions: total,
           durationMin,
-          questionIconColor: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300",
+          questionIconColor:
+            "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300",
         }}
       />
 

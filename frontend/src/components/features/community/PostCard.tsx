@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import type { CommunityPost } from "@/types/community.types";
-import Swal from "sweetalert2";
+import { useConfirmModal } from "@/components/common/ConfirmModal";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 type Props = {
@@ -70,6 +70,7 @@ function fmtSize(n?: number) {
 function PostCardComponent({ post, apiBase, onChanged }: Props) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
+  const { show, Modal: ConfirmModal } = useConfirmModal();
 
   const [liked, setLiked] = React.useState(!!post.liked);
   const [likesCount, setLikesCount] = React.useState<number>(
@@ -123,66 +124,70 @@ function PostCardComponent({ post, apiBase, onChanged }: Props) {
   );
 
   const reportPost = React.useCallback(async () => {
-    const result = await Swal.fire({
-      title: "Report post?",
-      text: "Are you sure you want to report this post?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Report",
-      cancelButtonText: "Cancel",
-    });
-    if (!result.isConfirmed) return;
-
-    setReporting(true);
-    try {
-      const r = await fetch(
-        `${apiBase}/api/community/posts/${post._id}/report`,
-        {
-          method: "POST",
-          credentials: "include",
+    show(
+      {
+        title: "Report post?",
+        message: "Are you sure you want to report this post?",
+        icon: "warning",
+        confirmText: "Report",
+        cancelText: "Cancel",
+        confirmColor: "blue",
+      },
+      async () => {
+        setReporting(true);
+        try {
+          const r = await fetch(
+            `${apiBase}/api/community/posts/${post._id}/report`,
+            {
+              method: "POST",
+              credentials: "include",
+            }
+          );
+          const j = await r.json().catch(() => ({}));
+          if (r.ok) {
+            toast.success(j.message || "Post reported");
+            setReportedOnce(true);
+            onChanged();
+          } else {
+            toast.error(j.message || "Unable to report post");
+          }
+        } catch {
+          toast.error("Error reporting post");
+        } finally {
+          setReporting(false);
         }
-      );
-      const j = await r.json().catch(() => ({}));
-      if (r.ok) {
-        toast.success(j.message || "Post reported");
-        setReportedOnce(true);
-        onChanged();
-      } else {
-        toast.error(j.message || "Unable to report post");
       }
-    } catch {
-      toast.error("Error reporting post");
-    } finally {
-      setReporting(false);
-    }
-  }, [post._id, apiBase, onChanged]);
+    );
+  }, [post._id, apiBase, onChanged, show]);
 
   const deletePost = React.useCallback(
     async (e: React.MouseEvent) => {
       e.stopPropagation();
-      const result = await Swal.fire({
-        title: "Delete post?",
-        text: "Are you sure you want to delete this post?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Delete",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#ef4444",
-      });
-      if (!result.isConfirmed) return;
-      try {
-        const r = await fetch(`${apiBase}/api/community/posts/${post._id}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-        if (!r.ok) throw new Error();
-        toast.success("Post deleted.");
-        onChanged();
-      } catch {
-        toast.error("Error deleting post.");
-      }
+      show(
+        {
+          title: "Delete post?",
+          message: "Are you sure you want to delete this post?",
+          icon: "warning",
+          confirmText: "Delete",
+          cancelText: "Cancel",
+          confirmColor: "red",
+        },
+        async () => {
+          try {
+            const r = await fetch(`${apiBase}/api/community/posts/${post._id}`, {
+              method: "DELETE",
+              credentials: "include",
+            });
+            if (!r.ok) throw new Error();
+            toast.success("Post deleted.");
+            onChanged();
+          } catch {
+            toast.error("Error deleting post.");
+          }
+        }
+      );
     },
-    [post._id, apiBase, onChanged]
+    [post._id, apiBase, onChanged, show]
   );
 
   const sharePost = React.useCallback(
@@ -341,6 +346,9 @@ function PostCardComponent({ post, apiBase, onChanged }: Props) {
           <Share2 className="h-4 w-4" />
         </button>
       </div>
+
+      {/* Confirm Modal */}
+      {ConfirmModal}
     </article>
   );
 }

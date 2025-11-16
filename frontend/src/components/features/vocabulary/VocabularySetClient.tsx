@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { vocabularyService } from "@/utils/vocabulary.service";
-import { VocabularySet } from "@/types/vocabulary.types";
+import { VocabularySet, AddTermDTO } from "@/types/vocabulary.types";
 import { useFlashcardMode } from "@/hooks/vocabulary/useFlashcardMode";
 import { useLearnMode } from "@/hooks/vocabulary/useLearnMode";
 import { Flashcard } from "./Flashcard";
@@ -64,8 +64,8 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         setError(null);
         const data = await vocabularyService.getVocabularySetById(setId);
         setVocabularySet(data);
-      } catch (err: any) {
-        setError(err.message || "Không thể tải bộ từ vựng");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Không thể tải bộ từ vựng");
       } finally {
         setLoading(false);
       }
@@ -95,12 +95,12 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [mode, flashcard]);
 
-  const handleAddTerm = async (termData: any) => {
+  const handleAddTerm = async (termData: AddTermDTO) => {
     try {
       const updated = await vocabularyService.addTerm(setId, termData);
       setVocabularySet(updated);
       setShowAddTermModal(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to add term:", err);
       throw err;
     }
@@ -111,7 +111,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
     try {
       const updated = await vocabularyService.deleteTerm(setId, termId);
       setVocabularySet(updated);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to delete term:", err);
     }
   };
@@ -311,7 +311,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                                 <span className="text-xs text-zinc-500 dark:text-zinc-400 not-italic mr-1">
                                   EN:
                                 </span>
-                                "{term.example}"
+                                &quot;{term.example}&quot;
                               </p>
                             )}
                             {term.translatedExample && (
@@ -319,7 +319,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                                 <span className="text-xs text-zinc-500 dark:text-zinc-400 not-italic mr-1">
                                   VI:
                                 </span>
-                                "{term.translatedExample}"
+                                &quot;{term.translatedExample}&quot;
                               </p>
                             )}
                           </div>
@@ -395,7 +395,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
             </h1>
             {flashcard.reviewMode && (
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Đang ôn tập các từ được đánh dấu "Chưa nhớ"
+                Đang ôn tập các từ được đánh dấu &quot;Chưa nhớ&quot;
               </p>
             )}
           </div>

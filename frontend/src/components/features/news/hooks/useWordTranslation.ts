@@ -33,8 +33,34 @@ export function useWordTranslation(isPremium: boolean) {
       
       if (!range) return;
 
-      // Expand to word boundaries
-      range.expand("word");
+      // Expand to word boundaries manually
+      try {
+        const textNode = range.startContainer;
+        if (textNode.nodeType === Node.TEXT_NODE) {
+          const text = textNode.textContent || "";
+          const offset = range.startOffset;
+          
+          // Find word start
+          let start = offset;
+          while (start > 0 && /[\w'-]/.test(text[start - 1])) {
+            start--;
+          }
+          
+          // Find word end
+          let end = offset;
+          while (end < text.length && /[\w'-]/.test(text[end])) {
+            end++;
+          }
+          
+          if (start < end) {
+            range.setStart(textNode, start);
+            range.setEnd(textNode, end);
+          }
+        }
+      } catch {
+        // If manual expansion fails, try to use the range as-is
+      }
+      
       selection?.removeAllRanges();
       selection?.addRange(range);
 

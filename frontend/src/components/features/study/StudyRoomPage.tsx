@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 import ChatPanel from "@/components/features/study/ChatPanel";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-import Swal from "sweetalert2";
+import { useConfirmModal } from "@/components/common/ConfirmModal";
 
 type JoinResp = {
   wsUrl: string;
@@ -276,37 +276,39 @@ function ParticipantsList({ roomName }: { roomName: string }) {
   const participants = useParticipants();
   const { user } = useAuth();
   const [showList, setShowList] = useState(false);
+  const { show, Modal: ConfirmModal } = useConfirmModal();
 
   const handleKick = useCallback(async (userId: string, userName: string) => {
-    const result = await Swal.fire({
-      title: "Xác nhận",
-      text: `Bạn có chắc muốn kick "${userName}" khỏi phòng?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Có, kick",
-      cancelButtonText: "Hủy",
-      confirmButtonColor: "#ef4444",
-    });
-    if (!result.isConfirmed) return;
-    
-    try {
-      const res = await fetch(`/api/rooms/${encodeURIComponent(roomName)}/kick`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ userId, reason: "Bị kick bởi giáo viên/quản trị viên" }),
-      });
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({}));
-        toast.error(error.message || "Kick thất bại");
-        return;
+    show(
+      {
+        title: "Xác nhận",
+        message: `Bạn có chắc muốn kick "${userName}" khỏi phòng?`,
+        icon: "warning",
+        confirmText: "Có, kick",
+        cancelText: "Hủy",
+        confirmColor: "red",
+      },
+      async () => {
+        try {
+          const res = await fetch(`/api/rooms/${encodeURIComponent(roomName)}/kick`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ userId, reason: "Bị kick bởi giáo viên/quản trị viên" }),
+          });
+          if (!res.ok) {
+            const error = await res.json().catch(() => ({}));
+            toast.error(error.message || "Kick thất bại");
+            return;
+          }
+          toast.success(`Đã kick "${userName}" khỏi phòng`);
+        } catch (e: any) {
+          toast.error("Kick thất bại");
+          console.error("Failed to kick:", e);
+        }
       }
-      toast.success(`Đã kick "${userName}" khỏi phòng`);
-    } catch (e: any) {
-      toast.error("Kick thất bại");
-      console.error("Failed to kick:", e);
-    }
-  }, [roomName]);
+    );
+  }, [roomName, show]);
 
   return (
     <div className="absolute top-4 right-4 z-50">
@@ -349,6 +351,9 @@ function ParticipantsList({ roomName }: { roomName: string }) {
           </div>
         </div>
       )}
+
+      {/* Confirm Modal */}
+      {ConfirmModal}
     </div>
   );
 }
@@ -675,7 +680,7 @@ export default function StudyRoomPage() {
         audio={isHost}
         connectOptions={{ autoSubscribe: true }}
         className="relative h-full"
-        onDisconnected={() => toast.message("Bạn đã rời phòng")}
+        onDisconnected={() => toast.info("Bạn đã rời phòng")}
       >
         <RoomAudioRenderer />
 

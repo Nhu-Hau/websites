@@ -9,7 +9,7 @@ import { enqueueSnackbar, closeSnackbar, SnackbarKey, OptionsObject } from "noti
 
 type ToastType = "success" | "error" | "info" | "warning" | "default";
 
-interface ExtendedToastOptions extends OptionsObject {
+interface ExtendedToastOptions {
   /** Link để navigate khi click vào toast */
   link?: string;
   /** onClick handler cho toast (sẽ được map sang SnackbarProps.onClick) */
@@ -27,10 +27,12 @@ interface ExtendedToastOptions extends OptionsObject {
     label: string;
     onClick: () => void;
   } | React.ReactNode;
+  /** Other notistack options */
+  [key: string]: unknown;
 }
 
 const createToast = (variant: ToastType) => {
-  return (message: string, options?: ExtendedToastOptions): SnackbarKey => {
+  return (message: string | React.ReactNode, options?: ExtendedToastOptions): SnackbarKey => {
     const { link, onClick, classNames, description, duration, action, ...snackbarOptions } = options || {};
     
     // Combine message với description nếu có
@@ -141,7 +143,7 @@ export const toast = {
     messages: {
       pending?: string;
       success?: string | ((data: T) => string);
-      error?: string | ((error: any) => string);
+      error?: string | ((error: unknown) => string);
     },
     options?: OptionsObject
   ): Promise<T> => {

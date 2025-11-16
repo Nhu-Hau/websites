@@ -16,8 +16,8 @@ export function useVocabulary() {
       setError(null);
       const data = await vocabularyService.getVocabularySets();
       setSets(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch vocabulary sets");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to fetch vocabulary sets");
     } finally {
       setLoading(false);
     }
@@ -27,13 +27,13 @@ export function useVocabulary() {
     fetchSets();
   }, []);
 
-  const createSet = async (data: any) => {
+  const createSet = async (data: Record<string, unknown>) => {
     try {
       const newSet = await vocabularyService.createVocabularySet(data);
       setSets((prev) => [newSet, ...prev]);
       return newSet;
-    } catch (err: any) {
-      setError(err.message || "Failed to create vocabulary set");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to create vocabulary set");
       throw err;
     }
   };
@@ -42,8 +42,8 @@ export function useVocabulary() {
     try {
       await vocabularyService.deleteVocabularySet(setId);
       setSets((prev) => prev.filter((set) => set._id !== setId));
-    } catch (err: any) {
-      setError(err.message || "Failed to delete vocabulary set");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to delete vocabulary set");
       throw err;
     }
   };

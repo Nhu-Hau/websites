@@ -133,7 +133,7 @@ export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
                           English:
                         </p>
                         <p className="text-zinc-900 dark:text-white italic">
-                          "{term.example}"
+                          &quot;{term.example}&quot;
                         </p>
                       </div>
                     )}
@@ -144,7 +144,7 @@ export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
                           Tiếng Việt:
                         </p>
                         <p className="text-zinc-900 dark:text-white italic">
-                          "{term.translatedExample}"
+                          &quot;{term.translatedExample}&quot;
                         </p>
                       </div>
                     )}

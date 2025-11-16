@@ -17,7 +17,7 @@ import {
   Send,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
-import Swal from "sweetalert2";
+import { useConfirmModal } from "@/components/common/ConfirmModal";
 import type { CommunityComment } from "@/types/community.types";
 import { getSocket } from "@/lib/socket";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
@@ -85,6 +85,7 @@ export default function PostDetail({ postId }: { postId: string }) {
     () => pathname.split("/")[1] || "en",
     [pathname]
   );
+  const { show, Modal: ConfirmModal } = useConfirmModal();
 
   const [post, setPost] = React.useState<any>(null);
   const [comments, setComments] = React.useState<CommunityComment[]>([]);
@@ -270,44 +271,48 @@ export default function PostDetail({ postId }: { postId: string }) {
   };
 
   const deletePost = async () => {
-    const result = await Swal.fire({
-      title: "Delete post?",
-      text: "Are you sure you want to delete this post?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Delete",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#ef4444",
-    });
-    if (!result.isConfirmed) return;
-    const res = await fetch(`${API_BASE}/api/community/posts/${postId}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    if (res.ok) router.push(`${basePrefix}/community`);
-    else toast.error("Failed to delete");
+    show(
+      {
+        title: "Delete post?",
+        message: "Are you sure you want to delete this post?",
+        icon: "warning",
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        confirmColor: "red",
+      },
+      async () => {
+        const res = await fetch(`${API_BASE}/api/community/posts/${postId}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (res.ok) router.push(`${basePrefix}/community`);
+        else toast.error("Failed to delete");
+      }
+    );
   };
 
   const deleteComment = async (commentId: string) => {
-    const result = await Swal.fire({
-      title: "Delete comment?",
-      text: "Are you sure you want to delete this comment?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Delete",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#ef4444",
-    });
-    if (!result.isConfirmed) return;
-    const res = await fetch(
-      `${API_BASE}/api/community/comments/${commentId}`,
+    show(
       {
-        method: "DELETE",
-        credentials: "include",
+        title: "Delete comment?",
+        message: "Are you sure you want to delete this comment?",
+        icon: "warning",
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        confirmColor: "red",
+      },
+      async () => {
+        const res = await fetch(
+          `${API_BASE}/api/community/comments/${commentId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          }
+        );
+        if (res.ok) loadPost();
+        else toast.error("Failed to delete comment");
       }
     );
-    if (res.ok) loadPost();
-    else toast.error("Failed to delete comment");
   };
 
   const sharePost = async () => {
@@ -600,6 +605,9 @@ export default function PostDetail({ postId }: { postId: string }) {
           </div>
         </div>
       </main>
+
+      {/* Confirm Modal */}
+      {ConfirmModal}
     </div>
   );
 }

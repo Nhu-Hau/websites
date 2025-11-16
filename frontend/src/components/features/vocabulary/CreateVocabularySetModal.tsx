@@ -7,7 +7,7 @@ import { CreateVocabularySetDTO } from "@/types/vocabulary.types";
 
 interface CreateVocabularySetModalProps {
   onClose: () => void;
-  onCreate: (data: CreateVocabularySetDTO) => Promise<any>;
+  onCreate: (data: CreateVocabularySetDTO) => Promise<unknown>;
 }
 
 export function CreateVocabularySetModal({
@@ -38,8 +38,8 @@ export function CreateVocabularySetModal({
         terms: [],
       });
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Không thể tạo bộ từ vựng");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Không thể tạo bộ từ vựng");
     } finally {
       setLoading(false);
     }

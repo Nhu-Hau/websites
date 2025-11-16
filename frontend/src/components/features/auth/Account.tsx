@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import Cropper from "react-easy-crop";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-import Swal from "sweetalert2";
+import { useConfirmModal } from "@/components/common/ConfirmModal";
 
 /* ================= Types ================= */
 type Role = "user" | "admin" | "teacher";
@@ -213,6 +213,7 @@ export default function Account() {
   const locale = base.slice(1) || "vi";
   const router = useRouter();
   const { user: ctxUser, setUser: setCtxUser } = useAuth() as any;
+  const { show, Modal: ConfirmModal } = useConfirmModal();
 
   const [user, setUser] = useState<SafeUser | null>((ctxUser as any) ?? null);
   const [loading, setLoading] = useState(!ctxUser);
@@ -374,36 +375,38 @@ export default function Account() {
       toast.error("Bạn chưa có ảnh đại diện");
       return;
     }
-    const result = await Swal.fire({
-      title: "Xóa ảnh đại diện?",
-      text: "Bạn có chắc muốn xoá ảnh đại diện không?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
-      confirmButtonColor: "#ef4444",
-    });
-    if (!result.isConfirmed) return;
+    
+    show(
+      {
+        title: "Xóa ảnh đại diện?",
+        message: "Bạn có chắc muốn xoá ảnh đại diện không?",
+        icon: "warning",
+        confirmText: "Xóa",
+        cancelText: "Hủy",
+        confirmColor: "red",
+      },
+      async () => {
+        try {
+          setDeleting(true);
+          const r = await fetch("/api/account/avatar", {
+            method: "DELETE",
+            credentials: "include",
+          });
+          if (!r.ok) throw new Error("Xoá thất bại");
+          toast.success("Đã xoá ảnh đại diện");
 
-    try {
-      setDeleting(true);
-      const r = await fetch("/api/account/avatar", {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!r.ok) throw new Error("Xoá thất bại");
-      toast.success("Đã xoá ảnh đại diện");
-
-      setUser((prev) => (prev ? { ...prev, picture: undefined } : prev));
-      if (setCtxUser)
-        setCtxUser((prev: any) =>
-          prev ? { ...prev, picture: undefined } : prev
-        );
-    } catch {
-      toast.error("Không thể xoá ảnh đại diện");
-    } finally {
-      setDeleting(false);
-    }
+          setUser((prev) => (prev ? { ...prev, picture: undefined } : prev));
+          if (setCtxUser)
+            setCtxUser((prev: any) =>
+              prev ? { ...prev, picture: undefined } : prev
+            );
+        } catch {
+          toast.error("Không thể xoá ảnh đại diện");
+        } finally {
+          setDeleting(false);
+        }
+      }
+    );
   }
 
   if (loading) {
@@ -687,6 +690,9 @@ export default function Account() {
           </div>
         </div>
       )}
+
+      {/* Confirm Modal */}
+      {ConfirmModal}
     </div>
   );
 }

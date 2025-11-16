@@ -242,18 +242,7 @@ export default function ProgressPage() {
           label: `Progress Test • 7 phần • ${durationMin} phút`,
           dotColor: "bg-sky-500",
         }}
-        title={
-          <>
-            Bài kiểm tra tiến bộ TOEIC
-            {typeof version === "number" &&
-              Number.isFinite(version) &&
-              version > 0 && (
-                <span className="ml-2 px-3 py-1 rounded-full bg-emerald-100/80 text-emerald-700 text-xs font-semibold uppercase tracking-wide dark:bg-emerald-900/40 dark:text-emerald-300">
-                  Test {version}
-                </span>
-              )}
-          </>
-        }
+        title={`Bài kiểm tra tiến bộ TOEIC${typeof version === "number" && Number.isFinite(version) && version > 0 ? ` • Test ${version}` : ""}`}
         description={
           <>
             Bài Progress gồm đủ{" "}

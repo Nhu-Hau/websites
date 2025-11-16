@@ -7,7 +7,7 @@ import { AddTermDTO } from "@/types/vocabulary.types";
 
 interface AddTermModalProps {
   onClose: () => void;
-  onAdd: (data: AddTermDTO) => Promise<any>;
+  onAdd: (data: AddTermDTO) => Promise<unknown>;
 }
 
 export function AddTermModal({ onClose, onAdd }: AddTermModalProps) {
@@ -40,8 +40,8 @@ export function AddTermModal({ onClose, onAdd }: AddTermModalProps) {
         translatedExample: translatedExample.trim() || undefined,
       });
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Không thể thêm từ");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Không thể thêm từ");
     } finally {
       setLoading(false);
     }

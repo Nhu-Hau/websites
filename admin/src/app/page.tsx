@@ -148,6 +148,7 @@ export default function Home() {
     })();
   }, [selectedUserId]);
 
+
   if (loadingMe) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center space-y-4">
@@ -900,6 +901,7 @@ export default function Home() {
           </div>
         </>
       )}
+
     </div>
   );
 }

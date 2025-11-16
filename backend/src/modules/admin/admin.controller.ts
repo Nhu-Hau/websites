@@ -1,9 +1,14 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import os from "os";
+import { exec } from "child_process";
+import { promisify } from "util";
 import { User } from "../../shared/models/User";
 import { PlacementAttempt } from "../../shared/models/PlacementAttempt";
 import { ProgressAttempt } from "../../shared/models/ProgressAttempt";
 import { PracticeAttempt } from "../../shared/models/PracticeAttempt";
+
+const execAsync = promisify(exec);
 
 export async function listUsers(req: Request, res: Response) {
   try {
@@ -486,6 +491,160 @@ export async function listPracticeAttempts(req: Request, res: Response) {
   } catch (e) {
     console.error(e);
     return res.status(500).json({ message: "Lỗi khi lấy danh sách practice attempts" });
+  }
+}
+
+// GET /api/admin/analytics/vps-stats
+export async function vpsStats(_req: Request, res: Response) {
+  try {
+    // CPU Usage - cần đo 2 lần để tính chính xác
+    const cpus1 = os.cpus();
+    const total1 = cpus1.reduce((acc, cpu) => {
+      return acc + Object.values(cpu.times).reduce((sum, time) => sum + time, 0);
+    }, 0);
+    const idle1 = cpus1.reduce((acc, cpu) => acc + cpu.times.idle, 0);
+    
+    // Đợi 100ms để đo lần 2
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const cpus2 = os.cpus();
+    const total2 = cpus2.reduce((acc, cpu) => {
+      return acc + Object.values(cpu.times).reduce((sum, time) => sum + time, 0);
+    }, 0);
+    const idle2 = cpus2.reduce((acc, cpu) => acc + cpu.times.idle, 0);
+    
+    const totalDiff = total2 - total1;
+    const idleDiff = idle2 - idle1;
+    const cpuUsage = totalDiff > 0 ? Math.max(0, Math.min(100, Math.round(100 - (idleDiff / totalDiff) * 100))) : 0;
+
+    // Memory Usage
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    const memoryUsage = Math.round((usedMem / totalMem) * 100);
+
+    // Virtual Memory - sử dụng một phần của free memory như virtual memory
+    // Trên thực tế, virtual memory thường là swap, nhưng để đơn giản ta tính dựa trên memory
+    const virtualMemoryUsage = Math.round((freeMem / totalMem) * 100);
+
+    // Disk Space - sử dụng exec command để lấy disk space
+    let diskUsage = 0;
+    try {
+      const platform = os.platform();
+      let command: string;
+      
+      if (platform === "win32") {
+        // Windows: sử dụng wmic
+        command = 'wmic logicaldisk get size,freespace,caption';
+        const { stdout } = await execAsync(command);
+        // Parse output để lấy disk space của ổ C:
+        const lines = stdout.split("\n").filter(line => line.trim() && !line.includes("Caption"));
+        if (lines.length > 0) {
+          const parts = lines[0].trim().split(/\s+/);
+          if (parts.length >= 2) {
+            const freeSpace = parseInt(parts[parts.length - 2] || "0", 10);
+            const totalSpace = parseInt(parts[parts.length - 1] || "0", 10);
+            if (totalSpace > 0) {
+              diskUsage = Math.round(((totalSpace - freeSpace) / totalSpace) * 100);
+            }
+          }
+        }
+      } else {
+        // Linux/Mac: sử dụng df
+        command = "df -h / | tail -1 | awk '{print $5}' | sed 's/%//'";
+        const { stdout } = await execAsync(command);
+        diskUsage = parseInt(stdout.trim(), 10) || 0;
+      }
+    } catch (diskError) {
+      console.error("Error getting disk space:", diskError);
+      diskUsage = 0; // Fallback to 0 if can't get disk info
+    }
+
+    // OS Info - lấy thông tin OS
+    let osInfo = `${os.type()} ${os.release()}`;
+    try {
+      const platform = os.platform();
+      if (platform === "linux") {
+        // Thử lấy thông tin chi tiết từ /etc/os-release
+        try {
+          const { stdout } = await execAsync("cat /etc/os-release | grep PRETTY_NAME | cut -d '\"' -f 2");
+          osInfo = stdout.trim() || osInfo;
+        } catch {
+          // Fallback to basic info
+        }
+      }
+    } catch (osError) {
+      console.error("Error getting OS info:", osError);
+    }
+
+    // Uptime - thời gian đã chạy (tính bằng giây)
+    const uptimeSeconds = Math.floor(os.uptime());
+    const days = Math.floor(uptimeSeconds / 86400);
+    const hours = Math.floor((uptimeSeconds % 86400) / 3600);
+    const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+    const seconds = uptimeSeconds % 60;
+    const uptimeFormatted = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+    return res.json({
+      cpu: Math.max(0, Math.min(100, cpuUsage)),
+      realMemory: memoryUsage,
+      virtualMemory: Math.max(0, Math.min(100, 100 - virtualMemoryUsage)), // Invert để hiển thị usage
+      localDiskSpace: diskUsage,
+      os: osInfo,
+      uptime: uptimeFormatted,
+      uptimeSeconds: uptimeSeconds,
+    });
+  } catch (e: any) {
+    console.error("Error getting VPS stats:", e);
+    // Fallback nếu có lỗi
+    try {
+      const totalMem = os.totalmem();
+      const freeMem = os.freemem();
+      const usedMem = totalMem - freeMem;
+      const memoryUsage = Math.round((usedMem / totalMem) * 100);
+      
+      return res.json({
+        cpu: 0,
+        realMemory: memoryUsage,
+        virtualMemory: 0,
+        localDiskSpace: 0,
+        os: `${os.type()} ${os.release()}`,
+        uptime: "0d 0h 0m 0s",
+        uptimeSeconds: 0,
+      });
+    } catch (fallbackError) {
+      return res.status(500).json({ message: "Lỗi khi lấy thông tin VPS" });
+    }
+  }
+}
+
+// POST /api/admin/vps/restart
+export async function restartServer(_req: Request, res: Response) {
+  try {
+    // Gửi response trước khi restart
+    res.json({ message: "Đang khởi động lại server..." });
+    
+    // Đợi một chút để response được gửi đi
+    setTimeout(() => {
+      // Thử dùng PM2 để restart nếu có
+      const platform = os.platform();
+      if (platform === "linux") {
+        // Thử restart bằng PM2
+        exec("pm2 restart api", (error) => {
+          if (error) {
+            console.error("PM2 restart failed, trying process.exit:", error);
+            // Fallback: exit process và để PM2 tự restart
+            process.exit(0);
+          }
+        });
+      } else {
+        // Windows hoặc dev environment: chỉ exit process
+        process.exit(0);
+      }
+    }, 1000);
+  } catch (e: any) {
+    console.error("Error restarting server:", e);
+    return res.status(500).json({ message: "Lỗi khi khởi động lại server" });
   }
 }
 

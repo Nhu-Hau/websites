@@ -59,6 +59,22 @@ export async function adminOnlineUsersCount() {
   return res.json() as Promise<{ onlineUsers: number; activeUsers: number }>;
 }
 
+export async function adminVpsStats() {
+  const res = await fetch(`${API_BASE}/api/admin/analytics/vps-stats`, { credentials: 'include', cache: 'no-store' });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch VPS stats failed'); }
+  return res.json() as Promise<{ cpu: number; realMemory: number; virtualMemory: number; localDiskSpace: number; os: string; uptime: string; uptimeSeconds: number }>;
+}
+
+export async function adminVpsRestart() {
+  const res = await fetch(`${API_BASE}/api/admin/vps/restart`, { 
+    method: 'POST',
+    credentials: 'include', 
+    cache: 'no-store' 
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Restart VPS failed'); }
+  return res.json() as Promise<{ message: string }>;
+}
+
 export async function adminUserScores() {
   const res = await fetch(`${API_BASE}/api/admin/analytics/user-scores`, { credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch user scores failed'); }

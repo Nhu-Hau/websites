@@ -36,6 +36,9 @@ export default function RootLayout({
               Admin
             </Link>
             <nav className="flex items-center gap-4 text-sm">
+              <Link href="/vps" className="hover:underline">
+                VPS
+              </Link>
               <Link href="/" className="hover:underline">
                 Dashboard
               </Link>

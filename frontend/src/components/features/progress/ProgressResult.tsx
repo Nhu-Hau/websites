@@ -28,18 +28,16 @@ type AttemptItem = {
 type Attempt = {
   _id: string;
   userId: string;
-  testId: string;
+  version?: number;
   total: number;
   correct: number;
   acc: number;
   listening: { total: number; correct: number; acc: number };
   reading: { total: number; correct: number; acc: number };
-  level: 1 | 2 | 3;
   items: AttemptItem[];
   timeSec: number;
   startedAt?: string;
   submittedAt: string;
-  version?: string;
   partStats?: Record<string, { total: number; correct: number; acc: number }>;
   weakParts?: string[];
   predicted?: { overall: number; listening: number; reading: number };
@@ -54,7 +52,7 @@ function fmtTime(totalSec: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export default function PlacementResult() {
+export default function ProgressResult() {
   const { attemptId } = useParams<{ attemptId: string }>();
   const router = useRouter();
   const basePrefix = useBasePrefix();
@@ -85,7 +83,7 @@ export default function PlacementResult() {
 
         // load kết quả mới nhất
         if (attemptId === "last") {
-          const hist = await fetch(`/api/placement/attempts?limit=1&page=1`, {
+          const hist = await fetch(`/api/progress/attempts?limit=1&page=1`, {
             credentials: "include",
             cache: "no-store",
           });
@@ -94,7 +92,7 @@ export default function PlacementResult() {
             const last = j?.items?.[0];
             if (last?._id) {
               const detailRes = await fetch(
-                `/api/placement/attempts/${last._id}`,
+                `/api/progress/attempts/${last._id}`,
                 { credentials: "include", cache: "no-store" }
               );
               if (detailRes.ok) {
@@ -117,7 +115,7 @@ export default function PlacementResult() {
             }
           }
         } else {
-          const res = await fetch(`/api/placement/attempts/${attemptId}`, {
+          const res = await fetch(`/api/progress/attempts/${attemptId}`, {
             credentials: "include",
             cache: "no-store",
           });
@@ -151,7 +149,7 @@ export default function PlacementResult() {
 
         // tải lại câu hỏi gốc để render
         const orderedRes = await fetch(
-          `/api/placement/attempts/${encodeURIComponent(
+          `/api/progress/attempts/${encodeURIComponent(
             String(attemptData._id)
           )}/items`,
           { credentials: "include", cache: "no-store" }
@@ -168,7 +166,7 @@ export default function PlacementResult() {
             ? attemptData.allIds
             : attemptData.items?.map((i) => i.id) || [];
           if (allIds.length) {
-            const r = await fetch(`/api/placement/items`, {
+            const r = await fetch(`/api/progress/paper`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               credentials: "include",
@@ -200,7 +198,7 @@ export default function PlacementResult() {
           }
         }
       } catch (e) {
-        console.error("Error fetching placement result:", e);
+        console.error("Error fetching progress result:", e);
         if (mounted) {
           setError(
             `Lỗi khi tải dữ liệu: ${
@@ -342,106 +340,103 @@ export default function PlacementResult() {
       focusMode={focusMode}
       onToggleFocus={() => setFocusMode((v) => !v)}
     >
-          {/* Header */}
-          <ResultHeader
-            badge={{
-              label: "Kết quả • Mini TOEIC",
-              dotColor: "bg-emerald-500",
-            }}
-            title="Kết quả bài kiểm tra xếp trình độ TOEIC"
-            description={
-              <>
-                Hoàn thành lúc{" "}
-                <span className="font-medium">
-                  {new Date(attempt.submittedAt).toLocaleString()}
-                </span>
-                . Dưới đây là điểm TOEIC ước lượng và phân tích chi tiết theo
-                từng kỹ năng.
-              </>
-            }
-            stats={{
-              correct: attempt.correct,
-              total: attempt.total,
-              timeLabel: fmtTime(attempt.timeSec),
-              questionIconColor:
-                "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300",
-              timeIconColor:
-                "bg-amber-50 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300",
-            }}
-          />
+      {/* Header */}
+      <ResultHeader
+        badge={{
+          label: `Progress Test${typeof attempt.version === "number" ? ` • Test ${attempt.version}` : ""}`,
+          dotColor: "bg-sky-500",
+        }}
+        title="Kết quả bài kiểm tra tiến bộ TOEIC"
+        description={
+          <>
+            Hoàn thành lúc{" "}
+            <span className="font-medium">
+              {new Date(attempt.submittedAt).toLocaleString()}
+            </span>
+            . Dưới đây là điểm TOEIC ước lượng và phân tích chi tiết theo
+            từng kỹ năng.
+          </>
+        }
+        stats={{
+          correct: attempt.correct,
+          total: attempt.total,
+          timeLabel: fmtTime(attempt.timeSec),
+        }}
+      />
 
-          {/* Tổng quan + phân tích (dùng ResultsPanel pro) */}
-          <ResultsPanel
-            resp={respLike as any}
-            timeLabel={fmtTime(attempt.timeSec)}
-            onToggleDetails={() => setShowDetails((s) => !s)}
-            showDetails={showDetails}
-          />
+      {/* Tổng quan + phân tích (dùng ResultsPanel pro) */}
+      <ResultsPanel
+        resp={respLike as any}
+        timeLabel={fmtTime(attempt.timeSec)}
+        onToggleDetails={() => setShowDetails((s) => !s)}
+        showDetails={showDetails}
+      />
 
-          {/* AI Insight Section */}
-          {attempt._id && (
-            <div className="mt-8">
-              <AIInsightSection
-                attemptId={attempt._id}
-                userAccess={user?.access}
-                apiEndpoint={`/api/chat/insight/placement/${attempt._id}`}
+      {/* AI Insight Section */}
+      {attempt._id && (
+        <div className="mt-8">
+          <AIInsightSection
+            attemptId={attempt._id}
+            userAccess={user?.access}
+            apiEndpoint={`/api/chat/insight/progress/${attempt._id}`}
+          />
+        </div>
+      )}
+
+      {/* Danh sách câu hỏi */}
+      <section className="mt-8 space-y-6 sm:space-y-8">
+        {items.length === 0 ? (
+          <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
+            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
+              Không có câu hỏi để hiển thị.
+            </p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Items: {items.length}, Groups: {groups.length}
+            </p>
+          </div>
+        ) : groups.length === 0 ? (
+          <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
+            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
+              Không thể nhóm câu hỏi để hiển thị.
+            </p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Items: {items.length}, StimulusMap keys:{" "}
+              {Object.keys(stimulusMap).length}
+            </p>
+          </div>
+        ) : (
+          groups.map((g) =>
+            g.stimulus?.part === "part.1" ? (
+              <StimulusRowCard
+                key={g.key}
+                stimulus={g.stimulus}
+                items={g.items}
+                itemIndexMap={itemIndexMap}
+                answers={answers}
+                correctMap={correctMap}
+                locked
+                onPick={() => {}}
+                showStimulusDetails={showDetails}
+                showPerItemExplain={showDetails}
               />
-            </div>
-          )}
-
-          {/* Danh sách câu hỏi */}
-          <section className="mt-8 space-y-6 sm:space-y-8">
-            {items.length === 0 ? (
-              <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
-                  Không có câu hỏi để hiển thị.
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Items: {items.length}, Groups: {groups.length}
-                </p>
-              </div>
-            ) : groups.length === 0 ? (
-              <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
-                  Không thể nhóm câu hỏi để hiển thị.
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Items: {items.length}, StimulusMap keys:{" "}
-                  {Object.keys(stimulusMap).length}
-                </p>
-              </div>
             ) : (
-              groups.map((g) =>
-                g.stimulus?.part === "part.1" ? (
-                  <StimulusRowCard
-                    key={g.key}
-                    stimulus={g.stimulus}
-                    items={g.items}
-                    itemIndexMap={itemIndexMap}
-                    answers={answers}
-                    correctMap={correctMap}
-                    locked
-                    onPick={() => {}}
-                    showStimulusDetails={showDetails}
-                    showPerItemExplain={showDetails}
-                  />
-                ) : (
-                  <StimulusColumnCard
-                    key={g.key}
-                    stimulus={g.stimulus}
-                    items={g.items}
-                    itemIndexMap={itemIndexMap}
-                    answers={answers}
-                    correctMap={correctMap}
-                    locked
-                    onPick={() => {}}
-                    showStimulusDetails={showDetails}
-                    showPerItemExplain={showDetails}
-                  />
-                )
-              )
-            )}
-          </section>
+              <StimulusColumnCard
+                key={g.key}
+                stimulus={g.stimulus}
+                items={g.items}
+                itemIndexMap={itemIndexMap}
+                answers={answers}
+                correctMap={correctMap}
+                locked
+                onPick={() => {}}
+                showStimulusDetails={showDetails}
+                showPerItemExplain={showDetails}
+              />
+            )
+          )
+        )}
+      </section>
     </ResultLayout>
   );
 }
+

@@ -29,12 +29,13 @@ type Attempt = {
   createdAt?: string;
   answersMap?: Record<string, { correctAnswer: string }>;
 };
-type HistoryResp = {
+
+interface PracticeHistoryClientProps {
+  items: Attempt[];
+  total: number;
   page: number;
   limit: number;
-  total: number;
-  items: Attempt[];
-};
+}
 
 function fmtTime(sec: number) {
   const m = Math.floor(Math.max(0, sec) / 60);
@@ -55,52 +56,13 @@ function getLevelColor(level: 1 | 2 | 3) {
     : "bg-violet-100 text-violet-800 dark:bg-violet-900/50 dark:text-violet-300";
 }
 
-export default function PracticeHistory() {
-  const base = useBasePrefix("vi"); // "/vi"
-  const sp = useSearchParams();
-  const page = Math.max(1, parseInt(String(sp.get("page") ?? "1"), 10));
-  const limit = Math.min(
-    100,
-    Math.max(1, parseInt(String(sp.get("limit") ?? "20"), 10))
-  );
-  const partKey = sp.get("partKey") || undefined;
-  const level = sp.get("level") || undefined;
-  const test = sp.get("test") || undefined;
-
-  const [loading, setLoading] = React.useState(true);
-  const [items, setItems] = React.useState<Attempt[]>([]);
-  const [total, setTotal] = React.useState(0);
-
-  React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setLoading(true);
-        const qs = new URLSearchParams();
-        qs.set("page", String(page));
-        qs.set("limit", String(limit));
-        if (partKey) qs.set("partKey", partKey);
-        if (level) qs.set("level", level);
-        if (test) qs.set("test", test);
-        const res = await fetch(`/api/practice/history?${qs.toString()}`, {
-          credentials: "include",
-          cache: "no-store",
-        });
-        const { items = [], total = 0 } = (
-          res.ok ? await res.json() : { items: [], total: 0 }
-        ) as HistoryResp;
-        if (!mounted) return;
-        setItems(items);
-        setTotal(total);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [page, limit, partKey, level, test]);
-
+export default function PracticeHistoryClient({
+  items,
+  total,
+  page,
+  limit,
+}: PracticeHistoryClientProps) {
+  const base = useBasePrefix("vi");
   const hasData = items.length > 0;
   const locale = base.slice(1) || "vi";
 
@@ -154,14 +116,7 @@ export default function PracticeHistory() {
         )}
       </header>
 
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="h-12 w-12 rounded-full border-4 border-blue-600 dark:border-blue-400 border-t-transparent animate-spin" />
-          <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-            Đang tải...
-          </p>
-        </div>
-      ) : !hasData ? (
+      {!hasData ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="mb-6 rounded-full bg-zinc-100 dark:bg-zinc-800 p-8">
             <div className="h-20 w-20 rounded-full bg-gradient-to-br from-zinc-300 to-zinc-400 dark:from-zinc-700 dark:to-zinc-600" />
@@ -298,3 +253,15 @@ export default function PracticeHistory() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+

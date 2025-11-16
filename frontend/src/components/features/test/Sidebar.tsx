@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Item, ChoiceId } from "@/types/tests.types";
-import { Play, Eye, EyeOff, Focus as FocusIcon, Clock } from "lucide-react";
+import { Eye, EyeOff, Focus as FocusIcon, Clock } from "lucide-react";
 
 function fmtMMSS(sec: number) {
   const safe = Math.max(0, sec | 0);
@@ -32,9 +32,6 @@ export function Sidebar({
   countdownSec = 35 * 60,
   initialLeftSec,
   started,
-  onStart,
-  isAuthed,
-  onLoginRequest,
   focusMode,
   onToggleFocus,
 }: {
@@ -192,7 +189,7 @@ export function Sidebar({
                     <Clock className="h-3.5 w-3.5" />
                     Thời gian
                   </span>
-                  <span className="mt-0.5 text-[13px] font-semibold text-sky-700 dark:text-sky-300">
+                  <span className="mt-0.5 text-[13px] font-semibold text-red-500 dark:text-sky-300">
                     {countdownLabel}
                   </span>
                 </div>
@@ -201,7 +198,7 @@ export function Sidebar({
               {/* Progress bar */}
               <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-zinc-200/90 dark:bg-zinc-700">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-sky-500 to-sky-400 transition-all duration-500"
+                  className="h-full rounded-full bg-gradient-to-r from-sky-500 via-sky-500 to-sky-400 transition-all duration-500"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -293,10 +290,10 @@ export function Sidebar({
                       "dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400";
                   } else if (picked === correct) {
                     cls +=
-                      " border-emerald-600 bg-emerald-600 text-white shadow-sm";
+                      " border-lime-600 bg-lime-600 text-white shadow-sm";
                   } else {
                     cls +=
-                      " border-rose-600 bg-rose-600 text-white shadow-sm";
+                      " border-red-600 bg-red-600 text-white shadow-sm";
                   }
                 }
 

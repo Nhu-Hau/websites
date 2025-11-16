@@ -2,23 +2,35 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { usePracticeTest } from "@/hooks/tests/usePracticeTest";
-import { Sidebar } from "./Sidebar";
-import { ResultsPanel } from "./ResultsPanel";
+import { ResultsPanel } from "../test/ResultsPanel";
 import { groupByStimulus } from "@/utils/groupByStimulus";
-import { StimulusRowCard, StimulusColumnCard } from "./StimulusCards";
+import { StimulusRowCard, StimulusColumnCard } from "../test/StimulusCards";
 import { useAuth } from "@/context/AuthContext";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { toast } from "sonner";
-import {
-  ListChecks,
-  Timer,
-  Clock,
-  BookOpen,
-  Headphones,
-  Focus,
-} from "lucide-react";
-import FocusHUD from "./FocusHUD";
+import MandatoryPlacementModal from "../placement/PlacementMandatory";
 import { ChoiceId } from "@/types/tests.types";
+import { TestLayout } from "../test/TestLayout";
+import { TestHeader } from "../test/TestHeader";
+import { TestLoadingState } from "../test/TestLoadingState";
+import { TestStartScreen } from "../test/TestStartScreen";
+import { MobileQuickNavSheet } from "../test/MobileQuickNavSheet";
+
+/* ====== META ====== */
+const PART_META: Record<
+  string,
+  { title: string; defaultQuestions: number; defaultDuration: number }
+> = {
+  "part.1": { title: "Part 1", defaultQuestions: 6, defaultDuration: 6 },
+  "part.2": { title: "Part 2", defaultQuestions: 25, defaultDuration: 11 },
+  "part.3": { title: "Part 3", defaultQuestions: 39, defaultDuration: 20 },
+  "part.4": { title: "Part 4", defaultQuestions: 30, defaultDuration: 13 },
+  "part.5": { title: "Part 5", defaultQuestions: 30, defaultDuration: 17 },
+  "part.6": { title: "Part 6", defaultQuestions: 16, defaultDuration: 12 },
+  "part.7": { title: "Part 7", defaultQuestions: 54, defaultDuration: 55 },
+};
 
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -52,20 +64,29 @@ export default function PracticePage() {
     test,
   } = usePracticeTest();
 
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
+  const router = useRouter();
+  const base = useBasePrefix("vi");
 
   const [focusMode, setFocusMode] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isRetake, setIsRetake] = useState<boolean | null>(null);
+  const [mustDoPlacement, setMustDoPlacement] = useState<boolean | null>(null);
+  const [showPlacementModal, setShowPlacementModal] = useState(false);
 
   const isListening = /^part\.[1-4]$/.test(partKey);
   const progress = total ? Math.round((answered / total) * 100) : 0;
 
-  // For practice test, timeSec is elapsed time (not countdown)
-  // We'll use a default duration for display purposes
-  const durationMin = 35;
+  // Lấy duration từ PART_META
+  const meta = PART_META[partKey] ?? {
+    title: `Practice • ${partKey}`,
+    defaultQuestions: 10,
+    defaultDuration: 35,
+  };
+  const durationMin = meta.defaultDuration;
   const countdownTotal = durationMin * 60;
   const leftSec = useMemo(
     () => Math.max(0, countdownTotal - timeSec),
@@ -96,13 +117,14 @@ export default function PracticePage() {
     setIsSubmitting(true);
     try {
       await submit();
+      // Scroll to top sau khi nộp
       window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setIsSubmitting(false);
     }
   }, [started, answered, isSubmitting, submit]);
 
-  // Keyboard shortcut: F
+  // Keyboard shortcut: F (chỉ desktop)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "f" && window.innerWidth >= 1024) {
@@ -113,152 +135,222 @@ export default function PracticePage() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Check if this is a retake when component loads
+  useEffect(() => {
+    if (
+      !isAuthed ||
+      !partKey ||
+      !level ||
+      !test ||
+      loading ||
+      started ||
+      resp
+    ) {
+      return;
+    }
+
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/practice/history?partKey=${encodeURIComponent(
+            partKey
+          )}&level=${level}&test=${test}&limit=1`,
+          {
+            credentials: "include",
+          }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (mounted && data.items && data.items.length > 0) {
+          setIsRetake(true);
+        } else if (mounted) {
+          setIsRetake(false);
+        }
+      } catch (e) {
+        console.error("Failed to check retake status", e);
+        if (mounted) setIsRetake(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthed, partKey, level, test, loading, started, resp]);
+
+  // Check if user needs to do placement test
+  useEffect(() => {
+    if (authLoading || !user) {
+      setMustDoPlacement(false);
+      setShowPlacementModal(false);
+      return;
+    }
+
+    let mounted = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/placement/attempts?limit=1", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        let done = false;
+        if (r.ok) {
+          const j = await r.json().catch(() => ({}));
+          const items = Array.isArray(j?.items) ? j.items : [];
+          done = items.length > 0;
+        }
+        if (!mounted) return;
+        setMustDoPlacement(!done);
+        if (!done) setShowPlacementModal(true);
+      } catch {
+        if (!mounted) return;
+        setMustDoPlacement(true);
+        setShowPlacementModal(true);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [user, authLoading]);
+
   const onLoginRequest = () =>
     toast.error("Vui lòng đăng nhập để bắt đầu làm bài");
 
+  const goPlacement = useCallback(() => {
+    router.push(`${base}/placement`);
+  }, [router, base]);
+
   const handleStart = () => {
     if (!isAuthed) return onLoginRequest();
+    if (mustDoPlacement === true) {
+      setShowPlacementModal(true);
+      return;
+    }
     setStarted(true);
     setTimeout(() => {
       document.getElementById("q-1")?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 
-  // Header
-  const Header = () => (
-    <header className="mb-8">
-      <div className="mx-auto">
-        <div className="flex flex-col gap-5 xl:flex-row sm:justify-between py-6">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              {isListening ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                  <Headphones className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase">
-                    Luyện Nghe
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                  <BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase">
-                    Luyện Đọc
-                  </span>
-                </div>
-              )}
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">
-              {partLabel(partKey)} - Level {level} - Test {test}
-            </h1>
-          </div>
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="group flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white/80 dark:bg-zinc-800/70 backdrop-blur-sm border border-zinc-200/70 dark:border-zinc-700/70 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30 transition-transform duration-300 group-hover:scale-110">
-                <ListChecks className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  Số câu hỏi
-                </p>
-                <p className="text-base font-bold text-zinc-900 dark:text-white">
-                  {total} câu
-                </p>
-              </div>
-            </div>
-
-            <div className="group flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white/80 dark:bg-zinc-800/70 backdrop-blur-sm border border-zinc-200/70 dark:border-zinc-700/70 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30 transition-transform duration-300 group-hover:scale-110">
-                <Timer className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  Thời gian
-                </p>
-                <p className="text-base font-bold text-zinc-900 dark:text-white">
-                  {fmtTime(timeSec)}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-300 leading-relaxed">
-          Luyện tập {partLabel(partKey)} ở Level {level} - Test {test}. Hoàn
-          thành bài làm và xem kết quả chi tiết.
-        </p>
-      </div>
-    </header>
-  );
 
   return (
-    <div className="flex mt-16">
-      {/* Sidebar */}
-      <Sidebar
-        items={items}
-        answers={answers}
-        resp={
-          resp 
-          ? { 
-              ...resp, 
-              answersMap: resp.answersMap 
+    <TestLayout
+      items={items}
+      answers={answers}
+      resp={
+        resp
+          ? {
+              ...resp,
+              answersMap: resp.answersMap
                 ? Object.fromEntries(
                     Object.entries(resp.answersMap).map(([key, value]) => [
-                      key, 
-                      { correctAnswer: value.correctAnswer as ChoiceId }
+                      key,
+                      { correctAnswer: value.correctAnswer as ChoiceId },
                     ])
-                  ) 
-                : undefined
-            } 
+                  )
+                : undefined,
+            }
           : null
+      }
+      total={total}
+      answered={answered}
+      timeLabel={!resp ? fmtTime(timeSec) : fmtTime(resp.timeSec)}
+      onSubmit={handleSubmit}
+      onJump={jumpTo}
+      onToggleDetails={() => setShowDetails((s: any) => !s)}
+      showDetails={showDetails}
+      countdownSec={countdownTotal}
+      initialLeftSec={leftSec}
+      started={started}
+      onStart={handleStart}
+      isAuthed={isAuthed}
+      onLoginRequest={onLoginRequest}
+      focusMode={focusMode}
+      onToggleFocus={() => setFocusMode((v) => !v)}
+      durationMin={durationMin}
+      currentIndex={currentIndex}
+      leftSec={leftSec}
+      progressPercent={progress}
+      onOpenQuickNav={() => setMobileNavOpen(true)}
+    >
+      <TestHeader
+        badge={{
+          label: `Luyện tập TOEIC • ${partLabel(partKey)} • Level ${level} • Test ${test}`,
+          dotColor: "bg-sky-500",
+        }}
+        title={`Bài luyện tập ${partLabel(partKey)}`}
+        description={
+          isListening ? (
+            <>
+              Luyện{" "}
+              <span className="font-semibold text-sky-600 dark:text-sky-400">
+                kỹ năng Nghe
+              </span>{" "}
+              ở <span className="font-semibold">Level {level}</span> – Test{" "}
+              <span className="font-semibold">{test}</span>. Hoàn thành bài để
+              xem phân tích chi tiết từng câu hỏi.
+            </>
+          ) : (
+            <>
+              Luyện{" "}
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                kỹ năng Đọc
+              </span>{" "}
+              ở <span className="font-semibold">Level {level}</span> – Test{" "}
+              <span className="font-semibold">{test}</span>. Hoàn thành bài để
+              xem kết quả và giải thích chi tiết.
+            </>
+          )
         }
-        total={total}
-        answered={answered}
-        timeLabel={!resp ? fmtTime(timeSec) : fmtTime(resp.timeSec)}
-        onSubmit={handleSubmit}
-        onJump={jumpTo}
-        onToggleDetails={() => setShowDetails((s: any) => !s)}
-        showDetails={showDetails}
-        countdownSec={35 * 60}
-        started={started}
-        onStart={handleStart}
-        isAuthed={isAuthed}
-        onLoginRequest={onLoginRequest}
-        focusMode={focusMode}
-        onToggleFocus={() => setFocusMode((v) => !v)}
+        stats={{
+          totalQuestions: total,
+          durationMin,
+          questionIconColor: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300",
+        }}
       />
 
-      {/* Main */}
-      <main
-        className={`flex-1 px-4 sm:px-6 py-8 transition-all duration-300 ${
-          focusMode ? "lg:ml-[50px]" : "lg:ml-[250px]"
-        } pb-28 lg:pb-0`}
-      >
-        <Header />
+      {loading ? (
+        <TestLoadingState message="Đang tải bài luyện tập…" />
+      ) : !started && !resp ? (
+        <TestStartScreen
+          description={
+            isRetake === null ? (
+              <span>Đang kiểm tra...</span>
+            ) : isRetake ? (
+              <>
+                Đây là lần <b>làm lại</b> bài của{" "}
+                <b>
+                  {partLabel(partKey)} - Level {level} - Test {test}
+                </b>
+                . Điểm sẽ không ảnh hưởng đến level của bạn
+              </>
+            ) : (
+              <>
+                Đây là <b>lần đầu</b> làm bài{" "}
+                <b>
+                  {partLabel(partKey)} - Level {level} - Test {test}
+                </b>{" "}
+                , Điểm sẽ dùng để đánh giá trình độ và đề xuất level phù hợp
+              </>
+            )
+          }
+          buttonText="Bắt đầu luyện tập"
+          onStart={handleStart}
+        />
+      ) : (
+        <div className="space-y-8 sm:space-y-10">
+          {/* Nếu có kết quả thì show panel giống placement (trên cùng) */}
+          {resp && (
+            <ResultsPanel
+              resp={resp as any}
+              timeLabel={fmtTime(resp.timeSec)}
+              onToggleDetails={() => setShowDetails((s: any) => !s)}
+              showDetails={showDetails}
+            />
+          )}
 
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent"></div>
-            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-              Đang tải bài kiểm tra…
-            </p>
-          </div>
-        ) : !started && !resp ? (
-          <div className="text-center py-16">
-            <div className="max-w-md mx-auto">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
-                Nhấn{" "}
-                <span className="text-emerald-600 dark:text-emerald-400 underline">
-                  Bắt đầu
-                </span>{" "}
-                để làm bài
-              </h2>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                {total} câu hỏi • Làm bài theo tốc độ của bạn
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-8">
+          {/* Câu hỏi */}
+          <div className="space-y-6 sm:space-y-8">
             {groups.map((g) =>
               g.stimulus?.part === "part.1" ? (
                 <StimulusRowCard
@@ -296,113 +388,28 @@ export default function PracticePage() {
                 />
               )
             )}
-
-            {resp && (
-              <ResultsPanel
-                resp={resp as any}
-                timeLabel={fmtTime(resp.timeSec)}
-                onToggleDetails={() => setShowDetails((s: any) => !s)}
-                showDetails={showDetails}
-              />
-            )}
-          </div>
-        )}
-      </main>
-
-      <FocusHUD
-        started={started}
-        resp={resp}
-        focusMode={focusMode}
-        durationMin={durationMin}
-        total={total}
-        currentIndex={currentIndex}
-        leftSec={leftSec}
-        progressPercent={progress}
-        onStart={handleStart}
-        onSubmit={handleSubmit}
-        onOpenQuickNav={() => setMobileNavOpen(true)}
-        onToggleFocus={() => setFocusMode((v) => !v)}
-      />
-
-      {/* Mobile bottom sheet (< lg) */}
-      {mobileNavOpen && (
-        <div className="lg:hidden fixed inset-0 z-50">
-          {/* backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setMobileNavOpen(false)}
-            aria-hidden
-          />
-          {/* sheet */}
-          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-700 p-4 shadow-2xl">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-                <Focus className="w-4 h-4" />
-                Điều hướng nhanh
-              </div>
-              <button
-                onClick={() => setMobileNavOpen(false)}
-                className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
-              >
-                Đóng
-              </button>
-            </div>
-
-            {/* tiến độ */}
-            <div className="mb-3">
-              <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <div className="mt-1.5 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                <span>
-                  Câu {currentIndex + 1}/{total}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  {fmtTime(leftSec)}
-                </span>
-              </div>
-            </div>
-
-            {/* danh sách câu hỏi */}
-            <div className="max-h-[40vh] overflow-y-auto">
-              <div className="flex flex-wrap gap-2">
-                {Array.from({ length: total }).map((_, i) => {
-                  const idx = i;
-                  const itemId = items[idx]?.id || "";
-                  const answered = Object.prototype.hasOwnProperty.call(
-                    answers,
-                    itemId
-                  );
-                  const isCurrent = currentIndex === idx;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        setMobileNavOpen(false);
-                        jumpTo(idx);
-                      }}
-                      className={[
-                        "px-3 py-1.5 rounded-lg text-sm font-semibold border transition",
-                        isCurrent
-                          ? "bg-emerald-600 text-white border-emerald-600"
-                          : answered
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800"
-                          : "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700",
-                      ].join(" ")}
-                    >
-                      {i + 1}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </div>
         </div>
       )}
-    </div>
+
+      <MobileQuickNavSheet
+        open={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+        total={total}
+        currentIndex={currentIndex}
+        leftSec={leftSec}
+        progress={progress}
+        items={items}
+        answers={answers}
+        onJump={jumpTo}
+        fmtTime={fmtTime}
+      />
+
+      {/* MandatoryPlacementModal - chỉ hiện khi chưa làm placement test */}
+      <MandatoryPlacementModal
+        open={!!showPlacementModal}
+        onGoPlacement={goPlacement}
+      />
+    </TestLayout>
   );
 }

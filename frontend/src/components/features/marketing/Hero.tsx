@@ -192,7 +192,7 @@ export default function Hero() {
             duration: 3000,
             action: {
               label: "Đăng nhập lại",
-              onClick: () => router.push(`${base}/auth/login`),
+              onClick: () => router.push(`${base}/login`),
             },
           });
         } else {
@@ -281,7 +281,7 @@ export default function Hero() {
             className="grid grid-cols-1 items-center gap-8 pb-20 pt-4 xs:gap-9 xs:pb-24 sm:gap-10 sm:pb-28 lg:grid-cols-3 lg:gap-12 lg:pb-32"
           >
             {/* LEFT TEXT */}
-            <div className="lg:col-span-2 text-center md:text-left">
+            <div className="lg:col-span-2 text-center lg:text-start">
               <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-sky-400/40 bg-sky-500/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-sky-100 backdrop-blur-sm xs:text-xs lg:mx-0">
                 <FiShield className="text-sm" />
                 <span>Cấu trúc bám sát đề thi TOEIC thật</span>
@@ -305,7 +305,7 @@ export default function Hero() {
               </p>
 
               {/* CTA */}
-              <div className="mt-7 flex flex-col items-center gap-3 xs:flex-row xs:justify-center xs:gap-4 md:justify-start">
+              <div className="mt-7 flex flex-col items-center gap-3 xs:flex-row xs:justify-center xs:gap-4 lg:justify-start">
                 <button
                   onClick={handleStart}
                   disabled={checking}
@@ -342,7 +342,7 @@ export default function Hero() {
               </p>
 
               {/* STATS */}
-              <div className="mt-7 grid max-w-md grid-cols-3 gap-3 xs:gap-4 xs:mt-8 mx-auto md:mx-0">
+              <div className="mt-7 grid max-w-md grid-cols-3 gap-3 xs:gap-4 xs:mt-8 mx-auto lg:mx-0">
                 <Stat
                   number="55 câu"
                   label="Mini TOEIC"

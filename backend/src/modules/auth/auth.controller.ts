@@ -439,7 +439,7 @@ export function googleCallback(
       try {
         const email = profile?.email;
         if (!email)
-          return res.redirect(`${CLIENT_URL}/auth/login?err=khong_co_email`);
+          return res.redirect(`${CLIENT_URL}/login?err=khong_co_email`);
 
         const user = await User.findOne({ email });
         if (user) {

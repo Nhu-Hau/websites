@@ -1025,7 +1025,7 @@ export default function ChatBox() {
 
             {!user && (
               <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-                <a href="/auth/login" className="text-sky-600 hover:underline">
+                <a href="/login" className="text-sky-600 hover:underline">
                   Đăng nhập
                 </a>{" "}
                 để sử dụng

@@ -5,11 +5,11 @@ import React from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-import LevelSwitcher from "@/components/features/practice/LevelSwitcher";
+import LevelSwitcher from "@/components/features/test/LevelSwitcher";
 import TestCard, {
   AttemptSummary,
   TestCardSkeleton,
-} from "@/components/features/practice/TestCard";
+} from "@/components/features/test/TestCard";
 import {
   History,
   Headphones,
@@ -19,8 +19,7 @@ import {
   Star,
   Trophy,
 } from "lucide-react";
-import MandatoryPlacementModal from "@/components/features/practice/MandatoryPlacement";
-import LevelSuggestModal from "@/components/features/practice/LevelSuggestModal";
+import LevelSuggestModal from "@/components/features/test/LevelSuggestModal";
 import { useAuth } from "@/context/AuthContext";
 
 /* ====== META ====== */
@@ -95,12 +94,10 @@ export default function PracticePart() {
   const [mustDoPlacement, setMustDoPlacement] = React.useState<boolean | null>(
     null
   );
-  const [showPlacementModal, setShowPlacementModal] = React.useState(false);
 
   React.useEffect(() => {
     if (authLoading || !user) {
       setMustDoPlacement(false);
-      setShowPlacementModal(false);
       return;
     }
 
@@ -119,11 +116,9 @@ export default function PracticePart() {
         }
         if (!mounted) return;
         setMustDoPlacement(!done);
-        if (!done) setShowPlacementModal(true);
       } catch {
         if (!mounted) return;
         setMustDoPlacement(true);
-        setShowPlacementModal(true);
       }
     })();
     return () => {
@@ -203,9 +198,6 @@ export default function PracticePart() {
   const isListening = /^part\.[1-4]$/.test(partKey);
   const locale = base.slice(1) || "vi";
 
-  const goPlacement = React.useCallback(() => {
-    router.push(`${base}/placement`);
-  }, [router, base]);
 
   return (
     <div className="relative min-h-screen bg-[#DFD0B8] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 transition-all duration-700 overflow-hidden">
@@ -286,12 +278,8 @@ export default function PracticePart() {
                   <LevelSwitcher
                     level={level}
                     suggestedLevel={suggestedLevel ?? undefined}
-                    disabled={mustDoPlacement === true}
-                    tooltip={
-                      mustDoPlacement
-                        ? "Vui lòng làm Placement trước"
-                        : undefined
-                    }
+                    disabled={false}
+                    tooltip={undefined}
                   />
                 </div>
 
@@ -351,16 +339,9 @@ export default function PracticePart() {
                 return (
                   <div
                     key={testNum}
-                    className={`cursor-pointer transition-all duration-300 ${
-                      mustDoPlacement ? "opacity-70" : ""
-                    }`}
+                    className="cursor-pointer transition-all duration-300"
                     onClickCapture={(e) => {
-                      if (mustDoPlacement) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setShowPlacementModal(true);
-                        return;
-                      }
+                      // Cho phép vào trang test cụ thể, modal sẽ hiện ở đó nếu chưa làm placement
                       if (suggestedLevel != null && level !== suggestedLevel) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -369,10 +350,9 @@ export default function PracticePart() {
                       }
                     }}
                     onClick={() => {
-                      if (
-                        !mustDoPlacement &&
-                        (suggestedLevel == null || level === suggestedLevel)
-                      ) {
+                      // Cho phép vào trang test cụ thể ngay cả khi chưa làm placement
+                      // Modal sẽ hiện trong trang test cụ thể
+                      if (suggestedLevel == null || level === suggestedLevel) {
                         router.push(href);
                       }
                     }}
@@ -385,10 +365,8 @@ export default function PracticePart() {
                       totalQuestions={meta.defaultQuestions}
                       durationMin={meta.defaultDuration}
                       attemptSummary={p}
-                      disabled={mustDoPlacement === true}
-                      disabledHint={
-                        mustDoPlacement ? "Cần làm Placement trước" : undefined
-                      }
+                      disabled={false}
+                      disabledHint={undefined}
                     />
                   </div>
                 );
@@ -399,10 +377,7 @@ export default function PracticePart() {
       </div>
 
       {/* Modals */}
-      <MandatoryPlacementModal
-        open={!!showPlacementModal}
-        onGoPlacement={goPlacement}
-      />
+      {/* MandatoryPlacementModal chỉ hiện trong trang test cụ thể, không hiện ở đây */}
       {suggestedLevel != null && (
         <LevelSuggestModal
           open={showSuggestModal}

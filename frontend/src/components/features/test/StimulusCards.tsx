@@ -120,14 +120,14 @@ function ChoiceRow({
 
         {locked ? (
           picked === correct ? (
-            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+            <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-300">
               Chính xác
             </span>
           ) : picked ? (
-            <span className="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-semibold text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
+            <span className="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-semibold text-red-700 dark:bg-red-900/30 dark:text-red-300">
               Sai
               {correct && (
-                <span className="ml-1 text-[10px] font-medium text-rose-600/90 dark:text-rose-200">
+                <span className="ml-1 text-[10px] font-medium text-red-600/90 dark:text-red-200">
                   (Đúng: {correct})
                 </span>
               )}
@@ -204,12 +204,12 @@ function ChoiceRow({
             if (isCorrect) {
               cls = cn(
                 base,
-                "border-emerald-600 bg-emerald-600 text-white shadow-sm"
+                "border-lime-600 bg-lime-600 text-white shadow-sm"
               );
             } else if (isPicked && !isCorrect) {
               cls = cn(
                 base,
-                "border-rose-600 bg-rose-600 text-white shadow-sm"
+                "border-red-600 bg-red-600 text-white shadow-sm"
               );
             } else {
               cls = cn(

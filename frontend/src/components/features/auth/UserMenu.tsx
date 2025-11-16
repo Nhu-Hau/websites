@@ -186,7 +186,7 @@ export default function UserMenu() {
     try {
       await logout();
       toast.success("Đăng xuất thành công");
-      router.push(`${base}/auth/login`);
+      router.push(`${base}/login`);
     } catch {
       toast.error("Lỗi khi đăng xuất");
     }
@@ -410,7 +410,7 @@ export default function UserMenu() {
                 <div className="space-y-2">
                   {/* ĐĂNG NHẬP */}
                   <Link
-                    href={`${base}/auth/login`}
+                    href={`${base}/login`}
                     onClick={() => setOpen(false)}
                     className={`group flex items-center gap-3 p-1.5 rounded-xl transition-all duration-200 bg-zinc-50 dark:bg-zinc-800 hover:bg-sky-50 dark:hover:bg-sky-900/30`}
                   >
@@ -432,7 +432,7 @@ export default function UserMenu() {
 
                   {/* ĐĂNG KÝ */}
                   <Link
-                    href={`${base}/auth/register`}
+                    href={`${base}/register`}
                     onClick={() => setOpen(false)}
                     className={`group flex items-center gap-3 p-1.5 rounded-xl transition-all duration-200 bg-zinc-50 dark:bg-zinc-800 hover:bg-sky-50 dark:hover:bg-sky-900/30`}
                   >

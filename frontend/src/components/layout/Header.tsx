@@ -21,7 +21,7 @@ export default function Header() {
   const pathname = usePathname();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
-  const base = useBasePrefix(); // ✅ luôn áp dụng base prefix
+  const base = useBasePrefix();
 
   const close = useCallback(() => {
     setOpen(false);
@@ -96,7 +96,7 @@ export default function Header() {
             </div>
 
             {/* Logo */}
-              <Link
+            <Link
               href={`${base}/home`}
               className="group flex items-center gap-1.5 xs:gap-2.5 transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 rounded-xl"
               aria-label="Về trang chủ ToeicPrep"
@@ -104,7 +104,7 @@ export default function Header() {
               {/* Logo Image */}
               <div className="relative">
                 <Image
-                  src={isDarkMode ? "/images/logodark.png" : "/images/logo.png"}
+                  src="/images/logotoeic.png"
                   alt="Logo"
                   width={48}
                   height={48}
@@ -116,35 +116,30 @@ export default function Header() {
               </div>
 
               {/* Text: Toeic Prep */}
-              <div className="hidden xs:block">
+              <div className="hidden sm:block">
                 <div
                   className={cn(
                     "font-extrabold tracking-tight leading-none",
-                    "bg-gradient-to-r bg-clip-text text-transparent",
                     "transition-all duration-500 ease-out",
-                    "bg-[length:200%_auto] animate-gradient-x",
-                    isDarkMode
-                      ? "from-amber-300 via-yellow-200 to-amber-300"
-                      : "from-amber-600 via-yellow-500 to-amber-600",
-                    "group-hover:from-amber-700 group-hover:via-yellow-600 group-hover:to-amber-700",
-                    "dark:group-hover:from-amber-400 dark:group-hover:via-yellow-300 dark:group-hover:to-amber-400",
-                    "text-xl sm:text-2xl md:text-3xl lg:text-4xl",
-                    "[text-shadow:_0_2px_8px_rgba(0,0,0,0.2)] dark:[text-shadow:_0_2px_8px_rgba(0,0,0,0.5)]"
+                    "sm:text-2xl md:text-3xl lg:text-4xl"
                   )}
                 >
-                  Toeic
+                  {/* TOEIC - chỉ màu đen */}
+                  <span className="text-black dark:text-white tracking-wider">
+                    Toeic
+                  </span>
+
+                  {/* PREP - gradient sky */}
                   <span
                     className={cn(
                       "bg-gradient-to-r bg-clip-text text-transparent",
                       "transition-all duration-500 ease-out",
-                      isDarkMode
-                        ? "from-sky-300 to-sky-200"
-                        : "from-sky-600 to-sky-500",
+                      "from-sky-600 to-sky-400 dark:from-sky-300 dark:to-sky-100",
                       "group-hover:from-sky-700 group-hover:to-sky-600",
-                      "dark:group-hover:from-sky-200 dark:group-hover:to-sky-100"
+                      "dark:group-hover:from-sky-200 dark:group-hover:to-sky-50",
+                      "ml-1 tracking-wider"
                     )}
                   >
-                    {" "}
                     Prep
                   </span>
                 </div>

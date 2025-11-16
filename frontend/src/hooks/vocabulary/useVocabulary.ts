@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { vocabularyService } from "../services/vocabulary.service";
-import { VocabularySet } from "../types/vocabulary.types";
+import { vocabularyService } from "../../utils/vocabulary.service";
+import { VocabularySet } from "../../types/vocabulary.types";
 
 export function useVocabulary() {
   const [sets, setSets] = useState<VocabularySet[]>([]);
@@ -57,6 +57,3 @@ export function useVocabulary() {
     deleteSet,
   };
 }
-
-
-

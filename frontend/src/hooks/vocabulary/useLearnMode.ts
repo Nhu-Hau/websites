@@ -2,7 +2,11 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { VocabularyTerm, LearnModeQuestion, LearnModeProgress } from "../types/vocabulary.types";
+import {
+  VocabularyTerm,
+  LearnModeQuestion,
+  LearnModeProgress,
+} from "../../types/vocabulary.types";
 
 interface UseLearnModeProps {
   terms: VocabularyTerm[];
@@ -28,8 +32,10 @@ export function useLearnMode({ terms, onComplete }: UseLearnModeProps) {
         .sort(() => Math.random() - 0.5)
         .slice(0, 3)
         .map((t) => t.meaning);
-      
-      const options = [...randomOptions, term.meaning].sort(() => Math.random() - 0.5);
+
+      const options = [...randomOptions, term.meaning].sort(
+        () => Math.random() - 0.5
+      );
 
       generated.push({
         id: `mc-${index}`,
@@ -57,7 +63,11 @@ export function useLearnMode({ terms, onComplete }: UseLearnModeProps) {
   const progress = ((currentQuestion + 1) / questions.length) * 100;
 
   useEffect(() => {
-    if (currentQuestion >= questions.length && questions.length > 0 && !completed) {
+    if (
+      currentQuestion >= questions.length &&
+      questions.length > 0 &&
+      !completed
+    ) {
       setCompleted(true);
       const progressData: LearnModeProgress = {
         currentQuestion,
@@ -67,19 +77,30 @@ export function useLearnMode({ terms, onComplete }: UseLearnModeProps) {
       };
       onComplete?.(progressData);
     }
-  }, [currentQuestion, questions.length, completed, correctAnswers, incorrectAnswers, onComplete]);
+  }, [
+    currentQuestion,
+    questions.length,
+    completed,
+    correctAnswers,
+    incorrectAnswers,
+    onComplete,
+  ]);
 
-  const handleSelectAnswer = useCallback((answer: string) => {
-    if (showResult) return;
-    setSelectedAnswer(answer);
-  }, [showResult]);
+  const handleSelectAnswer = useCallback(
+    (answer: string) => {
+      if (showResult) return;
+      setSelectedAnswer(answer);
+    },
+    [showResult]
+  );
 
   const handleSubmitAnswer = useCallback(() => {
     if (!selectedAnswer || showResult) return;
 
     const isCorrect =
       currentQ.type === "fill-in-blank"
-        ? selectedAnswer.toLowerCase().trim() === currentQ.correctAnswer.toLowerCase().trim()
+        ? selectedAnswer.toLowerCase().trim() ===
+          currentQ.correctAnswer.toLowerCase().trim()
         : selectedAnswer === currentQ.correctAnswer;
 
     if (isCorrect) {
@@ -94,7 +115,7 @@ export function useLearnMode({ terms, onComplete }: UseLearnModeProps) {
   const handleNextQuestion = useCallback(() => {
     setSelectedAnswer(null);
     setShowResult(false);
-    
+
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
     } else {
@@ -114,7 +135,8 @@ export function useLearnMode({ terms, onComplete }: UseLearnModeProps) {
   const isCorrect = useMemo(() => {
     if (!showResult || !selectedAnswer) return false;
     return currentQ.type === "fill-in-blank"
-      ? selectedAnswer.toLowerCase().trim() === currentQ.correctAnswer.toLowerCase().trim()
+      ? selectedAnswer.toLowerCase().trim() ===
+          currentQ.correctAnswer.toLowerCase().trim()
       : selectedAnswer === currentQ.correctAnswer;
   }, [showResult, selectedAnswer, currentQ]);
 
@@ -135,6 +157,3 @@ export function useLearnMode({ terms, onComplete }: UseLearnModeProps) {
     resetProgress,
   };
 }
-
-
-

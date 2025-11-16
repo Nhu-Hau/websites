@@ -2,7 +2,10 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { VocabularyTerm, FlashcardProgress } from "../types/vocabulary.types";
+import {
+  VocabularyTerm,
+  FlashcardProgress,
+} from "../../types/vocabulary.types";
 
 interface UseFlashcardModeProps {
   terms: VocabularyTerm[];
@@ -18,7 +21,9 @@ export function useFlashcardMode({ terms, onComplete }: UseFlashcardModeProps) {
   const [reviewMode, setReviewMode] = useState(false);
   const [reviewTerms, setReviewTerms] = useState<VocabularyTerm[]>([]);
 
-  const currentTerm = reviewMode ? reviewTerms[currentIndex] : terms[currentIndex];
+  const currentTerm = reviewMode
+    ? reviewTerms[currentIndex]
+    : terms[currentIndex];
   const totalTerms = reviewMode ? reviewTerms.length : terms.length;
   const progress = ((currentIndex + 1) / totalTerms) * 100;
 
@@ -45,7 +50,7 @@ export function useFlashcardMode({ terms, onComplete }: UseFlashcardModeProps) {
 
     setRemembered((prev) => [...prev, currentTerm._id!]);
     setIsFlipped(false);
-    
+
     if (currentIndex < totalTerms - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
@@ -58,7 +63,7 @@ export function useFlashcardMode({ terms, onComplete }: UseFlashcardModeProps) {
 
     setNotYet((prev) => [...prev, currentTerm._id!]);
     setIsFlipped(false);
-    
+
     if (currentIndex < totalTerms - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
@@ -131,6 +136,3 @@ export function useFlashcardMode({ terms, onComplete }: UseFlashcardModeProps) {
     exitReviewMode,
   };
 }
-
-
-

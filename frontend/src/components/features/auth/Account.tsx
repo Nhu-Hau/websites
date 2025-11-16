@@ -309,7 +309,7 @@ export default function Account() {
       } catch {
         if (alive) {
           toast.error("Không thể tải hồ sơ");
-          router.push(`${base}/auth/login`);
+          router.push(`${base}/login`);
         }
       } finally {
         if (alive) setLoading(false);

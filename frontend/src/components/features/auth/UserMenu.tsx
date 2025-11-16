@@ -22,9 +22,8 @@ import { useLocaleSwitch } from "@/hooks/routing/useLocaleSwitch";
 import useClickOutside from "@/hooks/common/useClickOutside";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { useBasePrefix } from "@/hooks/routing/useBasePrefix"; // 👈 THÊM
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
-/* ================= Types ================= */
 type Role = "user" | "admin" | "teacher";
 type Access = "free" | "premium";
 type Lvl = 1 | 2 | 3;
@@ -53,7 +52,12 @@ type SafeUser = {
   } | null;
 };
 
+function cn(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
+
 /* ================= Consts ================= */
+
 const PARTS: PartKey[] = [
   "part.1",
   "part.2",
@@ -64,15 +68,16 @@ const PARTS: PartKey[] = [
   "part.7",
 ];
 
+// 🎨 Level badge: 1 = xanh lá, 2 = xanh dương, 3 = tím
 const LV_BADGE: Record<
   Lvl,
   { bg: string; border: string; text: string; icon: string }
 > = {
   1: {
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    border: "border-amber-300 dark:border-amber-700",
-    text: "text-amber-800 dark:text-amber-300",
-    icon: "text-amber-600 dark:text-amber-400",
+    bg: "bg-green-100 dark:bg-green-900/30",
+    border: "border-green-300 dark:border-green-700",
+    text: "text-green-800 dark:text-green-300",
+    icon: "text-green-600 dark:text-green-400",
   },
   2: {
     bg: "bg-sky-100 dark:bg-sky-900/30",
@@ -88,10 +93,9 @@ const LV_BADGE: Record<
   },
 };
 
-const round5_990 = (n: number) =>
-  Math.min(990, Math.max(10, Math.round(n / 5) * 5));
 
 /* ================= Utils ================= */
+
 function normalizePartLevels(raw: any): Partial<Record<PartKey, Lvl>> | null {
   if (!raw || typeof raw !== "object") return null;
   const out: Partial<Record<PartKey, Lvl>> = {};
@@ -124,11 +128,12 @@ function pickUserFromMe(json: any): SafeUser | null {
 }
 
 /* ================= Main ================= */
+
 export default function UserMenu() {
   const { user: ctxUser, logout } = useAuth();
   const router = useRouter();
   const { locale } = useLocaleSwitch();
-  const base = useBasePrefix(locale || "vi"); // 👈 DÙNG base prefix thống nhất
+  const base = useBasePrefix(locale || "vi");
 
   const [open, setOpen] = useState(false);
   const [me, setMe] = useState<SafeUser | null>(null);
@@ -163,11 +168,9 @@ export default function UserMenu() {
     const onVis = () => document.visibilityState === "visible" && fetchMe();
     document.addEventListener("visibilitychange", onVis);
 
-    // 👇 NGHE event đồng bộ với PracticeRunner (announceLevelsChanged)
     const onLevelsChanged = () => fetchMe();
     window.addEventListener("levels:changed", onLevelsChanged as any);
 
-    // (tuỳ bạn còn bắn event này ở nơi khác)
     const onPracticeUpdated = () => fetchMe();
     window.addEventListener("practice:updated", onPracticeUpdated as any);
 
@@ -186,7 +189,7 @@ export default function UserMenu() {
     try {
       await logout();
       toast.success("Đăng xuất thành công");
-      router.push(`${base}/auth/login`);
+      router.push(`${base}/login`);
     } catch {
       toast.error("Lỗi khi đăng xuất");
     }
@@ -196,17 +199,10 @@ export default function UserMenu() {
     () => normalizePartLevels(me?.partLevels) ?? null,
     [me]
   );
-  // const predictedOverall: number | undefined = React.useMemo(() => {
-  //   const val = me?.toeicPred?.overall;
-  //   return typeof val === "number" && Number.isFinite(val)
-  //     ? round5_990(val)
-  //     : undefined;
-  // }, [me]);
 
   const userRole = (me?.role as Role | undefined) ?? "user";
   const userAccess = (me?.access as Access | undefined) ?? "free";
 
-  // 👇 BUILD LINK THEO LEVEL HIỆN TẠI (param ?level=), dùng base prefix
   const partRows = PARTS.map((key) => {
     const lv = levels?.[key] as Lvl | undefined;
     const label = `Part ${key.split(".")[1]}`;
@@ -221,59 +217,70 @@ export default function UserMenu() {
   return (
     <div
       ref={wrapperRef}
-      className="relative"
+      className="relative flex-shrink-0"
       data-tooltip-id={open ? undefined : "user-tooltip"}
       data-tooltip-content={ctxUser ? "Quản lý tài khoản" : "Đăng nhập/Đăng ký"}
     >
+      {/* Trigger button */}
       <button
         type="button"
         aria-label={ctxUser ? "Quản lý tài khoản" : "Đăng nhập/Đăng ký"}
         onClick={() => setOpen((prev) => !prev)}
-        className={`group rounded-full focus:outline-none transition-all duration-200 hover:scale-105 flex items-center ${
-          avatarSrc ? "p-0.5" : "p-2 hover:bg-sky-100 dark:hover:bg-sky-900/50"
-        }`}
+        className={cn(
+          "group inline-flex items-center justify-center rounded-full",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70",
+          "focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950",
+          avatarSrc
+            ? "p-0.5 hover:scale-105 transition-transform duration-150"
+            : "h-9 w-9 p-0 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/70 hover:scale-105 transition-all duration-150 text-zinc-700 dark:text-zinc-200"
+        )}
       >
         {avatarSrc ? (
           <img
             src={avatarSrc}
             alt={me?.name || "avatar"}
-            className="w-8 h-8 rounded-full object-cover border-2 border-zinc-200 dark:border-zinc-700 group-hover:border-sky-500 dark:group-hover:border-sky-400 transition-colors"
+            className="h-8 w-8 rounded-full border-2 border-zinc-200 object-cover transition-colors duration-200 group-hover:border-sky-500 dark:border-zinc-700 dark:group-hover:border-sky-400"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/30 dark:to-sky-800/20 flex items-center justify-center group-hover:from-sky-200 dark:group-hover:from-sky-800/50 transition-all">
-            <UserIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/30 dark:to-sky-800/20 group-hover:from-sky-200 dark:group-hover:from-sky-800/50">
+            <UserIcon className="h-5 w-5 text-sky-600 dark:text-sky-400" />
           </div>
         )}
       </button>
 
+      {/* Menu panel */}
       {open && (
         <div
-          className="absolute right-2 xs:right-0 mt-2
-             w-[min(19rem,calc(100vw-1rem))] sm:w-80
-             max-w-[calc(100vw-0.75rem)]
-             bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl rounded-2xl
-             p-3 xs:p-4 border border-zinc-200/80 dark:border-zinc-700/80 z-50 animate-in fade-in zoom-in-95 duration-200"
+          className={cn(
+            "absolute right-1 xs:right-0 mt-2 z-50",
+            "w-[min(20rem,calc(100vw-1.25rem))] xs:w-[min(20rem,calc(100vw-2rem))] sm:w-80",
+            "max-w-[calc(100vw-1rem)]",
+            "rounded-2xl border border-zinc-200/80 bg-white/95 p-3 xs:p-4",
+            "shadow-2xl ring-1 ring-black/5 backdrop-blur-xl",
+            "dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:ring-white/10",
+            "animate-in fade-in zoom-in-95 duration-200 origin-top-right"
+          )}
         >
           {ctxUser ? (
             <>
-              {/* Header */}
-              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-700">
+              {/* Header user info */}
+              <div className="mb-4 flex items-center gap-3 border-b border-zinc-200 pb-3 dark:border-zinc-700">
                 {avatarSrc ? (
                   <img
                     src={avatarSrc}
                     alt={me?.name || "avatar"}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-sky-500"
+                    className="h-10 w-10 rounded-full border-2 border-amber-500 object-cover"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/30 dark:to-sky-800/20 flex items-center justify-center">
-                    <UserIcon className="w-6 h-6 text-sky-600 dark:text-sky-400" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/30 dark:to-sky-800/20">
+                    <UserIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                   </div>
                 )}
-                <div>
-                  <p className="font-semibold text-sm text-zinc-900 dark:text-white">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-zinc-900 dark:text-white">
                     {me?.name || "Người dùng"}
                   </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
                     {me?.email || "—"}
                   </p>
                 </div>
@@ -283,77 +290,66 @@ export default function UserMenu() {
               <Link
                 href={`${base}/account`}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200 group"
+                className="group flex items-center gap-3 rounded-xl px-3 py-1.5 transition-colors duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30"
               >
-                <IdCard className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <IdCard className="h-4 w-4 text-sky-600 dark:text-sky-400" />
                 <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
                   Trang cá nhân
                 </span>
-                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ArrowRight className="w-3.5 h-3.5 text-zinc-400" />
+                <div className="ml-auto opacity-0 transition-opacity group-hover:opacity-100">
+                  <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
                 </div>
               </Link>
 
-              {/* Quyền */}
-              <div className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200">
+              {/* Quyền (Role) */}
+              <div className="mt-1.5 flex items-center justify-between rounded-xl px-3 py-1.5 transition-colors duration-200 hover:bg-zinc-50/80 dark:hover:bg-zinc-900/40">
                 <div className="flex items-center gap-3">
-                  <ShieldCheck className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <ShieldCheck className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
                   <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
                     Quyền
                   </span>
                 </div>
                 <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold border ${
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border",
                     userRole === "admin"
-                      ? "border-purple-300 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700"
+                      ? "border-purple-300 bg-purple-100 text-purple-700 dark:border-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
                       : userRole === "teacher"
-                      ? "border-blue-300 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
-                      : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300 dark:border-zinc-700"
-                  }`}
+                      ? "border-emerald-300 bg-emerald-100 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                      : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300"
+                  )}
                 >
-                  {userRole === "admin" ? "Quản trị" : userRole === "teacher" ? "Giáo viên" : "Người dùng"}
+                  {userRole === "admin"
+                    ? "Quản trị"
+                    : userRole === "teacher"
+                    ? "Giáo viên"
+                    : "Người dùng"}
                 </span>
               </div>
 
-              {/* Gói */}
-              <div className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200">
+              {/* Gói (Access) */}
+              <div className="mt-1.5 flex items-center justify-between rounded-xl px-3 py-1.5 transition-colors duration-200 hover:bg-zinc-50/80 dark:hover:bg-zinc-900/40">
                 <div className="flex items-center gap-3">
                   {userAccess === "premium" ? (
-                    <Crown className="w-4 h-4 text-yellow-500" />
+                    <Crown className="h-4 w-4 text-amber-500" />
                   ) : (
-                    <Star className="w-4 h-4 text-zinc-400" />
+                    <Star className="h-4 w-4 text-zinc-400" />
                   )}
                   <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
                     Gói
                   </span>
                 </div>
                 <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold border ${
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border",
                     userAccess === "premium"
-                      ? "border-yellow-300 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700"
-                      : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-300 dark:border-zinc-700"
-                  }`}
+                      ? "border-amber-300 bg-amber-100 text-amber-700 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                      : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300"
+                  )}
                 >
                   {userAccess === "premium" ? "Cao cấp" : "Miễn phí"}
                 </span>
               </div>
-
-              {/* TOEIC */}
-              {/* <div className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200">
-                <div className="flex items-center gap-3">
-                  <Gauge className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                    TOEIC ước lượng
-                  </span>
-                </div>
-                <span className="font-bold text-zinc-900 dark:text-white">
-                  {loading ? "—" : predictedOverall ?? "—"}
-                  <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
-                    {" "}
-                    / 990
-                  </span>
-                </span>
-              </div> */}
 
               {/* Gợi ý theo phần */}
               <div className="mt-3 mb-1 px-3">
@@ -369,16 +365,21 @@ export default function UserMenu() {
                     key={row.key}
                     href={row.href}
                     onClick={() => setOpen(false)}
-                    className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200 group"
+                    className="group flex items-center justify-between rounded-xl px-3 py-1.5 text-sm transition-colors duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30"
                   >
                     <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
                       {row.label}
                     </span>
                     {config ? (
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold border ${config.bg} ${config.border} ${config.text}`}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold border",
+                          config.bg,
+                          config.border,
+                          config.text
+                        )}
                       >
-                        <Zap className={`w-3 h-3 ${config.icon}`} />
+                        <Zap className={cn("h-3 w-3", config.icon)} />
                         Level {row.lv}
                       </span>
                     ) : (
@@ -389,71 +390,65 @@ export default function UserMenu() {
               })}
 
               {/* Logout */}
-              <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+              <div className="mt-3 border-t border-zinc-200 pt-3 dark:border-zinc-700">
                 <button
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-3 px-3 py-1.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition-all duration-200 text-red-600 dark:text-red-400"
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-sm font-medium text-red-600 transition-colors duration-200 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span className="text-sm font-medium">Đăng xuất</span>
+                  <LogOut className="h-4 w-4" />
+                  <span>Đăng xuất</span>
                 </button>
               </div>
             </>
           ) : (
-            <>
-              {/* === PHẦN CHƯA ĐĂNG NHẬP === */}
-              <div className="px-1">
-                <div className="text-sm font-bold text-zinc-800 dark:text-zinc-100 mb-3 text-start">
-                  Tài khoản
-                </div>
-
-                <div className="space-y-2">
-                  {/* ĐĂNG NHẬP */}
-                  <Link
-                    href={`${base}/auth/login`}
-                    onClick={() => setOpen(false)}
-                    className={`group flex items-center gap-3 p-1.5 rounded-xl transition-all duration-200 bg-zinc-50 dark:bg-zinc-800 hover:bg-sky-50 dark:hover:bg-sky-900/30`}
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-900/30 shadow-sm">
-                      <LogIn className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                        Đăng nhập
-                      </p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Đã có tài khoản
-                      </p>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ArrowRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                  </Link>
-
-                  {/* ĐĂNG KÝ */}
-                  <Link
-                    href={`${base}/auth/register`}
-                    onClick={() => setOpen(false)}
-                    className={`group flex items-center gap-3 p-1.5 rounded-xl transition-all duration-200 bg-zinc-50 dark:bg-zinc-800 hover:bg-sky-50 dark:hover:bg-sky-900/30`}
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sky-100 dark:bg-sky-900/30 shadow-sm">
-                      <UserPlus className="h-5 w-5 text-sky-600 dark:text-sky-400" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                        Đăng ký
-                      </p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Tạo tài khoản mới
-                      </p>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ArrowRight className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                    </div>
-                  </Link>
-                </div>
+            /* === Chưa đăng nhập === */
+            <div className="px-1">
+              <div className="mb-3 text-start text-sm font-bold text-zinc-800 dark:text-zinc-100">
+                Tài khoản
               </div>
-            </>
+
+              <div className="space-y-2">
+                {/* Đăng nhập */}
+                <Link
+                  href={`${base}/login`}
+                  onClick={() => setOpen(false)}
+                  className="group flex items-center gap-3 rounded-xl p-1.5 bg-zinc-50 text-zinc-900 transition-colors duration-200 hover:bg-emerald-50 dark:bg-zinc-800 dark:text-white dark:hover:bg-emerald-900/25"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-100 shadow-sm dark:bg-emerald-900/30">
+                    <LogIn className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold">Đăng nhập</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      Đã có tài khoản
+                    </p>
+                  </div>
+                  <div className="opacity-0 transition-opacity group-hover:opacity-100">
+                    <ArrowRight className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                </Link>
+
+                {/* Đăng ký */}
+                <Link
+                  href={`${base}/register`}
+                  onClick={() => setOpen(false)}
+                  className="group flex items-center gap-3 rounded-xl p-1.5 bg-zinc-50 text-zinc-900 transition-colors duration-200 hover:bg-sky-50 dark:bg-zinc-800 dark:text-white dark:hover:bg-sky-900/25"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sky-100 shadow-sm dark:bg-sky-900/30">
+                    <UserPlus className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold">Đăng ký</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      Tạo tài khoản mới
+                    </p>
+                  </div>
+                  <div className="opacity-0 transition-opacity group-hover:opacity-100">
+                    <ArrowRight className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                  </div>
+                </Link>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -464,7 +459,7 @@ export default function UserMenu() {
           place="bottom"
           positionStrategy="fixed"
           offset={10}
-          className="z-50 !bg-zinc-800 !text-white !text-xs !rounded-lg !px-2.5 !py-1.5 shadow-lg"
+          className="z-50 !rounded-lg !bg-zinc-900 !px-2.5 !py-1.5 !text-xs !text-white shadow-lg"
         />
       )}
     </div>

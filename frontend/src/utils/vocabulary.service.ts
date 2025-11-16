@@ -21,7 +21,9 @@ export const vocabularyService = {
     return response.data;
   },
 
-  async createVocabularySet(data: CreateVocabularySetDTO): Promise<VocabularySet> {
+  async createVocabularySet(
+    data: CreateVocabularySetDTO
+  ): Promise<VocabularySet> {
     const response = await apiClient.post<VocabularySet>(BASE_URL, data);
     return response.data;
   },
@@ -30,7 +32,10 @@ export const vocabularyService = {
     setId: string,
     data: UpdateVocabularySetDTO
   ): Promise<VocabularySet> {
-    const response = await apiClient.put<VocabularySet>(`${BASE_URL}/${setId}`, data);
+    const response = await apiClient.put<VocabularySet>(
+      `${BASE_URL}/${setId}`,
+      data
+    );
     return response.data;
   },
 
@@ -65,4 +70,3 @@ export const vocabularyService = {
     return response.data;
   },
 };
-

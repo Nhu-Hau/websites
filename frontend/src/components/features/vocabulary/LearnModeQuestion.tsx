@@ -1,7 +1,7 @@
 // frontend/src/components/features/vocabulary/LearnModeQuestion.tsx
 "use client";
 
-import { LearnModeQuestion } from "@/features/vocabulary/types/vocabulary.types";
+import { LearnModeQuestion } from "@/types/vocabulary.types";
 import { Check, X } from "lucide-react";
 
 interface LearnModeQuestionProps {
@@ -142,9 +142,9 @@ export function LearnModeQuestionComponent({
       <div className="rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-8 shadow-sm">
         {/* Question */}
         <div className="mb-8">
-            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wide">
-              Điền vào chỗ trống
-            </p>
+          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wide">
+            Điền vào chỗ trống
+          </p>
           <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
             {question.question}
           </h2>
@@ -192,7 +192,8 @@ export function LearnModeQuestionComponent({
               </p>
               {!isCorrect && (
                 <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                  The correct answer is: <strong>{question.correctAnswer}</strong>
+                  The correct answer is:{" "}
+                  <strong>{question.correctAnswer}</strong>
                 </p>
               )}
             </div>

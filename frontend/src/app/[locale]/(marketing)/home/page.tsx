@@ -1,7 +1,7 @@
+//frontend/src/app/[locale]/(marketing)/home/page.tsx
 import React from "react";
 import {
   Hero,
-  Features,
   WorkflowSection,
   Testimonials,
   Pricing,
@@ -22,7 +22,6 @@ export default async function HomePage({
     <main className="min-h-screen bg-white dark:bg-zinc-950 antialiased">
       <GoogleAuthEffect auth={auth} />
       <Hero />
-      <Features />
       <WorkflowSection />
       <Testimonials />
       <Pricing />

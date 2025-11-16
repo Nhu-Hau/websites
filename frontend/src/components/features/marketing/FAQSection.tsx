@@ -43,8 +43,8 @@ export default function FAQSection() {
   };
 
   return (
-    <section className="bg-zinc-50 dark:bg-zinc-950 border-y border-zinc-200 dark:border-zinc-900 py-20 sm:py-24">
-      <div className="mx-auto max-w-3xl px-6 lg:px-8">
+    <section className="bg-zinc-50 dark:bg-zinc-950 border-y border-zinc-200 dark:border-zinc-900 py-16">
+      <div className="mx-auto max-w-5xl px-6 lg:px-8">
         <SectionHeader
           eyebrow="Câu hỏi thường gặp"
           title="Có thắc mắc? Chúng tôi sẵn sàng trả lời"
@@ -52,7 +52,7 @@ export default function FAQSection() {
           align="center"
         />
 
-        <div className="mt-12 space-y-4">
+        <div className="mt-12 space-y-4 mx-auto max-w-3xl">
           {faqs.map((faq, index) => (
             <div
               key={index}
@@ -79,7 +79,7 @@ export default function FAQSection() {
                   openIndex === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                 }`}
               >
-                <div className="px-6 pb-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                <div className="px-6 pb-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 mt-5">
                   {faq.answer}
                 </div>
               </div>
@@ -88,7 +88,7 @@ export default function FAQSection() {
         </div>
 
         {/* Contact CTA */}
-        <div className="mt-12 text-center">
+        <div className="mt-5 text-center">
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             Vẫn còn thắc mắc?
           </p>

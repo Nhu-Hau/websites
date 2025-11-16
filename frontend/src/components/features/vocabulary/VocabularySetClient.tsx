@@ -2,16 +2,25 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { vocabularyService } from "@/features/vocabulary/services/vocabulary.service";
-import { VocabularySet } from "@/features/vocabulary/types/vocabulary.types";
-import { useFlashcardMode } from "@/features/vocabulary/hooks/useFlashcardMode";
-import { useLearnMode } from "@/features/vocabulary/hooks/useLearnMode";
+import { vocabularyService } from "@/utils/vocabulary.service";
+import { VocabularySet } from "@/types/vocabulary.types";
+import { useFlashcardMode } from "@/hooks/vocabulary/useFlashcardMode";
+import { useLearnMode } from "@/hooks/vocabulary/useLearnMode";
 import { Flashcard } from "./Flashcard";
 import { FlashcardProgress } from "./FlashcardProgress";
 import { FlashcardControls } from "./FlashcardControls";
 import { CompletionScreen } from "./CompletionScreen";
 import { LearnModeQuestionComponent } from "./LearnModeQuestion";
-import { ArrowLeft, Loader2, BookOpen, Brain, Plus, Play, Edit2, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  BookOpen,
+  Brain,
+  Plus,
+  Play,
+  Edit2,
+  Trash2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AddTermModal } from "./AddTermModal";
 
@@ -23,7 +32,9 @@ type Mode = "overview" | "flashcard" | "learn";
 
 export function VocabularySetClient({ setId }: VocabularySetClientProps) {
   const router = useRouter();
-  const [vocabularySet, setVocabularySet] = useState<VocabularySet | null>(null);
+  const [vocabularySet, setVocabularySet] = useState<VocabularySet | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("overview");
@@ -183,7 +194,8 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
 
             <div className="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
               <span className="font-semibold">
-                {vocabularySet.terms.length} {vocabularySet.terms.length === 1 ? "từ" : "từ"}
+                {vocabularySet.terms.length}{" "}
+                {vocabularySet.terms.length === 1 ? "từ" : "từ"}
               </span>
             </div>
           </div>
@@ -238,7 +250,9 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
           {/* Terms list */}
           <div className="rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Danh sách từ</h2>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                Danh sách từ
+              </h2>
               <button
                 onClick={() => setShowAddTermModal(true)}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-sm font-semibold hover:shadow-md transition-all"
@@ -431,7 +445,13 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
             notYet={learn.incorrectAnswers}
             total={learn.totalQuestions}
             mode="learn"
-            score={learn.totalQuestions > 0 ? Math.round((learn.correctAnswers / learn.totalQuestions) * 100) : 0}
+            score={
+              learn.totalQuestions > 0
+                ? Math.round(
+                    (learn.correctAnswers / learn.totalQuestions) * 100
+                  )
+                : 0
+            }
             onRestart={handleStartLearnMode}
             onReviewWeak={handleStartFlashcard}
             onLearnMode={handleStartLearnMode}
@@ -466,10 +486,12 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
           <div className="w-full max-w-2xl mx-auto mb-8">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                Câu hỏi {learn.currentQuestionIndex + 1} / {learn.totalQuestions}
+                Câu hỏi {learn.currentQuestionIndex + 1} /{" "}
+                {learn.totalQuestions}
               </span>
               <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                Điểm: {learn.correctAnswers} / {learn.currentQuestionIndex + (learn.showResult ? 1 : 0)}
+                Điểm: {learn.correctAnswers} /{" "}
+                {learn.currentQuestionIndex + (learn.showResult ? 1 : 0)}
               </span>
             </div>
             <div className="w-full h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">

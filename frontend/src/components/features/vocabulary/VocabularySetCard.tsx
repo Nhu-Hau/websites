@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { VocabularySet } from "@/features/vocabulary/types/vocabulary.types";
+import { VocabularySet } from "@/types/vocabulary.types";
 import { BookOpen, Trash2, ChevronRight } from "lucide-react";
 
 interface VocabularySetCardProps {

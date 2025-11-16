@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import { AddTermDTO } from "@/features/vocabulary/types/vocabulary.types";
+import { AddTermDTO } from "@/types/vocabulary.types";
 
 interface AddTermModalProps {
   onClose: () => void;

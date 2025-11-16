@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useVocabulary } from "@/features/vocabulary/hooks/useVocabulary";
+import { useVocabulary } from "@/hooks/vocabulary/useVocabulary";
 import { VocabularyList } from "./VocabularyList";
 import { VocabularySetSkeleton } from "./VocabularySetSkeleton";
 import { Search, Plus, BookOpen } from "lucide-react";

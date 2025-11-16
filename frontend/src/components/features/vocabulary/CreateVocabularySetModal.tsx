@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import { CreateVocabularySetDTO } from "@/features/vocabulary/types/vocabulary.types";
+import { CreateVocabularySetDTO } from "@/types/vocabulary.types";
 
 interface CreateVocabularySetModalProps {
   onClose: () => void;

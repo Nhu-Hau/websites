@@ -60,7 +60,7 @@ export default function Testimonials() {
         </motion.div>
 
         {/* Cards motion: fade + slide up, stagger theo index */}
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
+        <div className="mt-16 grid gap-8 lg:grid-cols-3 sm:max-w-xl sm:mx-auto lg:mx-0 mx-0 lg:max-w-none">
           {items.map((t, index) => (
             <motion.figure
               key={index}
@@ -72,9 +72,7 @@ export default function Testimonials() {
                 ease: [0.22, 0.61, 0.36, 1],
                 delay: index * 0.12,
               }}
-              className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm 
-                         transition-all duration-300 hover:-translate-y-2 hover:border-zinc-300 hover:shadow-lg
-                         dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+              className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
             >
               {/* Quote icon - subtle background */}
               <div className="pointer-events-none absolute -right-4 -top-4 opacity-5">

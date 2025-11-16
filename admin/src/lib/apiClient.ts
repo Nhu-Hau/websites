@@ -1,56 +1,119 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const API_BASE = (process.env.NEXT_PUBLIC_API_BASE || '').replace(/\/+$/, '');
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE || "").replace(/\/+$/, "");
 
 export type AdminUser = {
   _id: string;
   name: string;
   email: string;
-  role: 'user'|'admin'|'teacher';
-  access: 'free'|'premium';
-  level: 1|2|3;
+  role: "user" | "admin" | "teacher";
+  access: "free" | "premium";
+  level: 1 | 2 | 3;
   createdAt?: string;
   updatedAt?: string;
 };
 
-export async function adminListUsers(params?: { page?: number; limit?: number; q?: string; role?: string; access?: string; }) {
+export async function adminListUsers(params?: {
+  page?: number;
+  limit?: number;
+  q?: string;
+  role?: string;
+  access?: string;
+}) {
   const usp = new URLSearchParams();
-  if (params?.page) usp.set('page', String(params.page));
-  if (params?.limit) usp.set('limit', String(params.limit));
-  if (params?.q) usp.set('q', params.q);
-  if (params?.role) usp.set('role', params.role);
-  if (params?.access) usp.set('access', params.access);
-  const res = await fetch(`${API_BASE}/api/admin/users?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch users failed'); }
-  return res.json() as Promise<{ items: AdminUser[]; total: number; page: number; limit: number; pages: number }>;
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  if (params?.q) usp.set("q", params.q);
+  if (params?.role) usp.set("role", params.role);
+  if (params?.access) usp.set("access", params.access);
+  const res = await fetch(`${API_BASE}/api/admin/users?${usp.toString()}`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch users failed");
+  }
+  return res.json() as Promise<{
+    items: AdminUser[];
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  }>;
 }
 
-export async function adminUpdateUser(id: string, body: Partial<Pick<AdminUser,'name'|'role'|'access'>> & { level?: 1|2|3 }) {
-  const res = await fetch(`${API_BASE}/api/admin/users/${encodeURIComponent(id)}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Update user failed'); }
+export async function adminUpdateUser(
+  id: string,
+  body: Partial<Pick<AdminUser, "name" | "role" | "access">> & {
+    level?: 1 | 2 | 3;
+  }
+) {
+  const res = await fetch(
+    `${API_BASE}/api/admin/users/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body),
+    }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Update user failed");
+  }
   return res.json() as Promise<{ user: AdminUser }>;
 }
 
 export async function adminDeleteUser(id: string) {
-  const res = await fetch(`${API_BASE}/api/admin/users/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete user failed'); }
+  const res = await fetch(
+    `${API_BASE}/api/admin/users/${encodeURIComponent(id)}`,
+    { method: "DELETE", credentials: "include" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete user failed");
+  }
   return res.json() as Promise<{ message: string }>;
 }
 
 export async function adminOverview() {
-  const res = await fetch(`${API_BASE}/api/admin/analytics/overview`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch overview failed'); }
-  return res.json() as Promise<{ totalUsers: number; avgOverall: number; byLevel: Record<'1'|'2'|'3', number> | Record<number, number>; histogram: { min: number; max: number; count: number }[] }>;
+  const res = await fetch(`${API_BASE}/api/admin/analytics/overview`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch overview failed");
+  }
+  return res.json() as Promise<{
+    totalUsers: number;
+    avgOverall: number;
+    byLevel: Record<"1" | "2" | "3", number> | Record<number, number>;
+    histogram: { min: number; max: number; count: number }[];
+  }>;
 }
 
 export async function adminUserScores() {
-  const res = await fetch(`${API_BASE}/api/admin/analytics/user-scores`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch user scores failed'); }
-  return res.json() as Promise<{ users: Array<{ _id: string; name: string; email: string; level: number; overall: number; listening: number; reading: number; submittedAt: string }> }>;
+  const res = await fetch(`${API_BASE}/api/admin/analytics/user-scores`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch user scores failed");
+  }
+  return res.json() as Promise<{
+    users: Array<{
+      _id: string;
+      name: string;
+      email: string;
+      level: number;
+      overall: number;
+      listening: number;
+      reading: number;
+      submittedAt: string;
+    }>;
+  }>;
 }
 
 export type AdminCommunityPost = {
@@ -59,7 +122,13 @@ export type AdminCommunityPost = {
   user: any;
   content: string;
   tags: string[];
-  attachments: Array<{ type: string; url: string; name?: string; size?: number; key?: string }>;
+  attachments: Array<{
+    type: string;
+    url: string;
+    name?: string;
+    size?: number;
+    key?: string;
+  }>;
   likedBy: any[];
   likesCount: number;
   commentsCount: number;
@@ -73,52 +142,109 @@ export type AdminCommunityComment = {
   userId: any;
   user: any;
   content: string;
-  attachments: Array<{ type: string; url: string; name?: string; size?: number; key?: string }>;
+  attachments: Array<{
+    type: string;
+    url: string;
+    name?: string;
+    size?: number;
+    key?: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 };
 
-export async function adminListCommunityPosts(params?: { page?: number; limit?: number; q?: string }) {
+export async function adminListCommunityPosts(params?: {
+  page?: number;
+  limit?: number;
+  q?: string;
+}) {
   const usp = new URLSearchParams();
-  if (params?.page) usp.set('page', String(params.page));
-  if (params?.limit) usp.set('limit', String(params.limit));
-  if (params?.q) usp.set('q', params.q);
-  const res = await fetch(`${API_BASE}/api/admin/community/posts?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch posts failed'); }
-  return res.json() as Promise<{ items: AdminCommunityPost[]; total: number; page: number; limit: number; pages: number }>;
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  if (params?.q) usp.set("q", params.q);
+  const res = await fetch(
+    `${API_BASE}/api/admin/community/posts?${usp.toString()}`,
+    { credentials: "include", cache: "no-store" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch posts failed");
+  }
+  return res.json() as Promise<{
+    items: AdminCommunityPost[];
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  }>;
 }
 
-export async function adminCreateCommunityPost(params: { content: string; userId: string }) {
+export async function adminCreateCommunityPost(params: {
+  content: string;
+  userId: string;
+}) {
   const res = await fetch(`${API_BASE}/api/admin/community/posts`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(params),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Create post failed'); }
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Create post failed");
+  }
   return res.json() as Promise<AdminCommunityPost>;
 }
 
 export async function adminDeleteCommunityPost(id: string) {
-  const res = await fetch(`${API_BASE}/api/admin/community/posts/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete post failed'); }
+  const res = await fetch(
+    `${API_BASE}/api/admin/community/posts/${encodeURIComponent(id)}`,
+    { method: "DELETE", credentials: "include" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete post failed");
+  }
   return res.json() as Promise<{ message: string }>;
 }
 
-export async function adminListCommunityComments(params?: { page?: number; limit?: number; q?: string; postId?: string }) {
+export async function adminListCommunityComments(params?: {
+  page?: number;
+  limit?: number;
+  q?: string;
+  postId?: string;
+}) {
   const usp = new URLSearchParams();
-  if (params?.page) usp.set('page', String(params.page));
-  if (params?.limit) usp.set('limit', String(params.limit));
-  if (params?.q) usp.set('q', params.q);
-  if (params?.postId) usp.set('postId', params.postId);
-  const res = await fetch(`${API_BASE}/api/admin/community/comments?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch comments failed'); }
-  return res.json() as Promise<{ items: AdminCommunityComment[]; total: number; page: number; limit: number; pages: number }>;
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  if (params?.q) usp.set("q", params.q);
+  if (params?.postId) usp.set("postId", params.postId);
+  const res = await fetch(
+    `${API_BASE}/api/admin/community/comments?${usp.toString()}`,
+    { credentials: "include", cache: "no-store" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch comments failed");
+  }
+  return res.json() as Promise<{
+    items: AdminCommunityComment[];
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  }>;
 }
 
 export async function adminDeleteCommunityComment(id: string) {
-  const res = await fetch(`${API_BASE}/api/admin/community/comments/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete comment failed'); }
+  const res = await fetch(
+    `${API_BASE}/api/admin/community/comments/${encodeURIComponent(id)}`,
+    { method: "DELETE", credentials: "include" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete comment failed");
+  }
   return res.json() as Promise<{ message: string }>;
 }
 
@@ -145,56 +271,102 @@ export type AdminPartsStats = {
   byTest: Array<{ _id: { part: string; test: number }; count: number }>;
 };
 
-export async function adminListParts(params?: { page?: number; limit?: number; part?: string; level?: number; test?: number; q?: string }) {
+export async function adminListParts(params?: {
+  page?: number;
+  limit?: number;
+  part?: string;
+  level?: number;
+  test?: number;
+  q?: string;
+}) {
   const usp = new URLSearchParams();
-  if (params?.page) usp.set('page', String(params.page));
-  if (params?.limit) usp.set('limit', String(params.limit));
-  if (params?.part) usp.set('part', params.part);
-  if (params?.level) usp.set('level', String(params.level));
-  if (params?.test) usp.set('test', String(params.test));
-  if (params?.q) usp.set('q', params.q);
-  const res = await fetch(`${API_BASE}/api/admin/parts?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch parts failed'); }
-  return res.json() as Promise<{ items: AdminPart[]; total: number; page: number; limit: number; pages: number }>;
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  if (params?.part) usp.set("part", params.part);
+  if (params?.level) usp.set("level", String(params.level));
+  if (params?.test) usp.set("test", String(params.test));
+  if (params?.q) usp.set("q", params.q);
+  const res = await fetch(`${API_BASE}/api/admin/parts?${usp.toString()}`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch parts failed");
+  }
+  return res.json() as Promise<{
+    items: AdminPart[];
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  }>;
 }
 
 export async function adminGetPart(id: string) {
-  const res = await fetch(`${API_BASE}/api/admin/parts/${encodeURIComponent(id)}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch part failed'); }
+  const res = await fetch(
+    `${API_BASE}/api/admin/parts/${encodeURIComponent(id)}`,
+    { credentials: "include", cache: "no-store" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch part failed");
+  }
   return res.json() as Promise<{ item: AdminPart }>;
 }
 
 export async function adminGetPartsStats() {
-  const res = await fetch(`${API_BASE}/api/admin/parts/stats`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch parts stats failed'); }
+  const res = await fetch(`${API_BASE}/api/admin/parts/stats`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch parts stats failed");
+  }
   return res.json() as Promise<AdminPartsStats>;
 }
 
 export async function adminCreatePart(body: Partial<AdminPart>) {
   const res = await fetch(`${API_BASE}/api/admin/parts`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(body),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Create part failed'); }
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Create part failed");
+  }
   return res.json() as Promise<{ item: AdminPart }>;
 }
 
 export async function adminUpdatePart(id: string, body: Partial<AdminPart>) {
-  const res = await fetch(`${API_BASE}/api/admin/parts/${encodeURIComponent(id)}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Update part failed'); }
+  const res = await fetch(
+    `${API_BASE}/api/admin/parts/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body),
+    }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Update part failed");
+  }
   return res.json() as Promise<{ item: AdminPart }>;
 }
 
 export async function adminDeletePart(id: string) {
-  const res = await fetch(`${API_BASE}/api/admin/parts/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete part failed'); }
+  const res = await fetch(
+    `${API_BASE}/api/admin/parts/${encodeURIComponent(id)}`,
+    { method: "DELETE", credentials: "include" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete part failed");
+  }
   return res.json() as Promise<{ message: string }>;
 }
 
@@ -206,32 +378,64 @@ export type AdminTest = {
   firstItemId: string;
 };
 
-export async function adminListTests(params?: { part?: string; level?: number }) {
+export async function adminListTests(params?: {
+  part?: string;
+  level?: number;
+}) {
   const usp = new URLSearchParams();
-  if (params?.part) usp.set('part', params.part);
-  if (params?.level) usp.set('level', String(params.level));
-  const res = await fetch(`${API_BASE}/api/admin/parts/tests?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch tests failed'); }
+  if (params?.part) usp.set("part", params.part);
+  if (params?.level) usp.set("level", String(params.level));
+  const res = await fetch(
+    `${API_BASE}/api/admin/parts/tests?${usp.toString()}`,
+    { credentials: "include", cache: "no-store" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch tests failed");
+  }
   return res.json() as Promise<{ tests: AdminTest[] }>;
 }
 
-export async function adminGetTestItems(params: { part: string; level: number; test: number }) {
+export async function adminGetTestItems(params: {
+  part: string;
+  level: number;
+  test: number;
+}) {
   const usp = new URLSearchParams();
-  usp.set('part', params.part);
-  usp.set('level', String(params.level));
-  usp.set('test', String(params.test));
-  const res = await fetch(`${API_BASE}/api/admin/parts/test/items?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch test items failed'); }
-  return res.json() as Promise<{ items: AdminPart[]; stimulusMap: Record<string, AdminStimulus> }>;
+  usp.set("part", params.part);
+  usp.set("level", String(params.level));
+  usp.set("test", String(params.test));
+  const res = await fetch(
+    `${API_BASE}/api/admin/parts/test/items?${usp.toString()}`,
+    { credentials: "include", cache: "no-store" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch test items failed");
+  }
+  return res.json() as Promise<{
+    items: AdminPart[];
+    stimulusMap: Record<string, AdminStimulus>;
+  }>;
 }
 
-export async function adminDeleteTest(params: { part: string; level: number; test: number }) {
+export async function adminDeleteTest(params: {
+  part: string;
+  level: number;
+  test: number;
+}) {
   const usp = new URLSearchParams();
-  usp.set('part', params.part);
-  usp.set('level', String(params.level));
-  usp.set('test', String(params.test));
-  const res = await fetch(`${API_BASE}/api/admin/parts/test?${usp.toString()}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete test failed'); }
+  usp.set("part", params.part);
+  usp.set("level", String(params.level));
+  usp.set("test", String(params.test));
+  const res = await fetch(
+    `${API_BASE}/api/admin/parts/test?${usp.toString()}`,
+    { method: "DELETE", credentials: "include" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete test failed");
+  }
   return res.json() as Promise<{ message: string; deletedCount: number }>;
 }
 
@@ -248,76 +452,214 @@ export type AdminStimulus = {
   };
 };
 
-export async function adminCreateTest(body: { part: string; level: number; test: number; items: AdminPart[]; stimuli?: AdminStimulus[] }) {
+export async function adminCreateTest(body: {
+  part: string;
+  level: number;
+  test: number;
+  items: AdminPart[];
+  stimuli?: AdminStimulus[];
+}) {
   const res = await fetch(`${API_BASE}/api/admin/parts/test`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(body),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Create test failed'); }
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Create test failed");
+  }
   return res.json() as Promise<{ message: string; count: number }>;
 }
 
 export async function adminCreateOrUpdateItem(body: AdminPart) {
   const res = await fetch(`${API_BASE}/api/admin/parts/item`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(body),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Create/update item failed'); }
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Create/update item failed");
+  }
   return res.json() as Promise<{ item: AdminPart }>;
 }
 
 export async function adminUploadStimulusMedia(file: File) {
   const formData = new FormData();
-  formData.append('file', file);
-  
+  formData.append("file", file);
+
   const res = await fetch(`${API_BASE}/api/admin/parts/upload`, {
-    method: 'POST',
-    credentials: 'include',
+    method: "POST",
+    credentials: "include",
     body: formData,
   });
-  
-  if (!res.ok) { 
-    const e = await res.json().catch(() => ({})); 
-    throw new Error(e.message || 'Upload failed'); 
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Upload failed");
   }
-  
-  return res.json() as Promise<{ url: string; key: string; type: string; name: string; size: number }>;
+
+  return res.json() as Promise<{
+    url: string;
+    key: string;
+    type: string;
+    name: string;
+    size: number;
+  }>;
 }
 
-export async function adminCreateStimulus(body: { id: string; part: string; level: number; test: number; media: any }) {
+export async function adminCreateStimulus(body: {
+  id: string;
+  part: string;
+  level: number;
+  test: number;
+  media: any;
+}) {
   const res = await fetch(`${API_BASE}/api/admin/parts/stimulus`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(body),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Create stimulus failed'); }
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Create stimulus failed");
+  }
   return res.json() as Promise<{ stimulus: AdminStimulus }>;
 }
 
 export async function adminUpdateStimulus(id: string, media: any) {
-  const res = await fetch(`${API_BASE}/api/admin/parts/stimulus/${encodeURIComponent(id)}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ media }),
-  });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Update stimulus failed'); }
+  const res = await fetch(
+    `${API_BASE}/api/admin/parts/stimulus/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ media }),
+    }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Update stimulus failed");
+  }
   return res.json() as Promise<{ stimulus: AdminStimulus }>;
 }
 
 export async function adminDeleteStimulus(id: string) {
-  const res = await fetch(`${API_BASE}/api/admin/parts/stimulus/${encodeURIComponent(id)}`, { 
-    method: 'DELETE',
-    credentials: 'include' 
-  });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete stimulus failed'); }
+  const res = await fetch(
+    `${API_BASE}/api/admin/parts/stimulus/${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete stimulus failed");
+  }
   return res.json() as Promise<{ message: string }>;
 }
 
+// Promo codes management
+export type AdminPromoCode = {
+  _id: string;
+  code: string;
+  type?: "fixed" | "percent" | null;
+  value?: number | null;
+  amountAfter?: number | null;
+  baseAmount?: number | null;
+  activeFrom?: string | null;
+  activeTo?: string | null;
+  maxUses?: number | null;
+  usedCount: number;
+  perUserLimit?: number | null;
+  allowedUsers?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+};
 
+export async function adminListPromoCodes(params?: {
+  page?: number;
+  limit?: number;
+  q?: string;
+}) {
+  const usp = new URLSearchParams();
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  if (params?.q) usp.set("q", params.q);
+  const res = await fetch(`${API_BASE}/api/admin/promos?${usp.toString()}`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch promo codes failed");
+  }
+  return res.json() as Promise<{
+    items: AdminPromoCode[];
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  }>;
+}
 
+export async function adminGetPromoCode(code: string) {
+  const res = await fetch(
+    `${API_BASE}/api/admin/promos/${encodeURIComponent(code)}`,
+    { credentials: "include", cache: "no-store" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch promo code failed");
+  }
+  return res.json() as Promise<AdminPromoCode>;
+}
+
+export async function adminCreatePromoCode(body: Partial<AdminPromoCode>) {
+  const res = await fetch(`${API_BASE}/api/admin/promos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Create promo code failed");
+  }
+  return res.json() as Promise<AdminPromoCode>;
+}
+
+export async function adminUpdatePromoCode(
+  code: string,
+  body: Partial<AdminPromoCode>
+) {
+  const res = await fetch(
+    `${API_BASE}/api/admin/promos/${encodeURIComponent(code)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body),
+    }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Update promo code failed");
+  }
+  return res.json() as Promise<AdminPromoCode>;
+}
+
+export async function adminDeletePromoCode(code: string) {
+  const res = await fetch(
+    `${API_BASE}/api/admin/promos/${encodeURIComponent(code)}`,
+    { method: "DELETE", credentials: "include" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete promo code failed");
+  }
+  return res.json() as Promise<{ message: string }>;
+}

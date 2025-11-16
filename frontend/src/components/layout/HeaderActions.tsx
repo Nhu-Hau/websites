@@ -56,7 +56,7 @@ return (
     {open && (
       <div
         className={cn(
-          "absolute right-0 mt-2 z-50",
+          "absolute right-0 mt-3.5 z-50",
           "w-64 sm:w-72 max-w-[90vw]",
           "rounded-2xl border border-zinc-200/70 bg-white/95 shadow-2xl ring-1 ring-black/5",
           "dark:border-zinc-700/70 dark:bg-zinc-900/95 dark:ring-white/10",
@@ -175,7 +175,7 @@ export function Notification() {
       {open && (
         <div
           className={cn(
-            "absolute right-0 mt-2 z-50",
+            "absolute right-0 mt-3.5 z-50",
             "w-72 sm:w-80 max-w-[90vw]",
             "rounded-2xl border border-zinc-200/70 bg-white/95 shadow-2xl ring-1 ring-black/5",
             "dark:border-zinc-700/70 dark:bg-zinc-900/95 dark:ring-white/10",

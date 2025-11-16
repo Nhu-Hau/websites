@@ -539,6 +539,86 @@ export default function ProgressPage() {
         onSubmit={handleSubmit}
         onOpenQuickNav={() => setMobileNavOpen(true)}
       />
+
+      {/* Mobile bottom sheet (< lg) */}
+      {mobileNavOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          {/* backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setMobileNavOpen(false)}
+            aria-hidden
+          />
+          {/* sheet */}
+          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-700 p-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                <Focus className="w-4 h-4" />
+                Điều hướng nhanh
+              </div>
+              <button
+                onClick={() => setMobileNavOpen(false)}
+                className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+              >
+                Đóng
+              </button>
+            </div>
+
+            {/* tiến độ */}
+            <div className="mb-3">
+              <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="mt-1.5 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                <span>
+                  Câu {currentIndex + 1}/{total}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  {fmtTime(leftSec)}
+                </span>
+              </div>
+            </div>
+
+            {/* danh sách câu hỏi */}
+            <div className="max-h-[40vh] overflow-y-auto">
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: total }).map((_, i) => {
+                  const idx = i;
+                  const itemId = items[idx]?.id || "";
+                  const answered = Object.prototype.hasOwnProperty.call(
+                    answers,
+                    itemId
+                  );
+                  const isCurrent = currentIndex === idx;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setMobileNavOpen(false);
+                        jumpTo(idx);
+                      }}
+                      className={[
+                        "px-3 py-1.5 rounded-lg text-sm font-semibold border transition",
+                        isCurrent
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : answered
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800"
+                          : "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700",
+                      ].join(" ")}
+                    >
+                      {i + 1}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

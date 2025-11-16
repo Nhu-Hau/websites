@@ -174,7 +174,7 @@ export default function Hero() {
         duration: 2500,
       });
       setTimeout(() => {
-        router.push(`${base}/auth/login`);
+        router.push(`${base}/login`);
       }, 1000);
       return;
     }
@@ -281,7 +281,7 @@ export default function Hero() {
             className="grid grid-cols-1 items-center gap-8 pb-20 pt-4 xs:gap-9 xs:pb-24 sm:gap-10 sm:pb-28 lg:grid-cols-3 lg:gap-12 lg:pb-32"
           >
             {/* LEFT TEXT */}
-            <div className="lg:col-span-2 text-center lg:text-left">
+            <div className="lg:col-span-2 text-center md:text-left">
               <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-sky-400/40 bg-sky-500/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-sky-100 backdrop-blur-sm xs:text-xs lg:mx-0">
                 <FiShield className="text-sm" />
                 <span>Cấu trúc bám sát đề thi TOEIC thật</span>
@@ -305,7 +305,7 @@ export default function Hero() {
               </p>
 
               {/* CTA */}
-              <div className="mt-7 flex flex-col items-center gap-3 xs:flex-row xs:justify-center xs:gap-4 lg:justify-start">
+              <div className="mt-7 flex flex-col items-center gap-3 xs:flex-row xs:justify-center xs:gap-4 md:justify-start">
                 <button
                   onClick={handleStart}
                   disabled={checking}
@@ -342,7 +342,7 @@ export default function Hero() {
               </p>
 
               {/* STATS */}
-              <div className="mt-7 grid max-w-md grid-cols-3 gap-3 xs:gap-4 xs:mt-8 mx-auto lg:mx-0">
+              <div className="mt-7 grid max-w-md grid-cols-3 gap-3 xs:gap-4 xs:mt-8 mx-auto md:mx-0">
                 <Stat
                   number="55 câu"
                   label="Mini TOEIC"
@@ -369,7 +369,7 @@ export default function Hero() {
                 {/* CARD */}
                 <div className="relative rounded-3xl bg-slate-900/80 p-5 xs:p-6 shadow-2xl ring-1 ring-sky-500/30 backdrop-blur-md">
                   {/* TITLE */}
-                  <div className="mb-4 flex items-center justify-between gap-3">
+                  <div className="mb-4 flex xl:flex-row lg:flex-col flex-row xl:items-center xl:justify-between lg:items-start items-center gap-3">
                     <div>
                       <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
                         Bài kiểm tra đang chờ

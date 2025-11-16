@@ -48,6 +48,9 @@ export default function RootLayout({
               <Link href="/community" className="hover:underline">
                 Community
               </Link>
+              <Link href="/promos" className="hover:underline">
+                Promo Codes
+              </Link>
               <AdminChatLink />
               <LogoutButton />
             </nav>

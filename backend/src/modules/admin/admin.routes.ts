@@ -26,6 +26,13 @@ import {
   deleteStimulus,
   uploadStimulusMedia
 } from "./admin-parts.controller";
+import {
+  listPromoCodes,
+  getPromoCode,
+  createPromoCode,
+  updatePromoCode,
+  deletePromoCode
+} from "./admin-promo.controller";
 
 const router = Router();
 
@@ -62,6 +69,13 @@ router.get("/parts/:id", getPart);
 router.post("/parts", createPart);
 router.patch("/parts/:id", updatePart);
 router.delete("/parts/:id", deletePart);
+
+// Promo codes admin routes
+router.get("/promos", listPromoCodes);
+router.get("/promos/:code", getPromoCode);
+router.post("/promos", createPromoCode);
+router.patch("/promos/:code", updatePromoCode);
+router.delete("/promos/:code", deletePromoCode);
 
 export default router;
 

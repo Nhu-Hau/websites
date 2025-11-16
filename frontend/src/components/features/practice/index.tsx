@@ -9,16 +9,16 @@ import { groupByStimulus } from "@/utils/groupByStimulus";
 import { StimulusRowCard, StimulusColumnCard } from "./StimulusCards";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import {
   ListChecks,
   Timer,
-  Play,
   Clock,
   BookOpen,
   Headphones,
+  Focus,
 } from "lucide-react";
+import FocusHUD from "./FocusHUD";
+import { ChoiceId } from "@/types/tests.types";
 
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -31,9 +31,7 @@ function partLabel(partKey: string) {
   return n ? `Part ${n}` : partKey;
 }
 
-export default function PracticeRunner() {
-  const router = useRouter();
-  const base = useBasePrefix("vi");
+export default function PracticePage() {
   const {
     items,
     stimulusMap,
@@ -60,9 +58,19 @@ export default function PracticeRunner() {
   const [focusMode, setFocusMode] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const isListening = /^part\.[1-4]$/.test(partKey);
   const progress = total ? Math.round((answered / total) * 100) : 0;
+
+  // For practice test, timeSec is elapsed time (not countdown)
+  // We'll use a default duration for display purposes
+  const durationMin = 35;
+  const countdownTotal = durationMin * 60;
+  const leftSec = useMemo(
+    () => Math.max(0, countdownTotal - timeSec),
+    [countdownTotal, timeSec]
+  );
 
   // Group items
   const { groups, itemIndexMap } = useMemo(
@@ -175,7 +183,8 @@ export default function PracticeRunner() {
         </div>
 
         <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-300 leading-relaxed">
-          Luyện tập {partLabel(partKey)} ở Level {level} - Test {test}. Hoàn thành bài làm và xem kết quả chi tiết.
+          Luyện tập {partLabel(partKey)} ở Level {level} - Test {test}. Hoàn
+          thành bài làm và xem kết quả chi tiết.
         </p>
       </div>
     </header>
@@ -187,7 +196,21 @@ export default function PracticeRunner() {
       <Sidebar
         items={items}
         answers={answers}
-        resp={resp || null}
+        resp={
+          resp 
+          ? { 
+              ...resp, 
+              answersMap: resp.answersMap 
+                ? Object.fromEntries(
+                    Object.entries(resp.answersMap).map(([key, value]) => [
+                      key, 
+                      { correctAnswer: value.correctAnswer as ChoiceId }
+                    ])
+                  ) 
+                : undefined
+            } 
+          : null
+        }
         total={total}
         answered={answered}
         timeLabel={!resp ? fmtTime(timeSec) : fmtTime(resp.timeSec)}
@@ -286,81 +309,97 @@ export default function PracticeRunner() {
         )}
       </main>
 
-      {focusMode && started && !resp && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden lg:flex items-center gap-4 rounded-full bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-300 dark:border-zinc-700 px-5 py-2.5 shadow-2xl text-sm font-bold">
-          <span className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200">
-            Câu
-            <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
-              {currentIndex + 1}
-            </span>
-            / {total}
-          </span>
-          <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
-            <Clock className="w-4 h-4" />
-            {fmtTime(timeSec)}
-          </span>
-          <div className="w-32 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <button
-            onClick={() => setFocusMode(false)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all hover:scale-105"
-          >
-            Mở lại
-          </button>
-        </div>
-      )}
+      <FocusHUD
+        started={started}
+        resp={resp}
+        focusMode={focusMode}
+        durationMin={durationMin}
+        total={total}
+        currentIndex={currentIndex}
+        leftSec={leftSec}
+        progressPercent={progress}
+        onStart={handleStart}
+        onSubmit={handleSubmit}
+        onOpenQuickNav={() => setMobileNavOpen(true)}
+        onToggleFocus={() => setFocusMode((v) => !v)}
+      />
 
-      {/* Mobile HUD - Chưa bắt đầu */}
-      {!resp && !started && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 lg:hidden w-[calc(100%-2rem)] max-w-md">
-          <div className="flex items-center justify-between gap-4 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-300 dark:border-zinc-700 px-5 py-4 shadow-2xl">
-            <div className="flex items-center gap-4 text-sm font-medium">
-              <span className="text-zinc-700 dark:text-zinc-300">
-                {total} câu
-              </span>
+      {/* Mobile bottom sheet (< lg) */}
+      {mobileNavOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          {/* backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setMobileNavOpen(false)}
+            aria-hidden
+          />
+          {/* sheet */}
+          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-700 p-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                <Focus className="w-4 h-4" />
+                Điều hướng nhanh
+              </div>
+              <button
+                onClick={() => setMobileNavOpen(false)}
+                className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+              >
+                Đóng
+              </button>
             </div>
-            <button
-              onClick={handleStart}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all hover:scale-105"
-            >
-              <Play className="w-4 h-4" />
-              Bắt đầu
-            </button>
-          </div>
-        </div>
-      )}
 
-      {/* Mobile HUD - Đang làm */}
-      {!resp && started && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 lg:hidden w-[calc(100%-2rem)] max-w-md">
-          <div className="flex items-center gap-3 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 shadow-2xl text-xs font-bold">
-            <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
-              Câu
-              <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
-                {Math.min(currentIndex + 1, total)}
-              </span>
-              / {total}
+            {/* tiến độ */}
+            <div className="mb-3">
+              <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="mt-1.5 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                <span>
+                  Câu {currentIndex + 1}/{total}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  {fmtTime(leftSec)}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
-              <Clock className="w-3.5 h-3.5" />
-              {fmtTime(timeSec)}
+
+            {/* danh sách câu hỏi */}
+            <div className="max-h-[40vh] overflow-y-auto">
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: total }).map((_, i) => {
+                  const idx = i;
+                  const itemId = items[idx]?.id || "";
+                  const answered = Object.prototype.hasOwnProperty.call(
+                    answers,
+                    itemId
+                  );
+                  const isCurrent = currentIndex === idx;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setMobileNavOpen(false);
+                        jumpTo(idx);
+                      }}
+                      className={[
+                        "px-3 py-1.5 rounded-lg text-sm font-semibold border transition",
+                        isCurrent
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : answered
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800"
+                          : "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700",
+                      ].join(" ")}
+                    >
+                      {i + 1}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div className="flex-1 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <button
-              onClick={handleSubmit}
-              className="px-3 py-1 rounded-md bg-black hover:bg-zinc-800 text-white text-xs transition"
-            >
-              Nộp
-            </button>
           </div>
         </div>
       )}

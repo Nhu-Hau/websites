@@ -26,6 +26,8 @@ function toArray<T>(val?: T | T[]): T[] {
   return Array.isArray(val) ? val : [val];
 }
 
+/* ========= Info block (transcript / giải thích) ========= */
+
 function YellowInfoBlock({
   title,
   content,
@@ -36,17 +38,19 @@ function YellowInfoBlock({
   icon?: any;
 }) {
   return (
-    <div className={cn(
-      "group relative overflow-hidden rounded-xl",
-      "bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/20",
-      "p-1 shadow-sm"
-    )}>
-      <div className="rounded-lg bg-white dark:bg-zinc-900 p-4">
-        <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-semibold text-sm mb-2">
+    <div
+      className={cn(
+        "group relative overflow-hidden rounded-xl",
+        "border border-amber-100/70 bg-amber-50/60 dark:border-amber-800/70 dark:bg-amber-900/20",
+        "shadow-sm"
+      )}
+    >
+      <div className="flex h-full flex-col gap-2 rounded-xl bg-white/95 p-3.5 text-sm dark:bg-zinc-950/90">
+        <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700 dark:text-amber-300">
           {Icon && <Icon className="h-4 w-4" />}
           {title}
         </div>
-        <pre className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed font-medium">
+        <pre className="whitespace-pre-wrap text-[13px] leading-relaxed text-zinc-800 dark:text-zinc-200">
           {content}
         </pre>
       </div>
@@ -78,6 +82,8 @@ function StimulusYellowPanel({ stimulus }: { stimulus?: Stimulus | null }) {
   );
 }
 
+/* ========= Choice Row ========= */
+
 function ChoiceRow({
   item,
   displayIndex,
@@ -104,39 +110,57 @@ function ChoiceRow({
 
   return (
     <div id={anchorId} className="space-y-3 scroll-mt-24">
-      <div className="flex items-center justify-between">
-        <span className="font-semibold text-zinc-900 dark:text-white">
-          Câu {displayIndex}:
+      {/* Header status */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+          <span className="inline-flex h-6 min-w-[6rem] items-center justify-center rounded-full bg-sky-100 text-md font-semibold text-zinc-900 dark:bg-sky-800 dark:text-zinc-200">
+            Câu {displayIndex}
+          </span>
         </span>
+
         {locked ? (
           picked === correct ? (
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
               Chính xác
             </span>
           ) : picked ? (
-            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">
-              Sai{correct ? ` (Chính xác: ${correct})` : ""}
+            <span className="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-semibold text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
+              Sai
+              {correct && (
+                <span className="ml-1 text-[10px] font-medium text-rose-600/90 dark:text-rose-200">
+                  (Đúng: {correct})
+                </span>
+              )}
             </span>
           ) : (
-            <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-              Đã bỏ qua{correct ? ` (Chính xác: ${correct})` : ""}
+            <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+              Đã bỏ qua
+              {correct && (
+                <span className="ml-1 text-[10px] font-medium text-zinc-500 dark:text-zinc-300">
+                  (Đúng: {correct})
+                </span>
+              )}
             </span>
           )
         ) : picked ? (
-          <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-medium">
+          <span className="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 dark:bg-sky-900/30 dark:text-sky-200">
             Đã chọn: {picked}
           </span>
         ) : (
-          <span className="text-xs text-zinc-400 dark:text-zinc-500">Chưa chọn</span>
+          <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
+            Chưa chọn
+          </span>
         )}
       </div>
 
+      {/* Stem */}
       {item.stem && (
-        <p className="font-semibold text-zinc-800 dark:text-zinc-200">
+        <p className="text-[15px] font-semibold leading-relaxed text-zinc-900 dark:text-zinc-50">
           {String(item.stem)}
         </p>
       )}
 
+      {/* Choices */}
       <div
         className={cn(
           "flex flex-col gap-2",
@@ -146,36 +170,52 @@ function ChoiceRow({
         {((item.choices ?? []) as ChoiceLike[]).map((ch) => {
           const isCorrect = ch.id === correct;
           const isPicked = picked === ch.id;
-          const labelRaw = ch.text ?? ch.content ?? "";
+          const rawLabel = ch.text ?? ch.content ?? "";
           const label =
-            typeof labelRaw === "string" ? labelRaw : JSON.stringify(labelRaw);
+            typeof rawLabel === "string"
+              ? rawLabel
+              : JSON.stringify(rawLabel);
 
-          const baseCls = cn(
-            "flex items-center gap-3 rounded-xl px-4 py-2.5 text-left text-base font-medium",
-            "transition-all duration-200"
+          const base = cn(
+            "flex items-center gap-3 rounded-xl px-4 py-2.5 text-left text-sm font-medium",
+            "transition-all duration-200 border"
           );
 
-          let cls = baseCls;
+          let cls = base;
+
           if (!locked) {
-            cls = cn(
-              baseCls,
-              isPicked
-                ? "bg-zinc-900 text-white dark:bg-zinc-800"
-                : cn(
-                    "bg-zinc-50 dark:bg-zinc-800",
-                    "hover:bg-zinc-100 dark:hover:bg-zinc-700",
-                    "text-zinc-800 dark:text-zinc-200"
-                  )
-            );
-          } else {
-            if (isCorrect) {
-              cls = cn(baseCls, "bg-emerald-600 text-white");
-            } else if (isPicked && !isCorrect) {
-              cls = cn(baseCls, "bg-rose-600 text-white");
+            // Đang làm bài
+            if (isPicked) {
+              cls = cn(
+                base,
+                "border-sky-500 bg-sky-50 text-sky-800 shadow-sm",
+                "dark:border-sky-400 dark:bg-sky-900/40 dark:text-sky-50"
+              );
             } else {
               cls = cn(
-                baseCls,
-                "bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200"
+                base,
+                "border-zinc-200 bg-zinc-50 text-zinc-800",
+                "hover:border-zinc-300 hover:bg-zinc-100 hover:shadow-sm hover:-translate-y-0.5",
+                "dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+              );
+            }
+          } else {
+            // Sau khi nộp bài
+            if (isCorrect) {
+              cls = cn(
+                base,
+                "border-emerald-600 bg-emerald-600 text-white shadow-sm"
+              );
+            } else if (isPicked && !isCorrect) {
+              cls = cn(
+                base,
+                "border-rose-600 bg-rose-600 text-white shadow-sm"
+              );
+            } else {
+              cls = cn(
+                base,
+                "border-zinc-200 bg-zinc-100 text-zinc-800",
+                "dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               );
             }
           }
@@ -187,13 +227,16 @@ function ChoiceRow({
               onClick={() => onPick(ch.id)}
               className={cls}
             >
-              <span className="font-bold">{ch.id}.</span>
-              <span>{label}</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white dark:bg-zinc-700">
+                {ch.id}
+              </span>
+              <span className="text-[14px] leading-relaxed">{label}</span>
             </button>
           );
         })}
       </div>
 
+      {/* Giải thích từng câu */}
       {locked && showPerItemExplain && itemExplain && (
         <YellowInfoBlock
           title={`Giải thích câu ${displayIndex}`}
@@ -203,6 +246,8 @@ function ChoiceRow({
     </div>
   );
 }
+
+/* ========= Base Props ========= */
 
 type BaseProps = {
   stimulus?: Stimulus | null;
@@ -215,6 +260,8 @@ type BaseProps = {
   showStimulusDetails: boolean;
   showPerItemExplain?: boolean;
 };
+
+/* ========= Auto layout chooser ========= */
 
 export function StimulusAutoCard(props: BaseProps) {
   const { stimulus } = props;
@@ -231,6 +278,8 @@ export function StimulusAutoCard(props: BaseProps) {
   return <CardColumnNoSticky {...props} />;
 }
 
+/* ========= Layout: Full Width (Part 5, text only) ========= */
+
 function CardFullWidth({
   items,
   itemIndexMap,
@@ -241,11 +290,12 @@ function CardFullWidth({
   showPerItemExplain,
 }: BaseProps) {
   return (
-    <section className={cn(
-      "rounded-2xl bg-white dark:bg-zinc-900",
-      "border border-zinc-200 dark:border-zinc-700",
-      "p-6 shadow-sm"
-    )}>
+    <section
+      className={cn(
+        "rounded-2xl border border-zinc-200/80 bg-white/95 p-5 shadow-sm",
+        "dark:border-zinc-700/80 dark:bg-zinc-900/95"
+      )}
+    >
       <div className="space-y-6">
         {items.map((it, iIdx) => {
           const displayIndex = (itemIndexMap.get(it.id) ?? iIdx) + 1;
@@ -270,6 +320,8 @@ function CardFullWidth({
   );
 }
 
+/* ========= Layout: Image/audio sticky (Part 1, 2, 3, 4, 6, 7 có hình) ========= */
+
 function CardSticky(props: BaseProps) {
   const {
     stimulus,
@@ -286,31 +338,35 @@ function CardSticky(props: BaseProps) {
   const audios = toArray((stimulus as any)?.media?.audio);
 
   return (
-    <section className={cn(
-      "rounded-2xl bg-white dark:bg-zinc-900",
-      "border border-zinc-200 dark:border-zinc-700",
-      "p-6 shadow-sm"
-    )}>
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+    <section
+      className={cn(
+        "rounded-2xl border border-zinc-200/80 bg-white/95 p-5 shadow-sm",
+        "dark:border-zinc-700/80 dark:bg-zinc-900/95"
+      )}
+    >
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        {/* Media + transcript */}
         <div className="lg:col-span-3">
-          <div className={cn(
-            "rounded-xl border border-zinc-200 dark:border-zinc-700",
-            "bg-white dark:bg-zinc-900 p-4",
-            "shadow-sm lg:sticky lg:top-24",
-            "max-h-[100vh] overflow-auto"
-          )}>
+          <div
+            className={cn(
+              "max-h-[100vh] overflow-auto rounded-2xl border border-zinc-200/80 bg-white/95 p-4 shadow-sm",
+              "dark:border-zinc-700/80 dark:bg-zinc-950/95",
+              "lg:sticky lg:top-24"
+            )}
+          >
             {audios.length > 0 && (
-              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mb-4">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 {audios.map((src, i) => (
                   <audio
                     key={i}
                     controls
                     src={src}
-                    className="w-full h-9 rounded-lg"
+                    className="h-9 w-full rounded-lg"
                   />
                 ))}
               </div>
             )}
+
             {imgs.length > 0 && (
               <div className="space-y-3">
                 {imgs.map((url, i) => (
@@ -318,11 +374,12 @@ function CardSticky(props: BaseProps) {
                     key={i}
                     src={url}
                     alt=""
-                    className="w-full object-contain rounded-lg border border-zinc-200 dark:border-zinc-700 max-h-[70vh]"
+                    className="max-h-[70vh] w-full rounded-xl border border-zinc-200/80 object-contain dark:border-zinc-700/80"
                   />
                 ))}
               </div>
             )}
+
             {locked && showStimulusDetails && (
               <div className="mt-4">
                 <StimulusYellowPanel stimulus={stimulus} />
@@ -330,6 +387,8 @@ function CardSticky(props: BaseProps) {
             )}
           </div>
         </div>
+
+        {/* Choices */}
         <div className="lg:col-span-2 space-y-6">
           {items.map((it, iIdx) => {
             const displayIndex = (itemIndexMap.get(it.id) ?? iIdx) + 1;
@@ -354,6 +413,8 @@ function CardSticky(props: BaseProps) {
   );
 }
 
+/* ========= Layout: Audio + text, không hình ========= */
+
 function CardColumnNoSticky(props: BaseProps) {
   const {
     stimulus,
@@ -369,24 +430,26 @@ function CardColumnNoSticky(props: BaseProps) {
   const audios = toArray((stimulus as any)?.media?.audio);
 
   return (
-    <section className={cn(
-      "rounded-2xl bg-white dark:bg-zinc-900",
-      "border border-zinc-200 dark:border-zinc-700",
-      "p-6 shadow-sm"
-    )}>
-      <div className="space-y-3 mb-6">
+    <section
+      className={cn(
+        "rounded-2xl border border-zinc-200/80 bg-white/95 p-5 shadow-sm",
+        "dark:border-zinc-700/80 dark:bg-zinc-900/95"
+      )}
+    >
+      <div className="mb-6 space-y-3">
         {audios.map((src, i) => (
           <audio
             key={i}
             controls
             src={src}
-            className="w-full h-9 rounded-lg"
+            className="h-9 w-full rounded-lg"
           />
         ))}
         {locked && showStimulusDetails && (
           <StimulusYellowPanel stimulus={stimulus} />
         )}
       </div>
+
       <div className="space-y-6">
         {items.map((it, iIdx) => {
           const displayIndex = (itemIndexMap.get(it.id) ?? iIdx) + 1;
@@ -411,9 +474,12 @@ function CardColumnNoSticky(props: BaseProps) {
   );
 }
 
+/* ========= Public exports giữ nguyên API ========= */
+
 export function StimulusRowCard(props: BaseProps) {
   return <CardSticky {...props} />;
 }
+
 export function StimulusColumnCard(props: BaseProps) {
   return <StimulusAutoCard {...props} />;
 }

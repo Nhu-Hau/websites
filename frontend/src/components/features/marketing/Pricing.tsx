@@ -469,7 +469,7 @@ export default function Pricing() {
                 disabled={isPremium || loading}
                 className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all disabled:opacity-60 ${
                   isPremium
-                    ? "bg-gradient-to-r from-amber-600 to-amber-500"
+                    ? "bg-gradient-to-r from-green-600 to-green-500"
                     : "bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400"
                 }`}
               >
@@ -671,7 +671,7 @@ export default function Pricing() {
             disabled={isPremium || loading}
             className={`inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all disabled:opacity-60 ${
               isPremium
-                ? "bg-gradient-to-r from-emerald-600 to-emerald-500"
+                ? "bg-gradient-to-r from-green-600 to-green-500"
                 : "bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400"
             }`}
           >

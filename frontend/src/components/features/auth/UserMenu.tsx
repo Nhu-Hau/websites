@@ -252,7 +252,7 @@ export default function UserMenu() {
       {open && (
         <div
           className={cn(
-            "absolute right-1 xs:right-0 mt-2 z-50",
+            "absolute right-1 xs:right-0 mt-3.5 z-50",
             "w-[min(20rem,calc(100vw-1.25rem))] xs:w-[min(20rem,calc(100vw-2rem))] sm:w-80",
             "max-w-[calc(100vw-1rem)]",
             "rounded-2xl border border-zinc-200/80 bg-white/95 p-3 xs:p-4",
@@ -273,7 +273,7 @@ export default function UserMenu() {
                   />
                 ) : (
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/30 dark:to-sky-800/20">
-                    <UserIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                    <UserIcon className="h-6 w-6 text-sky-600 dark:text-sky-400" />
                   </div>
                 )}
                 <div className="min-w-0">

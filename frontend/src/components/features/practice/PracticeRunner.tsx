@@ -165,7 +165,7 @@ function ResultBanner({
   );
 }
 
-export default function PracticeRunner() {
+export default function PracticePage() {
   const { partKey, level, test } = useParams<{
     partKey: string;
     level: string;
@@ -918,6 +918,7 @@ export default function PracticeRunner() {
         onStart={handleStart}
         onSubmit={submit}
         onOpenQuickNav={() => setMobileNavOpen(true)}
+        onToggleFocus={() => setFocusMode((v) => !v)}
       />
     </div>
   );

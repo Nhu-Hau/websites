@@ -6,6 +6,24 @@ export interface AuthenticatedSocket extends Socket {
   userId?: string;
 }
 
+// Helper để đếm số người online (có userId)
+export function getOnlineUsersCount(io: SocketIOServer): number {
+  const sockets = io.sockets.sockets;
+  const userIds = new Set<string>();
+  sockets.forEach((socket: AuthenticatedSocket) => {
+    if (socket.userId) {
+      userIds.add(socket.userId);
+    }
+  });
+  return userIds.size;
+}
+
+// Helper để emit online users count cho admin
+function emitOnlineUsersCount(io: SocketIOServer) {
+  const count = getOnlineUsersCount(io);
+  io.to("admin").emit("admin:online-users-update", { onlineUsers: count });
+}
+
 export function setupSocketIO(server: HTTPServer) {
   const io = new SocketIOServer(server, {
     cors: {
@@ -31,14 +49,32 @@ export function setupSocketIO(server: HTTPServer) {
           "by",
           socket.id
         );
+        // Emit update khi có user mới identify
+        emitOnlineUsersCount(io);
       }
     });
 
-    socket.on("join", ({ room }: { room: string }) => {
+    socket.on("join", ({ room }: { room?: string }) => {
       if (room && typeof room === "string") {
         socket.join(room);
         console.log("[socket] join", room, "by", socket.id);
+        // Nếu join admin room, emit current count
+        if (room === "admin") {
+          emitOnlineUsersCount(io);
+        }
       }
+    });
+
+    socket.on("admin:join", () => {
+      socket.join("admin");
+      emitOnlineUsersCount(io);
+    });
+
+    socket.on("disconnect", () => {
+      // Emit update khi có user disconnect
+      setTimeout(() => {
+        emitOnlineUsersCount(io);
+      }, 100);
     });
   });
 

@@ -280,7 +280,6 @@ export default function Home() {
                   <div>
                     <p className="text-sm font-medium text-green-700 mb-1">Người đang online</p>
                     <p className="text-3xl font-bold text-green-900">{onlineUsers}</p>
-                    <p className="text-xs text-green-600 mt-2">Hoạt động trong 5 phút gần nhất</p>
                   </div>
                   <div className="bg-green-200 rounded-full p-3">
                     <Wifi className="h-6 w-6 text-green-700" />

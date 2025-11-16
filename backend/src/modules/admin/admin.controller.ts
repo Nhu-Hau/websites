@@ -264,7 +264,15 @@ export async function visitorCount(_req: Request, res: Response) {
 // GET /api/admin/analytics/online-users
 export async function onlineUsersCount(_req: Request, res: Response) {
   try {
-    // Đếm users có hoạt động trong 5 phút gần nhất (dựa trên tất cả các loại attempts)
+    // Số người đang online (kết nối socket)
+    const io = (global as any).io;
+    let onlineUsers = 0;
+    if (io) {
+      const { getOnlineUsersCount } = await import("../../shared/services/socket.service");
+      onlineUsers = getOnlineUsersCount(io);
+    }
+
+    // Số người hoạt động trong 5 phút gần nhất (dựa trên attempts)
     const fiveMinutesAgo = new Date();
     fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
     
@@ -285,9 +293,9 @@ export async function onlineUsersCount(_req: Request, res: Response) {
       if (a.userId) uniqueUserIds.add(String(a.userId));
     });
     
-    const onlineUsers = uniqueUserIds.size;
+    const activeUsers = uniqueUserIds.size;
 
-    return res.json({ onlineUsers });
+    return res.json({ onlineUsers, activeUsers });
   } catch (e) {
     return res.status(500).json({ message: "Lỗi khi lấy số lượng người dùng online" });
   }

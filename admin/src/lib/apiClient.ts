@@ -56,7 +56,7 @@ export async function adminVisitorCount() {
 export async function adminOnlineUsersCount() {
   const res = await fetch(`${API_BASE}/api/admin/analytics/online-users`, { credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch online users count failed'); }
-  return res.json() as Promise<{ onlineUsers: number }>;
+  return res.json() as Promise<{ onlineUsers: number; activeUsers: number }>;
 }
 
 export async function adminUserScores() {

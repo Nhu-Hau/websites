@@ -12,7 +12,9 @@ import {
 import { ResultLayout } from "@/components/features/test/ResultLayout";
 import { ResultHeader } from "@/components/features/test/ResultHeader";
 import { TestLoadingState } from "@/components/features/test/TestLoadingState";
-import { toast } from "sonner";
+import { AIInsightSection } from "@/components/features/test/AIInsightSection";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "@/lib/toast";
 import {
   Layers,
   Hash,
@@ -69,6 +71,7 @@ function fmtTime(totalSec: number) {
 
 export default function PracticeAttempt() {
   const { attemptId } = useParams<{ attemptId: string }>();
+  const { user } = useAuth();
 
   const [loading, setLoading] = React.useState(true);
   const [att, setAtt] = React.useState<AttemptDoc | null>(null);
@@ -343,6 +346,17 @@ export default function PracticeAttempt() {
               {showDetails ? "Ẩn chi tiết" : "Xem chi tiết đáp án"}
             </button>
           </section>
+
+          {/* AI Insight Section */}
+          {att._id && (
+            <div className="mb-8">
+              <AIInsightSection
+                attemptId={att._id}
+                userAccess={user?.access}
+                apiEndpoint={`/api/chat/insight/practice/${att._id}`}
+              />
+            </div>
+          )}
 
           {/* Chi tiết từng câu (locked, giống runner sau submit) */}
           <section className="space-y-6">

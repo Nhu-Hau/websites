@@ -13,7 +13,7 @@ import {
   Share2,
   Flag,
 } from "lucide-react";
-import { toast } from "react-toastify";
+import { toast } from "@/lib/toast";
 import type { CommunityPost } from "@/types/community.types";
 import Swal from "sweetalert2";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";

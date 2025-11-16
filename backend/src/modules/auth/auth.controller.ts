@@ -455,7 +455,7 @@ export function googleCallback(
           // picture: profile.photo,
         });
         res.cookie(signupCookieName, signupToken, signupCookieOpts);
-        return res.redirect(`${CLIENT_URL}/vi/auth/complete-google`);
+        return res.redirect(`${CLIENT_URL}/vi/complete-google`);
       } catch (e) {
         return res
           .status(500)

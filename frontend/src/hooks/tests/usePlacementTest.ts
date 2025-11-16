@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import type { Item, Stimulus, ChoiceId } from "@/types/tests.types";
 import type { GradeResp } from "@/types/placement.types";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
 import { useAutoSave } from "@/hooks/tests/useAutoSave";

@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
 
 import AuthLayout from "@/components/features/auth/AuthLayout";

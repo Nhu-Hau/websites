@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { ArrowLeft } from "lucide-react"; // Nếu dùng lucide-react
 
 import AuthLayout from "@/components/features/auth/AuthLayout";

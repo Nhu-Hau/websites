@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
 
 export function GoogleAuthEffect({ auth }: { auth?: string }) {
@@ -18,7 +18,7 @@ export function GoogleAuthEffect({ auth }: { auth?: string }) {
 
     (async () => {
       try {
-        const res = await fetch("/api/auth/me", {
+        const res = await fetch("/api/me", {
           credentials: "include",
           cache: "no-store",
         });

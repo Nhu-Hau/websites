@@ -20,7 +20,7 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import Swal from "sweetalert2";
 import StudyHeader from "@/components/features/study/StudyHeader";
 

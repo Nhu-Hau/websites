@@ -70,7 +70,7 @@ export default function FocusHUD({
             </div>
             <button
               onClick={onStart}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all hover:scale-105"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition-all hover:scale-105"
             >
               <Play className="w-4 h-4" />
               Bắt đầu
@@ -90,7 +90,7 @@ export default function FocusHUD({
           >
             <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
               Câu{" "}
-              <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
+              <span className="px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300">
                 {currentIndex + 1}
               </span>
               / {total}
@@ -171,7 +171,7 @@ export default function FocusHUD({
               </div>
               <button
                 onClick={onStart}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all hover:scale-105"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition-all hover:scale-105"
               >
                 <Play className="w-4 h-4" />
                 Bắt đầu
@@ -187,7 +187,7 @@ export default function FocusHUD({
             >
               <div className="flex items-center gap-1 text-zinc-800 dark:text-zinc-200">
                 Câu{" "}
-                <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
+                <span className="px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300">
                   {currentIndex + 1}
                 </span>
                 / {total}

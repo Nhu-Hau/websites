@@ -17,7 +17,7 @@ import { Track, LocalVideoTrack } from "livekit-client";
 import "@livekit/components-styles";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import {
   Users,
   Video,

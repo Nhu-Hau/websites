@@ -4,7 +4,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Paperclip, Send, X } from "lucide-react";
-import { toast } from "react-toastify";
+import { toast } from "@/lib/toast";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 type Attachment = {

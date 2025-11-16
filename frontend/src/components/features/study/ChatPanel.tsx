@@ -18,7 +18,7 @@ import type {
 import { RoomEvent } from "livekit-client";
 import { Send, Upload, Download, X, AlertCircle, Trash2, MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import Swal from "sweetalert2";
 
 type Role = "student" | "teacher" | "admin";

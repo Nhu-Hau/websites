@@ -23,7 +23,7 @@ export default function SocketBridge() {
 
     const identifyAndJoinUser = async () => {
       try {
-        const r = await fetch(`${API_BASE}/api/auth/me`, {
+        const r = await fetch(`${API_BASE}/api/me`, {
           credentials: "include",
           cache: "no-store",
         });

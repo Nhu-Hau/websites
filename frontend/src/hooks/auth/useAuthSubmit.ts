@@ -4,7 +4,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { postJson } from "@/lib/api/client";
 import { validateAuth, hasAuthErrors, AuthErrors } from "@/utils/validation";
 

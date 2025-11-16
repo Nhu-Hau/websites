@@ -5,7 +5,7 @@ import { MessageSquare, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 export type AIInsightSectionProps = {
   attemptId: string;
@@ -81,7 +81,7 @@ export function AIInsightSection({
   const storageKey = `ai_insight_${attemptId}`;
   const clickedKey = `ai_insight_clicked_${attemptId}`;
 
-  // Load insight từ localStorage khi mount
+  // Load insight từ localStorage khi mount - chỉ hiện nếu đã có insight đã lưu
   useEffect(() => {
     if (userAccess !== "premium" || !attemptId) return;
     
@@ -91,69 +91,12 @@ export function AIInsightSection({
     if (savedInsight) {
       setInsight(savedInsight);
       setHasUserClicked(wasClicked);
-      // Tự động hiển thị nếu đã click hoặc có insight từ ChatBox
-      setShowInsight(true);
+      // Chỉ tự động hiển thị nếu đã click trước đó (đã có insight được lưu)
+      if (wasClicked) {
+        setShowInsight(true);
+      }
     }
   }, [attemptId, userAccess, storageKey, clickedKey]);
-
-  // Lắng nghe event từ ChatBox khi có Learning Insight mới
-  useEffect(() => {
-    if (userAccess !== "premium" || !attemptId || hasUserClicked) return;
-
-    const fetchInsightSilent = async () => {
-      if (insightLoading) return;
-      
-      setInsightLoading(true);
-      try {
-        const res = await fetch(apiEndpoint, {
-          method: "POST",
-          credentials: "include",
-        });
-        if (!res.ok) return;
-        
-        const json = await res.json();
-        if (json?.data?.insight) {
-          const insightContent = json.data.insight;
-          setInsight(insightContent);
-          
-          // Lưu vào localStorage
-          if (typeof window !== "undefined") {
-            localStorage.setItem(storageKey, insightContent);
-          }
-          
-          // Tự động hiển thị
-          setShowInsight(true);
-        }
-      } catch (e) {
-        console.error("Error fetching insight silently:", e);
-      } finally {
-        setInsightLoading(false);
-      }
-    };
-
-    const handleLearningInsight = () => {
-      // Khi có Learning Insight mới, thử fetch insight cho attempt này
-      // Chỉ fetch nếu chưa có insight và chưa click
-      if (!insight && !insightLoading) {
-        fetchInsightSilent();
-      }
-    };
-
-    window.addEventListener("learning-insight:received", handleLearningInsight);
-    
-    // Kiểm tra xem có insight từ ChatBox không (sau khi ChatBox load messages)
-    // Delay một chút để ChatBox có thời gian load messages
-    const timeoutId = setTimeout(() => {
-      if (!insight && !hasUserClicked && !insightLoading) {
-        fetchInsightSilent();
-      }
-    }, 3000); // Chờ 3 giây để ChatBox load messages
-
-    return () => {
-      window.removeEventListener("learning-insight:received", handleLearningInsight);
-      clearTimeout(timeoutId);
-    };
-  }, [attemptId, userAccess, insight, insightLoading, hasUserClicked, apiEndpoint, storageKey]);
 
   const fetchInsight = async (showErrors = true) => {
     if (!attemptId || insightLoading) return;
@@ -173,12 +116,14 @@ export function AIInsightSection({
         const insightContent = json.data.insight;
         setInsight(insightContent);
         
-        // Lưu vào localStorage
+        // Lưu vào localStorage để xem lại sau
         if (typeof window !== "undefined") {
           localStorage.setItem(storageKey, insightContent);
+          // Đảm bảo clickedKey cũng được lưu
+          localStorage.setItem(clickedKey, "true");
         }
         
-        // Tự động hiển thị nếu đã click hoặc fetch tự động thành công
+        // Hiển thị insight sau khi fetch thành công
         setShowInsight(true);
         
         if (hasUserClicked && typeof window !== "undefined") {
@@ -200,11 +145,13 @@ export function AIInsightSection({
   };
 
   const handleLoadInsight = async () => {
+    // Đánh dấu đã click
     setHasUserClicked(true);
     if (typeof window !== "undefined") {
       localStorage.setItem(clickedKey, "true");
     }
 
+    // Nếu đã có insight từ localStorage, chỉ cần hiển thị
     if (insight) {
       setShowInsight(true);
       if (typeof window !== "undefined") {
@@ -213,6 +160,7 @@ export function AIInsightSection({
       return;
     }
     
+    // Nếu chưa có insight, fetch từ API
     await fetchInsight(true);
   };
 

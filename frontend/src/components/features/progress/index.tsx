@@ -10,7 +10,7 @@ import {
   StimulusColumnCard,
 } from "@/components/features/test/StimulusCards";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { TestLayout } from "@/components/features/test/TestLayout";
 import { TestHeader } from "@/components/features/test/TestHeader";

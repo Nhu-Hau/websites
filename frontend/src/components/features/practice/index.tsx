@@ -9,7 +9,7 @@ import { groupByStimulus } from "@/utils/groupByStimulus";
 import { StimulusRowCard, StimulusColumnCard } from "../test/StimulusCards";
 import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import MandatoryPlacementModal from "../placement/PlacementMandatory";
 import { ChoiceId } from "@/types/tests.types";
 import { TestLayout } from "../test/TestLayout";

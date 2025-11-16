@@ -11,7 +11,7 @@ import {
   FiTarget,
   FiLoader,
 } from "react-icons/fi";
-import { toast, Toaster } from "sonner";
+import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 const customToast = {
   success: (message: string, options?: any) => toast.success(message, options),
   error: (message: string, options?: any) => toast.error(message, options),
-  info: (message: string, options?: any) => toast(message, options),
+  info: (message: string, options?: any) => toast.info(message, options),
 };
 
 function Stat({
@@ -195,33 +195,52 @@ export default function Hero() {
               onClick: () => router.push(`${base}/login`),
             },
           });
+          return;
         } else {
-          customToast.error("Không kiểm tra được trạng thái bài kiểm tra");
+          // Nếu không kiểm tra được trạng thái, vẫn cho phép vào làm bài (fail-safe)
+          console.warn("Không kiểm tra được trạng thái placement test, cho phép vào làm bài");
+          customToast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
+            duration: 2500,
+          });
+          setTimeout(() => {
+            router.push(`${base}/placement`);
+          }, 2600);
+          return;
         }
+      }
+
+      let data: any;
+      try {
+        data = await res.json();
+      } catch (parseError) {
+        // Nếu parse JSON lỗi, vẫn cho phép vào làm bài
+        console.warn("Lỗi parse response, cho phép vào làm bài", parseError);
+        customToast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
+          duration: 2500,
+        });
+        setTimeout(() => {
+          router.push(`${base}/placement`);
+        }, 2600);
         return;
       }
 
-      const data = await res.json();
       const total = Number(data?.total ?? 0);
       const firstId = data?.items?.[0]?._id as string | undefined;
 
-      if (total > 0) {
+      if (total > 0 && firstId) {
         customToast.error("Bạn đã làm Placement Test rồi", {
           duration: 5000,
           action: {
-            label: firstId ? "Xem kết quả" : "Xem lịch sử",
+            label: "Xem kết quả",
             onClick: () => {
-              if (firstId) {
-                router.push(`${base}/placement/result/${firstId}`);
-              } else {
-                router.push(`${base}/placement/history`);
-              }
+              router.push(`${base}/placement/result/${firstId}`);
             },
           },
         });
         return;
       }
 
+      // Chưa làm placement test hoặc không có attempt, cho phép vào làm
       customToast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
         duration: 2500,
       });
@@ -229,8 +248,15 @@ export default function Hero() {
       setTimeout(() => {
         router.push(`${base}/placement`);
       }, 2600);
-    } catch {
-      customToast.error("Không kiểm tra được trạng thái bài kiểm tra");
+    } catch (error) {
+      // Nếu có lỗi network hoặc lỗi khác, vẫn cho phép vào làm bài (fail-safe)
+      console.warn("Lỗi khi kiểm tra trạng thái placement test, cho phép vào làm bài", error);
+      customToast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
+        duration: 2500,
+      });
+      setTimeout(() => {
+        router.push(`${base}/placement`);
+      }, 2600);
     } finally {
       setChecking(false);
       setOpenPrompt(false);
@@ -239,22 +265,6 @@ export default function Hero() {
 
   return (
     <>
-      {/* Toaster */}
-      <Toaster
-        position="top-center"
-        richColors
-        toastOptions={{
-          classNames: {
-            toast:
-              "rounded-xl shadow-lg border border-slate-200 dark:border-zinc-700",
-            success: "bg-emerald-600 text-white",
-            error: "bg-red-600 text-white",
-            info: "bg-sky-600 text-white",
-            actionButton: "bg-white/20 hover:bg-white/30",
-          },
-        }}
-      />
-
       <PlacementModal
         open={openPrompt}
         onClose={handleClose}

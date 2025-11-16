@@ -10,7 +10,7 @@ import {
   StimulusColumnCard,
 } from "@/components/features/test/StimulusCards";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { TestLayout } from "@/components/features/test/TestLayout";
@@ -63,6 +63,7 @@ export default function PlacementPage() {
   const progress = total ? Math.round((answered / total) * 100) : 0;
 
   // Guard: Nếu đã có attempt placement, chặn vào trang này và chuyển sang trang kết quả gần nhất
+  // Chỉ redirect nếu chắc chắn có attempt, còn không thì cho phép vào làm bài
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -74,9 +75,11 @@ export default function PlacementPage() {
         if (!mounted) return;
         if (r.ok) {
           const j = await r.json().catch(() => ({}));
+          const total = Number(j?.total ?? 0);
           const last = Array.isArray(j?.items) ? j.items[0] : undefined;
           const attemptId = last?._id;
-          if (attemptId) {
+          // Chỉ redirect nếu chắc chắn có attempt (total > 0 và có attemptId)
+          if (total > 0 && attemptId) {
             toast.info(
               "Bạn đã hoàn thành Placement, chuyển đến trang kết quả."
             );
@@ -84,9 +87,11 @@ export default function PlacementPage() {
               `${base}/placement/result/${encodeURIComponent(attemptId)}`
             );
           }
+          // Nếu không có attempt hoặc không chắc chắn, cho phép vào làm bài
         }
+        // Nếu API lỗi, vẫn cho phép vào làm bài (fail-safe)
       } catch {
-        // ignore
+        // ignore - cho phép vào làm bài nếu có lỗi
       }
     })();
     return () => {

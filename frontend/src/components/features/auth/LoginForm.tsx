@@ -26,15 +26,12 @@ export default function LoginForm() {
 
   const { onSubmit, loading, errors, setErrors } = useAuthSubmit({
     kind: "login",
-    url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`,
+    url: "/api/auth/login",
     t,
     onSuccess: async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/me`,
-        {
-          credentials: "include",
-        }
-      );
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+      });
       const profile = res.ok ? await res.json() : null;
       if (profile) login(profile);
       toast.success("Đăng nhập thành công!");
@@ -44,7 +41,7 @@ export default function LoginForm() {
 
   function onGoogle() {
     setGLoading(true);
-    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/google`;
+    window.location.href = "/api/auth/google";
   }
 
   return (

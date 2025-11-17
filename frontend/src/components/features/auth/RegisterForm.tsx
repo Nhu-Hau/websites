@@ -32,7 +32,7 @@ export default function RegisterForm() {
 
   const { onSubmit, loading, errors, setErrors } = useAuthSubmit({
     kind: "register",
-    url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/register`,
+    url: "/api/auth/register",
     t,
     onSuccess: (data) => {
       toast.success(t("success"));
@@ -101,14 +101,12 @@ export default function RegisterForm() {
 
     setSendingCode(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/send-verification-code`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
+      const res = await fetch("/api/auth/send-verification-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email }),
+      });
       const data = await res.json();
       if (res.ok) {
         toast.success(data.message || "Đã gửi mã");
@@ -139,7 +137,7 @@ export default function RegisterForm() {
 
   function onGoogle() {
     setGLoading(true);
-    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/google`;
+    window.location.href = "/api/auth/google";
   }
 
   return (

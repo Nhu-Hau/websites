@@ -45,14 +45,12 @@ export default function ForgotPasswordForm() {
 
     setLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/forgot-password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email.trim() }),
-        }
-      );
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: email.trim() }),
+      });
       const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
@@ -80,14 +78,12 @@ export default function ForgotPasswordForm() {
 
     setLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/reset-password-code`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, code, password: pw }),
-        }
-      );
+      const res = await fetch("/api/auth/reset-password-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, code, password: pw }),
+      });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         toast.success(data.message || "Đặt lại mật khẩu thành công!");

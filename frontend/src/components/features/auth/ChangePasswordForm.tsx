@@ -43,19 +43,16 @@ export default function ChangePasswordForm() {
 
     setLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/change-password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            oldPassword,
-            newPassword,
-            confirmNewPassword,
-          }),
-        }
-      );
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          oldPassword,
+          newPassword,
+          confirmNewPassword,
+        }),
+      });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         toast.success(data.message || "Đổi mật khẩu thành công!");

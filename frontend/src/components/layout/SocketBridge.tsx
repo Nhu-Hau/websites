@@ -3,8 +3,6 @@
 import React from "react";
 import { getSocket } from "@/lib/socket";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
-
 export default function SocketBridge() {
   const joinedRef = React.useRef<{ community: boolean; user?: string }>({
     community: false,
@@ -23,7 +21,7 @@ export default function SocketBridge() {
 
     const identifyAndJoinUser = async () => {
       try {
-        const r = await fetch(`${API_BASE}/api/me`, {
+        const r = await fetch("/api/auth/me", {
           credentials: "include",
           cache: "no-store",
         });

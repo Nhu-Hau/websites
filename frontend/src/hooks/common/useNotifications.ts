@@ -151,7 +151,7 @@ export function useNotifications() {
 
     async function fetchMe(): Promise<string | null> {
       try {
-        const r = await fetch(`${API_BASE}/api/auth/me`, {
+        const r = await fetch("/api/auth/me", {
           credentials: "include",
           cache: "no-store",
         });

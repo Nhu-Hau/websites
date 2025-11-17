@@ -92,7 +92,7 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
           Saved Posts
         </h1>
         <p className="text-zinc-600 dark:text-zinc-400">
-          Posts you've bookmarked for later
+          Posts you&apos;ve bookmarked for later
         </p>
       </div>
 

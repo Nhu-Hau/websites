@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { vocabularyService } from "../../utils/vocabulary.service";
-import { VocabularySet } from "../../types/vocabulary.types";
+import { VocabularySet, CreateVocabularySetDTO } from "../../types/vocabulary.types";
 
 export function useVocabulary() {
   const [sets, setSets] = useState<VocabularySet[]>([]);
@@ -27,7 +27,7 @@ export function useVocabulary() {
     fetchSets();
   }, []);
 
-  const createSet = async (data: Record<string, unknown>) => {
+  const createSet = async (data: CreateVocabularySetDTO): Promise<VocabularySet> => {
     try {
       const newSet = await vocabularyService.createVocabularySet(data);
       setSets((prev) => [newSet, ...prev]);

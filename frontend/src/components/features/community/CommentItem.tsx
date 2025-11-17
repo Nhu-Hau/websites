@@ -158,7 +158,7 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
   return (
     <>
       <div className="flex gap-3 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
-        <Avatar url={comment.user?.picture} name={comment.user?.name} />
+        <Avatar url={comment.user?.avatarUrl} name={comment.user?.name} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">

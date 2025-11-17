@@ -33,7 +33,7 @@ interface ExtendedToastOptions {
 
 const createToast = (variant: ToastType) => {
   return (message: string | React.ReactNode, options?: ExtendedToastOptions): SnackbarKey => {
-    const { link, onClick, classNames, description, duration, action, ...snackbarOptions } = options || {};
+    const { link, onClick, classNames, description, duration, action, autoHideDuration: optionsAutoHideDuration, ...snackbarOptions } = options || {};
     
     // Combine message với description nếu có
     let finalMessage: string | React.ReactNode = message;
@@ -72,10 +72,16 @@ const createToast = (variant: ToastType) => {
       : onClick;
     
     // Map classNames.toast sang className cho notistack
-    const className = classNames?.toast || snackbarOptions.className;
+    const className: string | undefined = typeof classNames?.toast === "string" 
+      ? classNames.toast 
+      : (typeof snackbarOptions.className === "string" ? snackbarOptions.className : undefined);
     
-    // Map duration sang autoHideDuration
-    const autoHideDuration = duration !== undefined ? duration : (link ? (options?.autoHideDuration ?? 5000) : 3000);
+    // Map duration sang autoHideDuration - ensure it's always a number or undefined
+    const autoHideDuration: number | undefined = duration !== undefined 
+      ? (typeof duration === "number" ? duration : undefined)
+      : (link 
+          ? (typeof optionsAutoHideDuration === "number" ? optionsAutoHideDuration : 5000)
+          : 3000);
     
     // Convert action từ { label, onClick } sang ReactNode nếu cần
     let finalAction: React.ReactNode | undefined;

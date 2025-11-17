@@ -3,11 +3,11 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import { CreateVocabularySetDTO } from "@/types/vocabulary.types";
+import { CreateVocabularySetDTO, VocabularySet } from "@/types/vocabulary.types";
 
 interface CreateVocabularySetModalProps {
   onClose: () => void;
-  onCreate: (data: CreateVocabularySetDTO) => Promise<unknown>;
+  onCreate: (data: CreateVocabularySetDTO) => Promise<VocabularySet>;
 }
 
 export function CreateVocabularySetModal({

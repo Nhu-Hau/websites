@@ -153,10 +153,10 @@ export function TranslationPopover({
               {data.examples.map((example, i) => (
                 <div key={i} className="text-xs space-y-1">
                   <p className="text-gray-700 dark:text-gray-300 italic">
-                    "{example.english}"
+                    &quot;{example.english}&quot;
                   </p>
                   <p className="text-gray-500 dark:text-gray-400">
-                    "{example.vietnamese}"
+                    &quot;{example.vietnamese}&quot;
                   </p>
                 </div>
               ))}

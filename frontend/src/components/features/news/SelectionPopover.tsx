@@ -101,7 +101,7 @@ export function SelectionPopover({
           <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
             <div className="flex items-start justify-between gap-2">
               <p className="text-sm text-gray-600 dark:text-gray-400 italic flex-1">
-                "{data.originalText}"
+                &quot;{data.originalText}&quot;
               </p>
               <button
                 onClick={() => speak(data.originalText)}

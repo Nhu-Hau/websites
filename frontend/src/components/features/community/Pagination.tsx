@@ -18,18 +18,6 @@ export default function Pagination({
   onChange,
 }: Props) {
   const totalPages = Math.max(1, Math.ceil((total || 0) / pageSize));
-  if (totalPages <= 1) return null;
-
-  const pages: number[] = [];
-  const add = (n: number) => {
-    if (n >= 1 && n <= totalPages && !pages.includes(n)) pages.push(n);
-  };
-  add(1);
-  add(2);
-  for (let i = page - 2; i <= page + 2; i++) add(i);
-  add(totalPages - 1);
-  add(totalPages);
-  pages.sort((a, b) => a - b);
 
   const handlePrev = React.useCallback(() => {
     onChange(Math.max(1, page - 1));
@@ -45,6 +33,19 @@ export default function Pagination({
     },
     [onChange]
   );
+
+  if (totalPages <= 1) return null;
+
+  const pages: number[] = [];
+  const add = (n: number) => {
+    if (n >= 1 && n <= totalPages && !pages.includes(n)) pages.push(n);
+  };
+  add(1);
+  add(2);
+  for (let i = page - 2; i <= page + 2; i++) add(i);
+  add(totalPages - 1);
+  add(totalPages);
+  pages.sort((a, b) => a - b);
 
   return (
     <nav

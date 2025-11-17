@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import type { VocabularyTerm } from "@/types/vocabulary.types";
 
 interface VocabularySet {
   _id: string;
   name: string;
   description?: string;
-  terms: any[];
+  terms: VocabularyTerm[];
 }
 
 interface SaveVocabularyModalProps {
@@ -145,9 +146,10 @@ export function SaveVocabularyModal({
       
       // Navigate to vocabulary set page
       router.push(`${basePrefix}/vocabulary/${selectedSetId}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving word:", error);
-      toast.error(error.message || "Failed to save word");
+      const errorMessage = error instanceof Error ? error.message : "Failed to save word";
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }

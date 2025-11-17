@@ -4,7 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Flag, Repeat2 } from "lucide-react";
 import { toast } from "@/lib/toast";
-import type { CommunityPost } from "@/types/community.types";
+import type { CommunityPost, UserLite } from "@/types/community.types";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import MediaGallery from "./MediaGallery";
@@ -14,7 +14,7 @@ import NewPostForm from "./NewPostForm";
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 type Props = {
-  post: CommunityPost & { user?: any };
+  post: CommunityPost & { user?: UserLite };
   apiBase: string;
   onChanged: () => void;
   currentUserId?: string;
@@ -219,7 +219,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         {/* Header */}
         <div className="p-5 pb-4 border-b border-zinc-100 dark:border-zinc-800">
           <div className="flex items-start gap-3">
-            <Avatar name={post.user?.name} url={post.user?.picture} />
+            <Avatar name={post.user?.name} url={post.user?.avatarUrl} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-base">

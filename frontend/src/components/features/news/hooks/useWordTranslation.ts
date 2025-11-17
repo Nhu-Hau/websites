@@ -117,9 +117,10 @@ export function useWordTranslation(isPremium: boolean) {
 
         const data = await response.json();
         setWordData(data.data);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error translating word:", error);
-        toast.error(error.message || "Failed to translate word");
+        const errorMessage = error instanceof Error ? error.message : "Failed to translate word";
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }

@@ -73,9 +73,10 @@ export function useSelectionTranslation(isPremium: boolean) {
 
         const data = await response.json();
         setSelectionData(data.data);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error translating selection:", error);
-        toast.error(error.message || "Failed to translate selection");
+        const errorMessage = error instanceof Error ? error.message : "Failed to translate selection";
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }

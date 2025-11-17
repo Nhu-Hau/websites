@@ -75,6 +75,17 @@ export async function adminVpsRestart() {
   return res.json() as Promise<{ message: string }>;
 }
 
+export async function adminPm2Logs(app: 'admin' | 'frontend' | 'api', lines?: number) {
+  const usp = new URLSearchParams();
+  if (lines) usp.set('lines', String(lines));
+  const res = await fetch(`${API_BASE}/api/admin/vps/pm2-logs/${app}?${usp.toString()}`, { 
+    credentials: 'include', 
+    cache: 'no-store' 
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch PM2 logs failed'); }
+  return res.json() as Promise<{ logs: string; app: string; lines: number }>;
+}
+
 export async function adminUserScores() {
   const res = await fetch(`${API_BASE}/api/admin/analytics/user-scores`, { credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch user scores failed'); }

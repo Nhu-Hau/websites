@@ -517,15 +517,53 @@ export async function vpsStats(_req: Request, res: Response) {
     const idleDiff = idle2 - idle1;
     const cpuUsage = totalDiff > 0 ? Math.max(0, Math.min(100, Math.round(100 - (idleDiff / totalDiff) * 100))) : 0;
 
-    // Memory Usage
+    // Memory Usage (Real Memory)
     const totalMem = os.totalmem();
     const freeMem = os.freemem();
     const usedMem = totalMem - freeMem;
     const memoryUsage = Math.round((usedMem / totalMem) * 100);
 
-    // Virtual Memory - sử dụng một phần của free memory như virtual memory
-    // Trên thực tế, virtual memory thường là swap, nhưng để đơn giản ta tính dựa trên memory
-    const virtualMemoryUsage = Math.round((freeMem / totalMem) * 100);
+    // Virtual Memory (Swap) - Lấy từ Ubuntu bằng lệnh free hoặc /proc/meminfo
+    let virtualMemoryUsage = 0;
+    try {
+      const platform = os.platform();
+      if (platform === "linux") {
+        // Ubuntu: sử dụng lệnh free để lấy swap usage
+        // free -m | grep Swap | awk '{print ($3/$2)*100}' hoặc đọc /proc/meminfo
+        try {
+          // Cách 1: Dùng lệnh free (chính xác hơn)
+          const { stdout } = await execAsync("free -m | grep Swap");
+          const swapParts = stdout.trim().split(/\s+/);
+          if (swapParts.length >= 3) {
+            const swapTotal = parseInt(swapParts[1], 10); // Total swap in MB
+            const swapUsed = parseInt(swapParts[2], 10); // Used swap in MB
+            if (swapTotal > 0) {
+              virtualMemoryUsage = Math.round((swapUsed / swapTotal) * 100);
+            }
+          }
+        } catch (freeError) {
+          // Fallback: Đọc từ /proc/meminfo
+          try {
+            const { stdout } = await execAsync("grep -E '^SwapTotal:|^SwapFree:' /proc/meminfo | awk '{print $2}'");
+            const swapValues = stdout.trim().split('\n').map(v => parseInt(v, 10));
+            if (swapValues.length >= 2 && swapValues[0] > 0) {
+              const swapTotal = swapValues[0]; // KB
+              const swapFree = swapValues[1]; // KB
+              const swapUsed = swapTotal - swapFree;
+              virtualMemoryUsage = Math.round((swapUsed / swapTotal) * 100);
+            }
+          } catch (meminfoError) {
+            console.error("Error getting swap from /proc/meminfo:", meminfoError);
+          }
+        }
+      } else {
+        // Windows/Mac: không có swap, set về 0
+        virtualMemoryUsage = 0;
+      }
+    } catch (swapError) {
+      console.error("Error getting swap memory:", swapError);
+      virtualMemoryUsage = 0;
+    }
 
     // Disk Space - sử dụng exec command để lấy disk space
     let diskUsage = 0;
@@ -550,7 +588,8 @@ export async function vpsStats(_req: Request, res: Response) {
           }
         }
       } else {
-        // Linux/Mac: sử dụng df
+        // Ubuntu/Linux: sử dụng df -h để lấy disk usage chính xác
+        // df -h / | tail -1 | awk '{print $5}' | sed 's/%//'
         command = "df -h / | tail -1 | awk '{print $5}' | sed 's/%//'";
         const { stdout } = await execAsync(command);
         diskUsage = parseInt(stdout.trim(), 10) || 0;
@@ -560,17 +599,23 @@ export async function vpsStats(_req: Request, res: Response) {
       diskUsage = 0; // Fallback to 0 if can't get disk info
     }
 
-    // OS Info - lấy thông tin OS
+    // OS Info - lấy thông tin OS từ Ubuntu
     let osInfo = `${os.type()} ${os.release()}`;
     try {
       const platform = os.platform();
       if (platform === "linux") {
-        // Thử lấy thông tin chi tiết từ /etc/os-release
+        // Ubuntu: lấy thông tin chi tiết từ /etc/os-release
         try {
           const { stdout } = await execAsync("cat /etc/os-release | grep PRETTY_NAME | cut -d '\"' -f 2");
           osInfo = stdout.trim() || osInfo;
         } catch {
-          // Fallback to basic info
+          // Fallback: thử lệnh lsb_release nếu có
+          try {
+            const { stdout } = await execAsync("lsb_release -d | cut -f2");
+            osInfo = stdout.trim() || osInfo;
+          } catch {
+            // Fallback to basic info
+          }
         }
       }
     } catch (osError) {
@@ -578,6 +623,7 @@ export async function vpsStats(_req: Request, res: Response) {
     }
 
     // Uptime - thời gian đã chạy (tính bằng giây)
+    // Ubuntu: có thể dùng uptime command nhưng Node.js os.uptime() đã đủ chính xác
     const uptimeSeconds = Math.floor(os.uptime());
     const days = Math.floor(uptimeSeconds / 86400);
     const hours = Math.floor((uptimeSeconds % 86400) / 3600);
@@ -588,7 +634,7 @@ export async function vpsStats(_req: Request, res: Response) {
     return res.json({
       cpu: Math.max(0, Math.min(100, cpuUsage)),
       realMemory: memoryUsage,
-      virtualMemory: Math.max(0, Math.min(100, 100 - virtualMemoryUsage)), // Invert để hiển thị usage
+      virtualMemory: Math.max(0, Math.min(100, virtualMemoryUsage)),
       localDiskSpace: diskUsage,
       os: osInfo,
       uptime: uptimeFormatted,
@@ -645,6 +691,95 @@ export async function restartServer(_req: Request, res: Response) {
   } catch (e: any) {
     console.error("Error restarting server:", e);
     return res.status(500).json({ message: "Lỗi khi khởi động lại server" });
+  }
+}
+
+// GET /api/admin/vps/pm2-logs/:app
+export async function getPm2Logs(req: Request, res: Response) {
+  try {
+    const appName = req.params.app; // 'admin', 'frontend', hoặc 'api'
+    const lines = parseInt(String(req.query.lines || "100"), 10); // Số dòng logs, mặc định 100
+    
+    // Validate app name
+    const validApps = ['admin', 'frontend', 'api'];
+    if (!validApps.includes(appName)) {
+      return res.status(400).json({ message: "App name không hợp lệ. Chỉ chấp nhận: admin, frontend, api" });
+    }
+
+    const platform = os.platform();
+    if (platform !== "linux") {
+      // Windows hoặc dev environment: trả về logs mẫu hoặc thông báo
+      return res.json({ 
+        logs: `[${new Date().toISOString()}] PM2 logs chỉ khả dụng trên Linux server.\nApp: ${appName}\nPlatform: ${platform}`,
+        app: appName,
+        lines: 0
+      });
+    }
+
+    // Đọc logs trực tiếp từ log files (PM2 logs command có thể không hoạt động đúng)
+    // Dựa vào ecosystem.config.js, logs được lưu tại /opt/websites/logs/
+    try {
+      const logPaths: Record<string, { out: string; error: string }> = {
+        'api': {
+          out: '/opt/websites/logs/api-out.log',
+          error: '/opt/websites/logs/api-error.log'
+        },
+        'frontend': {
+          out: '/opt/websites/logs/frontend-out.log',
+          error: '/opt/websites/logs/frontend-error.log'
+        },
+        'admin': {
+          out: '/opt/websites/logs/admin-out.log',
+          error: '/opt/websites/logs/admin-error.log'
+        }
+      };
+
+      const logPath = logPaths[appName];
+      if (!logPath) {
+        return res.status(400).json({ message: "App name không hợp lệ" });
+      }
+
+      // Đọc log files (lấy N dòng cuối)
+      let combinedLogs = '';
+      
+      try {
+        // Đọc output log (lấy N dòng cuối)
+        const { stdout: outLog } = await execAsync(`tail -n ${lines} "${logPath.out}" 2>/dev/null || echo ""`);
+        if (outLog && outLog.trim()) {
+          combinedLogs += outLog.trim();
+        }
+      } catch (outError) {
+        console.warn(`Could not read output log for ${appName}:`, outError);
+      }
+
+      try {
+        // Đọc error log (lấy N dòng cuối)
+        const { stdout: errorLog } = await execAsync(`tail -n ${lines} "${logPath.error}" 2>/dev/null || echo ""`);
+        if (errorLog && errorLog.trim()) {
+          if (combinedLogs) {
+            combinedLogs += '\n\n--- ERROR LOG ---\n';
+          }
+          combinedLogs += errorLog.trim();
+        }
+      } catch (errorError) {
+        console.warn(`Could not read error log for ${appName}:`, errorError);
+      }
+
+      return res.json({
+        logs: combinedLogs || `[${new Date().toISOString()}] Không có logs cho app ${appName}. Log files có thể chưa được tạo hoặc không có quyền đọc.`,
+        app: appName,
+        lines: lines
+      });
+    } catch (fileError: any) {
+      console.error("Error reading log files:", fileError);
+      return res.status(500).json({ 
+        message: `Lỗi khi đọc logs cho app ${appName}`,
+        error: fileError.message || String(fileError)
+      });
+    }
+  } catch (e: any) {
+    console.error("Error getting PM2 logs:", e);
+    return res.status(500).json({ message: "Lỗi khi lấy PM2 logs" });
   }
 }
 

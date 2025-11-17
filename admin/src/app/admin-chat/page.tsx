@@ -56,6 +56,7 @@ export default function AdminChatPage() {
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [confirmDialog, setConfirmDialog] = React.useState<ConfirmDialogState | null>(null);
   const [confirmLoading, setConfirmLoading] = React.useState(false);
+  const selectedConversationRef = React.useRef<string | null>(null);
   const toast = useToast();
 
   React.useEffect(() => {
@@ -153,6 +154,19 @@ export default function AdminChatPage() {
     }
   }, [selectedConversation, loadMessages]);
 
+  React.useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
+
+  React.useEffect(() => {
+    if (!socket || !selectedConversation) return;
+
+    socket.emit("admin:join-conversation", selectedConversation);
+    return () => {
+      socket.emit("admin:leave-conversation", selectedConversation);
+    };
+  }, [socket, selectedConversation]);
+
   // Real-time listeners
   React.useEffect(() => {
     if (!socket) {
@@ -178,27 +192,32 @@ export default function AdminChatPage() {
           isRead: data.message.isRead,
           createdAt: data.message.createdAt,
         };
-        setMessages(prev => {
-          // Kiểm tra xem tin nhắn đã tồn tại chưa
-          const exists = prev.some(msg => msg._id === newMessage._id);
-          if (exists) {
-            console.log("Message already exists, skipping:", newMessage._id);
-            return prev;
-          }
-          return [...prev, newMessage];
-        });
+        const isActiveConversation = selectedConversationRef.current === data.message.sessionId;
+        if (isActiveConversation) {
+          setMessages(prev => {
+            // Kiểm tra xem tin nhắn đã tồn tại chưa
+            const exists = prev.some(msg => msg._id === newMessage._id);
+            if (exists) {
+              console.log("Message already exists, skipping:", newMessage._id);
+              return prev;
+            }
+            return [...prev, newMessage];
+          });
+        }
         
         // Tăng unread count nếu tin nhắn từ user
         if (data.message.role === 'user') {
-          console.log("Admin chat page: Incrementing unread count");
-          setUnreadCount(prev => prev + 1);
-          
-          // Cập nhật conversations để tăng unread count cho conversation này
-          setConversations(prev => prev.map(conv => 
-            conv._id === data.message.sessionId 
-              ? { ...conv, unreadCount: (conv.unreadCount || 0) + 1 }
-              : conv
-          ));
+          if (!isActiveConversation) {
+            console.log("Admin chat page: Incrementing unread count");
+            setUnreadCount(prev => prev + 1);
+            
+            // Cập nhật conversations để tăng unread count cho conversation này
+            setConversations(prev => prev.map(conv => 
+              conv._id === data.message.sessionId 
+                ? { ...conv, unreadCount: (conv.unreadCount || 0) + 1 }
+                : conv
+            ));
+          }
           
           // Reload conversations để cập nhật unread count
           loadConversations();
@@ -219,15 +238,19 @@ export default function AdminChatPage() {
           isRead: data.message.isRead,
           createdAt: data.message.createdAt,
         };
-        setMessages(prev => {
-          // Kiểm tra xem tin nhắn đã tồn tại chưa
-          const exists = prev.some(msg => msg._id === newMessage._id);
-          if (exists) {
-            console.log("Message already exists, skipping:", newMessage._id);
-            return prev;
-          }
-          return [...prev, newMessage];
-        });
+        if (selectedConversationRef.current === data.message.sessionId) {
+          setMessages(prev => {
+            // Kiểm tra xem tin nhắn đã tồn tại chưa
+            const exists = prev.some(msg => msg._id === newMessage._id);
+            if (exists) {
+              console.log("Message already exists, skipping:", newMessage._id);
+              return prev;
+            }
+            return [...prev, newMessage];
+          });
+        } else {
+          loadConversations();
+        }
       }
     };
 

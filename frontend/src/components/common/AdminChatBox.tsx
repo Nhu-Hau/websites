@@ -67,6 +67,7 @@ export default function AdminChatBox() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const openRef = useRef(open);
 
   // ---- sessionId: theo user (ẩn danh → "anonymous")
   const getSessionKey = useCallback(
@@ -93,6 +94,10 @@ export default function AdminChatBox() {
     }
     return sid;
   });
+
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -221,7 +226,7 @@ export default function AdminChatBox() {
       setMessages((prev) =>
         prev.some((x) => x.id === m.id) ? prev : [...prev, m]
       );
-      if (!open) setUnreadCount((c) => c + 1);
+      if (!openRef.current) setUnreadCount((c) => c + 1);
     };
 
     const onError = (data: any) => {
@@ -229,17 +234,17 @@ export default function AdminChatBox() {
       setError(data?.message || "Socket error");
     };
 
-    socket.on("new-message", onNewMessage);
-    socket.on("admin-message", onAdminMessage);
+    socket.on("admin-chat:new-message", onNewMessage);
+    socket.on("admin-chat:admin-message", onAdminMessage);
     socket.on("error", onError);
 
     return () => {
-      socket.off("new-message", onNewMessage);
-      socket.off("admin-message", onAdminMessage);
+      socket.off("admin-chat:new-message", onNewMessage);
+      socket.off("admin-chat:admin-message", onAdminMessage);
       socket.off("error", onError);
       socket.emit("user:leave-conversation", sessionId);
     };
-  }, [socket, user, sessionId, open]);
+  }, [socket, user?.id, sessionId]);
 
   // Auto scroll mượt
   useEffect(() => {

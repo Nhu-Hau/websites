@@ -127,7 +127,7 @@ export default function PromosPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setCreateModal(true)}
-            className="px-4 py-2 rounded bg-tealCustom text-white hover:opacity-90"
+            className="px-4 py-1.5 rounded border bg-tealCustom text-black hover:opacity-90"
           >
             + Tạo mã mới
           </button>
@@ -475,7 +475,7 @@ function EditPromoModal({
             <button type="button" onClick={onClose} className="px-4 py-2 rounded border" disabled={busy}>
               Hủy
             </button>
-            <button type="submit" className="px-4 py-2 rounded bg-tealCustom text-white" disabled={busy}>
+            <button type="submit" className="px-4 py-2 rounded border" disabled={busy}>
               {busy ? "Đang lưu..." : "Lưu"}
             </button>
           </div>

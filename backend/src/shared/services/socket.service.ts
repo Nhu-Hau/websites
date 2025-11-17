@@ -39,6 +39,25 @@ export function setupSocketIO(server: HTTPServer) {
     socket.join("community");
     console.log("[socket] connected", socket.id);
 
+    const joinAdminRoom = () => {
+      socket.join("admin");
+      emitOnlineUsersCount(io);
+    };
+
+    const parseSessionId = (
+      payload: { sessionId?: string } | string | undefined
+    ): string | undefined => {
+      if (!payload) return undefined;
+      if (typeof payload === "string") {
+        return payload.trim();
+      }
+      if (typeof payload === "object") {
+        const sessionId = payload.sessionId;
+        return typeof sessionId === "string" ? sessionId.trim() : undefined;
+      }
+      return undefined;
+    };
+
     socket.on("identify", ({ userId }: { userId?: string }) => {
       if (userId && typeof userId === "string") {
         socket.userId = userId;
@@ -66,9 +85,82 @@ export function setupSocketIO(server: HTTPServer) {
     });
 
     socket.on("admin:join", () => {
-      socket.join("admin");
-      emitOnlineUsersCount(io);
+      joinAdminRoom();
     });
+
+    socket.on(
+      "user:join-conversation",
+      (payload: { sessionId?: string } | string) => {
+        const sessionId = parseSessionId(payload);
+        if (!sessionId) return;
+        socket.join(`admin-chat:${sessionId}`);
+        console.log(
+          "[socket] user joined admin-chat room",
+          sessionId,
+          "by",
+          socket.id
+        );
+      }
+    );
+
+    socket.on(
+      "user:leave-conversation",
+      (payload: { sessionId?: string } | string) => {
+        const sessionId = parseSessionId(payload);
+        if (!sessionId) return;
+        socket.leave(`admin-chat:${sessionId}`);
+        console.log(
+          "[socket] user left admin-chat room",
+          sessionId,
+          "by",
+          socket.id
+        );
+      }
+    );
+
+    socket.on(
+      "admin:join-conversation",
+      (payload: { sessionId?: string } | string) => {
+        const sessionId = parseSessionId(payload);
+        if (!sessionId) return;
+
+        if (sessionId === "admin") {
+          joinAdminRoom();
+          return;
+        }
+
+        socket.join(`admin-chat:${sessionId}`);
+        socket.join("admin");
+        console.log(
+          "[socket] admin joined admin-chat room",
+          sessionId,
+          "by",
+          socket.id
+        );
+      }
+    );
+
+    socket.on(
+      "admin:leave-conversation",
+      (payload: { sessionId?: string } | string) => {
+        const sessionId = parseSessionId(payload);
+        if (!sessionId) return;
+
+        if (sessionId === "admin") {
+          socket.leave("admin");
+          emitOnlineUsersCount(io);
+          return;
+        }
+
+        socket.leave(`admin-chat:${sessionId}`);
+        console.log(
+          "[socket] admin left admin-chat room",
+          sessionId,
+          "by",
+          socket.id
+        );
+      }
+    );
 
     socket.on("disconnect", () => {
       // Emit update khi có user disconnect
@@ -186,6 +278,7 @@ export function emitNewMessage(
   data: { message: any; type: string }
 ) {
   io.to(`admin-chat:${sessionId}`).emit("admin-chat:new-message", data);
+  io.to("admin").emit("admin-chat:new-message", data);
 }
 
 export function emitAdminMessage(

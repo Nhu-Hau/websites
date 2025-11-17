@@ -12,6 +12,23 @@ export type AdminUser = {
   updatedAt?: string;
 };
 
+export type AdminPromoCode = {
+  _id: string;
+  code: string;
+  type?: "fixed" | "percent" | null;
+  value?: number | null;
+  amountAfter?: number | null;
+  baseAmount?: number | null;
+  activeFrom?: string | null;
+  activeTo?: string | null;
+  maxUses?: number | null;
+  usedCount: number;
+  perUserLimit?: number | null;
+  allowedUsers?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export async function adminListUsers(params?: { page?: number; limit?: number; q?: string; role?: string; access?: string; }) {
   const usp = new URLSearchParams();
   if (params?.page) usp.set('page', String(params.page));
@@ -33,6 +50,59 @@ export async function adminUpdateUser(id: string, body: Partial<Pick<AdminUser,'
   });
   if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Update user failed'); }
   return res.json() as Promise<{ user: AdminUser }>;
+}
+
+export async function adminListPromoCodes(params?: { page?: number; limit?: number; q?: string }) {
+  const usp = new URLSearchParams();
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  if (params?.q) usp.set("q", params.q);
+  const res = await fetch(`${API_BASE}/api/admin/promos?${usp.toString()}`, { credentials: "include", cache: "no-store" });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch promo codes failed");
+  }
+  return res.json() as Promise<{ items: AdminPromoCode[]; total: number; page: number; limit: number; pages: number }>;
+}
+
+export async function adminCreatePromoCode(body: Partial<AdminPromoCode> & { code: string }) {
+  const res = await fetch(`${API_BASE}/api/admin/promos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Create promo code failed");
+  }
+  return res.json() as Promise<AdminPromoCode>;
+}
+
+export async function adminUpdatePromoCode(code: string, body: Partial<AdminPromoCode>) {
+  const res = await fetch(`${API_BASE}/api/admin/promos/${encodeURIComponent(code)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Update promo code failed");
+  }
+  return res.json() as Promise<AdminPromoCode>;
+}
+
+export async function adminDeletePromoCode(code: string) {
+  const res = await fetch(`${API_BASE}/api/admin/promos/${encodeURIComponent(code)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete promo code failed");
+  }
+  return res.json() as Promise<{ message: string }>;
 }
 
 export async function adminDeleteUser(id: string) {

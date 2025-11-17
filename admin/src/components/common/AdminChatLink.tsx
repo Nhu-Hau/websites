@@ -85,13 +85,13 @@ export default function AdminChatLink() {
       loadUnreadCount();
     };
 
-    socket.on("new-message", handleNewMessage);
-    socket.on("conversation-updated", handleConversationUpdate);
+    socket.on("admin-chat:new-message", handleNewMessage);
+    socket.on("admin-chat:conversation-updated", handleConversationUpdate);
 
     return () => {
       console.log("AdminChatLink: Cleaning up socket listeners");
-      socket.off("new-message", handleNewMessage);
-      socket.off("conversation-updated", handleConversationUpdate);
+      socket.off("admin-chat:new-message", handleNewMessage);
+      socket.off("admin-chat:conversation-updated", handleConversationUpdate);
       socket.emit("admin:leave-conversation", "admin");
     };
   }, [socket, loadUnreadCount]);

@@ -43,15 +43,16 @@ router.post("/send", requireAuth, requirePremium, async (req, res, next) => {
     // Emit real-time message
     const io = (global as any).io;
     if (io) {
+      const payload = {
+        message: userMessage.toObject(),
+        type: "user-message",
+      };
       console.log("Emitting new message to admin room:", {
         sessionId,
-        message: userMessage.toObject(),
-        type: "user-message"
+        ...payload,
       });
-      emitNewMessage(io, sessionId, {
-        message: userMessage.toObject(),
-        type: "user-message"
-      });
+      emitNewMessage(io, sessionId, payload);
+      emitConversationUpdate(io, sessionId);
     } else {
       console.log("No socket.io instance available");
     }
@@ -266,9 +267,68 @@ router.get("/admin/messages/:sessionId", requireAdminAuth, async (req, res, next
       { isRead: true }
     );
 
+    const io = (global as any).io;
+    if (io) {
+      emitConversationUpdate(io, sessionId);
+    }
+
     res.json({
       data: messages,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/admin-chat/admin/messages/:messageId - Admin xóa tin nhắn cụ thể
+router.delete("/admin/messages/:messageId", requireAdminAuth, async (req, res, next) => {
+  try {
+    const { messageId } = req.params;
+
+    if (!messageId) {
+      return res.status(400).json({ message: "Message ID is required" });
+    }
+
+    const message = await AdminChatMessage.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    await message.deleteOne();
+
+    const io = (global as any).io;
+    if (io) {
+      emitConversationUpdate(io, message.sessionId);
+    }
+
+    res.json({ message: "Message deleted" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/admin-chat/admin/conversations/:sessionId - Admin xóa toàn bộ cuộc trò chuyện
+router.delete("/admin/conversations/:sessionId", requireAdminAuth, async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+
+    if (!sessionId) {
+      return res.status(400).json({ message: "Session ID is required" });
+    }
+
+    const result = await AdminChatMessage.deleteMany({ sessionId });
+
+    if (!result.deletedCount) {
+      return res.status(404).json({ message: "Conversation not found" });
+    }
+
+    const io = (global as any).io;
+    if (io) {
+      emitConversationUpdate(io, sessionId);
+    }
+
+    res.json({ message: "Conversation deleted" });
   } catch (err) {
     next(err);
   }
@@ -316,10 +376,12 @@ router.post("/admin/reply", requireAdminAuth, async (req, res, next) => {
     // Emit real-time admin message
     const io = (global as any).io;
     if (io) {
-      emitAdminMessage(io, sessionId, {
+      const payload = {
         message: adminMessage.toObject(),
-        type: "admin-message"
-      });
+        type: "admin-message",
+      };
+      emitAdminMessage(io, sessionId, payload);
+      emitConversationUpdate(io, sessionId);
     }
 
     res.json({

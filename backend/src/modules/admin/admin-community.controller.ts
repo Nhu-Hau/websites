@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { CommunityPost } from "../../shared/models/CommunityPost";
 import { CommunityComment } from "../../shared/models/CommunityComment";
-import { extractKeyFromUrl, safeDeleteS3, BUCKET } from "../../shared/services/storage.service";
+import { extractKeyFromUrl, safeDeleteS3, BUCKET, uploadBufferToS3 } from "../../shared/services/storage.service";
 import { User } from "../../shared/models/User";
 
 function oid(id: string) {
@@ -21,9 +21,41 @@ function getS3KeyFromAttachment(a: { key?: string; url: string }) {
 }
 
 /** Create a community post (admin only) */
+function normalizeAttachment(a: any) {
+  const rawType = String(a?.type || "").toLowerCase();
+  let type: "image" | "video" | "link" | "file" = "file";
+  if (rawType.startsWith("image")) type = "image";
+  else if (rawType.startsWith("video")) type = "video";
+  else if (rawType.startsWith("link")) type = "link";
+  const url = String(a?.url || "").trim();
+  const name = a?.name ? String(a.name).trim() : undefined;
+  const size = typeof a?.size === "number" ? a.size : undefined;
+  const key = a?.key ? String(a.key) : undefined;
+  return { type, url, name, size, key };
+}
+
+export async function uploadCommunityAttachment(req: Request, res: Response) {
+  try {
+    const file = (req as any).file as Express.Multer.File | undefined;
+    if (!file) return res.status(400).json({ message: "Thiếu file" });
+
+    const { url, type, name, key } = await uploadBufferToS3({
+      buffer: file.buffer,
+      mime: file.mimetype,
+      originalName: file.originalname,
+      folder: "admin-community",
+    });
+
+    return res.json({ url, type, name, key, size: file.size });
+  } catch (e) {
+    console.error("[uploadCommunityAttachment] ERROR", e);
+    return res.status(500).json({ message: "Upload failed" });
+  }
+}
+
 export async function createCommunityPost(req: Request, res: Response) {
   try {
-    const { content, userId } = req.body as { content?: string; userId?: string };
+    const { content, userId, attachments } = req.body as { content?: string; userId?: string; attachments?: any[] };
 
     if (!userId || !mongoose.isValidObjectId(userId)) {
       return res.status(400).json({ message: "userId không hợp lệ" });
@@ -35,14 +67,17 @@ export async function createCommunityPost(req: Request, res: Response) {
     }
 
     const text = (content ?? "").trim();
-    if (text.length === 0) {
-      return res.status(400).json({ message: "Vui lòng nhập nội dung" });
+    const files = Array.isArray(attachments) ? attachments.filter(Boolean).map(normalizeAttachment) : [];
+    const safeFiles = files.filter((f) => f.url).slice(0, 12);
+
+    if (text.length === 0 && safeFiles.length === 0) {
+      return res.status(400).json({ message: "Vui lòng nhập nội dung hoặc đính kèm tệp" });
     }
 
     const post = await CommunityPost.create({
       userId: oid(userId),
       content: text,
-      attachments: [],
+      attachments: safeFiles,
     });
 
     const [withUser] = await CommunityPost.aggregate([
@@ -69,6 +104,50 @@ export async function createCommunityPost(req: Request, res: Response) {
   } catch (e) {
     console.error("[createCommunityPost] ERROR", e);
     return res.status(500).json({ message: "Lỗi khi tạo bài viết" });
+  }
+}
+
+export async function toggleCommunityPostVisibility(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "ID không hợp lệ" });
+    }
+
+    const raw = (req.body as { isHidden?: boolean }).isHidden;
+    if (typeof raw !== "boolean") {
+      return res.status(400).json({ message: "Thiếu giá trị isHidden" });
+    }
+
+    await CommunityPost.updateOne({ _id: id }, { $set: { isHidden: raw } });
+    const [withUser] = await CommunityPost.aggregate([
+      { $match: { _id: oid(id) } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $addFields: { user: { $first: "$user" } } },
+      {
+        $project: {
+          "user.password": 0,
+          "user.email": 0,
+          "user.partLevels": 0,
+        },
+      },
+    ]);
+
+    if (!withUser) {
+      return res.status(404).json({ message: "Không tìm thấy bài viết" });
+    }
+
+    return res.json({ item: withUser });
+  } catch (e) {
+    console.error("[toggleCommunityPostVisibility] ERROR", e);
+    return res.status(500).json({ message: "Lỗi khi cập nhật trạng thái bài viết" });
   }
 }
 

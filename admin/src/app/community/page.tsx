@@ -7,12 +7,13 @@ import {
   adminCreateCommunityPost,
   adminListCommunityComments,
   adminDeleteCommunityComment,
+  adminToggleCommunityPostVisibility,
   AdminCommunityPost,
   AdminCommunityComment,
   adminListUsers,
   AdminUser
 } from "@/lib/apiClient";
-import { AlertTriangle, MessageSquare, Plus, Search, Trash2, Eye, X, Send, Upload, XCircle } from "lucide-react";
+import { AlertTriangle, MessageSquare, Plus, Search, Trash2, Eye, EyeOff, X, Send, Upload, XCircle } from "lucide-react";
 
 type ConfirmDialogState = {
   title: string;
@@ -45,7 +46,7 @@ export default function CommunityPage() {
   const [showCreatePostModal, setShowCreatePostModal] = React.useState(false);
   const [newPostContent, setNewPostContent] = React.useState("");
   const [newPostUserId, setNewPostUserId] = React.useState("");
-  const [newPostAttachments, setNewPostAttachments] = React.useState<Array<{ type: string; url: string; name: string; size: number }>>([]);
+  const [newPostAttachments, setNewPostAttachments] = React.useState<Array<{ type: string; url: string; name: string; size: number; key?: string }>>([]);
   const [uploading, setUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const toast = useToast();
@@ -135,7 +136,7 @@ export default function CommunityPage() {
         const data = await res.json();
         setNewPostAttachments((prev) => [
           ...prev,
-          { type: data.type, url: data.url, name: data.name, size: data.size },
+          { type: data.type, url: data.url, name: data.name, size: data.size, key: data.key },
         ]);
       }
     } catch (error) {
@@ -198,6 +199,22 @@ export default function CommunityPage() {
       errorMessage: "Lỗi khi xóa bài viết",
       onConfirm: async () => {
         await adminDeleteCommunityPost(item._id);
+        await load();
+      },
+    });
+  };
+
+  const onToggleHidePost = (item: AdminCommunityPost) => {
+    const nextHidden = !item.isHidden;
+    setConfirmDialog({
+      title: nextHidden ? "Ẩn bài viết" : "Bỏ ẩn bài viết",
+      description: `Bạn có chắc muốn ${nextHidden ? "ẩn" : "hiển thị lại"} bài viết của ${item.user?.name || "người dùng"}?`,
+      confirmText: nextHidden ? "Ẩn bài viết" : "Bỏ ẩn bài viết",
+      cancelText: "Hủy",
+      successMessage: nextHidden ? "Đã ẩn bài viết" : "Đã bỏ ẩn bài viết",
+      errorMessage: "Lỗi khi cập nhật trạng thái bài viết",
+      onConfirm: async () => {
+        await adminToggleCommunityPostVisibility(item._id, nextHidden);
         await load();
       },
     });
@@ -306,6 +323,8 @@ export default function CommunityPage() {
                   <th className="p-4 font-semibold text-zinc-700">Attachments</th>
                   <th className="p-4 font-semibold text-zinc-700">Likes</th>
                   <th className="p-4 font-semibold text-zinc-700">Comments</th>
+                  <th className="p-4 font-semibold text-zinc-700">Reports</th>
+                  <th className="p-4 font-semibold text-zinc-700">Trạng thái</th>
                   <th className="p-4 font-semibold text-zinc-700">Ngày tạo</th>
                   <th className="p-4 font-semibold text-zinc-700 w-40">Hành động</th>
                 </tr>
@@ -331,16 +350,38 @@ export default function CommunityPage() {
                     </td>
                     <td className="p-4 font-medium text-zinc-900">{post.likesCount || 0}</td>
                     <td className="p-4 font-medium text-zinc-900">{post.commentsCount || 0}</td>
+                    <td className="p-4 font-medium text-zinc-900">{post.reportsCount ?? 0}</td>
+                    <td className="p-4">
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                          post.isHidden
+                            ? "bg-red-50 text-red-600 border border-red-200"
+                            : "bg-green-50 text-green-600 border border-green-200"
+                        }`}
+                      >
+                        {post.isHidden ? "Đã ẩn" : "Hiển thị"}
+                      </span>
+                    </td>
                     <td className="p-4 text-xs text-zinc-500">
                       {new Date(post.createdAt).toLocaleString('vi-VN')}
                     </td>
                     <td className="p-4">
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <button 
                           onClick={()=>handleViewComments(post)} 
                           className="px-3 py-1.5 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-100 transition-colors font-medium flex items-center gap-1"
                         >
                           <Eye className="h-3 w-3" /> Xem
+                        </button>
+                        <button
+                          onClick={() => onToggleHidePost(post)}
+                          className={`px-3 py-1.5 text-xs rounded-lg border transition-colors font-medium flex items-center gap-1 ${
+                            post.isHidden
+                              ? "border-teal-300 text-teal-600 hover:bg-teal-50"
+                              : "border-amber-300 text-amber-600 hover:bg-amber-50"
+                          }`}
+                        >
+                          {post.isHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />} {post.isHidden ? "Bỏ ẩn" : "Ẩn"}
                         </button>
                         <button 
                           onClick={()=>onDeletePost(post)} 
@@ -354,7 +395,7 @@ export default function CommunityPage() {
                 ))}
                 {posts.length === 0 && (
                   <tr>
-                    <td className="p-12 text-center text-zinc-500" colSpan={7}>
+                    <td className="p-12 text-center text-zinc-500" colSpan={9}>
                       <div className="flex flex-col items-center gap-2">
                         <MessageSquare className="h-12 w-12 text-zinc-300" />
                         <p className="text-lg font-medium">Không có dữ liệu</p>

@@ -258,6 +258,8 @@ export type AdminCommunityPost = {
   likedBy: any[];
   likesCount: number;
   commentsCount: number;
+  reportsCount: number;
+  isHidden: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -298,6 +300,17 @@ export async function adminDeleteCommunityPost(id: string) {
   const res = await fetch(`${API_BASE}/api/admin/community/posts/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
   if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete post failed'); }
   return res.json() as Promise<{ message: string }>;
+}
+
+export async function adminToggleCommunityPostVisibility(id: string, isHidden: boolean) {
+  const res = await fetch(`${API_BASE}/api/admin/community/posts/${encodeURIComponent(id)}/hide`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ isHidden }),
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Toggle post visibility failed'); }
+  return res.json() as Promise<{ item: AdminCommunityPost }>;
 }
 
 export async function adminListCommunityComments(params?: { page?: number; limit?: number; q?: string; postId?: string }) {

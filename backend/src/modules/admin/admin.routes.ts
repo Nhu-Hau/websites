@@ -7,7 +7,9 @@ import {
   createCommunityPost,
   deleteCommunityPost, 
   listCommunityComments, 
-  deleteCommunityComment 
+  deleteCommunityComment,
+  uploadCommunityAttachment,
+  toggleCommunityPostVisibility,
 } from "./admin-community.controller";
 import {
   listParts,
@@ -61,8 +63,10 @@ router.get("/attempts/practice", listPracticeAttempts);
 router.get("/community/posts", listCommunityPosts);
 router.post("/community/posts", createCommunityPost);
 router.delete("/community/posts/:id", deleteCommunityPost);
+router.patch("/community/posts/:id/hide", toggleCommunityPostVisibility);
 router.get("/community/comments", listCommunityComments);
 router.delete("/community/comments/:id", deleteCommunityComment);
+router.post("/community/upload", upload.single("file"), uploadCommunityAttachment);
 
 // Parts admin routes
 router.get("/parts", listParts);

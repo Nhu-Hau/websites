@@ -2,6 +2,7 @@
 
 import React from "react";
 import { X, Image as ImageIcon, Video, Upload, Send } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import type { Attachment } from "@/types/community.types";
 
@@ -35,6 +36,7 @@ export default function NewPostForm({
   initialAttachments = [],
   postId,
 }: NewPostFormProps) {
+  const t = useTranslations("community.newPost");
   const [content, setContent] = React.useState(initialContent);
   const [previews, setPreviews] = React.useState<PreviewItem[]>([]);
   const [uploading, setUploading] = React.useState(false);
@@ -64,7 +66,7 @@ export default function NewPostForm({
     const remainingSlots = MAX_FILES - previews.length;
 
     if (fileArray.length > remainingSlots) {
-      toast.error(`You can only upload up to ${MAX_FILES} files. ${remainingSlots} slots remaining.`);
+      toast.error(t("maxFiles", { max: MAX_FILES, remaining: remainingSlots }));
       return;
     }
 
@@ -76,13 +78,13 @@ export default function NewPostForm({
       const isVideo = ACCEPTED_VIDEO_TYPES.includes(file.type);
 
       if (!isImage && !isVideo) {
-        toast.error(`${file.name} is not a supported image or video file.`);
+        toast.error(t("invalidFile", { filename: file.name }));
         continue;
       }
 
       // Validate file size
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`${file.name} is too large. Maximum size is 50MB.`);
+        toast.error(t("fileTooLarge", { filename: file.name }));
         continue;
       }
 
@@ -138,7 +140,7 @@ export default function NewPostForm({
       };
     } catch (error) {
       console.error("[uploadFile] ERROR", error);
-      toast.error(`Failed to upload ${file.name}`);
+      toast.error(t("uploadError", { filename: file.name }));
       return null;
     }
   };
@@ -148,7 +150,7 @@ export default function NewPostForm({
 
     const text = content.trim();
     if (!text && previews.length === 0) {
-      toast.error("Please enter content or attach files");
+      toast.error(t("contentRequired"));
       return;
     }
 
@@ -195,7 +197,7 @@ export default function NewPostForm({
       }
 
       if (hasUploadError) {
-        toast.error("Some files failed to upload. Please try again.");
+        toast.error(t("uploadFailed"));
         setSubmitting(false);
         return;
       }
@@ -217,14 +219,14 @@ export default function NewPostForm({
         throw new Error("Failed to create post");
       }
 
-      toast.success(postId ? "Post updated!" : "Post created!");
+      toast.success(postId ? t("updateSuccess") : t("createSuccess"));
       setContent("");
       setPreviews([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
       onSuccess?.();
     } catch (error) {
       console.error("[handleSubmit] ERROR", error);
-      toast.error("Error creating post");
+      toast.error(t("createError"));
     } finally {
       setSubmitting(false);
     }
@@ -255,13 +257,13 @@ export default function NewPostForm({
             el.style.height = "auto";
             el.style.height = Math.min(el.scrollHeight, 300) + "px";
           }}
-          placeholder="What's on your mind? Share your TOEIC learning tips, questions, or resources..."
+          placeholder={t("placeholder")}
           className="w-full min-h-[120px] max-h-[300px] resize-none rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
           rows={5}
         />
         <div className="mt-2 flex justify-between items-center">
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Press Ctrl+Enter to submit
+            {t("ctrlEnter")}
           </p>
           <p
             className={`text-xs font-medium ${
@@ -333,7 +335,7 @@ export default function NewPostForm({
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Upload className="h-4 w-4" />
-            <span>Add Media</span>
+            <span>{t("addMedia")}</span>
           </button>
           {previews.length > 0 && (
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -350,12 +352,12 @@ export default function NewPostForm({
           {submitting || uploading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-              <span>{uploading ? "Uploading..." : "Posting..."}</span>
+              <span>{uploading ? t("uploading") : t("posting")}</span>
             </>
           ) : (
             <>
               <Send className="h-4 w-4" />
-              <span>{postId ? "Update" : "Post"}</span>
+              <span>{postId ? t("update") : t("post")}</span>
             </>
           )}
         </button>

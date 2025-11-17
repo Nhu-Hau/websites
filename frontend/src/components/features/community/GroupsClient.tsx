@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Users, Plus, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,7 @@ import { useRouter } from "next/navigation";
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 export default function GroupsClient() {
+  const t = useTranslations("community.groups");
   const basePrefix = useBasePrefix();
   const router = useRouter();
   const [groups, setGroups] = React.useState<any[]>([]);
@@ -33,10 +35,10 @@ export default function GroupsClient() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-            Nhóm học
+            {t("title")}
           </h1>
           <p className="text-zinc-600 dark:text-zinc-400">
-            Tham gia các nhóm học tập cùng nhau
+            {t("description")}
           </p>
         </div>
         <button
@@ -44,7 +46,7 @@ export default function GroupsClient() {
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
         >
           <Plus className="h-5 w-5" />
-          Tạo nhóm
+          {t("create")}
         </button>
       </div>
 
@@ -82,7 +84,7 @@ export default function GroupsClient() {
               <div className="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
                 <span className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
-                  {group.membersCount || 0} thành viên
+                  {group.membersCount || 0} {t("members")}
                 </span>
               </div>
             </Link>
@@ -92,13 +94,13 @@ export default function GroupsClient() {
         <div className="text-center py-12">
           <Users className="h-16 w-16 text-zinc-400 dark:text-zinc-600 mx-auto mb-4" />
           <p className="text-zinc-600 dark:text-zinc-400 mb-4">
-            Chưa có nhóm nào
+            {t("noGroups")}
           </p>
           <button
             onClick={() => router.push(`${basePrefix}/community/groups/create`)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            Tạo nhóm đầu tiên
+            {t("createFirst")}
           </button>
         </div>
       )}

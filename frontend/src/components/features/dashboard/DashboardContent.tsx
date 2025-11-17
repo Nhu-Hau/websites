@@ -36,8 +36,8 @@ export default function DashboardContent({
   return (
     <Suspense fallback={<DashboardContentSkeleton />}>
       <DashboardContentInner
-        progressTab={progressTab}
         resultsTab={resultsTab}
+        progressTab={progressTab}
         activityTab={activityTab}
       />
     </Suspense>

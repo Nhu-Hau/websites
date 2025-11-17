@@ -21,10 +21,10 @@ export default function NewPost() {
           {/* Header */}
           <div className="p-6 border-b border-zinc-100 dark:border-zinc-800">
             <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-              Create New Post
+              Tạo bài viết mới
             </h1>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Share your thoughts, tips, or resources with the TOEIC learning community
+              Chia sẻ suy nghĩ, mẹo học tập hoặc tài nguyên của bạn với cộng đồng học TOEIC
             </p>
           </div>
 

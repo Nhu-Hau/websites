@@ -13,7 +13,6 @@ import {
   Legend,
 } from "recharts";
 import { Gauge, Loader2 } from "lucide-react";
-import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 /* ===================== Types ===================== */
 type PlacementAttemptLite = {
@@ -66,13 +65,17 @@ function round5_990(n: number) {
 function fmtTimeLabel(iso?: string) {
   if (!iso) return "";
   const d = new Date(iso);
-  return `${d.getDate()}/${d.getMonth() + 1} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  return `${d.getDate()}/${d.getMonth() + 1} ${String(d.getHours()).padStart(
+    2,
+    "0"
+  )}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
 /* ===================== Component ===================== */
 export default function AssessmentChart() {
-  const basePrefix = useBasePrefix("vi");
-  const [placementHist, setPlacementHist] = React.useState<PlacementAttemptLite[]>([]);
+  const [placementHist, setPlacementHist] = React.useState<
+    PlacementAttemptLite[]
+  >([]);
   const [progressHist, setProgressHist] = React.useState<ProgressAttempt[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -140,7 +143,8 @@ export default function AssessmentChart() {
       const l = l5 != null ? round5_495(Math.max(5, Math.min(495, l5))) : null;
       const r = r5 != null ? round5_495(Math.max(5, Math.min(495, r5))) : null;
 
-      if (l == null && r == null) return { l: null, r: null, overall: null };
+      if (l == null && r == null)
+        return { l: null as number | null, r: null as number | null, overall: null as number | null };
 
       const overall = (l ?? 0) + (r ?? 0);
       return {
@@ -222,30 +226,34 @@ export default function AssessmentChart() {
 
   /* ===================== Render ===================== */
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-900/20">
-            <Gauge className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-300">
+            <Gauge className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
-              Điểm TOEIC
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+              Điểm TOEIC theo thời gian
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Theo dõi điểm Listening, Reading & Overall
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Listening, Reading & Overall (đã quy đổi thang điểm TOEIC)
             </p>
           </div>
         </div>
+
+        <span className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
+          Assessment trend
+        </span>
       </div>
 
       {/* Chart */}
-      <div className="relative h-[280px]">
+      <div className="relative h-[260px]">
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin text-zinc-400 dark:text-zinc-500" />
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Đang tải dữ liệu...
             </p>
           </div>
@@ -253,97 +261,130 @@ export default function AssessmentChart() {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={assessmentLineData}
-              margin={{ top: 8, right: 8, left: 0, bottom: 8 }}
+              margin={{ top: 4, right: 12, left: 0, bottom: 4 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="#e5e7eb"
-                className="dark:stroke-zinc-800"
+                stroke="#e2e8f0"
+                // className chỉ để tham khảo, Recharts không dùng tailwind ở đây
               />
               <XAxis
                 dataKey="at"
                 interval="preserveStartEnd"
-                tick={{ fill: "#71717a", fontSize: 11 }}
-                axisLine={{ stroke: "#d4d4d8" }}
-                tickLine={{ stroke: "#d4d4d8" }}
+                tick={{ fill: "#6b7280", fontSize: 11 }}
+                axisLine={{ stroke: "#e5e7eb" }}
+                tickLine={{ stroke: "#e5e7eb" }}
                 minTickGap={20}
               />
               <YAxis
                 domain={[0, 990]}
                 ticks={[0, 200, 400, 600, 800, 990]}
-                tick={{ fill: "#71717a", fontSize: 11 }}
-                axisLine={{ stroke: "#d4d4d8" }}
-                tickLine={{ stroke: "#d4d4d8" }}
-                width={40}
+                tick={{ fill: "#6b7280", fontSize: 11 }}
+                axisLine={{ stroke: "#e5e7eb" }}
+                tickLine={{ stroke: "#e5e7eb" }}
+                width={44}
               />
               <ChartTooltip
                 contentStyle={{
-                  backgroundColor: "rgba(255, 255, 255, 0.98)",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  padding: "8px 12px",
+                  backgroundColor: "rgba(15,23,42,0.96)", // slate-900
+                  border: "1px solid rgba(148,163,184,0.6)",
+                  borderRadius: 8,
+                  boxShadow: "0 10px 25px rgba(15,23,42,0.55)",
+                  padding: "8px 10px",
                 }}
                 labelStyle={{
-                  color: "#18181b",
+                  color: "#e5e7eb",
                   fontWeight: 600,
                   fontSize: 11,
+                  marginBottom: 4,
                 }}
-                itemStyle={{ fontSize: 11, fontWeight: 500 }}
-                cursor={{ stroke: "#ef4444", strokeWidth: 1 }}
+                itemStyle={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: "#e5e7eb",
+                }}
+                cursor={{ stroke: "#94a3b8", strokeWidth: 1 }}
                 formatter={(value: number, name: string, props: any) => {
                   const rounded5 = Math.round(value / 5) * 5;
-                  const kind = props?.payload?.kind === "progress" ? "Progress Test" : "Placement Test";
+                  const kind =
+                    props?.payload?.kind === "progress"
+                      ? "Progress Test"
+                      : "Placement Test";
                   return [`${rounded5} điểm`, `${name} • ${kind}`];
                 }}
               />
               <Legend
-                wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }}
-                iconType="line"
+                wrapperStyle={{
+                  fontSize: 11,
+                  paddingTop: 8,
+                }}
+                iconType="plainline"
               />
+
+              {/* Listening - sky */}
               <Line
                 type="monotone"
                 dataKey="Listening"
-                stroke="#10b981"
+                stroke="#0ea5e9"
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, stroke: "#10b981", strokeWidth: 2 }}
-                animationDuration={400}
+                activeDot={{
+                  r: 4,
+                  stroke: "#0ea5e9",
+                  strokeWidth: 2,
+                  fill: "#e0f2fe",
+                }}
+                animationDuration={350}
                 name="Listening"
               />
+
+              {/* Reading - indigo */}
               <Line
                 type="monotone"
                 dataKey="Reading"
-                stroke="#f59e0b"
+                stroke="#6366f1"
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, stroke: "#f59e0b", strokeWidth: 2 }}
-                animationDuration={400}
+                activeDot={{
+                  r: 4,
+                  stroke: "#6366f1",
+                  strokeWidth: 2,
+                  fill: "#e0e7ff",
+                }}
+                animationDuration={350}
                 name="Reading"
               />
+
+              {/* Overall – emerald, nét dày hơn chút */}
               <Line
                 type="monotone"
                 dataKey="Overall"
-                stroke="#ef4444"
-                strokeWidth={2}
+                stroke="#22c55e"
+                strokeWidth={2.4}
                 dot={false}
-                activeDot={{ r: 4, stroke: "#ef4444", strokeWidth: 2 }}
-                animationDuration={400}
+                activeDot={{
+                  r: 4.5,
+                  stroke: "#22c55e",
+                  strokeWidth: 2,
+                  fill: "#dcfce7",
+                }}
+                animationDuration={350}
                 name="Overall"
               />
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center p-6">
-            <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-              <Gauge className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-zinc-800 dark:text-zinc-500">
+              <Gauge className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-zinc-900 dark:text-white mb-1">
+              <p className="mb-1 text-sm font-medium text-slate-900 dark:text-slate-50">
                 Chưa có dữ liệu Assessment
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Hãy làm Placement hoặc Progress Test để xem biểu đồ này
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Hãy làm Placement Test hoặc Progress Test để xem biểu đồ điểm
+                TOEIC của bạn.
               </p>
             </div>
           </div>

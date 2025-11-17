@@ -3,6 +3,7 @@
 
 import React from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import PostCard from "@/components/features/community/PostCard";
 import Pagination from "@/components/features/community/Pagination";
 import type { CommunityPost } from "@/types/community.types";
@@ -32,6 +33,7 @@ export default function CommunityPageClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const t = useTranslations("community.communityPage");
 
   const [posts, setPosts] = React.useState<CommunityPost[]>(initialPosts.items);
   const [page, setPage] = React.useState(initialPage);
@@ -56,12 +58,12 @@ export default function CommunityPageClient({
       setTotal(j.total || 0);
       setPosts(j.items ?? []);
     } catch (e) {
-      toast.error("Error loading posts");
+      toast.error(t("loading"));
       console.error("[load] ERROR", e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   React.useEffect(() => {
     if (initialCurrentUserId) {
@@ -181,7 +183,7 @@ export default function CommunityPageClient({
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              Loading...
+              {t("loadingText")}
             </p>
           </div>
         </div>
@@ -206,10 +208,10 @@ export default function CommunityPageClient({
             </svg>
           </div>
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-            No posts yet
+            {t("noPosts")}
           </h3>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-sm">
-            Be the first to share with the community!
+            {t("noPostsDesc")}
           </p>
         </div>
       )}

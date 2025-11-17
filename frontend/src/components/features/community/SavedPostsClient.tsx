@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import PostCard from "@/components/features/community/PostCard";
 import Pagination from "@/components/features/community/Pagination";
 import type { CommunityPost } from "@/types/community.types";
@@ -19,6 +20,7 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const t = useTranslations("community.savedPosts");
 
   const [posts, setPosts] = React.useState<CommunityPost[]>([]);
   const [page, setPage] = React.useState(initialPage);
@@ -35,17 +37,23 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
           cache: "no-store",
         }
       );
-      if (!r.ok) throw new Error("Failed to load saved posts");
+      if (!r.ok) {
+        if (r.status === 401) {
+          toast.error(t("loginRequired") || "Vui lòng đăng nhập");
+          return;
+        }
+        throw new Error("Failed to load saved posts");
+      }
       const j = await r.json();
       setTotal(j.total || 0);
       setPosts(j.items ?? []);
     } catch (e) {
-      toast.error("Error loading saved posts");
+      toast.error(t("error"));
       console.error("[load] ERROR", e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   React.useEffect(() => {
     load(initialPage);
@@ -58,6 +66,17 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
       load(p);
     }
   }, [searchParams, page, load]);
+
+  // Listen for saved posts changes
+  React.useEffect(() => {
+    const handleSavedPostsChanged = () => {
+      load(page);
+    };
+    window.addEventListener("savedPostsChanged", handleSavedPostsChanged);
+    return () => {
+      window.removeEventListener("savedPostsChanged", handleSavedPostsChanged);
+    };
+  }, [load, page]);
 
   const onChangePage = React.useCallback(
     (p: number) => {
@@ -89,10 +108,10 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
     <div className="space-y-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-          Saved Posts
+          {t("title")}
         </h1>
         <p className="text-zinc-600 dark:text-zinc-400">
-          Posts you've bookmarked for later
+          {t("description")}
         </p>
       </div>
 
@@ -107,7 +126,7 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              Loading...
+              {t("loading")}
             </p>
           </div>
         </div>
@@ -132,10 +151,10 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
             </svg>
           </div>
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-            No saved posts yet
+            {t("noPosts")}
           </h3>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-sm">
-            Start saving posts you want to revisit later!
+            {t("noPostsDesc")}
           </p>
         </div>
       )}

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Heart, MessageCircle, Share2, Bookmark, Repeat2, Edit2, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -45,6 +46,7 @@ export default function ActionBar({
   onDeleteClick,
   className = "",
 }: ActionBarProps) {
+  const t = useTranslations("community.posts");
   const [isLiked, setIsLiked] = React.useState(liked);
   const [isSaved, setIsSaved] = React.useState(saved);
   const [likes, setLikes] = React.useState(likesCount);
@@ -86,7 +88,7 @@ export default function ActionBar({
       setIsLiked(!newLiked);
       setLikes(likes);
       onLikeChange?.(liked, likes);
-      toast.error("Unable to like post");
+      toast.error(t("likeError"));
     } finally {
       setActing(false);
     }
@@ -111,16 +113,20 @@ export default function ActionBar({
       });
       if (!res.ok) throw new Error("Failed to save");
       const data = await res.json();
-      if (typeof data.savedCount === "number") {
-        setSaves(data.savedCount);
-        setIsSaved(data.saved);
-        onSaveChange?.(data.saved, data.savedCount);
-      }
+        if (typeof data.savedCount === "number") {
+          setSaves(data.savedCount);
+          setIsSaved(data.saved);
+          onSaveChange?.(data.saved, data.savedCount);
+          // Trigger custom event to refresh saved posts page
+          if (typeof window !== "undefined" && window.location.pathname.includes("/community/saved")) {
+            window.dispatchEvent(new CustomEvent("savedPostsChanged"));
+          }
+        }
     } catch {
       setIsSaved(!newSaved);
       setSaves(saves);
       onSaveChange?.(saved, saves);
-      toast.error("Unable to save post");
+      toast.error(t("saveError"));
     } finally {
       setActing(false);
     }
@@ -189,7 +195,7 @@ export default function ActionBar({
             ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
             : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         }`}
-        aria-label={isSaved ? "Unsave" : "Save"}
+        aria-label={isSaved ? t("unsaved") : t("saved")}
       >
         <Bookmark className={`h-5 w-5 ${isSaved ? "fill-current" : ""}`} />
         {saves > 0 && <span>{saves}</span>}

@@ -16,6 +16,7 @@ import {
   Share2,
   Send,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
 import type { CommunityComment } from "@/types/community.types";
@@ -66,17 +67,17 @@ function fmtSize(bytes?: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(dateString: string) {
+function formatDate(dateString: string, tDate: any) {
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return "Just now";
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 60) return tDate("justNow");
+  if (diffInSeconds < 3600) return tDate("minutesAgo", { minutes: Math.floor(diffInSeconds / 60) });
   if (diffInSeconds < 86400)
-    return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    return tDate("hoursAgo", { hours: Math.floor(diffInSeconds / 3600) });
   if (diffInSeconds < 604800)
-    return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return tDate("daysAgo", { days: Math.floor(diffInSeconds / 86400) });
   return date.toLocaleDateString();
 }
 
@@ -88,6 +89,10 @@ export default function PostDetail({ postId }: { postId: string }) {
     () => pathname.split("/")[1] || "en",
     [pathname]
   );
+  const t = useTranslations("community.postDetail");
+  const tPosts = useTranslations("community.posts");
+  const tComments = useTranslations("community.comments");
+  const tDate = useTranslations("community.date");
   const { show, Modal: ConfirmModal } = useConfirmModal();
 
   const [post, setPost] = React.useState<any>(null);
@@ -118,12 +123,12 @@ export default function PostDetail({ postId }: { postId: string }) {
       setPost(data.post);
       setComments(data.comments?.items ?? []);
     } catch {
-      toast.error("Error loading post");
+      toast.error(t("loading"));
     } finally {
       setLoading(false);
       loadingRef.current = false;
     }
-  }, [postId]);
+  }, [postId, t]);
 
   React.useEffect(() => {
     loadPost();
@@ -203,7 +208,7 @@ export default function PostDetail({ postId }: { postId: string }) {
         likesCount: data.likesCount,
       }));
     } catch {
-      toast.error("Unable to like post");
+      toast.error(t("likeError"));
     }
   };
 
@@ -240,7 +245,7 @@ export default function PostDetail({ postId }: { postId: string }) {
     if (submittingRef.current) return;
     const content = cmtInput.trim();
     if (!content && cmtAttaches.length === 0) {
-      toast.error("Please enter content or attach a file");
+      toast.error(tComments("enterContent"));
       return;
     }
 
@@ -265,9 +270,9 @@ export default function PostDetail({ postId }: { postId: string }) {
       );
       setCmtInput("");
       setCmtAttaches([]);
-      toast.success("Comment posted!");
+      toast.success(tComments("postSuccess"));
     } catch {
-      toast.error("Error posting comment");
+      toast.error(tComments("postError"));
     } finally {
       submittingRef.current = false;
     }
@@ -276,11 +281,11 @@ export default function PostDetail({ postId }: { postId: string }) {
   const deletePost = async () => {
     show(
       {
-        title: "Delete post?",
-        message: "Are you sure you want to delete this post?",
+        title: tPosts("delete.title"),
+        message: tPosts("delete.message"),
         icon: "warning",
-        confirmText: "Delete",
-        cancelText: "Cancel",
+        confirmText: tPosts("delete.confirm"),
+        cancelText: tPosts("delete.cancel"),
         confirmColor: "red",
       },
       async () => {
@@ -289,7 +294,7 @@ export default function PostDetail({ postId }: { postId: string }) {
           credentials: "include",
         });
         if (res.ok) router.push(`${basePrefix}/community`);
-        else toast.error("Failed to delete");
+        else toast.error(t("deleteError"));
       }
     );
   };
@@ -297,11 +302,11 @@ export default function PostDetail({ postId }: { postId: string }) {
   const deleteComment = async (commentId: string) => {
     show(
       {
-        title: "Delete comment?",
-        message: "Are you sure you want to delete this comment?",
+        title: tComments("delete.title"),
+        message: tComments("delete.message"),
         icon: "warning",
-        confirmText: "Delete",
-        cancelText: "Cancel",
+        confirmText: tComments("delete.confirm"),
+        cancelText: tComments("delete.cancel"),
         confirmColor: "red",
       },
       async () => {
@@ -313,7 +318,7 @@ export default function PostDetail({ postId }: { postId: string }) {
           }
         );
         if (res.ok) loadPost();
-        else toast.error("Failed to delete comment");
+        else toast.error(t("deleteCommentError"));
       }
     );
   };
@@ -357,19 +362,33 @@ export default function PostDetail({ postId }: { postId: string }) {
               <Avatar url={post.user?.picture} name={post.user?.name} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  <button
+                    onClick={() => router.push(`${basePrefix}/community/profile/${post.userId}`)}
+                    className="font-semibold text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
                     {post.user?.name || "User"}
-                  </h3>
+                  </button>
                   <time className="text-sm text-zinc-500 dark:text-zinc-400">
-                    {formatDate(post.createdAt)}
+                    {formatDate(post.createdAt, tDate)}
                   </time>
+                  {post.isEdited && post.editedAt && (
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+                      ({tPosts("edited")})
+                    </span>
+                  )}
+                  {post.repostedFrom && (
+                    <span className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                      <Share2 className="h-3 w-3" />
+                      {tPosts("reposted")}
+                    </span>
+                  )}
                   {post.canDelete && (
                     <button
                       onClick={deletePost}
                       className="ml-auto inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
-                      <span>Delete</span>
+                      <span>{tPosts("delete.confirm")}</span>
                     </button>
                   )}
                 </div>
@@ -415,7 +434,7 @@ export default function PostDetail({ postId }: { postId: string }) {
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="p-6 border-b border-zinc-100 dark:border-zinc-800">
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Comments ({comments.length})
+              {t("comments")} ({comments.length})
             </h2>
           </div>
 
@@ -427,7 +446,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                   <MessageCircle className="h-8 w-8 text-zinc-400 dark:text-zinc-600" />
                 </div>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  No comments yet. Be the first to comment!
+                  {t("noComments")}
                 </p>
               </div>
             ) : (
@@ -492,7 +511,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                     submitComment();
                   }
                 }}
-                placeholder="Write a comment..."
+                placeholder={tComments("placeholder")}
                 className="flex-1 min-h-[60px] max-h-[160px] resize-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                 rows={1}
               />

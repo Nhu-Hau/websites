@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
 
@@ -34,6 +35,7 @@ export default function PollCard({
   endsAt,
   onVote,
 }: PollCardProps) {
+  const t = useTranslations("community.polls");
   const { user } = useAuth();
   const [localOptions, setLocalOptions] = React.useState(options);
   const [localHasVoted, setLocalHasVoted] = React.useState(hasVoted);
@@ -45,7 +47,7 @@ export default function PollCard({
 
   const handleVote = async (optionIndex: number) => {
     if (!user) {
-      toast.error("Vui lòng đăng nhập để bình chọn");
+      toast.error(t("loginRequired"));
       return;
     }
 
@@ -71,7 +73,7 @@ export default function PollCard({
       setLocalVotersCount(data.votersCount);
       onVote?.();
     } catch (error: any) {
-      toast.error(error.message || "Lỗi khi bình chọn");
+      toast.error(error.message || t("voteError"));
     } finally {
       setVoting(false);
     }

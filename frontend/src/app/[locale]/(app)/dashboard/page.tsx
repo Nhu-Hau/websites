@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import DashboardSideNav from "@/components/features/dashboard/DashboardSideNav";
 import DashboardContent from "@/components/features/dashboard/DashboardContent";
-import ProgressTabContent from "@/components/features/dashboard/ProgressTabContent";
-import ResultsTabContent from "@/components/features/dashboard/ResultsTabContent";
+import ProgressTabContent from "@/components/features/dashboard/ResultsTabContent";
+import ResultsTabContent from "@/components/features/dashboard/ProgressTabContent";
 import ActivityTabContent from "@/components/features/dashboard/ActivityTabContent";
 
 export default async function DashboardPage() {

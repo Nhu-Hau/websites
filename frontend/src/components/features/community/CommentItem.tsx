@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Edit2, Trash2, X, Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import type { CommunityComment } from "@/types/community.types";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
@@ -33,21 +34,23 @@ function Avatar({ url, name }: { url?: string; name?: string }) {
   );
 }
 
-function formatDate(dateString: string) {
+function formatDate(dateString: string, tDate: any) {
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return "Just now";
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 60) return tDate("justNow");
+  if (diffInSeconds < 3600) return tDate("minutesAgo", { minutes: Math.floor(diffInSeconds / 60) });
   if (diffInSeconds < 86400)
-    return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    return tDate("hoursAgo", { hours: Math.floor(diffInSeconds / 3600) });
   if (diffInSeconds < 604800)
-    return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return tDate("daysAgo", { days: Math.floor(diffInSeconds / 86400) });
   return date.toLocaleDateString();
 }
 
 export default function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps) {
+  const t = useTranslations("community.comments");
+  const tDate = useTranslations("community.date");
   const [isEditing, setIsEditing] = React.useState(false);
   const [editContent, setEditContent] = React.useState(comment.content);
   const [saving, setSaving] = React.useState(false);
@@ -56,11 +59,11 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
   const handleDelete = () => {
     show(
       {
-        title: "Delete comment?",
-        message: "Are you sure you want to delete this comment?",
+        title: t("delete.title"),
+        message: t("delete.message"),
         icon: "warning",
-        confirmText: "Delete",
-        cancelText: "Cancel",
+        confirmText: t("delete.confirm"),
+        cancelText: t("delete.cancel"),
         confirmColor: "red",
       },
       async () => {
@@ -73,13 +76,13 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
             }
           );
           if (res.ok) {
-            toast.success("Comment deleted");
+            toast.success(t("delete.success"));
             onDeleted();
           } else {
-            toast.error("Failed to delete comment");
+            toast.error(t("delete.error"));
           }
         } catch {
-          toast.error("Error deleting comment");
+          toast.error(t("delete.errorGeneral"));
         }
       }
     );
@@ -104,10 +107,10 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
         }),
       });
       if (!res.ok) throw new Error("Failed to update");
-      toast.success("Comment updated");
+      toast.success(t("updateSuccess"));
       handleEditSuccess();
     } catch {
-      toast.error("Error updating comment");
+      toast.error(t("updateError"));
     } finally {
       setSaving(false);
     }
@@ -118,7 +121,7 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
       <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Edit Comment
+            {t("edit")}
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -165,8 +168,13 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
               {comment.user?.name || "User"}
             </span>
             <time className="text-xs text-zinc-500 dark:text-zinc-400">
-              {formatDate(comment.createdAt)}
+              {formatDate(comment.createdAt, tDate)}
             </time>
+            {comment.isEdited && comment.editedAt && (
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+                ({t("edited")})
+              </span>
+            )}
             {comment.canDelete && (
               <div className="ml-auto flex items-center gap-2">
                 <button

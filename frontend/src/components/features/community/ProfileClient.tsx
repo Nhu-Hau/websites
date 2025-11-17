@@ -4,11 +4,13 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { UserPlus, UserMinus, Settings, Camera } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import PostCard from "./PostCard";
 import TextWithHighlights from "./TextWithHighlights";
+import ImageCropper from "./ImageCropper";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
@@ -27,12 +29,19 @@ export default function ProfileClient({
   const basePrefix = useBasePrefix();
   const { user: currentUser } = useAuth();
   const isOwnProfile = currentUser?.id === userId;
+  const t = useTranslations("community.profile");
 
   const [profile, setProfile] = React.useState(initialProfile);
   const [posts, setPosts] = React.useState(initialPosts?.items || []);
   const [isFollowing, setIsFollowing] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [followLoading, setFollowLoading] = React.useState(false);
+  
+  // Image cropper state
+  const [showCropper, setShowCropper] = React.useState(false);
+  const [cropperImage, setCropperImage] = React.useState<string | null>(null);
+  const [cropperType, setCropperType] = React.useState<"avatar" | "cover" | null>(null);
+  const [uploading, setUploading] = React.useState(false);
 
   React.useEffect(() => {
     if (currentUser?.id && userId !== currentUser.id) {
@@ -72,12 +81,12 @@ export default function ProfileClient({
           ...p,
           followersCount: (p?.followersCount || 0) + 1,
         }));
-        toast.success("Đã theo dõi");
+        toast.success(t("followSuccess"));
       } else {
-        toast.error("Không thể theo dõi");
+        toast.error(t("followError"));
       }
     } catch (error) {
-      toast.error("Lỗi khi theo dõi");
+      toast.error(t("followErrorGeneral"));
     } finally {
       setFollowLoading(false);
     }
@@ -100,12 +109,12 @@ export default function ProfileClient({
           ...p,
           followersCount: Math.max(0, (p?.followersCount || 0) - 1),
         }));
-        toast.success("Đã bỏ theo dõi");
+        toast.success(t("unfollowSuccess"));
       } else {
-        toast.error("Không thể bỏ theo dõi");
+        toast.error(t("unfollowError"));
       }
     } catch (error) {
-      toast.error("Lỗi khi bỏ theo dõi");
+      toast.error(t("unfollowErrorGeneral"));
     } finally {
       setFollowLoading(false);
     }
@@ -129,7 +138,7 @@ export default function ProfileClient({
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-zinc-600 dark:text-zinc-400">Đang tải...</p>
+          <p className="text-zinc-600 dark:text-zinc-400">{t("loading")}</p>
         </div>
       </div>
     );
@@ -147,9 +156,25 @@ export default function ProfileClient({
           />
         ) : null}
         {isOwnProfile && (
-          <button className="absolute top-4 right-4 p-2 bg-white/90 dark:bg-zinc-900/90 rounded-lg hover:bg-white dark:hover:bg-zinc-800 transition-colors">
+          <label className="absolute top-4 right-4 p-2 bg-white/90 dark:bg-zinc-900/90 rounded-lg hover:bg-white dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  setCropperImage(reader.result as string);
+                  setCropperType("cover");
+                  setShowCropper(true);
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
             <Camera className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
-          </button>
+          </label>
         )}
       </div>
 
@@ -169,9 +194,25 @@ export default function ProfileClient({
             )}
           </div>
           {isOwnProfile && (
-            <button className="absolute bottom-0 right-0 p-2 bg-white dark:bg-zinc-900 rounded-full border-2 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+            <label className="absolute bottom-0 right-0 p-2 bg-white dark:bg-zinc-900 rounded-full border-2 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setCropperImage(reader.result as string);
+                    setCropperType("avatar");
+                    setShowCropper(true);
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
               <Camera className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
-            </button>
+            </label>
           )}
         </div>
 
@@ -193,7 +234,7 @@ export default function ProfileClient({
                 <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                   {profile.postsCount || 0}
                 </span>
-                <span className="text-zinc-600 dark:text-zinc-400 ml-1">bài viết</span>
+                <span className="text-zinc-600 dark:text-zinc-400 ml-1">{t("postsCount")}</span>
               </div>
               <button
                 onClick={() => router.push(`${basePrefix}/community/profile/${userId}/followers`)}
@@ -202,7 +243,7 @@ export default function ProfileClient({
                 <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                   {profile.followersCount || 0}
                 </span>
-                <span className="text-zinc-600 dark:text-zinc-400 ml-1">người theo dõi</span>
+                <span className="text-zinc-600 dark:text-zinc-400 ml-1">{t("followers")}</span>
               </button>
               <button
                 onClick={() => router.push(`${basePrefix}/community/profile/${userId}/following`)}
@@ -211,7 +252,7 @@ export default function ProfileClient({
                 <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                   {profile.followingCount || 0}
                 </span>
-                <span className="text-zinc-600 dark:text-zinc-400 ml-1">đang theo dõi</span>
+                <span className="text-zinc-600 dark:text-zinc-400 ml-1">{t("following")}</span>
               </button>
             </div>
           </div>
@@ -224,7 +265,7 @@ export default function ProfileClient({
                 className="px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors flex items-center gap-2"
               >
                 <Settings className="h-4 w-4" />
-                Chỉnh sửa
+                {t("editProfile")}
               </button>
             ) : (
               <>
@@ -235,7 +276,7 @@ export default function ProfileClient({
                     className="px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors flex items-center gap-2 disabled:opacity-50"
                   >
                     <UserMinus className="h-4 w-4" />
-                    {followLoading ? "Đang xử lý..." : "Bỏ theo dõi"}
+                    {followLoading ? t("processing") : t("unfollow")}
                   </button>
                 ) : (
                   <button
@@ -244,7 +285,7 @@ export default function ProfileClient({
                     className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
                   >
                     <UserPlus className="h-4 w-4" />
-                    {followLoading ? "Đang xử lý..." : "Theo dõi"}
+                    {followLoading ? t("processing") : t("follow")}
                   </button>
                 )}
               </>
@@ -257,12 +298,12 @@ export default function ProfileClient({
       {profile.toeicGoal && (
         <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl p-6 mb-8">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-            Mục tiêu TOEIC
+            {t("toeicGoal")}
           </h2>
           <div className="flex items-center gap-4">
             {profile.toeicGoal.startScore && (
               <div>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">Điểm hiện tại</p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("currentScore")}</p>
                 <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
                   {profile.toeicGoal.startScore}
                 </p>
@@ -270,7 +311,7 @@ export default function ProfileClient({
             )}
             {profile.toeicGoal.targetScore && (
               <div>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">Mục tiêu</p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("targetScore")}</p>
                 <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {profile.toeicGoal.targetScore}
                 </p>
@@ -283,7 +324,7 @@ export default function ProfileClient({
       {/* Posts */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-          Bài viết
+          {t("posts")}
         </h2>
         {posts.length > 0 ? (
           posts.map((post: any) => (
@@ -297,10 +338,93 @@ export default function ProfileClient({
           ))
         ) : (
           <div className="text-center py-12 text-zinc-600 dark:text-zinc-400">
-            Chưa có bài viết nào
+            {t("noPosts")}
           </div>
         )}
       </div>
+
+      {/* Image Cropper Modal */}
+      {showCropper && cropperImage && cropperType && (
+        <ImageCropper
+          image={cropperImage}
+          aspect={cropperType === "avatar" ? 1 : 16 / 9}
+          onCropComplete={async (croppedImage) => {
+            setShowCropper(false);
+            setUploading(true);
+            try {
+              if (cropperType === "avatar") {
+                // Use same method as Account.tsx - convert to blob with proper crop
+                const response = await fetch(croppedImage);
+                const blob = await response.blob();
+                
+                const formData = new FormData();
+                formData.append("avatar", blob, "avatar.jpg");
+                
+                // Upload to /api/auth/avatar (same as Account)
+                const uploadRes = await fetch(`${API_BASE}/api/auth/avatar`, {
+                  method: "POST",
+                  credentials: "include",
+                  body: formData,
+                });
+                
+                if (!uploadRes.ok) {
+                  const errorData = await uploadRes.json().catch(() => ({}));
+                  throw new Error(errorData.message || "Upload avatar thất bại");
+                }
+                
+                const uploadData = await uploadRes.json();
+                const newPicture = uploadData.picture || uploadData.url;
+                
+                // Update profile state
+                setProfile((p: any) => ({ ...p, picture: newPicture }));
+                toast.success(t("uploadAvatar"));
+              } else {
+                // Cover image - use community upload endpoint
+                const response = await fetch(croppedImage);
+                const blob = await response.blob();
+                
+                const formData = new FormData();
+                formData.append("file", blob, "cover.jpg");
+                
+                const uploadRes = await fetch(`${API_BASE}/api/community/upload`, {
+                  method: "POST",
+                  credentials: "include",
+                  body: formData,
+                });
+                
+                if (!uploadRes.ok) throw new Error("Upload failed");
+                const uploadData = await uploadRes.json();
+                
+                // Update profile
+                const updateRes = await fetch(`${API_BASE}/api/community/users/profile`, {
+                  method: "PUT",
+                  credentials: "include",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ coverImage: uploadData.url }),
+                });
+                
+                if (!updateRes.ok) throw new Error("Update failed");
+                const data = await updateRes.json();
+                setProfile((p: any) => ({ ...p, coverImage: data.coverImage }));
+                toast.success(t("uploadCover"));
+              }
+            } catch (error: any) {
+              console.error("[ProfileClient] Upload error:", error);
+              const errorMessage = error?.message || (cropperType === "cover" ? t("uploadCover") : t("uploadAvatar"));
+              toast.error(errorMessage);
+            } finally {
+              setUploading(false);
+              setCropperImage(null);
+              setCropperType(null);
+            }
+          }}
+          onCancel={() => {
+            setShowCropper(false);
+            setCropperImage(null);
+            setCropperType(null);
+          }}
+        />
+      )}
     </div>
   );
 }

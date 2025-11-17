@@ -24,6 +24,8 @@ import {
   BookOpen,
   Activity,
   ChevronRight,
+  User,
+  Settings,
 } from "lucide-react";
 import Cropper from "react-easy-crop";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
@@ -424,9 +426,25 @@ export default function Account() {
 
   return (
     <div className="max-w-4xl mx-auto pt-20 space-y-6">
-      <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-        Hồ sơ của bạn
-      </h1>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-3">
+            <Settings className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+            Cài đặt tài khoản
+          </h1>
+          <p className="text-zinc-600 dark:text-zinc-400 mt-1">
+            Quản lý thông tin cá nhân và cài đặt tài khoản của bạn
+          </p>
+        </div>
+        <Link
+          href={`${base}/community/profile/${user.id}`}
+          className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <User className="h-4 w-4" />
+          Xem hồ sơ công khai
+        </Link>
+      </div>
 
       {/* ===== Profile Card ===== */}
       <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 bg-white dark:bg-zinc-900">

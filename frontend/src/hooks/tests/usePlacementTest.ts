@@ -27,6 +27,7 @@ export type UsePlacementTestReturn = {
   answered: number;
   started: boolean;
   setStarted: React.Dispatch<React.SetStateAction<boolean>>;
+  test: number | null;
 };
 
 export function usePlacementTest(): UsePlacementTestReturn {
@@ -38,6 +39,7 @@ export function usePlacementTest(): UsePlacementTestReturn {
   const [showDetails, setShowDetails] = useState(false);
   const [loading, setLoading] = useState(true);
   const [started, setStarted] = useState(false);
+  const [test, setTest] = useState<number | null>(null);
 
   const { refresh } = useAuth();
 
@@ -73,6 +75,7 @@ export function usePlacementTest(): UsePlacementTestReturn {
         if (!mounted) return;
         setItems(its);
         setStimulusMap(data.stimulusMap || {});
+        setTest(data.test ?? null); // Lưu giá trị test đã được random
       } catch (e) {
         console.error("Load placement paper failed", e);
         toast.error("Không tải được đề kiểm tra");
@@ -117,6 +120,7 @@ export function usePlacementTest(): UsePlacementTestReturn {
         answers,
         timeSec,
         allIds: items.map((it) => it.id),
+        test, // Gửi giá trị test đã được random
       }),
     });
 
@@ -170,5 +174,6 @@ export function usePlacementTest(): UsePlacementTestReturn {
     total,
     answered,
     started, setStarted,
+    test,
   };
 }

@@ -16,12 +16,18 @@ function cn(...classes: Array<string | false | null | undefined>) {
 export default function Dropdown({ items, mobile }: DropdownProps) {
   const pathname = usePathname();
 
+  // Helper function to get pathname from href (remove query params)
+  const getPathFromHref = (href: string) => {
+    // Remove query string and hash from href
+    return href.split('?')[0].split('#')[0];
+  };
+
   if (mobile) {
     // 🔹 Mobile dropdown: style giống NavItem nhưng block lớn, dễ bấm
     return (
       <ul className="flex flex-col space-y-1">
         {items.map((it) => {
-          const isActive = pathname === it.href;
+          const isActive = pathname === getPathFromHref(it.href);
           return (
             <li key={it.href}>
               <Link
@@ -61,7 +67,7 @@ export default function Dropdown({ items, mobile }: DropdownProps) {
   return (
     <ul className="flex flex-col space-y-1">
       {items.map((it) => {
-        const isActive = pathname === it.href;
+        const isActive = pathname === getPathFromHref(it.href);
         return (
           <li key={it.href}>
             <Link

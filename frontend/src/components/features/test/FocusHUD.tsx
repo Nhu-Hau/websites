@@ -102,7 +102,7 @@ export default function FocusHUD({
               </span>
               <div className="xs:w-36 sm:w-52 md:w-72 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden ml-2">
                 <div
-                  className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+                  className="h-full bg-gradient-to-r from-sky-500 to-sky-400"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>

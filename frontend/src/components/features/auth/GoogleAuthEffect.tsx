@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useRouter, usePathname } from "next/navigation";
+import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
-import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 export function GoogleAuthEffect({ auth }: { auth?: string }) {
   const router = useRouter();
-  const basePrefix = useBasePrefix(); // -> "/vi" | "/en" | ...
+  const pathname = usePathname(); // ví dụ: /vi/home
   const { login } = useAuth();
   const hasRun = useRef(false);
 
@@ -19,7 +18,7 @@ export function GoogleAuthEffect({ auth }: { auth?: string }) {
 
     (async () => {
       try {
-        const res = await fetch("/api/auth/me", {
+        const res = await fetch("/api/me", {
           credentials: "include",
           cache: "no-store",
         });
@@ -33,11 +32,11 @@ export function GoogleAuthEffect({ auth }: { auth?: string }) {
           "Không thể lấy thông tin người dùng sau khi đăng nhập Google"
         );
       } finally {
-        // Redirect đến /home (không có query)
-        router.replace(`${basePrefix}/home`);
+        // XÓA query ?auth=... nhưng giữ nguyên locale/path hiện tại
+        router.replace(pathname);
       }
     })();
-  }, [auth, login, basePrefix, router]);
+  }, [auth, login, pathname, router]);
 
   return null;
 }

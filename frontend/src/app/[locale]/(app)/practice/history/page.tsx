@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import PracticeHistoryClient from "@/components/features/practice/PracticeHistoryClient";
+import PracticeHistoryClient from "@/components/features/practice/PracticeHistory";
 import { getPracticeHistory } from "@/lib/server/api";
 
 async function PracticeHistoryData({

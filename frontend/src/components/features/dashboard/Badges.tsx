@@ -20,7 +20,7 @@ import {
   Lock,
   Loader2,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 export type BadgeType =
   | "streak_7_days"

@@ -3,19 +3,17 @@
 
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ResultsPanel } from "@/components/features/practice/ResultsPanel";
+import { ResultsPanel } from "@/components/features/test/ResultsPanel";
 import {
   StimulusRowCard,
   StimulusColumnCard,
-} from "@/components/features/practice/StimulusCards";
+} from "@/components/features/test/StimulusCards";
 import { groupByStimulus } from "@/utils/groupByStimulus";
 import type { ChoiceId, Item, Stimulus } from "@/types/tests.types";
-import { Sidebar } from "@/components/features/practice/Sidebar";
-import { Gauge, MessageSquare, Loader2 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
-import { toast } from "sonner";
+import { ResultLayout } from "@/components/features/test/ResultLayout";
+import { ResultHeader } from "@/components/features/test/ResultHeader";
+import { TestLoadingState } from "@/components/features/test/TestLoadingState";
+import { AIInsightSection } from "@/components/features/test/AIInsightSection";
 import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
@@ -70,25 +68,22 @@ export default function PlacementResult() {
   const [showDetails, setShowDetails] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // 🆕 fix type error: cần prop focusMode + onToggleFocus
   const [focusMode, setFocusMode] = React.useState(false);
 
-  // State cho AI insight
+  // AI insight
   const { user } = useAuth();
-  const [showInsight, setShowInsight] = React.useState(false);
-  const [insightLoading, setInsightLoading] = React.useState(false);
-  const [insight, setInsight] = React.useState<string | null>(null);
 
   // ===== Fetch dữ liệu =====
   React.useEffect(() => {
     let mounted = true;
     setError(null);
+
     (async () => {
       try {
         setLoading(true);
         let attemptData: Attempt | null = null;
 
-        // load kết quả mới nhất sau khi nộp bài placement
+        // load kết quả mới nhất
         if (attemptId === "last") {
           const hist = await fetch(`/api/placement/attempts?limit=1&page=1`, {
             credentials: "include",
@@ -111,10 +106,8 @@ export default function PlacementResult() {
                   setError(`Không thể tải chi tiết: ${detailRes.status}`);
                 }
               }
-            } else {
-              if (mounted) {
-                setError("Không tìm thấy kết quả gần nhất");
-              }
+            } else if (mounted) {
+              setError("Không tìm thấy kết quả gần nhất");
             }
           } else {
             const errorText = await hist.text();
@@ -134,7 +127,6 @@ export default function PlacementResult() {
           }
           if (res.ok) {
             attemptData = (await res.json()) as Attempt;
-            console.log("Fetched attempt data:", attemptData);
           } else {
             const errorText = await res.text();
             console.error("Failed to fetch attempt:", res.status, errorText);
@@ -156,7 +148,6 @@ export default function PlacementResult() {
         }
 
         setAttempt(attemptData);
-        console.log("Attempt set, fetching items...");
 
         // tải lại câu hỏi gốc để render
         const orderedRes = await fetch(
@@ -168,17 +159,11 @@ export default function PlacementResult() {
 
         if (orderedRes.ok) {
           const data = (await orderedRes.json()) as ItemsResp;
-          console.log("Fetched items from /items endpoint:", {
-            itemsCount: data.items?.length,
-            stimulusCount: Object.keys(data.stimulusMap || {}).length,
-          });
           if (!mounted) return;
           setItems(data.items || []);
           setStimulusMap(data.stimulusMap || {});
         } else {
-          console.warn(
-            "Failed to fetch items from /items endpoint, trying fallback..."
-          );
+          // fallback: fetch theo list id
           const allIds = attemptData.allIds?.length
             ? attemptData.allIds
             : attemptData.items?.map((i) => i.id) || [];
@@ -200,10 +185,6 @@ export default function PlacementResult() {
                   (a, b) =>
                     (indexMap.get(a.id) ?? 0) - (indexMap.get(b.id) ?? 0)
                 );
-              console.log("Fetched items from fallback endpoint:", {
-                itemsCount: orderedItems.length,
-                stimulusCount: Object.keys(json.stimulusMap || {}).length,
-              });
               if (!mounted) return;
               setItems(orderedItems);
               setStimulusMap(json.stimulusMap || {});
@@ -211,29 +192,27 @@ export default function PlacementResult() {
               const errorText = await r.text();
               console.error("Failed to fetch items from fallback:", errorText);
               if (mounted) {
-                setError(
-                  `Không thể tải câu hỏi: ${r.status} - ${errorText}`
-                );
+                setError(`Không thể tải câu hỏi: ${r.status} - ${errorText}`);
               }
             }
-          } else {
-            console.warn("No item IDs found in attempt data");
-            if (mounted) {
-              setError("Không tìm thấy danh sách câu hỏi");
-            }
+          } else if (mounted) {
+            setError("Không tìm thấy danh sách câu hỏi");
           }
         }
       } catch (e) {
         console.error("Error fetching placement result:", e);
         if (mounted) {
           setError(
-            `Lỗi khi tải dữ liệu: ${e instanceof Error ? e.message : "Lỗi không xác định"}`
+            `Lỗi khi tải dữ liệu: ${
+              e instanceof Error ? e.message : "Lỗi không xác định"
+            }`
           );
         }
       } finally {
         if (mounted) setLoading(false);
       }
     })();
+
     return () => {
       mounted = false;
     };
@@ -290,47 +269,44 @@ export default function PlacementResult() {
     return { listening, reading, overall };
   }
 
+  // ====== Early states (loading / error / not found) ======
   if (loading) {
     return (
-      <div className="text-center py-20 pt-32">
-        <div className="h-12 w-12 border-4 border-blue-600 border-t-transparent animate-spin rounded-full mx-auto" />
-        <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-          Đang tải kết quả...
-        </p>
+      <div className="mt-16 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50/70 dark:bg-zinc-950/80">
+        <TestLoadingState message="Đang tải kết quả bài kiểm tra…" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-20 pt-32">
-        <p className="text-red-600 dark:text-red-400 font-medium mb-2">
-          {error}
-        </p>
-        <button
-          onClick={() => {
-            setError(null);
-            setLoading(true);
-            // Trigger re-fetch by updating a dependency
-            window.location.reload();
-          }}
-          className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-        >
-          Thử lại
-        </button>
+      <div className="mt-16 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50/70 dark:bg-zinc-950/80">
+        <div className="max-w-md w-full rounded-2xl border border-red-200/70 dark:border-red-800/80 bg-white/95 dark:bg-zinc-900/95 px-5 py-6 shadow-lg">
+          <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+            {error}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 transition-colors"
+          >
+            Thử tải lại
+          </button>
+        </div>
       </div>
     );
   }
 
   if (!attempt) {
     return (
-      <div className="text-center py-20 pt-32">
-        <p className="text-zinc-700 dark:text-zinc-300 font-medium">
-          Không tìm thấy kết quả.
-        </p>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
-          Attempt ID: {attemptId}
-        </p>
+      <div className="pt-16 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50/70 dark:bg-zinc-950/80">
+        <div className="max-w-md w-full rounded-2xl border border-zinc-200/70 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-900/95 px-5 py-6 shadow-lg text-center">
+          <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+            Không tìm thấy kết quả.
+          </p>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            Attempt ID: {attemptId}
+          </p>
+        </div>
       </div>
     );
   }
@@ -347,248 +323,125 @@ export default function PlacementResult() {
     }, {} as Record<string, { correctAnswer: ChoiceId }>),
   };
 
-  // ====== Render ======
+  // ====== Render chính ======
   return (
-    <div className="flex pt-16">
-      <Sidebar
-        items={items}
-        answers={answers}
-        resp={respLike as any}
-        total={items.length}
-        answered={Object.keys(answers).length}
-        timeLabel={fmtTime(attempt.timeSec)}
-        onSubmit={() => {}}
-        onJump={(i) =>
-          document
-            .getElementById(`q-${i + 1}`)
-            ?.scrollIntoView({ behavior: "smooth", block: "start" })
-        }
-        onToggleDetails={() => setShowDetails((s) => !s)}
-        showDetails={showDetails}
-        countdownSec={35 * 60}
-        started
-        onStart={() => {}}
-        isAuthed
-        onLoginRequest={() => {}}
-        focusMode={focusMode}
-        onToggleFocus={() => setFocusMode((v) => !v)}
-      />
-
-      <main
-        className={`flex-1 px-4 sm:px-6 py-8 transition-all duration-300 ${
-          focusMode ? "lg:ml-[50px]" : "lg:ml-[250px]"
-        } pb-28 lg:pb-0`}
-      >
-        <header className="mb-6">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div>
-                <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
-                  Kết quả bài kiểm tra trình độ
-                </h1>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+    <ResultLayout
+      items={items}
+      answers={answers}
+      resp={respLike as any}
+      total={items.length}
+      answered={Object.keys(answers).length}
+      timeLabel={fmtTime(attempt.timeSec)}
+      onJump={(i) =>
+        document
+          .getElementById(`q-${i + 1}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }
+      onToggleDetails={() => setShowDetails((s) => !s)}
+      showDetails={showDetails}
+      focusMode={focusMode}
+      onToggleFocus={() => setFocusMode((v) => !v)}
+    >
+          {/* Header */}
+          <ResultHeader
+            badge={{
+              label: "Kết quả • Mini TOEIC",
+              dotColor: "bg-emerald-500",
+            }}
+            title="Kết quả bài kiểm tra xếp trình độ TOEIC"
+            description={
+              <>
+                Hoàn thành lúc{" "}
+                <span className="font-medium">
                   {new Date(attempt.submittedAt).toLocaleString()}
+                </span>
+                . Dưới đây là điểm TOEIC ước lượng và phân tích chi tiết theo
+                từng kỹ năng.
+              </>
+            }
+            stats={{
+              correct: attempt.correct,
+              total: attempt.total,
+              timeLabel: fmtTime(attempt.timeSec),
+              questionIconColor:
+                "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300",
+              timeIconColor:
+                "bg-amber-50 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300",
+            }}
+          />
+
+          {/* Tổng quan + phân tích (dùng ResultsPanel pro) */}
+          <ResultsPanel
+            resp={respLike as any}
+            timeLabel={fmtTime(attempt.timeSec)}
+            onToggleDetails={() => setShowDetails((s) => !s)}
+            showDetails={showDetails}
+          />
+
+          {/* AI Insight Section */}
+          {attempt._id && (
+            <div className="mt-8">
+              <AIInsightSection
+                attemptId={attempt._id}
+                userAccess={user?.access}
+                apiEndpoint={`/api/chat/insight/placement/${attempt._id}`}
+              />
+            </div>
+          )}
+
+          {/* Danh sách câu hỏi */}
+          <section className="mt-8 space-y-6 sm:space-y-8">
+            {items.length === 0 ? (
+              <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
+                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
+                  Không có câu hỏi để hiển thị.
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Items: {items.length}, Groups: {groups.length}
                 </p>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/70">
-              <Gauge className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                TOEIC ước lượng:{" "}
-                <strong className="text-blue-600 dark:text-blue-400">
-                  {predicted.overall}
-                </strong>{" "}
-                / 990
-              </span>
-            </div>
-          </div>
-        </header>
-
-        {/* Tổng quan kết quả */}
-        <ResultsPanel
-          resp={respLike as any}
-          timeLabel={fmtTime(attempt.timeSec)}
-          onToggleDetails={() => setShowDetails((s) => !s)}
-          showDetails={showDetails}
-        />
-
-        {/* Ô nhận xét AI */}
-        {attempt._id && user?.access === "premium" && (
-          <section className="mt-8 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                Nhận xét từ AI
-              </h3>
-              {!showInsight && (
-                <button
-                  onClick={async () => {
-                    if (insight) {
-                      setShowInsight(true);
-                      // Mở ChatBox và trigger refresh để hiện message
-                      if (typeof window !== "undefined") {
-                        window.dispatchEvent(
-                          new CustomEvent("chatbox:open-and-refresh")
-                        );
-                      }
-                      return;
-                    }
-                    if (!attempt._id) return;
-                    setInsightLoading(true);
-                    try {
-                      const res = await fetch(
-                        `/api/chat/insight/placement/${attempt._id}`,
-                        {
-                          method: "POST",
-                          credentials: "include",
-                        }
-                      );
-                      if (!res.ok)
-                        throw new Error("Failed to load insight");
-                      const json = await res.json();
-                      if (json?.data?.insight) {
-                        setInsight(json.data.insight);
-                        setShowInsight(true);
-                        // Mở ChatBox và trigger refresh để hiện message
-                        if (typeof window !== "undefined") {
-                          window.dispatchEvent(
-                            new CustomEvent("chatbox:open-and-refresh")
-                          );
-                        }
-                      } else {
-                        toast.error("Không thể tạo nhận xét");
-                      }
-                    } catch (e) {
-                      console.error(e);
-                      toast.error("Lỗi khi tải nhận xét");
-                    } finally {
-                      setInsightLoading(false);
-                    }
-                  }}
-                  disabled={insightLoading}
-                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-500 text-white text-sm font-medium hover:from-purple-700 hover:to-purple-600 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {insightLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Đang tải...
-                    </>
-                  ) : (
-                    <>
-                      <MessageSquare className="h-4 w-4" />
-                      {insight ? "Xem nhận xét" : "Tải nhận xét"}
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-            {showInsight && insight && (
-              <div className="prose prose-sm max-w-none dark:prose-invert border-t border-zinc-200 dark:border-zinc-700 pt-4">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeHighlight]}
-                  components={{
-                    h1: ({ children }) => (
-                      <h1 className="text-base font-bold mb-2">
-                        {children}
-                      </h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className="text-sm font-bold mb-2">{children}</h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 className="text-xs font-bold mb-1">{children}</h3>
-                    ),
-                    p: ({ children }) => (
-                      <p className="mb-2 last:mb-0 text-sm">{children}</p>
-                    ),
-                    ul: ({ children }) => (
-                      <ul className="list-disc list-inside mb-2 space-y-1 text-sm">
-                        {children}
-                      </ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol className="list-decimal list-inside mb-2 space-y-1 text-sm">
-                        {children}
-                      </ol>
-                    ),
-                    li: ({ children }) => (
-                      <li className="text-sm">{children}</li>
-                    ),
-                    strong: ({ children }) => (
-                      <strong className="font-semibold">{children}</strong>
-                    ),
-                    em: ({ children }) => (
-                      <em className="italic">{children}</em>
-                    ),
-                  }}
-                >
-                  {insight}
-                </ReactMarkdown>
+            ) : groups.length === 0 ? (
+              <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
+                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
+                  Không thể nhóm câu hỏi để hiển thị.
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Items: {items.length}, StimulusMap keys:{" "}
+                  {Object.keys(stimulusMap).length}
+                </p>
               </div>
-            )}
-            {showInsight && !insight && (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4">
-                Chưa có nhận xét
-              </p>
+            ) : (
+              groups.map((g) =>
+                g.stimulus?.part === "part.1" ? (
+                  <StimulusRowCard
+                    key={g.key}
+                    stimulus={g.stimulus}
+                    items={g.items}
+                    itemIndexMap={itemIndexMap}
+                    answers={answers}
+                    correctMap={correctMap}
+                    locked
+                    onPick={() => {}}
+                    showStimulusDetails={showDetails}
+                    showPerItemExplain={showDetails}
+                  />
+                ) : (
+                  <StimulusColumnCard
+                    key={g.key}
+                    stimulus={g.stimulus}
+                    items={g.items}
+                    itemIndexMap={itemIndexMap}
+                    answers={answers}
+                    correctMap={correctMap}
+                    locked
+                    onPick={() => {}}
+                    showStimulusDetails={showDetails}
+                    showPerItemExplain={showDetails}
+                  />
+                )
+              )
             )}
           </section>
-        )}
-
-        {/* Danh sách câu hỏi */}
-        <section className="mt-8 space-y-6">
-          {items.length === 0 ? (
-            <div className="text-center py-12 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80">
-              <p className="text-zinc-600 dark:text-zinc-400 mb-2">
-              Không có câu hỏi để hiển thị.
-            </p>
-            <p className="text-sm text-zinc-500 dark:text-zinc-500">
-              Items: {items.length}, Groups: {groups.length}
-            </p>
-          </div>
-          ) : groups.length === 0 ? (
-            <div className="text-center py-12 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80">
-              <p className="text-zinc-600 dark:text-zinc-400 mb-2">
-              Không thể nhóm câu hỏi để hiển thị.
-            </p>
-            <p className="text-sm text-zinc-500 dark:text-zinc-500">
-              Items: {items.length}, StimulusMap keys: {Object.keys(stimulusMap).length}
-            </p>
-          </div>
-          ) : (
-            groups.map((g) =>
-              g.stimulus?.part === "part.1" ? (
-                <StimulusRowCard
-                  key={g.key}
-                  stimulus={g.stimulus}
-                  items={g.items}
-                  itemIndexMap={itemIndexMap}
-                  answers={answers}
-                  correctMap={correctMap}
-                  locked
-                  onPick={() => {}}
-                  showStimulusDetails={showDetails}
-                  showPerItemExplain={showDetails}
-                />
-              ) : (
-                <StimulusColumnCard
-                  key={g.key}
-                  stimulus={g.stimulus}
-                  items={g.items}
-                  itemIndexMap={itemIndexMap}
-                  answers={answers}
-                  correctMap={correctMap}
-                  locked
-                  onPick={() => {}}
-                  showStimulusDetails={showDetails}
-                  showPerItemExplain={showDetails}
-                />
-              )
-            )
-          )}
-        </section>
-      </main>
-    </div>
+    </ResultLayout>
   );
 }

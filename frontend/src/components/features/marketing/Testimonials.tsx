@@ -1,7 +1,10 @@
+"use client";
+
 import React from "react";
 import SectionHeader from "./SectionHeader";
 import { TestimonialAvatar } from "./TestimonialAvatar";
 import { Quote, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
 
 type Testimonial = {
   avatar: string;
@@ -39,20 +42,37 @@ export default function Testimonials() {
   ];
 
   return (
-    <section className="bg-zinc-50 dark:bg-zinc-950 border-y border-zinc-200 dark:border-zinc-900 py-20 sm:py-24">
+    <section className="border-y border-zinc-200 bg-zinc-50 py-16 dark:border-zinc-900 dark:bg-zinc-950">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <SectionHeader
-          eyebrow="Cảm nhận người học"
-          title="Hàng nghìn người đã tăng điểm"
-          desc="Kinh nghiệm thật – kết quả thật từ những học viên đã sử dụng nền tảng của chúng tôi."
-          align="center"
-        />
+        {/* Header motion: rơi nhẹ từ trên xuống */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}
+        >
+          <SectionHeader
+            eyebrow="Cảm nhận người học"
+            title="Hàng nghìn người đã tăng điểm"
+            desc="Kinh nghiệm thật – kết quả thật từ những học viên đã sử dụng nền tảng của chúng tôi."
+            align="center"
+          />
+        </motion.div>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
+        {/* Cards motion: fade + slide up, stagger theo index */}
+        <div className="mt-16 grid gap-8 lg:grid-cols-3 sm:max-w-xl sm:mx-auto lg:mx-0 mx-0 lg:max-w-none">
           {items.map((t, index) => (
-            <figure
+            <motion.figure
               key={index}
-              className="relative overflow-hidden rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm border border-zinc-200 dark:border-zinc-800 transition-all duration-300 hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{
+                duration: 0.55,
+                ease: [0.22, 0.61, 0.36, 1],
+                delay: index * 0.12,
+              }}
+              className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
             >
               {/* Quote icon - subtle background */}
               <div className="pointer-events-none absolute -right-4 -top-4 opacity-5">
@@ -61,20 +81,19 @@ export default function Testimonials() {
 
               {/* Quote content */}
               <blockquote className="relative mb-6">
-                <span className="absolute -left-1 -top-2 text-4xl font-bold text-zinc-200 dark:text-zinc-800 leading-none">
-                  "
+                <span className="absolute -left-1 -top-2 leading-none text-4xl font-bold text-zinc-200 dark:text-zinc-800">
                 </span>
-                <p className="relative pl-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 font-medium">
+                <p className="relative pl-4 text-sm font-medium leading-relaxed text-zinc-700 dark:text-zinc-300">
                   {t.quote}
                 </p>
               </blockquote>
 
               {/* Author + Score */}
-              <figcaption className="flex items-center justify-between gap-4 pt-6 border-t border-zinc-100 dark:border-zinc-800">
+              <figcaption className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-6 dark:border-zinc-800">
                 <div className="flex items-center gap-3">
                   <div className="relative shrink-0">
                     <TestimonialAvatar src={t.avatar} alt={t.name} />
-                    <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-900 bg-emerald-500" />
+                    <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-zinc-900" />
                   </div>
                   <div>
                     <div className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -91,14 +110,22 @@ export default function Testimonials() {
                   {t.score}
                 </span>
               </figcaption>
-            </figure>
+            </motion.figure>
           ))}
         </div>
 
-        {/* Stats bar */}
-        <div className="mt-16 text-center">
+        {/* Stats bar motion */}
+        <motion.div
+          className="mt-16 text-center"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.55, ease: [0.22, 0.61, 0.36, 1], delay: 0.15 }}
+        >
           <p className="text-base font-medium text-zinc-700 dark:text-zinc-300">
-            <span className="text-2xl font-bold text-sky-600 dark:text-sky-400">98%</span>{" "}
+            <span className="text-2xl font-bold text-sky-600 dark:text-sky-400">
+              98%
+            </span>{" "}
             học viên cải thiện điểm số sau{" "}
             <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
               4 tuần
@@ -109,7 +136,7 @@ export default function Testimonials() {
             <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             Dữ liệu từ 12.000+ học viên
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -5,8 +5,6 @@ import { routing } from "@/routing";
 import { cookies } from "next/headers";
 import { ThemeProvider } from "../../context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
-import { Toaster } from "sonner";
-import { ToastContainer } from "react-toastify";
 import CornerToast from "@/components/common/CornerToast";
 import SocketBridge from "@/components/layout/SocketBridge";
 import LayoutClient from "./layoutClient";
@@ -33,10 +31,8 @@ export default async function LocaleLayout({
       <NextIntlClientProvider locale={locale}>
         <AuthProvider>
           <LayoutClient>{children}</LayoutClient>
-          <Toaster richColors position="top-center" />
         </AuthProvider>
       </NextIntlClientProvider>
-      <ToastContainer />
       <CornerToast />
       <SocketBridge />
     </ThemeProvider>

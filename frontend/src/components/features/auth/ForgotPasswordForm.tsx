@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react"; // Nếu dùng lucide-react
 
@@ -165,7 +165,7 @@ export default function ForgotPasswordForm() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder="Nhập email của bạn"
               className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 
                          bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm
                          text-zinc-900 dark:text-zinc-100 
@@ -259,7 +259,7 @@ export default function ForgotPasswordForm() {
               placeholder="123456"
               autoFocus
               className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 
-                         bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm text-center font-mono text-lg tracking-widest
+                         bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm text-center font-mono tracking-widest
                          text-zinc-900 dark:text-zinc-100 
                          placeholder:text-zinc-500 dark:placeholder:text-zinc-400
                          focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500

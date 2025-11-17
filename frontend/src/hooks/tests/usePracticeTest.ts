@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import type { Item, Stimulus, ChoiceId } from "@/types/tests.types";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
 import { useAutoSave } from "@/hooks/tests/useAutoSave";
 import { fetchWithAuth } from "@/lib/api/client";
@@ -164,6 +164,7 @@ export function usePracticeTest(): UsePracticeTestReturn {
     const acc = Math.round((r.acc ?? 0) * 100);
     toast.success(`Hoàn thành bài kiểm tra (${acc}% chính xác)`, {
       classNames: { toast: "border border-emerald-300 bg-emerald-50 text-emerald-700 font-semibold" },
+      link: r._id ? `/practice/history/${encodeURIComponent(r._id)}` : undefined,
     });
 
     // Dispatch event để ChatBox tự động refresh và hiển thị Learning Insight

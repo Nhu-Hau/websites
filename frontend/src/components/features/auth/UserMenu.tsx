@@ -21,7 +21,7 @@ import { Tooltip } from "react-tooltip";
 import { useLocaleSwitch } from "@/hooks/routing/useLocaleSwitch";
 import useClickOutside from "@/hooks/common/useClickOutside";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix"; // 👈 THÊM
 
 /* ================= Types ================= */
@@ -271,10 +271,10 @@ export default function UserMenu() {
                 )}
                 <div>
                   <p className="font-semibold text-sm text-zinc-900 dark:text-white">
-                    {me?.name || "Người dùng"}
+                    {me?.name || (ctxUser as any)?.name || "Người dùng"}
                   </p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {me?.email || "—"}
+                    {me?.email || (ctxUser as any)?.email || "—"}
                   </p>
                 </div>
               </div>

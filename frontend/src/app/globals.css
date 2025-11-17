@@ -46,3 +46,48 @@ body {
   animation: pulse-slow 2.5s ease-in-out infinite;
 }
 
+/* Notistack - Custom Styling */
+/* .notistack-SnackbarContainer {
+  @apply z-[9999] !important;
+} */
+
+/* .notistack-MuiContent {
+  @apply rounded-2xl shadow-2xl border-2 font-sans !important;
+  @apply bg-white dark:bg-zinc-900 !important;
+  @apply border-zinc-200 dark:border-zinc-800 !important;
+  @apply text-zinc-900 dark:text-zinc-100 !important;
+  @apply min-h-[72px] px-5 py-4 !important;
+  @apply transition-all duration-300 ease-out !important;
+  @apply backdrop-blur-sm !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+} */
+
+/* .notistack-MuiContent:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  transform: translateY(-1px);
+} */
+
+/* Success Snackbar */
+/* .notistack-MuiContent-success {
+  @apply border-l-4 border-l-emerald-500 !important;
+  @apply border-r border-t border-b border-zinc-200 dark:border-zinc-800 !important;
+} */
+
+/* Error Snackbar */
+/* .notistack-MuiContent-error {
+  @apply border-l-4 border-l-red-500 !important;
+  @apply border-zinc-200 dark:border-zinc-800 !important;
+} */
+
+/* Info Snackbar */
+/* .notistack-MuiContent-info {
+  @apply border-l-4 border-l-sky-500 !important;
+  @apply border-r border-t border-b border-zinc-200 dark:border-zinc-800 !important;
+} */
+
+/* Warning Snackbar */
+/* .notistack-MuiContent-warning {
+  @apply border-l-4 border-l-amber-500 !important;
+  @apply border-r border-t border-b border-zinc-200 dark:border-zinc-800 !important;
+} */
+

@@ -79,7 +79,7 @@ export function TranslationProvider({ children, isPremium }: TranslationProvider
           position={wordPosition}
           loading={wordLoading}
           showMeaning={showMeaning}
-          onToggleMeaning={() => setShowMeaning(!showMeaning)}
+          onToggleMeaning={() => setShowMeaning(showMeaning === "vietnamese" ? "english" : "vietnamese")}
           onClose={clearWordData}
         />
       )}

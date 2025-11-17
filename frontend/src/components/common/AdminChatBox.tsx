@@ -389,32 +389,33 @@ export default function AdminChatBox() {
 
   const maxLen = 2000;
 
-return (
-  <>
-    {/* FAB */}
-    <div className="fixed bottom-24 right-6 z-[70]">
-      <motion.button
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Đóng chat admin" : "Mở chat admin"}
-        className="group relative flex h-14 w-14 items-center justify-center rounded-full
-                   bg-gradient-to-tr from-orange-500 to-orange-600 text-white
-                   shadow-xl ring-4 ring-white/30 dark:ring-zinc-800/30
-                   hover:scale-110 active:scale-95 transition-all duration-200
-                   focus:outline-none focus:ring-4 focus:ring-orange-400/50"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <motion.div
-          animate={{ rotate: open ? 90 : 0 }}
-          transition={{ type: "spring", stiffness: 300 }}
-          className="flex items-center justify-center"
+  return (
+    <>
+      {/* FAB */}
+      <div className="fixed bottom-24 right-6 z-[70]">
+        <motion.button
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Đóng chat admin" : "Mở chat admin"}
+          className="relative flex h-14 w-14 items-center justify-center rounded-full
+                     bg-gradient-to-tr from-orange-400 to-orange-600 text-white
+                     shadow-xl shadow-orange-500/40 ring-4 ring-white/30
+                     hover:scale-110 active:scale-95 transition-all duration-200
+                     focus:outline-none focus:ring-4 focus:ring-orange-400/50
+                     dark:from-orange-500 dark:to-orange-600"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
         >
-          {open ? (
-            <FiX className="h-6 w-6" />
-          ) : (
-            <FaUserTie className="h-6 w-6" />
-          )}
-        </motion.div>
+          <motion.div
+            animate={{ rotate: open ? 90 : 0 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            {open ? (
+              <FiX className="h-6 w-6" />
+            ) : (
+              <FaUserTie className="h-6 w-6" />
+            )}
+          </motion.div>
+        </motion.button>
 
         {/* Badge */}
         <AnimatePresence>
@@ -424,53 +425,47 @@ return (
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center
-                         rounded-full bg-red-500 text-white text-xs font-black shadow-lg ring-2 ring-white dark:ring-zinc-900 animate-pulse"
+                         rounded-full bg-red-500 text-white text-xs font-bold shadow-lg animate-pulse"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.button>
-    </div>
+      </div>
 
-    {/* Panel */}
-    <motion.div
-      ref={wrapperRef}
-      initial={false}
-      animate={{
-        opacity: open ? 1 : 0,
-        y: open ? 0 : 20,
-        scale: open ? 1 : 0.96,
-      }}
-      transition={{ duration: 0.22, ease: "easeOut" }}
-      className={`fixed bottom-44 sm:bottom-4 right-4 sm:right-[6.5rem] z-[60]
-                  w-[calc(100vw-2rem)] sm:w-[28rem] md:w-[32rem]
-                  ${open ? "pointer-events-auto" : "pointer-events-none"}`}
-    >
-      <div className="group/overlay overflow-hidden rounded-3xl border-2 border-white/30 bg-white/90 backdrop-blur-xl shadow-2xl ring-2 ring-white/20 dark:ring-zinc-800/50 dark:bg-zinc-900/90 transition-all duration-500 hover:shadow-3xl hover:scale-[1.005]">
-        {/* Gradient overlay khi hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-amber-500/5 opacity-0 group-hover/overlay:opacity-100 transition-opacity duration-500" />
-
-        <div className="relative">
+      {/* Panel */}
+      <motion.div
+        ref={wrapperRef}
+        initial={false}
+        animate={{
+          opacity: open ? 1 : 0,
+          y: open ? 0 : 20,
+          scale: open ? 1 : 0.96,
+        }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+        className={`fixed bottom-44 sm:bottom-4 right-4 sm:right-[6.5rem] z-[60]
+                    w-[calc(100vw-2rem)] sm:w-[28rem] md:w-[32rem]
+                    ${open ? "pointer-events-auto" : "pointer-events-none"}`}
+      >
+        <div className="overflow-hidden rounded-3xl border border-white/20 bg-white/90 backdrop-blur-xl shadow-2xl dark:bg-zinc-900/95 dark:border-zinc-700/50">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 bg-gradient-to-r from-orange-50/90 to-amber-50/80 dark:from-orange-900/30 dark:to-amber-900/20 border-b border-white/30 dark:border-zinc-700/50">
+          <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 bg-gradient-to-r from-orange-50/80 to-amber-50/60 dark:from-orange-900/30 dark:to-amber-900/20 border-b border-gray-200/50 dark:border-zinc-700">
             <div className="flex items-center gap-3">
-              <div className="relative transform-gpu transition-all duration-400 group-hover/overlay:scale-110 group-hover/overlay:-rotate-3">
-                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-gradient-to-tr from-orange-500 to-orange-600 p-px shadow-xl ring-3 ring-white/50 dark:ring-zinc-800/50">
-                  <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white dark:bg-zinc-900 backdrop-blur-md">
-                    <FaUserTie className="h-5 w-5 text-orange-600 dark:text-orange-400 drop-shadow-md" />
+              <div className="relative">
+                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-gradient-to-tr from-orange-500 to-orange-600 p-px shadow-lg">
+                  <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white dark:bg-zinc-900">
+                    <FaUserTie className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                   </div>
                 </div>
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-orange-400/40 to-amber-400/40 blur-xl opacity-0 group-hover/overlay:opacity-100 transition-opacity duration-500" />
                 <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-orange-500 border-2 border-white dark:border-zinc-900 animate-pulse" />
               </div>
               <div className="leading-tight">
-                <h3 className="text-sm sm:text-base font-black text-zinc-900 dark:text-white">
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                   Chat với Admin
                 </h3>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
-                  <span className="font-bold">Hỗ trợ trực tiếp</span>
+                <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                  Hỗ trợ trực tiếp
                 </p>
               </div>
             </div>
@@ -479,22 +474,18 @@ return (
               {messages.length > 0 && (
                 <button
                   onClick={clearChat}
-                  className="group/btn rounded-xl p-2 text-zinc-500 hover:bg-red-50 hover:text-red-600
-                    focus:outline-none focus:ring-2 focus:ring-red-400 transition
-                    dark:text-zinc-400 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                  className="group rounded-xl p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                   aria-label="Xóa cuộc trò chuyện"
                 >
-                  <FiTrash2 className="h-4 w-4 transition group-hover/btn:scale-110 group-hover/btn:rotate-12" />
+                  <FiTrash2 className="h-4 w-4 transition group-hover:scale-110" />
                 </button>
               )}
               <button
                 onClick={() => setOpen(false)}
-                className="group/btn rounded-xl p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700
-                  focus:outline-none focus:ring-2 focus:ring-zinc-400 transition
-                  dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                className="rounded-xl p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 transition dark:text-gray-400 dark:hover:bg-zinc-800 dark:hover:text-gray-200"
                 aria-label="Đóng chat"
               >
-                <FiX className="h-4 w-4 transition group-hover/btn:scale-110" />
+                <FiX className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -506,10 +497,9 @@ return (
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="mx-4 mt-3 rounded-2xl bg-gradient-to-r from-red-50 to-red-50/80 border-2 border-red-200/50 
-                  px-3 py-2.5 backdrop-blur-sm shadow-inner dark:from-red-900/30 dark:to-red-900/20 dark:border-red-800/50"
+                className="mx-4 mt-3 rounded-xl bg-red-50/80 border border-red-200/50 px-3 py-2.5 backdrop-blur-sm dark:bg-red-900/20 dark:border-red-800/50"
               >
-                <p className="text-sm font-black text-red-700 dark:text-red-300 flex items-center gap-2">
+                <p className="text-sm font-medium text-red-700 dark:text-red-300 flex items-center gap-2">
                   <FiAlertCircle className="h-4 w-4" />
                   {error}
                 </p>
@@ -520,15 +510,14 @@ return (
           {/* Messages */}
           <div
             ref={listRef}
-            className="max-h-[60vh] min-h-[40vh] overflow-y-auto px-3 sm:px-4 py-4 space-y-4 bg-gradient-to-b from-transparent to-white/30 dark:from-transparent dark:to-zinc-900/50"
+            className="h-[38vh] xs:h-[40vh] sm:h-[50vh] overflow-y-auto px-3 sm:px-4 py-4 space-y-4 bg-gradient-to-b from-transparent to-orange-50/20 dark:from-transparent dark:to-zinc-900/50"
           >
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-10">
-                <div className="relative h-16 w-16 rounded-full bg-gradient-to-tr from-orange-100 to-amber-100 dark:from-orange-900/50 dark:to-amber-900/50 flex items-center justify-center mb-4 shadow-inner">
+                <div className="h-16 w-16 rounded-full bg-gradient-to-tr from-orange-100 to-amber-100 dark:from-orange-900/50 dark:to-amber-900/50 flex items-center justify-center mb-4">
                   <FaUserTie className="h-8 w-8 text-orange-600 dark:text-orange-400" />
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-400/20 to-amber-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400 max-w-xs leading-relaxed">
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
                   {!user
                     ? "Vui lòng đăng nhập để sử dụng chat admin"
                     : user.access !== "premium"
@@ -546,19 +535,21 @@ return (
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 300 }}
-                    className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                    className={`flex ${
+                      m.role === "user" ? "justify-end" : "justify-start"
+                    }`}
                   >
                     <div
-                      className={`group/msg relative max-w-[82%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-lg transition-all duration-300
-                        ${m.role === "user"
+                      className={`group relative max-w-[82%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-md transition-all ${
+                        m.role === "user"
                           ? "bg-gradient-to-tr from-orange-600 to-orange-500 text-white rounded-tr-sm"
-                          : "bg-white/90 text-zinc-800 dark:bg-zinc-800/90 dark:text-zinc-100 rounded-tl-sm backdrop-blur-sm"
-                        }`}
+                          : "bg-white text-gray-800 dark:bg-zinc-800 dark:text-gray-100 rounded-tl-sm"
+                      }`}
                     >
                       {m.role === "admin" && (
-                        <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-80">
-                          <FaUserTie className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
-                          <span className="font-black">Admin</span>
+                        <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-75">
+                          <FaUserTie className="h-3.5 w-3.5" />
+                          <span className="font-medium">Admin</span>
                         </div>
                       )}
 
@@ -569,10 +560,10 @@ return (
                       />
 
                       <div
-                        className={`mt-2 text-xs font-bold flex items-center gap-1.5 ${
+                        className={`mt-2 text-[10px] font-medium flex items-center gap-1.5 ${
                           m.role === "user"
-                            ? "text-white/80"
-                            : "text-zinc-500 dark:text-zinc-400"
+                            ? "text-white/70"
+                            : "text-gray-400 dark:text-gray-500"
                         }`}
                       >
                         <FiClock className="h-3 w-3" />
@@ -587,13 +578,13 @@ return (
                       {/* Copy (admin only) */}
                       {m.role === "admin" && !m.pending && (
                         <button
-                          onClick={() => navigator.clipboard.writeText(m.content)}
-                          className="absolute -top-2 -right-2 opacity-0 group-hover/msg:opacity-100 
-                            p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow-md
-                            transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                          onClick={() =>
+                            navigator.clipboard.writeText(m.content)
+                          }
+                          className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow-md transition hover:scale-110 focus:outline-none focus:ring-2 focus:ring-orange-400"
                           aria-label="Sao chép tin nhắn"
                         >
-                          <FiCopy className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-300" />
+                          <FiCopy className="h-3.5 w-3.5 text-gray-600 dark:text-gray-300" />
                         </button>
                       )}
                     </div>
@@ -604,13 +595,22 @@ return (
 
             {sending && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-2 rounded-2xl bg-white/80 dark:bg-zinc-800/80 px-4 py-3 shadow-inner">
+                <div className="flex items-center gap-2 rounded-2xl bg-gray-100 dark:bg-zinc-800 px-4 py-3">
                   <div className="flex space-x-1">
-                    <span className="h-2 w-2 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="h-2 w-2 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="h-2 w-2 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <span
+                      className="h-2 w-2 rounded-full bg-orange-500 animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <span
+                      className="h-2 w-2 rounded-full bg-orange-500 animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <span
+                      className="h-2 w-2 rounded-full bg-orange-500 animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
                   </div>
-                  <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     Admin đang nhập...
                   </span>
                 </div>
@@ -619,10 +619,10 @@ return (
           </div>
 
           {/* Input */}
-          <div className="border-t-2 border-white/30 dark:border-zinc-700/50 p-3 sm:p-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md">
+          <div className="border-t border-gray-200/60 dark:border-zinc-700/60 p-3 sm:p-4 bg-white/70 dark:bg-zinc-900/70">
             <div className="flex items-end gap-3">
               <div className="flex-1 relative">
-                <Textarea
+                <textarea
                   ref={textareaRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value.slice(0, maxLen))}
@@ -637,42 +637,43 @@ return (
                   disabled={!user || sending || user?.access !== "premium"}
                   rows={1}
                   maxLength={maxLen}
-                  className="pr-12 bg-white/90 dark:bg-zinc-800/90 border-2 border-white/30 dark:border-zinc-700/50 
-                    focus:ring-4 focus:ring-orange-500/30 focus:border-orange-500/50 
-                    placeholder:text-zinc-400 dark:placeholder:text-zinc-500
-                    text-sm font-medium rounded-2xl"
+                  className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 outline-none dark:border-zinc-600 dark:bg-zinc-800/70 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-orange-400"
                   style={{ minHeight: "52px", maxHeight: "120px" }}
                 />
-                <div className="absolute right-3 bottom-3 text-xs font-bold text-zinc-400">
+                <div className="absolute right-3 bottom-3 text-xs text-gray-400">
                   {input.length}/{maxLen}
                 </div>
               </div>
 
-              <Button
+              <button
                 onClick={send}
-                disabled={sending || !input.trim() || !user || user?.access !== "premium"}
-                isLoading={sending}
-                size="lg"
-                variant="primary"
-                className="h-12 w-12 shrink-0 rounded-2xl bg-gradient-to-tr from-orange-600 to-orange-500 
-                  shadow-xl shadow-orange-500/30 hover:scale-110 hover:shadow-2xl 
-                  focus:ring-4 focus:ring-orange-400/50 p-0 transition-all duration-300"
+                disabled={
+                  sending ||
+                  !input.trim() ||
+                  !user ||
+                  user?.access !== "premium"
+                }
+                className="group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-600 to-orange-500 text-white shadow-lg shadow-orange-500/30 transition-all enabled:hover:scale-110 enabled:hover:shadow-xl enabled:focus:outline-none enabled:focus:ring-4 enabled:focus:ring-orange-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {!sending && <FiSend className="h-5 w-5" />}
-              </Button>
+                {sending ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
+                ) : (
+                  <FiSend className="h-5 w-5 transition group-enabled:group-hover:translate-x-0.5" />
+                )}
+              </button>
             </div>
 
             {!user && (
-              <p className="mt-3 text-center text-xs font-bold text-zinc-500 dark:text-zinc-400">
-                <a href={`${basePrefix}/login`} className="text-orange-600 hover:underline font-black">
+              <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+                <a href="/login" className="text-orange-600 hover:underline">
                   Đăng nhập
                 </a>{" "}
                 để chat với admin
               </p>
             )}
             {user && user.access !== "premium" && (
-              <p className="mt-3 text-center text-xs font-black text-orange-600 dark:text-orange-400">
-                <a href={`${basePrefix}/account`} className="hover:underline">
+              <p className="mt-2 text-center text-xs text-orange-600 dark:text-orange-400">
+                <a href="/account" className="hover:underline font-medium">
                   Nâng cấp lên Premium
                 </a>{" "}
                 để sử dụng chat với Admin
@@ -680,8 +681,7 @@ return (
             )}
           </div>
         </div>
-      </div>
-    </motion.div>
-  </>
-);
+      </motion.div>
+    </>
+  );
 }

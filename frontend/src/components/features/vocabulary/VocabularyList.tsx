@@ -1,7 +1,7 @@
 // frontend/src/components/features/vocabulary/VocabularyList.tsx
 "use client";
 
-import { VocabularySet } from "@/features/vocabulary/types/vocabulary.types";
+import { VocabularySet } from "@/types/vocabulary.types";
 import { VocabularySetCard } from "./VocabularySetCard";
 import { BookOpen } from "lucide-react";
 

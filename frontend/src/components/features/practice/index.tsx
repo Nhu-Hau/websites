@@ -2,23 +2,36 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { usePracticeTest } from "@/hooks/tests/usePracticeTest";
-import { Sidebar } from "./Sidebar";
-import { ResultsPanel } from "./ResultsPanel";
-import { groupByStimulus } from "@/utils/groupByStimulus";
-import { StimulusRowCard, StimulusColumnCard } from "./StimulusCards";
-import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { usePracticeTest } from "@/hooks/tests/usePracticeTest";
+import { ResultsPanel } from "../test/ResultsPanel";
+import { groupByStimulus } from "@/utils/groupByStimulus";
+import { StimulusRowCard, StimulusColumnCard } from "../test/StimulusCards";
+import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-import {
-  ListChecks,
-  Timer,
-  Play,
-  Clock,
-  BookOpen,
-  Headphones,
-} from "lucide-react";
+import { toast } from "@/lib/toast";
+import MandatoryPlacementModal from "../placement/PlacementMandatory";
+import { ChoiceId } from "@/types/tests.types";
+import { TestLayout } from "../test/TestLayout";
+import { TestHeader } from "../test/TestHeader";
+import { TestLoadingState } from "../test/TestLoadingState";
+import { TestStartScreen } from "../test/TestStartScreen";
+import { MobileQuickNavSheet } from "../test/MobileQuickNavSheet";
+import { CheckCircle2 } from "lucide-react";
+
+/* ====== META ====== */
+const PART_META: Record<
+  string,
+  { title: string; defaultQuestions: number; defaultDuration: number }
+> = {
+  "part.1": { title: "Part 1", defaultQuestions: 6, defaultDuration: 6 },
+  "part.2": { title: "Part 2", defaultQuestions: 25, defaultDuration: 11 },
+  "part.3": { title: "Part 3", defaultQuestions: 39, defaultDuration: 20 },
+  "part.4": { title: "Part 4", defaultQuestions: 30, defaultDuration: 13 },
+  "part.5": { title: "Part 5", defaultQuestions: 30, defaultDuration: 17 },
+  "part.6": { title: "Part 6", defaultQuestions: 16, defaultDuration: 12 },
+  "part.7": { title: "Part 7", defaultQuestions: 54, defaultDuration: 55 },
+};
 
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -31,9 +44,58 @@ function partLabel(partKey: string) {
   return n ? `Part ${n}` : partKey;
 }
 
-export default function PracticeRunner() {
-  const router = useRouter();
-  const base = useBasePrefix("vi");
+type Level = 1 | 2 | 3;
+
+function normalizePartLevels(raw: any): Partial<Record<string, Level>> {
+  const out: Partial<Record<string, Level>> = {};
+  if (!raw || typeof raw !== "object") return out;
+  const parts = [
+    "part.1",
+    "part.2",
+    "part.3",
+    "part.4",
+    "part.5",
+    "part.6",
+    "part.7",
+  ];
+  for (const p of parts) {
+    const num = p.split(".")[1];
+    let v: any = raw[p];
+    if (v == null && raw.part && typeof raw.part === "object")
+      v = raw.part[num];
+    if (v == null && raw[num] != null) v = raw[num];
+    const n = Number(v);
+    if (n === 1 || n === 2 || n === 3) out[p] = n as Level;
+  }
+  return out;
+}
+
+const levelConfig: Record<
+  Level,
+  {
+    label: string;
+    desc: string;
+    textColor: string;
+  }
+> = {
+  1: {
+    label: "Level 1",
+    desc: "Beginner",
+    textColor: "text-[#347433] dark:text-[#347433]/90",
+  },
+  2: {
+    label: "Level 2",
+    desc: "Intermediate",
+    textColor: "text-[#27548A] dark:text-[#27548A]/90",
+  },
+  3: {
+    label: "Level 3",
+    desc: "Advanced",
+    textColor: "text-[#BB3E00] dark:text-[#BB3E00]/90",
+  },
+};
+
+export default function PracticePage() {
   const {
     items,
     stimulusMap,
@@ -54,15 +116,35 @@ export default function PracticeRunner() {
     test,
   } = usePracticeTest();
 
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
+  const router = useRouter();
+  const base = useBasePrefix("vi");
 
   const [focusMode, setFocusMode] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isRetake, setIsRetake] = useState<boolean | null>(null);
+  const [mustDoPlacement, setMustDoPlacement] = useState<boolean | null>(null);
+  const [showPlacementModal, setShowPlacementModal] = useState(false);
+  const [suggestedLevel, setSuggestedLevel] = useState<Level | null>(null);
 
   const isListening = /^part\.[1-4]$/.test(partKey);
   const progress = total ? Math.round((answered / total) * 100) : 0;
+
+  // Lấy duration từ PART_META
+  const meta = PART_META[partKey] ?? {
+    title: `Practice • ${partKey}`,
+    defaultQuestions: 10,
+    defaultDuration: 35,
+  };
+  const durationMin = meta.defaultDuration;
+  const countdownTotal = durationMin * 60;
+  const leftSec = useMemo(
+    () => Math.max(0, countdownTotal - timeSec),
+    [countdownTotal, timeSec]
+  );
 
   // Group items
   const { groups, itemIndexMap } = useMemo(
@@ -88,13 +170,14 @@ export default function PracticeRunner() {
     setIsSubmitting(true);
     try {
       await submit();
+      // Scroll to top sau khi nộp
       window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setIsSubmitting(false);
     }
   }, [started, answered, isSubmitting, submit]);
 
-  // Keyboard shortcut: F
+  // Keyboard shortcut: F (chỉ desktop)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "f" && window.innerWidth >= 1024) {
@@ -105,137 +188,254 @@ export default function PracticeRunner() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Check if this is a retake when component loads
+  useEffect(() => {
+    if (
+      !isAuthed ||
+      !partKey ||
+      !level ||
+      !test ||
+      loading ||
+      started ||
+      resp
+    ) {
+      return;
+    }
+
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/practice/history?partKey=${encodeURIComponent(
+            partKey
+          )}&level=${level}&test=${test}&limit=1`,
+          {
+            credentials: "include",
+          }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (mounted && data.items && data.items.length > 0) {
+          setIsRetake(true);
+        } else if (mounted) {
+          setIsRetake(false);
+        }
+      } catch (e) {
+        console.error("Failed to check retake status", e);
+        if (mounted) setIsRetake(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthed, partKey, level, test, loading, started, resp]);
+
+  // Check if user needs to do placement test
+  useEffect(() => {
+    if (authLoading || !user) {
+      setMustDoPlacement(false);
+      setShowPlacementModal(false);
+      return;
+    }
+
+    let mounted = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/placement/attempts?limit=1", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        let done = false;
+        if (r.ok) {
+          const j = await r.json().catch(() => ({}));
+          const items = Array.isArray(j?.items) ? j.items : [];
+          done = items.length > 0;
+        }
+        if (!mounted) return;
+        setMustDoPlacement(!done);
+        if (!done) setShowPlacementModal(true);
+      } catch {
+        if (!mounted) return;
+        setMustDoPlacement(true);
+        setShowPlacementModal(true);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [user, authLoading]);
+
+  // Lấy suggested level theo part
+  useEffect(() => {
+    if (!user || !partKey) {
+      setSuggestedLevel(null);
+      return;
+    }
+
+    let mounted = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!r.ok) throw new Error("me-failed");
+        const j = await r.json();
+        const me = j?.user ?? j?.data ?? j;
+        const levels = normalizePartLevels(me?.partLevels);
+        const sl = (levels[partKey] ?? null) as Level | null;
+        if (mounted) setSuggestedLevel(sl);
+      } catch {
+        if (mounted) setSuggestedLevel(null);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [user, partKey]);
+
   const onLoginRequest = () =>
     toast.error("Vui lòng đăng nhập để bắt đầu làm bài");
 
+  const goPlacement = useCallback(() => {
+    router.push(`${base}/placement`);
+  }, [router, base]);
+
   const handleStart = () => {
     if (!isAuthed) return onLoginRequest();
+    if (mustDoPlacement === true) {
+      setShowPlacementModal(true);
+      return;
+    }
     setStarted(true);
     setTimeout(() => {
       document.getElementById("q-1")?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 
-  // Header
-  const Header = () => (
-    <header className="mb-8">
-      <div className="mx-auto">
-        <div className="flex flex-col gap-5 xl:flex-row sm:justify-between py-6">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              {isListening ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                  <Headphones className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase">
-                    Luyện Nghe
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                  <BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase">
-                    Luyện Đọc
-                  </span>
-                </div>
-              )}
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">
-              {partLabel(partKey)} - Level {level} - Test {test}
-            </h1>
-          </div>
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="group flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white/80 dark:bg-zinc-800/70 backdrop-blur-sm border border-zinc-200/70 dark:border-zinc-700/70 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30 transition-transform duration-300 group-hover:scale-110">
-                <ListChecks className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  Số câu hỏi
-                </p>
-                <p className="text-base font-bold text-zinc-900 dark:text-white">
-                  {total} câu
-                </p>
-              </div>
-            </div>
-
-            <div className="group flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white/80 dark:bg-zinc-800/70 backdrop-blur-sm border border-zinc-200/70 dark:border-zinc-700/70 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30 transition-transform duration-300 group-hover:scale-110">
-                <Timer className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  Thời gian
-                </p>
-                <p className="text-base font-bold text-zinc-900 dark:text-white">
-                  {fmtTime(timeSec)}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-300 leading-relaxed">
-          Luyện tập {partLabel(partKey)} ở Level {level} - Test {test}. Hoàn thành bài làm và xem kết quả chi tiết.
-        </p>
-      </div>
-    </header>
-  );
-
   return (
-    <div className="flex mt-16">
-      {/* Sidebar */}
-      <Sidebar
-        items={items}
-        answers={answers}
-        resp={resp || null}
-        total={total}
-        answered={answered}
-        timeLabel={!resp ? fmtTime(timeSec) : fmtTime(resp.timeSec)}
-        onSubmit={handleSubmit}
-        onJump={jumpTo}
-        onToggleDetails={() => setShowDetails((s: any) => !s)}
-        showDetails={showDetails}
-        countdownSec={35 * 60}
-        started={started}
-        onStart={handleStart}
-        isAuthed={isAuthed}
-        onLoginRequest={onLoginRequest}
-        focusMode={focusMode}
-        onToggleFocus={() => setFocusMode((v) => !v)}
+    <TestLayout
+      items={items}
+      answers={answers}
+      resp={
+        resp
+          ? {
+              ...resp,
+              answersMap: resp.answersMap
+                ? Object.fromEntries(
+                    Object.entries(resp.answersMap).map(([key, value]) => [
+                      key,
+                      { correctAnswer: value.correctAnswer as ChoiceId },
+                    ])
+                  )
+                : undefined,
+            }
+          : null
+      }
+      total={total}
+      answered={answered}
+      timeLabel={!resp ? fmtTime(timeSec) : fmtTime(resp.timeSec)}
+      onSubmit={handleSubmit}
+      onJump={jumpTo}
+      onToggleDetails={() => setShowDetails((s: any) => !s)}
+      showDetails={showDetails}
+      countdownSec={countdownTotal}
+      initialLeftSec={leftSec}
+      started={started}
+      onStart={handleStart}
+      isAuthed={isAuthed}
+      onLoginRequest={onLoginRequest}
+      focusMode={focusMode}
+      onToggleFocus={() => setFocusMode((v) => !v)}
+      durationMin={durationMin}
+      currentIndex={currentIndex}
+      leftSec={leftSec}
+      progressPercent={progress}
+      onOpenQuickNav={() => setMobileNavOpen(true)}
+      mobileNavOpen={mobileNavOpen}
+    >
+      <TestHeader
+        badge={{
+          label: `Luyện tập TOEIC • ${partLabel(
+            partKey
+          )} • Level ${level} • Test ${test}`,
+          dotColor: "bg-sky-500",
+        }}
+        title={`Bài luyện tập ${partLabel(partKey)}`}
+        description={
+          isListening ? (
+            <>
+              Luyện{" "}
+              <span className="font-semibold text-sky-600 dark:text-sky-400">
+                kỹ năng Nghe
+              </span>{" "}
+              ở <span className="font-semibold">Level {level}</span> –{" "}
+              <span className="font-semibold">Test {test}</span>. Hoàn thành bài
+              để xem phân tích chi tiết từng câu hỏi.
+            </>
+          ) : (
+            <>
+              Luyện{" "}
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                kỹ năng Đọc
+              </span>{" "}
+              ở <span className="font-semibold">Level {level}</span> – Test{" "}
+              <span className="font-semibold">{test}</span>. Hoàn thành bài để
+              xem kết quả và giải thích chi tiết.
+            </>
+          )
+        }
+        stats={{
+          totalQuestions: total,
+          durationMin,
+          questionIconColor:
+            "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300",
+        }}
       />
 
-      {/* Main */}
-      <main
-        className={`flex-1 px-4 sm:px-6 py-8 transition-all duration-300 ${
-          focusMode ? "lg:ml-[50px]" : "lg:ml-[250px]"
-        } pb-28 lg:pb-0`}
-      >
-        <Header />
+      {loading ? (
+        <TestLoadingState message="Đang tải bài luyện tập…" />
+      ) : !started && !resp ? (
+        <TestStartScreen
+          description={
+            isRetake === null ? (
+              <span>Đang kiểm tra...</span>
+            ) : isRetake ? (
+              <>
+                Đây là lần <b>làm lại</b> bài của{" "}
+                <b>
+                  {partLabel(partKey)} - Level {level} - Test {test}
+                </b>
+                . Điểm sẽ không ảnh hưởng đến level của bạn
+              </>
+            ) : (
+              <>
+                Đây là <b>lần đầu</b> làm bài{" "}
+                <b>
+                  {partLabel(partKey)} - Level {level} - Test {test}
+                </b>{" "}
+                , Điểm sẽ dùng để đánh giá trình độ và đề xuất level phù hợp
+              </>
+            )
+          }
+          buttonText="Bắt đầu luyện tập"
+          onStart={handleStart}
+        />
+      ) : (
+        <div className="space-y-8 sm:space-y-10">
+          {/* Nếu có kết quả thì show panel giống placement (trên cùng) */}
+          {resp && (
+            <ResultsPanel
+              resp={resp as any}
+              timeLabel={fmtTime(resp.timeSec)}
+              onToggleDetails={() => setShowDetails((s: any) => !s)}
+              showDetails={showDetails}
+            />
+          )}
 
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent"></div>
-            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-              Đang tải bài kiểm tra…
-            </p>
-          </div>
-        ) : !started && !resp ? (
-          <div className="text-center py-16">
-            <div className="max-w-md mx-auto">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
-                Nhấn{" "}
-                <span className="text-emerald-600 dark:text-emerald-400 underline">
-                  Bắt đầu
-                </span>{" "}
-                để làm bài
-              </h2>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                {total} câu hỏi • Làm bài theo tốc độ của bạn
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-8">
+          {/* Câu hỏi */}
+          <div className="space-y-6 sm:space-y-8">
             {groups.map((g) =>
               g.stimulus?.part === "part.1" ? (
                 <StimulusRowCard
@@ -273,97 +473,28 @@ export default function PracticeRunner() {
                 />
               )
             )}
-
-            {resp && (
-              <ResultsPanel
-                resp={resp as any}
-                timeLabel={fmtTime(resp.timeSec)}
-                onToggleDetails={() => setShowDetails((s: any) => !s)}
-                showDetails={showDetails}
-              />
-            )}
-          </div>
-        )}
-      </main>
-
-      {focusMode && started && !resp && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden lg:flex items-center gap-4 rounded-full bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-300 dark:border-zinc-700 px-5 py-2.5 shadow-2xl text-sm font-bold">
-          <span className="flex items-center gap-1.5 text-zinc-800 dark:text-zinc-200">
-            Câu
-            <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
-              {currentIndex + 1}
-            </span>
-            / {total}
-          </span>
-          <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
-            <Clock className="w-4 h-4" />
-            {fmtTime(timeSec)}
-          </span>
-          <div className="w-32 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <button
-            onClick={() => setFocusMode(false)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all hover:scale-105"
-          >
-            Mở lại
-          </button>
-        </div>
-      )}
-
-      {/* Mobile HUD - Chưa bắt đầu */}
-      {!resp && !started && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 lg:hidden w-[calc(100%-2rem)] max-w-md">
-          <div className="flex items-center justify-between gap-4 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-300 dark:border-zinc-700 px-5 py-4 shadow-2xl">
-            <div className="flex items-center gap-4 text-sm font-medium">
-              <span className="text-zinc-700 dark:text-zinc-300">
-                {total} câu
-              </span>
-            </div>
-            <button
-              onClick={handleStart}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all hover:scale-105"
-            >
-              <Play className="w-4 h-4" />
-              Bắt đầu
-            </button>
           </div>
         </div>
       )}
 
-      {/* Mobile HUD - Đang làm */}
-      {!resp && started && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 lg:hidden w-[calc(100%-2rem)] max-w-md">
-          <div className="flex items-center gap-3 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 shadow-2xl text-xs font-bold">
-            <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
-              Câu
-              <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
-                {Math.min(currentIndex + 1, total)}
-              </span>
-              / {total}
-            </div>
-            <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
-              <Clock className="w-3.5 h-3.5" />
-              {fmtTime(timeSec)}
-            </div>
-            <div className="flex-1 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <button
-              onClick={handleSubmit}
-              className="px-3 py-1 rounded-md bg-black hover:bg-zinc-800 text-white text-xs transition"
-            >
-              Nộp
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+      <MobileQuickNavSheet
+        open={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+        total={total}
+        currentIndex={currentIndex}
+        leftSec={leftSec}
+        progress={progress}
+        items={items}
+        answers={answers}
+        onJump={jumpTo}
+        fmtTime={fmtTime}
+      />
+
+      {/* MandatoryPlacementModal - chỉ hiện khi chưa làm placement test */}
+      <MandatoryPlacementModal
+        open={!!showPlacementModal}
+        onGoPlacement={goPlacement}
+      />
+    </TestLayout>
   );
 }

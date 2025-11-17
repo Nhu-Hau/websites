@@ -1,11 +1,13 @@
 import mongoose, { Schema, Types, Document } from "mongoose";
 
 export interface IAttachment {
-  type: "image" | "link" | "file";
+  type: "image" | "video" | "link" | "file";
   url: string;
   name?: string;
   size?: number;
   key?: string;
+  duration?: number; // For video duration in seconds
+  thumbnail?: string; // For video thumbnail URL
 }
 
 export interface ICommunityComment extends Document {
@@ -19,11 +21,13 @@ export interface ICommunityComment extends Document {
 
 const AttachmentSchema = new Schema<IAttachment>(
   {
-    type: { type: String, enum: ["image", "link", "file"], required: true },
+    type: { type: String, enum: ["image", "video", "link", "file"], required: true },
     url:  { type: String, required: true },
     name: String,
     size: Number,
     key:  String, // <-- thêm
+    duration: Number, // Video duration in seconds
+    thumbnail: String, // Video thumbnail URL
   },
   { _id: false }
 );

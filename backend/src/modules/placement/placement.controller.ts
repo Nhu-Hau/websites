@@ -42,6 +42,7 @@ function predictToeic(listeningAcc: number, readingAcc: number) {
 /** NEW: GET /api/placement/paper
  * Optional query limit mỗi part: ?p1=4&p2=8&p3=9&p4=9&p5=10&p6=8&p7=7
  * Không truyền thì lấy toàn bộ mỗi part.
+ * Tự động random chọn một giá trị test có trong database.
  */
 export async function getPlacementPaper(req: Request, res: Response) {
   try {
@@ -49,6 +50,61 @@ export async function getPlacementPaper(req: Request, res: Response) {
     const itemsCol = db.collection(ITEMS_COLL);
     const stimCol = db.collection(STIMULI_COLL);
 
+    // Bước 1: Lấy danh sách các giá trị test có trong collection
+    const distinctTests = await itemsCol.distinct("test", { test: { $exists: true, $ne: null } });
+    
+    if (!distinctTests || distinctTests.length === 0) {
+      console.warn("[getPlacementPaper] No test values found in collection, falling back to all items");
+      // Fallback: nếu không có field test, lấy tất cả items như cũ
+      const limits = {
+        "part.1": Number(req.query.p1 ?? 0),
+        "part.2": Number(req.query.p2 ?? 0),
+        "part.3": Number(req.query.p3 ?? 0),
+        "part.4": Number(req.query.p4 ?? 0),
+        "part.5": Number(req.query.p5 ?? 0),
+        "part.6": Number(req.query.p6 ?? 0),
+        "part.7": Number(req.query.p7 ?? 0),
+      };
+
+      const parts = Object.keys(limits);
+      let items: any[] = [];
+      for (const pk of parts as (keyof typeof limits)[]) {
+        const lim =
+          Number.isFinite(limits[pk]) && limits[pk] > 0 ? limits[pk] : 0;
+        const cur = itemsCol
+          .find({ part: pk }, { projection: { _id: 0 } })
+          .sort({ order: 1, id: 1 });
+        items = items.concat(
+          lim > 0 ? await cur.limit(lim).toArray() : await cur.toArray()
+        );
+      }
+
+      items.sort((a, b) => {
+        const ao = a?.order ?? null,
+          bo = b?.order ?? null;
+        if (ao != null && bo != null) return ao - bo;
+        return String(a.id || "").localeCompare(String(b.id || ""));
+      });
+
+      const sids = Array.from(
+        new Set(items.map((it: any) => it.stimulusId).filter(Boolean))
+      );
+      const stArr = sids.length
+        ? await stimCol
+            .find({ id: { $in: sids } }, { projection: { _id: 0 } })
+            .toArray()
+        : [];
+      const stimulusMap: Record<string, any> = {};
+      for (const s of stArr) stimulusMap[s.id] = s;
+
+      return res.json({ items, stimulusMap, test: null });
+    }
+
+    // Bước 2: Random chọn một giá trị test
+    const randomTest = distinctTests[Math.floor(Math.random() * distinctTests.length)];
+    console.log(`[getPlacementPaper] Selected random test: ${randomTest} from available tests: [${distinctTests.join(", ")}]`);
+
+    // Bước 3: Lấy items theo test đã chọn
     const limits = {
       "part.1": Number(req.query.p1 ?? 0),
       "part.2": Number(req.query.p2 ?? 0),
@@ -65,7 +121,7 @@ export async function getPlacementPaper(req: Request, res: Response) {
       const lim =
         Number.isFinite(limits[pk]) && limits[pk] > 0 ? limits[pk] : 0;
       const cur = itemsCol
-        .find({ part: pk }, { projection: { _id: 0 } })
+        .find({ part: pk, test: randomTest }, { projection: { _id: 0 } })
         .sort({ order: 1, id: 1 });
       items = items.concat(
         lim > 0 ? await cur.limit(lim).toArray() : await cur.toArray()
@@ -79,18 +135,29 @@ export async function getPlacementPaper(req: Request, res: Response) {
       return String(a.id || "").localeCompare(String(b.id || ""));
     });
 
+    // Bước 4: Lấy stimuli liên quan (có thể filter theo test nếu stimuli có field test)
     const sids = Array.from(
       new Set(items.map((it: any) => it.stimulusId).filter(Boolean))
     );
+    
+    // Kiểm tra xem stimuli có field test không
+    const sampleStimulus = await stimCol.findOne({}, { projection: { test: 1 } });
+    const hasTestField = sampleStimulus && sampleStimulus.test !== undefined;
+    
+    const stimQuery: any = { id: { $in: sids } };
+    if (hasTestField) {
+      stimQuery.test = randomTest;
+    }
+    
     const stArr = sids.length
       ? await stimCol
-          .find({ id: { $in: sids } }, { projection: { _id: 0 } })
+          .find(stimQuery, { projection: { _id: 0 } })
           .toArray()
       : [];
     const stimulusMap: Record<string, any> = {};
     for (const s of stArr) stimulusMap[s.id] = s;
 
-    return res.json({ items, stimulusMap });
+    return res.json({ items, stimulusMap, test: randomTest });
   } catch (e) {
     console.error("[getPlacementPaper] ERROR", e);
     return res.status(500).json({ message: "Lỗi máy chủ" });
@@ -199,12 +266,13 @@ export async function submitPlacement(req: Request, res: Response) {
         .json({ message: "Bạn đã làm placement test, không thể làm lại." });
     }
 
-    const { answers, allIds, timeSec, startedAt, version } = req.body as {
+    const { answers, allIds, timeSec, startedAt, version, test } = req.body as {
       answers?: Record<string, string>;
       allIds?: string[];
       timeSec?: number;
       startedAt?: string;
       version?: string;
+      test?: number | null;
     };
     if (!answers || !allIds?.length) {
       return res.status(400).json({ message: "Thiếu dữ liệu" });
@@ -276,7 +344,7 @@ export async function submitPlacement(req: Request, res: Response) {
 
     const attempt = await PlacementAttempt.create({
       userId,
-      testId: "paper_v1", // giữ field cho tiện filter/history, không phụ thuộc collection 'placements'
+      test: test !== undefined && test !== null ? Number(test) : null, // Lưu giá trị test đã random
       total,
       correct,
       acc,
@@ -369,7 +437,7 @@ export async function getMyPlacementAttempts(req: Request, res: Response) {
         .skip((page - 1) * limit)
         .limit(limit)
         .select(
-          "_id testId level acc correct total listening reading submittedAt timeSec version"
+          "_id test level acc correct total listening reading submittedAt timeSec version"
         )
         .lean(),
       PlacementAttempt.countDocuments({ userId }),

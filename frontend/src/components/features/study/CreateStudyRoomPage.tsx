@@ -20,8 +20,8 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import { toast } from "sonner";
-import Swal from "sweetalert2";
+import { toast } from "@/lib/toast";
+import { useConfirmModal } from "@/components/common/ConfirmModal";
 import StudyHeader from "@/components/features/study/StudyHeader";
 
 type Role = "user" | "teacher" | "admin";
@@ -43,6 +43,7 @@ export default function CreateStudyRoomPage() {
   const isTeacher = role === "teacher";
   const canCreate = isAdmin || isTeacher;
   const canDelete = isAdmin;
+  const { show, Modal: ConfirmModal } = useConfirmModal();
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [err, setErr] = useState<string | null>(null);
@@ -125,36 +126,35 @@ export default function CreateStudyRoomPage() {
   const handleDelete = async (roomName: string) => {
     if (!user?.id || !user?.name || !canDelete) return;
 
-    const result = await Swal.fire({
-      title: "Xác nhận xóa",
-      text: `Bạn có chắc muốn xóa phòng "${roomName}"? Hành động này không thể hoàn tác.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
-    });
-
-    if (!result.isConfirmed) return;
-
-    setDeleting(roomName);
-    try {
-      await deleteStudyRoom(roomName, {
-        id: user.id,
-        name: user.name,
-        role: user.role || "admin",
-      });
-      toast.success(`Đã xóa phòng "${roomName}"`);
-      await reload();
-    } catch (e: any) {
-      const errorMsg =
-        e?.message || e?.response?.data?.message || "Xóa phòng thất bại";
-      toast.error(errorMsg);
-      console.error("Delete room error:", e);
-    } finally {
-      setDeleting(null);
-    }
+    show(
+      {
+        title: "Xác nhận xóa",
+        message: `Bạn có chắc muốn xóa phòng "${roomName}"? Hành động này không thể hoàn tác.`,
+        icon: "warning",
+        confirmText: "Xóa",
+        cancelText: "Hủy",
+        confirmColor: "red",
+      },
+      async () => {
+        setDeleting(roomName);
+        try {
+          await deleteStudyRoom(roomName, {
+            id: user.id,
+            name: user.name || "",
+            role: user.role || "admin",
+          });
+          toast.success(`Đã xóa phòng "${roomName}"`);
+          await reload();
+        } catch (e: any) {
+          const errorMsg =
+            e?.message || e?.response?.data?.message || "Xóa phòng thất bại";
+          toast.error(errorMsg);
+          console.error("Delete room error:", e);
+        } finally {
+          setDeleting(null);
+        }
+      }
+    );
   };
 
   if (authLoading) {
@@ -379,6 +379,9 @@ export default function CreateStudyRoomPage() {
           )}
         </div>
       </div>
+
+      {/* Confirm Modal */}
+      {ConfirmModal}
     </>
   );
 }

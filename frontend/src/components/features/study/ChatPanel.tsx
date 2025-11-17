@@ -18,8 +18,8 @@ import type {
 import { RoomEvent } from "livekit-client";
 import { Send, Upload, Download, X, AlertCircle, Trash2, MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
-import Swal from "sweetalert2";
+import { toast } from "@/lib/toast";
+import { useConfirmModal } from "@/components/common/ConfirmModal";
 
 type Role = "student" | "teacher" | "admin";
 type Me = { id: string; name: string; role: Role };
@@ -63,6 +63,7 @@ const LS_KEY = (room: string) => `livechat:${room}`;
 export default function ChatPanel({ me, roomName }: Props) {
   const room = useRoomContext();
   const { user: authUser } = useAuth();
+  const { show, Modal: ConfirmModal } = useConfirmModal();
 
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
@@ -373,34 +374,35 @@ export default function ChatPanel({ me, roomName }: Props) {
   );
 
   const handleDeleteRoom = useCallback(async () => {
-    const result = await Swal.fire({
-      title: "Xác nhận xoá",
-      text: "Bạn có chắc muốn xóa phòng này? Tất cả dữ liệu sẽ bị mất.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
-      confirmButtonColor: "#ef4444",
-    });
-    if (!result.isConfirmed) return;
-
-    try {
-      const res = await fetch(`/api/rooms/${encodeURIComponent(roomName)}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({}));
-        toast.error(error.message || "Xóa phòng thất bại");
-        return;
+    show(
+      {
+        title: "Xác nhận xoá",
+        message: "Bạn có chắc muốn xóa phòng này? Tất cả dữ liệu sẽ bị mất.",
+        icon: "warning",
+        confirmText: "Xóa",
+        cancelText: "Hủy",
+        confirmColor: "red",
+      },
+      async () => {
+        try {
+          const res = await fetch(`/api/rooms/${encodeURIComponent(roomName)}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+          if (!res.ok) {
+            const error = await res.json().catch(() => ({}));
+            toast.error(error.message || "Xóa phòng thất bại");
+            return;
+          }
+          toast.success("Đã xóa phòng");
+          window.location.href = "/study/create";
+        } catch (e: unknown) {
+          toast.error("Xóa phòng thất bại");
+          console.error("Failed to delete room:", e);
+        }
       }
-      toast.success("Đã xóa phòng");
-      window.location.href = "/study/create";
-    } catch (e: unknown) {
-      toast.error("Xóa phòng thất bại");
-      console.error("Failed to delete room:", e);
-    }
-  }, [roomName]);
+    );
+  }, [roomName, show]);
 
   // render message bubbles
   const items = useMemo(() => {
@@ -589,6 +591,9 @@ export default function ChatPanel({ me, roomName }: Props) {
           </div>
         )}
       </div>
+
+      {/* Confirm Modal */}
+      {ConfirmModal}
     </aside>
   );
 }

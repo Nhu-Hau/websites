@@ -5,23 +5,22 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import Image from "next/image";
+
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
 import HeaderActions from "@/components/layout/HeaderActions";
 import useClickOutside from "@/hooks/common/useClickOutside";
 import useEscapeKey from "@/hooks/common/useEscapeKey";
 import UserMenu from "@/components/features/auth/UserMenu";
-import { useTheme } from "@/context/ThemeContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { cn } from "@/lib/utils";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
-  const { theme } = useTheme();
-  const isDarkMode = theme === "dark";
-  const base = useBasePrefix(); // ✅ luôn áp dụng base prefix
+  const base = useBasePrefix();
 
   const close = useCallback(() => {
     setOpen(false);
@@ -32,9 +31,10 @@ export default function Header() {
     enabled: open,
     ignore: [buttonRef],
   });
+
   useEscapeKey(open ? () => close() : undefined);
 
-  // khóa cuộn body khi mở menu
+  // Khóa cuộn body khi mở menu mobile
   useEffect(() => {
     if (!open) return;
     const { style } = document.body;
@@ -45,12 +45,12 @@ export default function Header() {
     };
   }, [open]);
 
-  // đóng khi đổi route
+  // Đóng khi đổi route
   useEffect(() => {
     close();
   }, [pathname, close]);
 
-  // auto đóng khi lên desktop
+  // Auto đóng khi lên desktop
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
     const onChange = () => mq.matches && close();
@@ -58,22 +58,20 @@ export default function Header() {
     return () => mq.removeEventListener("change", onChange);
   }, [close]);
 
-  function cn(...inputs: Array<string | false | null | undefined>) {
-    return inputs.filter(Boolean).join(" ");
-  }
   return (
     <header
-      className="fixed inset-x-0 top-0 z-50
-                 bg-white/90 dark:bg-zinc-900/90 backdrop-blur
-                 border-b border-zinc-200 dark:border-zinc-800"
+      className={cn(
+        "fixed inset-x-0 top-0 z-50",
+        "border-b border-zinc-200/80 dark:border-zinc-800/80",
+        "bg-white/85 dark:bg-zinc-950/85",
+        "backdrop-blur-xl shadow-sm"
+      )}
     >
-      {/* container + padding theo breakpoint, có xs */}
       <div className="mx-auto w-full max-w-[1500px] px-3 xs:px-4 sm:px-6 lg:px-8">
-        {/* chiều cao header co giãn theo breakpoint */}
         <div className="flex h-14 xs:h-16 items-center justify-between">
-          {/* Left: Hamburger + Logo */}
+          {/* LEFT: Hamburger + Logo */}
           <div className="flex items-center gap-2 xs:gap-3">
-            {/* Hamburger chỉ hiện < lg */}
+            {/* Hamburger (mobile) */}
             <div className="lg:hidden">
               <button
                 ref={buttonRef}
@@ -81,70 +79,78 @@ export default function Header() {
                 onClick={() => setOpen((v) => !v)}
                 aria-label={open ? "Đóng menu" : "Mở menu"}
                 aria-expanded={open}
-                className="inline-flex size-9 xs:size-10 items-center justify-center rounded-lg
-               text-zinc-700 dark:text-zinc-200
-               hover:bg-zinc-100 dark:hover:bg-zinc-800
-                 transition"
+                className={cn(
+                  "inline-flex items-center justify-center",
+                  "size-9 xs:size-10 rounded-xl",
+                  "text-zinc-700 dark:text-zinc-100",
+                  "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/70",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60",
+                  "transition-colors duration-200"
+                )}
               >
                 <Menu
-                  className={`h-5 w-5 xs:h-6 xs:w-6 transition-transform ${
+                  className={cn(
+                    "h-5 w-5 xs:h-6 xs:w-6",
+                    "transition-transform duration-200",
                     open ? "rotate-90" : ""
-                  }`}
+                  )}
                   aria-hidden
                 />
               </button>
             </div>
 
             {/* Logo */}
-              <Link
+            <Link
               href={`${base}/home`}
-              className="group flex items-center gap-1.5 xs:gap-2.5 transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 rounded-xl"
               aria-label="Về trang chủ ToeicPrep"
+              className={cn(
+                "group flex items-center gap-1.5 xs:gap-2.5 rounded-xl",
+                "transition-transform duration-300 ease-out",
+                "hover:scale-[1.02]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60"
+              )}
             >
-              {/* Logo Image */}
+              {/* Logo image + glow */}
               <div className="relative">
                 <Image
-                  src={isDarkMode ? "/images/logodark.png" : "/images/logo.png"}
-                  alt="Logo"
+                  src="/images/logotoeic.png"
+                  alt="Logo ToeicPrep"
                   width={48}
                   height={48}
-                  className="rounded-full object-contain size-10 xs:size-12"
+                  className="size-10 xs:size-12 rounded-full object-contain"
                   priority
                 />
-                {/* Pulse ring khi hover */}
-                <div className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-sky-500/20 to-sky-500/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <div
+                  className={cn(
+                    "pointer-events-none absolute inset-0 -z-10 rounded-[18px]",
+                    "bg-gradient-to-r from-sky-500/20 via-sky-400/10 to-sky-500/20",
+                    "opacity-0 group-hover:opacity-100",
+                    "transition-opacity duration-300"
+                  )}
+                />
               </div>
 
-              {/* Text: Toeic Prep */}
-              <div className="hidden xs:block">
+              {/* Text brand */}
+              <div className="hidden sm:block">
                 <div
                   className={cn(
                     "font-extrabold tracking-tight leading-none",
-                    "bg-gradient-to-r bg-clip-text text-transparent",
-                    "transition-all duration-500 ease-out",
-                    "bg-[length:200%_auto] animate-gradient-x",
-                    isDarkMode
-                      ? "from-amber-300 via-yellow-200 to-amber-300"
-                      : "from-amber-600 via-yellow-500 to-amber-600",
-                    "group-hover:from-amber-700 group-hover:via-yellow-600 group-hover:to-amber-700",
-                    "dark:group-hover:from-amber-400 dark:group-hover:via-yellow-300 dark:group-hover:to-amber-400",
-                    "text-xl sm:text-2xl md:text-3xl lg:text-4xl",
-                    "[text-shadow:_0_2px_8px_rgba(0,0,0,0.2)] dark:[text-shadow:_0_2px_8px_rgba(0,0,0,0.5)]"
+                    "sm:text-2xl md:text-[1.7rem] lg:text-[1.9rem]",
+                    "transition-all duration-300"
                   )}
                 >
-                  Toeic
+                  <span className="text-zinc-950 dark:text-zinc-50 tracking-wider">
+                    Toeic
+                  </span>
                   <span
                     className={cn(
-                      "bg-gradient-to-r bg-clip-text text-transparent",
-                      "transition-all duration-500 ease-out",
-                      isDarkMode
-                        ? "from-sky-300 to-sky-200"
-                        : "from-sky-600 to-sky-500",
-                      "group-hover:from-sky-700 group-hover:to-sky-600",
-                      "dark:group-hover:from-sky-200 dark:group-hover:to-sky-100"
+                      "ml-1 bg-gradient-to-r from-sky-600 to-sky-400",
+                      "bg-clip-text text-transparent tracking-wider",
+                      "dark:from-sky-300 dark:to-sky-100",
+                      "group-hover:from-sky-500 group-hover:to-sky-300",
+                      "dark:group-hover:from-sky-200 dark:group-hover:to-sky-50"
                     )}
                   >
-                    {" "}
                     Prep
                   </span>
                 </div>
@@ -152,8 +158,8 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Center + Right: nav + actions (desktop), actions co lại hợp lý mobile */}
-          <div className="flex items-center h-full gap-3 xs:gap-4 lg:gap-24">
+          {/* CENTER + RIGHT */}
+          <div className="flex h-full items-center gap-3 xs:gap-4 lg:gap-20">
             {/* Desktop nav */}
             <div className="hidden lg:flex h-full items-center">
               <DesktopNav />
@@ -161,10 +167,9 @@ export default function Header() {
 
             {/* Actions + User */}
             <div className="flex items-center">
-              {/* trên mobile, giảm spacing tổng thể */}
               <HeaderActions />
               <div
-                className="mx-3 xs:mx-4 lg:mx-6 h-5 xs:h-6 w-px bg-zinc-300 dark:bg-zinc-700"
+                className="mx-3 xs:mx-4 lg:mx-6 h-5 xs:h-6 w-px bg-zinc-300/80 dark:bg-zinc-700/80"
                 aria-hidden
               />
               <UserMenu />
@@ -173,7 +178,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile nav (trượt mở/đóng, có padding xs) */}
+      {/* Mobile nav */}
       <MobileNav open={open} setOpen={setOpen} menuRef={menuRef} />
     </header>
   );

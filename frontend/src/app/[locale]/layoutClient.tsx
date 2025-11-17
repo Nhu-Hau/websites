@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { SnackbarProvider } from "notistack";
 import ChatBox from "../../components/common/ChatBox";
 import AdminChatBox from "../../components/common/AdminChatBox";
 import Footer from "@/components/layout/Footer";
@@ -26,7 +27,15 @@ export default function LayoutClient({
     /^\/[a-z]{2}\/progress$/.test(pathname); // /vi/practice/history/abc123
 
   return (
-    <>
+    <SnackbarProvider
+      maxSnack={3}
+      anchorOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
+      autoHideDuration={3000}
+      preventDuplicate
+    >
       <Header />
       <main>{children}</main>
 
@@ -38,6 +47,6 @@ export default function LayoutClient({
           {!hideFooterOnly && <Footer />}
         </>
       )}
-    </>
+    </SnackbarProvider>
   );
 }

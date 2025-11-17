@@ -6,7 +6,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import PostCard from "@/components/features/community/PostCard";
 import Pagination from "@/components/features/community/Pagination";
 import type { CommunityPost } from "@/types/community.types";
-import { toast } from "react-toastify";
+import { toast } from "@/lib/toast";
 import { getSocket } from "@/lib/socket";
 
 const API_BASE =

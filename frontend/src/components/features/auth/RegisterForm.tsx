@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
 
 import AuthLayout from "@/components/features/auth/AuthLayout";
@@ -265,16 +265,18 @@ export default function RegisterForm() {
           >
             Mã xác thực email
           </label>
-          <div className="flex gap-2">
-            <Input
-              id="verificationCode"
-              name="verificationCode"
-              type="text"
-              required
-              maxLength={6}
-              className="flex-1"
-              placeholder="Nhập mã 6 số"
-            />
+          <div className="flex gap-2 w-full">
+            <div className="flex-1">
+              <Input
+                id="verificationCode"
+                name="verificationCode"
+                type="text"
+                required
+                maxLength={6}
+                className="flex-1"
+                placeholder="Nhập mã 6 số"
+              />
+            </div>
             <Button
               type="button"
               variant="primary"

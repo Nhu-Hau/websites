@@ -3,6 +3,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 type Corner = { id: string; title: string; message: string; link?: string };
 
@@ -15,7 +16,7 @@ export default function CornerToast() {
   const mountedOnceRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (mountedOnceRef.current) return;     // ✅ tránh đăng ký lặp
+    if (mountedOnceRef.current) return; // ✅ tránh đăng ký lặp
     mountedOnceRef.current = true;
 
     const seenSet = seenRef.current; // Copy ref value for cleanup
@@ -51,12 +52,38 @@ export default function CornerToast() {
   }, []);
 
   return (
-    <div className="fixed bottom-4 right-4 z-[1000] space-y-2">
+    <div className="fixed bottom-4 right-4 z-[1000] flex flex-col gap-3">
       {toasts.map((t) => (
-        <div key={t.id} className="rounded-2xl shadow-lg bg-black/80 text-white px-4 py-3 backdrop-blur">
-          <div className="font-semibold">{t.title}</div>
-          <div className="text-sm opacity-90">
-            {t.link ? <Link href={t.link} className="underline">{t.message}</Link> : t.message}
+        <div
+          key={t.id}
+          className={cn(
+            "relative w-72 rounded-2xl px-4 py-3",
+            "bg-zinc-900/90 text-zinc-100 shadow-xl shadow-black/30",
+            "border border-white/10 backdrop-blur-xl",
+            "animate-in fade-in slide-in-from-bottom-4 duration-300"
+          )}
+        >
+          {/* Accent bar bên trái (giống style Dropdown/NavItem) */}
+          <span className="absolute left-0 top-3 bottom-3 w-1 rounded-full bg-gradient-to-b from-amber-500 to-amber-400" />
+
+          {/* Nội dung */}
+          <div className="pl-3">
+            <div className="font-semibold tracking-wide text-[15px]">
+              {t.title}
+            </div>
+
+            <div className="mt-1 text-sm text-zinc-300 leading-snug">
+              {t.link ? (
+                <Link
+                  href={t.link}
+                  className="text-amber-400 underline underline-offset-2 hover:text-amber-300 transition-colors"
+                >
+                  {t.message}
+                </Link>
+              ) : (
+                t.message
+              )}
+            </div>
           </div>
         </div>
       ))}

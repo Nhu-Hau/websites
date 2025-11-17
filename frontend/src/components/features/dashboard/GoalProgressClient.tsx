@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Target, TrendingUp, Trophy, Loader2, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 interface GoalData {
   hasGoal: boolean;

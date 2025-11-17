@@ -1,145 +1,237 @@
 "use client";
-import React from "react";
+
+import React, { useRef } from "react";
 import { FileText, Route, Target, TrendingUp, ArrowRight } from "lucide-react";
+import { motion, useInView } from "framer-motion";
 import SectionHeader from "./SectionHeader";
 
-export default function WorkflowSection() {
-  const steps = [
-    {
-      number: "01",
-      icon: FileText,
-      title: "Làm Placement Test",
-      desc: "Hoàn thành bài Mini TOEIC 55 câu trong 35 phút để xác định trình độ hiện tại của bạn.",
-      color: "emerald",
-    },
-    {
-      number: "02",
-      icon: Route,
-      title: "Nhận lộ trình học",
-      desc: "Hệ thống sẽ ước lượng điểm TOEIC và đề xuất lộ trình học cá nhân hóa dựa trên điểm yếu của bạn.",
-      color: "sky",
-    },
-    {
-      number: "03",
-      icon: Target,
-      title: "Luyện tập theo Part",
-      desc: "Thực hành từng Part với bài tập được phân theo độ khó phù hợp với level của bạn.",
-      color: "indigo",
-    },
-    {
-      number: "04",
-      icon: TrendingUp,
-      title: "Theo dõi tiến độ",
-      desc: "Xem báo cáo chi tiết, phân tích lỗi và theo dõi sự tiến bộ của bạn theo thời gian.",
-      color: "violet",
-    },
-  ];
+const steps = [
+  {
+    number: "01",
+    icon: FileText,
+    title: "Làm Placement Test",
+    desc: "Hoàn thành bài Mini TOEIC 55 câu trong 35 phút để xác định trình độ hiện tại của bạn.",
+    color: "emerald",
+  },
+  {
+    number: "02",
+    icon: Route,
+    title: "Nhận lộ trình học",
+    desc: "Hệ thống sẽ ước lượng điểm TOEIC và đề xuất lộ trình học cá nhân hóa dựa trên điểm yếu của bạn.",
+    color: "sky",
+  },
+  {
+    number: "03",
+    icon: Target,
+    title: "Luyện tập theo Part",
+    desc: "Thực hành từng Part với bài tập được phân theo độ khó phù hợp với level của bạn.",
+    color: "amber",
+  },
+  {
+    number: "04",
+    icon: TrendingUp,
+    title: "Theo dõi tiến độ",
+    desc: "Xem báo cáo chi tiết, phân tích lỗi và theo dõi sự tiến bộ của bạn theo thời gian.",
+    color: "pink",
+  },
+];
 
-  const getColorClasses = (color: string) => {
-    const colors: Record<string, { bg: string; text: string; border: string }> = {
-      emerald: {
-        bg: "bg-emerald-50 dark:bg-emerald-950/30",
-        text: "text-emerald-600 dark:text-emerald-400",
-        border: "border-emerald-200 dark:border-emerald-900",
-      },
-      sky: {
-        bg: "bg-sky-50 dark:bg-sky-950/30",
-        text: "text-sky-600 dark:text-sky-400",
-        border: "border-sky-200 dark:border-sky-900",
-      },
-      indigo: {
-        bg: "bg-indigo-50 dark:bg-indigo-950/30",
-        text: "text-indigo-600 dark:text-indigo-400",
-        border: "border-indigo-200 dark:border-indigo-900",
-      },
-      violet: {
-        bg: "bg-violet-50 dark:bg-violet-950/30",
-        text: "text-violet-600 dark:text-violet-400",
-        border: "border-violet-200 dark:border-violet-900",
-      },
-    };
-    return colors[color] || colors.sky;
-  };
+const colorMap: Record<
+  string,
+  {
+    chipBg: string;
+    chipText: string;
+    chipBorder: string;
+    iconBg: string;
+    iconText: string;
+  }
+> = {
+  emerald: {
+    chipBg: "bg-emerald-50 dark:bg-emerald-950/30",
+    chipText: "text-emerald-700 dark:text-emerald-300",
+    chipBorder: "border-emerald-200 dark:border-emerald-800",
+    iconBg: "bg-emerald-100/60 dark:bg-emerald-900/40",
+    iconText: "text-emerald-600 dark:text-emerald-300",
+  },
+
+  sky: {
+    chipBg: "bg-sky-50 dark:bg-sky-950/30",
+    chipText: "text-sky-700 dark:text-sky-300",
+    chipBorder: "border-sky-200 dark:border-sky-800",
+    iconBg: "bg-sky-100/60 dark:bg-sky-900/40",
+    iconText: "text-sky-600 dark:text-sky-300",
+  },
+
+  amber: {
+    chipBg: "bg-amber-50 dark:bg-amber-950/30",
+    chipText: "text-amber-700 dark:text-amber-300",
+    chipBorder: "border-amber-200 dark:border-amber-800",
+    iconBg: "bg-amber-100/60 dark:bg-amber-900/40",
+    iconText: "text-amber-600 dark:text-amber-300",
+  },
+
+  pink: {
+    chipBg: "bg-pink-50 dark:bg-pink-950/30",
+    chipText: "text-pink-700 dark:text-pink-300",
+    chipBorder: "border-pink-200 dark:border-pink-800",
+    iconBg: "bg-pink-100/60 dark:bg-pink-900/40",
+    iconText: "text-pink-600 dark:text-pink-300",
+  },
+};
+
+export default function WorkflowSection() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+
+  // Section header in view
+  const headerInView = useInView(containerRef, {
+    once: true,
+    margin: "-100px 0px -20% 0px", // trigger rõ hơn khi scroll tới
+  });
+
+  // List (cards) in view
+  const listInView = useInView(listRef, {
+    once: true,
+    margin: "-80px 0px -20% 0px",
+  });
+
+  const getColorClasses = (color: string) => colorMap[color] || colorMap.sky;
 
   return (
-    <section className="bg-white dark:bg-zinc-950 py-20 sm:py-24">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <SectionHeader
-          eyebrow="Quy trình học"
-          title="Học TOEIC hiệu quả trong 4 bước đơn giản"
-          desc="Từ việc xác định trình độ đến việc đạt được mục tiêu điểm số của bạn."
-          align="center"
-        />
+    <section className="relative bg-white py-16 dark:bg-zinc-950">
+      {/* Background accent nhẹ */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-sky-50/80 via-white to-white dark:from-sky-950/40 dark:via-zinc-950 dark:to-zinc-950"
+      />
 
-        <div className="mt-16 lg:mt-20">
-          {/* Desktop: Horizontal layout */}
-          <div className="hidden lg:grid lg:grid-cols-4 lg:gap-8 relative">
-            {/* Connector lines */}
-            <div className="absolute top-16 left-16 right-16 h-0.5 bg-gradient-to-r from-emerald-200 via-sky-200 via-indigo-200 to-violet-200 dark:from-emerald-900 dark:via-sky-900 dark:via-indigo-900 dark:to-violet-900" />
-            
+      <div
+        ref={containerRef}
+        className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
+      >
+        {/* Header rơi nhẹ từ trên xuống */}
+        <motion.div
+          initial={{ opacity: 0, y: -24 }}
+          animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -24 }}
+          transition={{ duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}
+        >
+          <SectionHeader
+            eyebrow="Quy trình học"
+            title="Học TOEIC hiệu quả trong 4 bước đơn giản"
+            desc="Từ việc xác định trình độ đến lúc chạm mục tiêu điểm số của bạn."
+            align="center"
+          />
+        </motion.div>
+
+        <div className="mt-14 lg:mt-18" ref={listRef}>
+          {/* Desktop: timeline ngang */}
+          <div className="relative hidden lg:grid lg:grid-cols-4 lg:gap-7 xl:gap-8">
+            {/* line nối */}
+            <div className="pointer-events-none absolute inset-x-10 top-[4.5rem] h-px bg-gradient-to-r from-emerald-200 via-sky-200 to-violet-200 dark:from-emerald-900 dark:via-sky-900 dark:to-violet-900" />
+
             {steps.map((step, index) => {
               const Icon = step.icon;
               const colors = getColorClasses(step.color);
-              
+
               return (
-                <div key={index} className="relative">
-                  <div className="relative bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all duration-300 hover:border-zinc-300 dark:hover:border-zinc-700">
-                    {/* Step number badge */}
-                    <div className={`absolute -top-4 left-1/2 -translate-x-1/2 flex h-8 w-8 items-center justify-center rounded-full ${colors.bg} border-2 ${colors.border} text-xs font-bold ${colors.text}`}>
+                <motion.div
+                  key={step.number}
+                  initial={{ opacity: 0, y: -24 }}
+                  animate={
+                    listInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -24 }
+                  }
+                  transition={{
+                    duration: 0.55,
+                    ease: [0.22, 0.61, 0.36, 1],
+                    delay: listInView ? index * 0.12 : 0,
+                  }}
+                  className="relative"
+                >
+                  <div
+                    className="relative flex h-full flex-col rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-sm ring-1 ring-zinc-100/60 
+                               transition-all duration-300 hover:-translate-y-2 hover:border-zinc-200 hover:shadow-xl hover:ring-zinc-200/80 
+                               dark:border-zinc-800/80 dark:bg-zinc-900/95 dark:ring-zinc-800/80 dark:hover:border-zinc-700 dark:hover:ring-zinc-700"
+                  >
+                    {/* số bước */}
+                    <div
+                      className={`absolute -top-4 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border-2 text-xs font-semibold ${colors.chipBg} ${colors.chipBorder} ${colors.chipText}`}
+                    >
                       {step.number}
                     </div>
-                    
-                    {/* Icon */}
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${colors.bg} mb-4 mt-4`}>
-                      <Icon className={`h-6 w-6 ${colors.text}`} />
+
+                    {/* icon */}
+                    <div
+                      className={`mt-4 mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl ${colors.iconBg}`}
+                    >
+                      <Icon className={`h-6 w-6 ${colors.iconText}`} />
                     </div>
-                    
-                    {/* Content */}
-                    <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white mb-2">
+
+                    {/* nội dung */}
+                    <h3 className="mb-2 text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                       {step.title}
                     </h3>
                     <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                       {step.desc}
                     </p>
                   </div>
-                  
-                  {/* Arrow connector (hidden on last item) */}
+
+                  {/* mũi tên nối (trừ bước cuối) */}
                   {index < steps.length - 1 && (
-                    <div className="absolute top-16 right-0 translate-x-1/2 -translate-y-1/2 z-10">
-                      <ArrowRight className="h-5 w-5 text-zinc-400 dark:text-zinc-600" />
+                    <div className="pointer-events-none absolute right-0 top-[4.6rem] z-10 translate-x-1/2 -translate-y-1/2">
+                      <ArrowRight className="h-5 w-5 text-zinc-300 dark:text-zinc-600" />
                     </div>
                   )}
-                </div>
+                </motion.div>
               );
             })}
           </div>
 
-          {/* Mobile/Tablet: Vertical layout */}
-          <div className="lg:hidden space-y-6">
+          {/* Mobile / Tablet: timeline dọc */}
+          <div className="space-y-6 lg:hidden">
             {steps.map((step, index) => {
               const Icon = step.icon;
               const colors = getColorClasses(step.color);
-              
+
               return (
-                <div key={index} className="relative flex gap-4">
-                  {/* Step number + connector */}
+                <motion.div
+                  key={step.number}
+                  initial={{ opacity: 0, y: -24 }}
+                  animate={
+                    listInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -24 }
+                  }
+                  transition={{
+                    duration: 0.55,
+                    ease: [0.22, 0.61, 0.36, 1],
+                    delay: listInView ? index * 0.12 : 0,
+                  }}
+                  className="relative flex gap-4"
+                >
+                  {/* cột số bước */}
                   <div className="flex flex-col items-center">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-full ${colors.bg} border-2 ${colors.border} text-sm font-bold ${colors.text} shrink-0`}>
+                    <div
+                      className={`flex h-9 w-9 items-center justify-center rounded-full border-2 text-xs font-semibold ${colors.chipBg} ${colors.chipBorder} ${colors.chipText}`}
+                    >
                       {step.number}
                     </div>
-                    {index < steps.length - 1 && (
-                      <div className="mt-2 h-full w-0.5 bg-gradient-to-b from-zinc-200 to-zinc-200 dark:from-zinc-800 dark:to-zinc-800 flex-1 min-h-[60px]" />
+                    {step.number !== "04" && (
+                      <div className="mt-2 flex-1 min-h-[60px] w-px bg-gradient-to-b from-zinc-200 to-zinc-200 dark:from-zinc-800 dark:to-zinc-800" />
                     )}
                   </div>
-                  
-                  {/* Content card */}
-                  <div className="flex-1 bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all duration-300">
-                    <div className="flex items-start gap-4">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors.bg} shrink-0`}>
-                        <Icon className={`h-5 w-5 ${colors.text}`} />
+
+                  {/* card nội dung */}
+                  <div
+                    className="flex-1 rounded-2xl border border-zinc-200/80 bg-white/95 p-4 shadow-sm ring-1 ring-zinc-100/60 
+                               transition-all duration-300 hover:-translate-y-1 hover:border-zinc-200 hover:shadow-lg hover:ring-zinc-200/80 
+                               dark:border-zinc-800/80 dark:bg-zinc-900/95 dark:ring-zinc-800/80 dark:hover:border-zinc-700 dark:hover:ring-zinc-700"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${colors.iconBg}`}
+                      >
+                        <Icon className={`h-5 w-5 ${colors.iconText}`} />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white mb-2">
+                        <h3 className="mb-1.5 text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                           {step.title}
                         </h3>
                         <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
@@ -148,7 +240,7 @@ export default function WorkflowSection() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -157,5 +249,3 @@ export default function WorkflowSection() {
     </section>
   );
 }
-
-

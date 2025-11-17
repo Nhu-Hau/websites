@@ -3,12 +3,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Home, Users, Plus, ArrowLeft } from "lucide-react";
+import { Home, Users, Plus, ArrowLeft, Bookmark } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 type Props = {
   locale: string;
-  active?: "community" | "home" | "notifications" | "post" | "new";
+  active?: "community" | "home" | "notifications" | "post" | "new" | "saved";
 };
 
 export default function CommunityHeader({ locale, active = "community" }: Props) {
@@ -67,6 +67,19 @@ export default function CommunityHeader({ locale, active = "community" }: Props)
             >
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Community</span>
+            </Link>
+
+            <Link
+              href={`${basePrefix}/community/saved`}
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                active === "saved"
+                  ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              }`}
+              aria-label="Saved Posts"
+            >
+              <Bookmark className="h-4 w-4" />
+              <span className="hidden sm:inline">Saved</span>
             </Link>
 
             <Link

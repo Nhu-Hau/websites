@@ -39,7 +39,9 @@ function computeDiscountedAmount(opts: {
 }
 
 async function validatePromoInternal(codeRaw: string, userId: string) {
-  const code = String(codeRaw || "").trim().toUpperCase();
+  const code = String(codeRaw || "")
+    .trim()
+    .toUpperCase();
   if (!code) return { ok: false as const, message: "Thiếu mã khuyến mãi" };
 
   // ✅ quan trọng: ép kiểu kết quả bằng generic
@@ -47,11 +49,92 @@ async function validatePromoInternal(codeRaw: string, userId: string) {
   if (!promo) return { ok: false as const, message: "Mã không tồn tại" };
 
   const now = Date.now();
-  if (promo.activeFrom && now < new Date(promo.activeFrom).getTime()) {
-    return { ok: false as const, message: "Mã chưa tới thời gian áp dụng" };
+
+  // Xử lý date an toàn cho cả Date object, string, và object từ .lean()
+  const getDateTimestamp = (date: any): number | null => {
+    if (!date) return null;
+
+    // Nếu là Date object
+    if (date instanceof Date) {
+      return date.getTime();
+    }
+
+    // Nếu là string, parse thành Date
+    if (typeof date === "string") {
+      const parsed = new Date(date);
+      return isNaN(parsed.getTime()) ? null : parsed.getTime();
+    }
+
+    // Nếu là object (có thể từ .lean()), thử các thuộc tính phổ biến
+    if (typeof date === "object") {
+      // Mongoose lean() có thể trả về object với thuộc tính $date
+      if (date.$date) {
+        const parsed = new Date(date.$date);
+        return isNaN(parsed.getTime()) ? null : parsed.getTime();
+      }
+      // Hoặc có thuộc tính toString
+      if (typeof date.toString === "function") {
+        try {
+          const parsed = new Date(date.toString());
+          if (!isNaN(parsed.getTime())) return parsed.getTime();
+        } catch (e) {
+          // ignore
+        }
+      }
+      // Hoặc có thuộc tính valueOf
+      if (typeof date.valueOf === "function") {
+        try {
+          const value = date.valueOf();
+          if (typeof value === "number") return value;
+          const parsed = new Date(value);
+          if (!isNaN(parsed.getTime())) return parsed.getTime();
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+
+    return null;
+  };
+
+  const activeFromTime = getDateTimestamp(promo.activeFrom);
+  if (activeFromTime !== null && now < activeFromTime) {
+    const startDate = new Date(activeFromTime);
+    console.log(
+      `[Promo Validation] Code: ${code} not yet active. activeFrom: ${
+        promo.activeFrom
+      }, startDate: ${startDate.toISOString()}, now: ${new Date(
+        now
+      ).toISOString()}`
+    );
+    return {
+      ok: false as const,
+      message: `Mã chưa tới thời gian áp dụng (bắt đầu: ${startDate.toLocaleDateString(
+        "vi-VN"
+      )} ${startDate.toLocaleTimeString("vi-VN")})`,
+    };
   }
-  if (promo.activeTo && now > new Date(promo.activeTo).getTime()) {
-    return { ok: false as const, message: "Mã đã hết hạn" };
+
+  const activeToTime = getDateTimestamp(promo.activeTo);
+  if (activeToTime !== null) {
+    const expiredDate = new Date(activeToTime);
+    const nowDate = new Date(now);
+    console.log(
+      `[Promo Validation] Code: ${code} date check. activeTo (raw): ${JSON.stringify(
+        promo.activeTo
+      )}, activeToTime: ${activeToTime}, expiredDate: ${expiredDate.toISOString()}, now: ${nowDate.toISOString()}, nowTime: ${now}, diff: ${Math.round(
+        (now - activeToTime) / (1000 * 60 * 60)
+      )} hours`
+    );
+
+    if (now > activeToTime) {
+      return {
+        ok: false as const,
+        message: `Mã đã hết hạn (hết hạn: ${expiredDate.toLocaleDateString(
+          "vi-VN"
+        )} ${expiredDate.toLocaleTimeString("vi-VN")})`,
+      };
+    }
   }
 
   if (promo.maxUses && promo.usedCount >= promo.maxUses) {
@@ -171,10 +254,16 @@ async function syncPaymentFromPayOS(orderCode: number) {
         console.warn("PromoRedemption save failed:", (e as any)?.message || e);
       }
     }
-  } else if (info.status === "CANCELLED" && payment.status !== PaymentStatus.CANCELLED) {
+  } else if (
+    info.status === "CANCELLED" &&
+    payment.status !== PaymentStatus.CANCELLED
+  ) {
     payment.status = PaymentStatus.CANCELLED;
     await payment.save();
-  } else if (info.status === "EXPIRED" && payment.status !== PaymentStatus.EXPIRED) {
+  } else if (
+    info.status === "EXPIRED" &&
+    payment.status !== PaymentStatus.EXPIRED
+  ) {
     payment.status = PaymentStatus.EXPIRED;
     await payment.save();
   }
@@ -183,7 +272,11 @@ async function syncPaymentFromPayOS(orderCode: number) {
 }
 
 /** POST /api/payments/create */
-export async function createPayment(req: Request, res: Response, next: NextFunction) {
+export async function createPayment(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const userId = (req as any).auth?.userId;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
@@ -221,22 +314,24 @@ export async function createPayment(req: Request, res: Response, next: NextFunct
       description,
       cancelUrl,
       returnUrl,
-      items: [{ name: "Goi Pro - TOEIC Prep", quantity: 1, price: amountAfter }],
+      items: [
+        { name: "Goi Pro - TOEIC Prep", quantity: 1, price: amountAfter },
+      ],
     });
 
     await new Payment({
       userId,
       orderCode,
-      amount: amountAfter,           // số tiền thực trả
-      amountBefore,                  // giữ lại giá gốc để đối chiếu
-      amountAfter,                   // giá sau giảm
+      amount: amountAfter, // số tiền thực trả
+      amountBefore, // giữ lại giá gốc để đối chiếu
+      amountAfter, // giá sau giảm
       description,
       status: PaymentStatus.PENDING,
       payOSCheckoutUrl: paymentLinkData.checkoutUrl,
       payOSQrCode: paymentLinkData.qrCode,
       returnUrl,
       cancelUrl,
-      promoCode: appliedPromo,       // null nếu không dùng mã
+      promoCode: appliedPromo, // null nếu không dùng mã
     }).save();
 
     res.json({
@@ -253,7 +348,11 @@ export async function createPayment(req: Request, res: Response, next: NextFunct
 }
 
 /** GET /api/payments/status/:orderCode */
-export async function getPaymentStatus(req: Request, res: Response, next: NextFunction) {
+export async function getPaymentStatus(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const userId = (req as any).auth?.userId;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
@@ -298,7 +397,10 @@ export async function handlePayOSWebhook(req: Request, res: Response) {
     const code = body.code;
 
     if (code !== "00" || !data?.orderCode) {
-      console.error("Invalid PayOS webhook payload:", { code, hasData: !!data });
+      console.error("Invalid PayOS webhook payload:", {
+        code,
+        hasData: !!data,
+      });
       return;
     }
 

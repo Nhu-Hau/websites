@@ -106,11 +106,16 @@ export async function listPosts(req: Request, res: Response) {
       const isLiked =
         !!uid &&
         (p.likedBy || []).some((x: Types.ObjectId) => String(x) === uid);
+      const isSaved =
+        !!uid &&
+        (p.savedBy || []).some((x: Types.ObjectId) => String(x) === uid);
 
-      // đảm bảo likesCount là number
+      // đảm bảo counts là number
       const likesCount = Number(p.likesCount) || 0;
+      const savedCount = Number(p.savedCount) || 0;
+      const repostCount = Number(p.repostCount) || 0;
 
-      return { ...p, liked: isLiked, canDelete: isOwner, likesCount };
+      return { ...p, liked: isLiked, saved: isSaved, canDelete: isOwner, likesCount, savedCount, repostCount };
     });
 
     return res.json({ page, limit, total, items: out });
@@ -263,14 +268,27 @@ export async function getPost(req: Request, res: Response) {
             (x: Types.ObjectId) => String(x) === String(userId)
           )
         : false;
+    const saved =
+      userId && Array.isArray(postAgg.savedBy)
+        ? postAgg.savedBy.some(
+            (x: Types.ObjectId) => String(x) === String(userId)
+          )
+        : false;
     const canDelete = !!userId && String(postAgg.userId) === String(userId);
 
     console.log(
-      `[getPost] Post ${postId}: canDelete=${canDelete}, liked=${liked}`
+      `[getPost] Post ${postId}: canDelete=${canDelete}, liked=${liked}, saved=${saved}`
     );
 
     return res.json({
-      post: { ...postAgg, liked, canDelete },
+      post: { 
+        ...postAgg, 
+        liked, 
+        saved,
+        canDelete,
+        savedCount: Number(postAgg.savedCount) || 0,
+        repostCount: Number(postAgg.repostCount) || 0,
+      },
       comments: {
         page,
         limit,
@@ -287,7 +305,7 @@ export async function getPost(req: Request, res: Response) {
   }
 }
 
-/** Xóa bài + emit xoá */
+/** Soft delete bài (set isHidden = true) */
 export async function deletePost(req: Request, res: Response) {
   try {
     const userId = (req as any).auth?.userId;
@@ -303,19 +321,9 @@ export async function deletePost(req: Request, res: Response) {
       return res.status(403).json({ message: "Không có quyền xoá bài" });
     }
 
-    for (const a of post.attachments ?? []) {
-      const key = getS3KeyFromAttachment(a as any);
-      if (key) await safeDeleteS3(key);
-    }
-    const comments = await CommunityComment.find({ postId: post._id });
-    for (const c of comments) {
-      for (const a of c.attachments ?? []) {
-        const key = getS3KeyFromAttachment(a as any);
-        if (key) await safeDeleteS3(key);
-      }
-    }
-    await CommunityComment.deleteMany({ postId: post._id });
-    await post.deleteOne();
+    // Soft delete: set isHidden = true
+    post.isHidden = true;
+    await post.save();
 
     const io = getIO();
     if (io) emitCommunityPostDeleted(io, postId);
@@ -323,6 +331,116 @@ export async function deletePost(req: Request, res: Response) {
     return res.json({ ok: true });
   } catch (e) {
     console.error("[deletePost] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+/** Edit post (chỉ chủ bài) */
+export async function editPost(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const { postId } = req.params;
+    if (!mongoose.isValidObjectId(postId))
+      return res.status(400).json({ message: "postId không hợp lệ" });
+
+    const post = await CommunityPost.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post không tồn tại" });
+    if (!post.userId.equals(oid(userId))) {
+      return res.status(403).json({ message: "Không có quyền sửa bài" });
+    }
+
+    let { content, attachments } = (req.body || {}) as {
+      content?: string;
+      attachments?: any[];
+    };
+
+    const text = (content ?? "").trim();
+    const files = Array.isArray(attachments) ? attachments.filter(Boolean) : [];
+
+    if (text.length === 0 && files.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập nội dung hoặc đính kèm tệp" });
+    }
+
+    const norm = (a: any): any => ({
+      type: a?.type === "video" || a?.type?.startsWith("video/")
+        ? "video"
+        : a?.type === "image" || a?.type?.startsWith("image/")
+        ? "image"
+        : a?.type === "link" || a?.type?.startsWith("link")
+        ? "link"
+        : "file",
+      url: a?.url || "",
+      name: a?.name || "",
+      size: a?.size || 0,
+      key: a?.key || undefined,
+      duration: a?.duration || undefined,
+      thumbnail: a?.thumbnail || undefined,
+    });
+    const safeFiles = files.map(norm);
+
+    // Xóa các file cũ không còn trong attachments mới
+    const oldKeys = new Set(
+      (post.attachments || [])
+        .map((a: any) => getS3KeyFromAttachment(a))
+        .filter(Boolean)
+    );
+    const newKeys = new Set(
+      safeFiles.map((a: any) => a.key).filter(Boolean)
+    );
+    for (const oldKey of oldKeys) {
+      if (oldKey && !newKeys.has(oldKey)) {
+        await safeDeleteS3(oldKey);
+      }
+    }
+
+    post.content = text;
+    post.attachments = safeFiles.slice(0, 12);
+    await post.save();
+
+    const [withUser] = await CommunityPost.aggregate([
+      { $match: { _id: post._id } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $addFields: { user: { $first: "$user" } } },
+      {
+        $project: { "user.password": 0, "user.email": 0, "user.partLevels": 0 },
+      },
+    ]);
+
+    const uid = String(userId);
+    const isLiked = (withUser.likedBy || []).some(
+      (x: Types.ObjectId) => String(x) === uid
+    );
+    const isSaved = (withUser.savedBy || []).some(
+      (x: Types.ObjectId) => String(x) === uid
+    );
+
+    const out = {
+      ...withUser,
+      liked: isLiked,
+      saved: isSaved,
+      canDelete: true,
+      likesCount: Number(withUser.likesCount) || 0,
+      savedCount: Number(withUser.savedCount) || 0,
+      repostCount: Number(withUser.repostCount) || 0,
+    };
+
+    const io = getIO();
+    if (io) emitCommunityNewPost(io, out); // Emit update event
+
+    return res.json(out);
+  } catch (e) {
+    console.error("[editPost] ERROR", e);
     return res.status(500).json({ message: "Server error" });
   }
 }
@@ -418,17 +536,19 @@ export async function addComment(req: Request, res: Response) {
     }
 
     const norm = (a: any): any => ({
-      type: a?.type?.startsWith("image")
+      type: a?.type === "video" || a?.type?.startsWith("video/")
+        ? "video"
+        : a?.type === "image" || a?.type?.startsWith("image/")
         ? "image"
-        : a?.type?.startsWith("file")
-        ? "file"
-        : a?.type?.startsWith("link")
+        : a?.type === "link" || a?.type?.startsWith("link")
         ? "link"
         : "file",
       url: a?.url || "",
       name: a?.name || "",
       size: a?.size || 0,
       key: a?.key || undefined,
+      duration: a?.duration || undefined,
+      thumbnail: a?.thumbnail || undefined,
     });
     const safeFiles = files.map(norm);
 
@@ -597,6 +717,268 @@ export async function reportPost(req: Request, res: Response) {
     });
   } catch (e) {
     console.error("[reportPost] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+/** Edit comment (chỉ chủ comment) */
+export async function editComment(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const { commentId } = req.params;
+    if (!mongoose.isValidObjectId(commentId))
+      return res.status(400).json({ message: "commentId không hợp lệ" });
+
+    const comment = await CommunityComment.findById(commentId);
+    if (!comment)
+      return res.status(404).json({ message: "Comment không tồn tại" });
+    if (!comment.userId.equals(oid(userId))) {
+      return res.status(403).json({ message: "Không có quyền sửa bình luận" });
+    }
+
+    let { content, attachments } = (req.body || {}) as {
+      content?: string;
+      attachments?: any[];
+    };
+
+    const text = (content ?? "").trim();
+    const files = Array.isArray(attachments) ? attachments.filter(Boolean) : [];
+
+    if (text.length === 0 && files.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập nội dung hoặc đính kèm tệp" });
+    }
+
+    const norm = (a: any): any => ({
+      type: a?.type === "video" || a?.type?.startsWith("video/")
+        ? "video"
+        : a?.type === "image" || a?.type?.startsWith("image/")
+        ? "image"
+        : a?.type === "link" || a?.type?.startsWith("link")
+        ? "link"
+        : "file",
+      url: a?.url || "",
+      name: a?.name || "",
+      size: a?.size || 0,
+      key: a?.key || undefined,
+      duration: a?.duration || undefined,
+      thumbnail: a?.thumbnail || undefined,
+    });
+    const safeFiles = files.map(norm);
+
+    // Xóa các file cũ không còn trong attachments mới
+    const oldKeys = new Set(
+      (comment.attachments || [])
+        .map((a: any) => getS3KeyFromAttachment(a))
+        .filter(Boolean)
+    );
+    const newKeys = new Set(
+      safeFiles.map((a: any) => a.key).filter(Boolean)
+    );
+    for (const oldKey of oldKeys) {
+      if (oldKey && !newKeys.has(oldKey)) {
+        await safeDeleteS3(oldKey);
+      }
+    }
+
+    comment.content = text;
+    comment.attachments = safeFiles.slice(0, 8);
+    await comment.save();
+
+    const [withUser] = await CommunityComment.aggregate([
+      { $match: { _id: comment._id } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $addFields: { user: { $first: "$user" } } },
+      {
+        $project: { "user.password": 0, "user.email": 0, "user.partLevels": 0 },
+      },
+    ]);
+
+    const out = { ...withUser, canDelete: true };
+
+    const io = getIO();
+    if (io) {
+      emitCommunityNewComment(io, String(comment.postId), out); // Emit update
+    }
+
+    return res.json(out);
+  } catch (e) {
+    console.error("[editComment] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+/** Toggle save/unsave post */
+export async function toggleSave(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const { postId } = req.params;
+    if (!mongoose.isValidObjectId(postId))
+      return res.status(400).json({ message: "postId không hợp lệ" });
+
+    const post = await CommunityPost.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post không tồn tại" });
+
+    const uid = oid(userId);
+    const idx = post.savedBy.findIndex((x: any) => String(x) === String(uid));
+    const wasSaved = idx >= 0;
+    if (wasSaved) {
+      post.savedBy.splice(idx, 1);
+      post.savedCount = Math.max(0, post.savedCount - 1);
+    } else {
+      post.savedBy.push(uid);
+      post.savedCount += 1;
+    }
+    await post.save();
+
+    return res.json({ saved: !wasSaved, savedCount: post.savedCount });
+  } catch (e) {
+    console.error("[toggleSave] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+/** Repost a post */
+export async function repost(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const { postId } = req.params;
+    if (!mongoose.isValidObjectId(postId))
+      return res.status(400).json({ message: "postId không hợp lệ" });
+
+    const originalPost = await CommunityPost.findById(postId);
+    if (!originalPost)
+      return res.status(404).json({ message: "Post không tồn tại" });
+    if (originalPost.isHidden) {
+      return res.status(400).json({ message: "Không thể repost bài đã bị ẩn" });
+    }
+
+    let { repostCaption } = (req.body || {}) as { repostCaption?: string };
+    const caption = (repostCaption ?? "").trim();
+
+    // Tạo post mới với repostedFrom
+    const repost = await CommunityPost.create({
+      userId: oid(userId),
+      content: caption,
+      repostedFrom: originalPost._id,
+      repostCaption: caption,
+    });
+
+    // Tăng repostCount của bài gốc
+    originalPost.repostedBy.push(oid(userId));
+    originalPost.repostCount = (originalPost.repostCount || 0) + 1;
+    await originalPost.save();
+
+    const [withUser] = await CommunityPost.aggregate([
+      { $match: { _id: repost._id } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $addFields: { user: { $first: "$user" } } },
+      {
+        $project: { "user.password": 0, "user.email": 0, "user.partLevels": 0 },
+      },
+    ]);
+
+    const out = { ...withUser, liked: false, saved: false, canDelete: true };
+
+    const io = getIO();
+    if (io) emitCommunityNewPost(io, out);
+
+    return res.json(out);
+  } catch (e) {
+    console.error("[repost] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+/** List saved posts */
+export async function listSavedPosts(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const page = Math.max(1, parseInt(String(req.query.page || "1"), 10));
+    const limit = Math.min(
+      50,
+      Math.max(1, parseInt(String(req.query.limit || "10"), 10))
+    );
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      CommunityPost.aggregate([
+        {
+          $match: {
+            isHidden: false,
+            savedBy: oid(userId),
+          },
+        },
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        { $addFields: { user: { $first: "$user" } } },
+        {
+          $project: {
+            "user.password": 0,
+            "user.email": 0,
+            "user.partLevels": 0,
+          },
+        },
+      ]),
+      CommunityPost.countDocuments({
+        isHidden: false,
+        savedBy: oid(userId),
+      }),
+    ]);
+
+    const uid = String(userId);
+    const out = items.map((p: any) => {
+      const isOwner = String(p.userId) === uid;
+      const isLiked = (p.likedBy || []).some(
+        (x: Types.ObjectId) => String(x) === uid
+      );
+
+      return {
+        ...p,
+        liked: isLiked,
+        saved: true, // Always true for saved posts
+        canDelete: isOwner,
+        likesCount: Number(p.likesCount) || 0,
+        savedCount: Number(p.savedCount) || 0,
+        repostCount: Number(p.repostCount) || 0,
+      };
+    });
+
+    return res.json({ page, limit, total, items: out });
+  } catch (e) {
+    console.error("[listSavedPosts] ERROR", e);
     return res.status(500).json({ message: "Server error" });
   }
 }

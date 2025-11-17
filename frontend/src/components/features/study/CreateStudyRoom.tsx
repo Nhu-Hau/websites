@@ -6,7 +6,7 @@ import { createRoom } from "@/lib/api/client";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import {
   Hash,
   Copy,

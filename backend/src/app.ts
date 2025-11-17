@@ -30,6 +30,7 @@ import {
 } from "./modules";
 
 import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
+import { exec } from "child_process";
 
 const app = express();
 
@@ -79,6 +80,38 @@ app.use(UPLOADS_ROUTE, express.static(UPLOADS_DIR));
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 //mount router trước bất kỳ catch-all/404 handler nào
+
+// ===== Webhook deploy từ GitHub (không cần auth, bảo vệ bằng token) =====
+
+const DEPLOY_WEBHOOK_TOKEN = process.env.DEPLOY_WEBHOOK_TOKEN || "";
+
+app.post("/webhook-deploy", (req, res) => {
+  const queryToken = req.query.token as string | undefined;
+  const headerToken = req.headers["x-deploy-token"] as string | undefined;
+  const token = queryToken || headerToken;
+
+  if (!DEPLOY_WEBHOOK_TOKEN || token !== DEPLOY_WEBHOOK_TOKEN) {
+    console.warn("[webhook-deploy] Unauthorized request");
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const ref = (req.body && (req.body as any).ref) || "";
+
+  if (ref && ref !== "refs/heads/main") {
+    console.log("[webhook-deploy] Push nhánh khác, bỏ qua:", ref);
+    return res.status(200).json({ message: "Ignored (not main)", ref });
+  }
+
+  console.log("[webhook-deploy] Nhận webhook hợp lệ, chạy deploy.sh ở background...");
+
+  // 🔥 Chạy deploy.sh ở background + ghi log ra file, KHÔNG chờ xong
+  const cmd =
+    "bash /opt/websites/deploy.sh > /opt/websites/deploy.log 2>&1 &";
+
+  exec(cmd); // không cần callback
+
+  return res.json({ message: "Deploy started" });
+});
 
 // Auth & Account
 app.use("/api/auth", authRoutes);

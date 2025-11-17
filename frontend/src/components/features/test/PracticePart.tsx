@@ -15,15 +15,14 @@ import {
   Headphones,
   BookOpen,
   ChevronRight,
-  Sparkles,
   Star,
-  Trophy,
   Lightbulb,
   ArrowRight,
 } from "lucide-react";
 import LevelSuggestModal from "@/components/features/test/LevelSuggestModal";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { Variants } from "framer-motion";
 
 /* ====== META ====== */
 const PART_META: Record<
@@ -124,56 +123,57 @@ function normalizePartLevels(raw: any): Partial<Record<string, L>> {
 }
 
 /* Motion variants */
-const headerVariants = {
+const headerVariants: Variants = {
   hidden: { opacity: 0, y: -12 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
       type: "spring",
       stiffness: 100,
       damping: 15,
       mass: 0.8,
-    } 
+    },
   },
 };
 
-const bannerVariants = {
+const bannerVariants: Variants = {
   hidden: { opacity: 0, y: -8 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
       type: "spring",
       stiffness: 120,
       damping: 18,
       mass: 0.7,
-    } 
+    },
   },
 };
 
-const gridVariants = {
+const gridVariants: Variants = {
   hidden: { opacity: 0 },
   visible: (stagger: number = 0.06) => ({
     opacity: 1,
     transition: {
+      type: "spring",
       staggerChildren: stagger,
       delayChildren: 0.1,
     },
   }),
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: -10 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
       type: "spring",
       stiffness: 110,
       damping: 16,
       mass: 0.75,
-    } 
+    },
   },
 };
 
@@ -327,7 +327,7 @@ export default function PracticePart() {
       <div className="relative mx-auto max-w-6xl xl:max-w-7xl px-4 xs:px-6 py-10 pt-20">
         {/* ===== HEADER ===== */}
         <motion.header
-          className="mb-8 sm:mb-10"
+          className="mb-5"
           variants={headerVariants}
           initial="hidden"
           animate="visible"
@@ -337,7 +337,13 @@ export default function PracticePart() {
             <div className="space-y-4 max-w-2xl">
               {/* Tag (Nghe / Đọc) */}
               <div className="inline-flex items-center gap-3 rounded-2xl bg-white/90 dark:bg-zinc-900/80 backdrop-blur-xl px-3 py-2 shadow-md ring-1 ring-white/60 dark:ring-zinc-700/70">
-                <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-sky-600 shadow-lg ring-2 ring-white/60">
+                <div
+                  className={`relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br ${
+                    isListening
+                      ? "from-sky-500 to-sky-600"
+                      : "from-lime-500 to-lime-600"
+                  } shadow-lg ring-2 ring-white/60`}
+                >
                   <div className="absolute inset-0 rounded-full bg-white/40 blur-md" />
                   {isListening ? (
                     <Headphones className="h-5 w-5 text-white relative z-10" />
@@ -345,7 +351,13 @@ export default function PracticePart() {
                     <BookOpen className="h-5 w-5 text-white relative z-10" />
                   )}
                 </div>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-700 dark:text-sky-300">
+                <span
+                  className={`text-[11px] font-semibold uppercase tracking-[0.22em] ${
+                    isListening
+                      ? "text-sky-700 dark:text-sky-300"
+                      : "text-lime-700 dark:text-lime-300"
+                  }`}
+                >
                   {isListening ? "Luyện Nghe TOEIC" : "Luyện Đọc TOEIC"}
                 </span>
               </div>
@@ -373,15 +385,15 @@ export default function PracticePart() {
                     variants={bannerVariants}
                     initial="hidden"
                     animate="visible"
-                    exit={{ 
-                      opacity: 0, 
-                      y: 4, 
-                      transition: { 
+                    exit={{
+                      opacity: 0,
+                      y: 4,
+                      transition: {
                         type: "spring",
                         stiffness: 150,
                         damping: 20,
                         mass: 0.6,
-                      } 
+                      },
                     }}
                   >
                     <Star className="w-4 h-4 text-amber-500" />
@@ -407,12 +419,12 @@ export default function PracticePart() {
                   className="rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/50 dark:border-zinc-800/80 shadow-lg px-4 py-3 w-full sm:w-auto"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
+                  transition={{
                     type: "spring",
                     stiffness: 120,
                     damping: 18,
                     mass: 0.7,
-                    delay: 0.05 
+                    delay: 0.05,
                   }}
                 >
                   <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-[0.16em]">
@@ -431,12 +443,12 @@ export default function PracticePart() {
                 className="flex justify-start sm:justify-end"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ 
+                transition={{
                   type: "spring",
                   stiffness: 120,
                   damping: 18,
                   mass: 0.7,
-                  delay: 0.08 
+                  delay: 0.08,
                 }}
               >
                 <Link
@@ -469,43 +481,48 @@ export default function PracticePart() {
           <AnimatePresence>
             {suggestedLevel != null && (
               <motion.div
-                className="rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-white/60 dark:border-zinc-800/80 backdrop-blur-xl px-4 py-3 flex flex-wrap gap-3 items-center justify-between shadow-sm"
+                className="inline-flex items-center gap-2 rounded-md border border-amber-100 dark:border-amber-700/60 bg-amber-50/90 dark:bg-amber-900/25 px-3 py-2 shadow-sm max-w-full"
                 variants={bannerVariants}
                 initial="hidden"
                 animate="visible"
-                exit={{ 
-                  opacity: 0, 
-                  y: 6, 
-                  transition: { 
+                exit={{
+                  opacity: 0,
+                  y: 4,
+                  transition: {
                     type: "spring",
-                    stiffness: 150,
-                    damping: 20,
-                    mass: 0.6,
-                  } 
+                    stiffness: 160,
+                    damping: 18,
+                    mass: 0.5,
+                  },
                 }}
               >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg ring-2 ring-amber-200/50 dark:ring-amber-500/30">
-                    <Lightbulb className="h-5 w-5 text-white" />
-                    <div className="absolute inset-0 rounded-xl bg-white/20 blur-sm" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-zinc-800 dark:text-zinc-200 leading-relaxed flex items-center gap-3">
-                      <div className="font-semibold text-amber-600 dark:text-amber-400">
-                        Gợi ý từ hệ thống:
-                      </div>
-                      <div
-                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg font-semibold ${levelConfig[suggestedLevel].textColor} ${levelConfig[suggestedLevel].bgColor} border border-current/20`}
-                      >
-                        {levelConfig[suggestedLevel].label}
-                        <span className="text-xs opacity-80">
-                          ({levelConfig[suggestedLevel].desc})
-                        </span>
-                      </div>{" "}
-                      phù hợp nhất với trình độ hiện tại của bạn.
-                    </div>
-                  </div>
+                {/* Icon nhỏ */}
+                <div className="flex h-6 w-6 items-center justify-center rounded-sm bg-amber-500/90">
+                  <Lightbulb className="h-3.5 w-3.5 text-white" />
                 </div>
+
+                {/* Text gợi ý */}
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-[11px] sm:text-xs font-semibold text-amber-800 dark:text-amber-200 whitespace-nowrap">
+                    Gợi ý:
+                  </span>
+
+                  {/* Badge level nhỏ gọn */}
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-[1px] text-[11px] sm:text-xs font-semibold whitespace-nowrap ${levelConfig[suggestedLevel].textColor} ${levelConfig[suggestedLevel].bgColor} border border-current/15`}
+                  >
+                    {levelConfig[suggestedLevel].label}
+                    <span className="hidden xs:inline opacity-75 text-[10px]">
+                      · {levelConfig[suggestedLevel].desc}
+                    </span>
+                  </span>
+
+                  <span className="text-[11px] text-amber-800/80 dark:text-amber-100/80 truncate">
+                    phù hợp với trình độ hiện tại của bạn.
+                  </span>
+                </div>
+
+                {/* CTA dạng link nhỏ, không phải button to */}
                 {level !== suggestedLevel && (
                   <button
                     onClick={() => {
@@ -513,12 +530,19 @@ export default function PracticePart() {
                         `${base}/practice/${partKey}?level=${suggestedLevel}`
                       );
                     }}
-                    className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-md hover:shadow-lg hover:from-amber-400 hover:to-orange-400 transition-all duration-200 hover:-translate-y-0.5"
+                    className="
+        ml-1
+        inline-flex items-center gap-1
+        text-[11px] sm:text-xs font-semibold
+        text-amber-700 dark:text-amber-300
+        hover:text-amber-600 dark:hover:text-amber-200
+        hover:underline underline-offset-2
+        transition-colors
+        whitespace-nowrap
+      "
                   >
-                    <span>
-                      Chuyển sang {levelConfig[suggestedLevel].label}
-                    </span>
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    Chuyển level
+                    <ArrowRight className="h-3 w-3" />
                   </button>
                 )}
               </motion.div>
@@ -527,7 +551,7 @@ export default function PracticePart() {
 
           {loading ? (
             <motion.div
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-[300px] xs:max-w-[350px] sm:max-w-[600px] md:max-w-[700px] mx-auto lg:max-w-none"
               variants={gridVariants}
               initial="hidden"
               animate="visible"
@@ -544,7 +568,7 @@ export default function PracticePart() {
               className="flex flex-col items-center justify-center py-24 text-center"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ 
+              transition={{
                 type: "spring",
                 stiffness: 100,
                 damping: 15,
@@ -567,7 +591,7 @@ export default function PracticePart() {
             </motion.div>
           ) : (
             <motion.div
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-[300px] xs:max-w-[350px] sm:max-w-[600px] md:max-w-[700px] mx-auto lg:max-w-none"
               variants={gridVariants}
               initial="hidden"
               animate="visible"

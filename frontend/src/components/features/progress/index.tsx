@@ -236,6 +236,7 @@ export default function ProgressPage() {
       leftSec={leftSec}
       progressPercent={progress}
       onOpenQuickNav={() => setMobileNavOpen(true)}
+      mobileNavOpen={mobileNavOpen}
     >
       <TestHeader
         badge={{

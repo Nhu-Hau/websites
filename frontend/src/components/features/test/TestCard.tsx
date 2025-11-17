@@ -63,16 +63,16 @@ const LEVEL_COLORS = {
 // subtle motion variants cho card
 const cardVariants = {
   initial: { opacity: 0, y: -12, scale: 0.98 },
-  animate: { 
-    opacity: 1, 
-    y: 0, 
+  animate: {
+    opacity: 1,
+    y: 0,
     scale: 1,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 100,
       damping: 15,
       mass: 0.8,
-    }
+    },
   },
 };
 
@@ -121,25 +121,15 @@ export default function TestCard({
       className={cn(
         "group relative flex h-full flex-col rounded-xl border bg-white dark:bg-zinc-900 px-5 py-5 transition-colors duration-200",
         "border-zinc-200/90 dark:border-zinc-700/80 shadow-sm",
-        disabled
-          ? "opacity-50 cursor-not-allowed"
-          : "cursor-pointer",
+        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
         !disabled && color.borderHover
       )}
       variants={cardVariants}
       initial="initial"
       animate="animate"
-      whileHover={
-        disabled
-          ? undefined
-          : { scale: 1.01, y: -4 }
-      }
-      whileTap={
-        disabled
-          ? undefined
-          : { scale: 0.99, y: 0 }
-      }
-      transition={{ 
+      whileHover={disabled ? undefined : { scale: 1.01, y: -4 }}
+      whileTap={disabled ? undefined : { scale: 0.99, y: 0 }}
+      transition={{
         type: "spring",
         stiffness: 200,
         damping: 18,
@@ -177,7 +167,7 @@ export default function TestCard({
               className="ml-1 inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-semibold"
               initial={{ opacity: 0, scale: 0.8, y: 4 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ 
+              transition={{
                 type: "spring",
                 stiffness: 150,
                 damping: 16,
@@ -251,7 +241,7 @@ export default function TestCard({
                 )}
                 initial={{ width: 0 }}
                 animate={{ width: `${accuracy}%` }}
-                transition={{ 
+                transition={{
                   type: "spring",
                   stiffness: 80,
                   damping: 20,
@@ -320,10 +310,14 @@ export default function TestCard({
           <Link
             href={href}
             className={cn(
-              "inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold",
-              "border border-emerald-300/80 dark:border-emerald-700/80",
-              "text-emerald-700 dark:text-emerald-400",
-              "hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:shadow-sm transition-all"
+              "inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold",
+              // base: nút outline theo màu level
+              "border bg-white dark:bg-zinc-900 border-current",
+              color.text,
+              "transition-all",
+              // hover: fill gradient cùng màu với nút "Làm bài ngay"
+              "hover:text-white hover:bg-gradient-to-r hover:shadow-md",
+              color.gradient
             )}
             onClick={(e) => e.stopPropagation()}
           >
@@ -343,7 +337,7 @@ export function TestCardSkeleton() {
       className="h-full rounded-2xl border border-zinc-200/90 bg-white px-5 py-5 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900 animate-pulse"
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ 
+      transition={{
         type: "spring",
         stiffness: 110,
         damping: 16,

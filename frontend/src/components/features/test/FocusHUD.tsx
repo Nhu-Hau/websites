@@ -8,6 +8,7 @@ export type FocusHUDProps = {
   started: boolean;
   resp: unknown | null;
   focusMode: boolean;
+  mobileNavOpen?: boolean; // mobile quick nav sheet đang mở
 
   /** dữ liệu hiển thị */
   durationMin: number;
@@ -39,6 +40,7 @@ export default function FocusHUD({
   started,
   resp,
   focusMode,
+  mobileNavOpen = false,
   durationMin,
   total,
   currentIndex,
@@ -49,7 +51,7 @@ export default function FocusHUD({
   onOpenQuickNav,
   onToggleFocus,
 }: FocusHUDProps) {
-  const showMobile = !resp;
+  const showMobile = !resp && !mobileNavOpen; // ẩn mobile HUD khi sheet mở
   const showDesktopFocus = focusMode && !resp;
 
   return (

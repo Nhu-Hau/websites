@@ -34,6 +34,7 @@ export type TestLayoutProps = {
   leftSec: number;
   progressPercent: number;
   onOpenQuickNav: () => void;
+  mobileNavOpen?: boolean; // mobile quick nav sheet đang mở
 };
 
 export function TestLayout({
@@ -62,6 +63,7 @@ export function TestLayout({
   leftSec,
   progressPercent,
   onOpenQuickNav,
+  mobileNavOpen = false,
 }: TestLayoutProps) {
   return (
     <div className="pt-14 min-h-[calc(100vh-5rem)] bg-slate-50/70 pb-24 dark:bg-zinc-950/70">
@@ -104,6 +106,7 @@ export function TestLayout({
         started={started}
         resp={resp}
         focusMode={focusMode}
+        mobileNavOpen={mobileNavOpen}
         durationMin={durationMin}
         total={total}
         currentIndex={currentIndex}

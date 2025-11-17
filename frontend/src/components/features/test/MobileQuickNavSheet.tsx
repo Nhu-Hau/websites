@@ -11,7 +11,7 @@ export type MobileQuickNavSheetProps = {
   leftSec: number;
   progress: number;
   items: Array<{ id: string }>;
-  answers: Record<string, any>;
+  answers: Record<string, unknown>;
   onJump: (index: number) => void;
   fmtTime: (sec: number) => string;
 };
@@ -31,7 +31,7 @@ export function MobileQuickNavSheet({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 lg:hidden">
+    <div className="fixed inset-0 z-[60] lg:hidden">
       {/* backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
@@ -43,7 +43,7 @@ export function MobileQuickNavSheet({
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-zinc-300 dark:bg-zinc-700" />
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-            <Focus className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <Focus className="h-4 w-4 text-sky-600 dark:text-sky-400" />
             Điều hướng nhanh
           </div>
           <button
@@ -58,7 +58,7 @@ export function MobileQuickNavSheet({
         <div className="mb-3">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+              className="h-full rounded-full bg-gradient-to-r from-sky-500 to-sky-400"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -70,7 +70,7 @@ export function MobileQuickNavSheet({
               </span>{" "}
               / {total}
             </span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 text-red-600">
               <Clock className="h-3.5 w-3.5" />
               {fmtTime(leftSec)}
             </span>
@@ -99,9 +99,9 @@ export function MobileQuickNavSheet({
                   className={[
                     "flex aspect-square w-full items-center justify-center rounded-lg border text-sm font-semibold transition-colors",
                     isCurrent
-                      ? "border-emerald-600 bg-emerald-600 text-white"
+                      ? "border-sky-600 bg-sky-600 text-white"
                       : hasAnswer
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+                      ? "border-emerald-200 bg-emerald-50 text-sky-700 dark:border-sky-800 dark:bg-emerald-950/40 dark:text-sky-200"
                       : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200",
                   ].join(" ")}
                 >

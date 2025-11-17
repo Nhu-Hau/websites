@@ -21,6 +21,9 @@ import { useConfirmModal } from "@/components/common/ConfirmModal";
 import type { CommunityComment } from "@/types/community.types";
 import { getSocket } from "@/lib/socket";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import MediaGallery from "./MediaGallery";
+import ActionBar from "./ActionBar";
+import CommentItem from "./CommentItem";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
@@ -383,64 +386,28 @@ export default function PostDetail({ postId }: { postId: string }) {
             </div>
           )}
 
-          {/* Attachments */}
-          {post.attachments?.length > 0 && (
+          {/* Media Gallery */}
+          {post.attachments && post.attachments.length > 0 && (
             <div className="px-6 pb-4">
-              <div className="flex flex-wrap gap-2">
-                {post.attachments.map((a: any, i: number) => {
-                  const attachmentUrl = a.url.startsWith("http")
-                    ? a.url
-                    : `${API_BASE}${a.url}`;
-                  return (
-                    <a
-                      key={i}
-                      href={attachmentUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-sm"
-                    >
-                      <AttachmentIcon type={a.type} />
-                      <span className="text-zinc-700 dark:text-zinc-300 font-medium truncate max-w-[200px]">
-                        {a.name || "Attachment"}
-                      </span>
-                      {a.size && (
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                          {fmtSize(a.size)}
-                        </span>
-                      )}
-                    </a>
-                  );
-                })}
-              </div>
+              <MediaGallery attachments={post.attachments} />
             </div>
           )}
 
           {/* Actions */}
-          <div className="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-4">
-            <button
-              onClick={toggleLike}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                post.liked
-                  ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20"
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              }`}
-            >
-              <Heart className={`h-4 w-4 ${post.liked ? "fill-current" : ""}`} />
-              <span>{post.likesCount || 0}</span>
-            </button>
-
-            <div className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              <MessageCircle className="h-4 w-4" />
-              <span>{post.commentsCount || 0}</span>
-            </div>
-
-            <button
-              onClick={sharePost}
-              className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            >
-              <Share2 className="h-4 w-4" />
-              <span>Share</span>
-            </button>
+          <div className="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800">
+            <ActionBar
+              postId={post._id}
+              liked={post.liked}
+              saved={post.saved}
+              likesCount={post.likesCount}
+              commentsCount={post.commentsCount}
+              savedCount={post.savedCount}
+              repostCount={post.repostCount}
+              canDelete={post.canDelete}
+              canEdit={post.canDelete}
+              onCommentClick={() => {}}
+              onShareClick={sharePost}
+            />
           </div>
         </article>
 
@@ -465,63 +432,12 @@ export default function PostDetail({ postId }: { postId: string }) {
               </div>
             ) : (
               comments.map((c: any) => (
-                <div
+                <CommentItem
                   key={c._id}
-                  className="flex gap-3 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0"
-                >
-                  <Avatar url={c.user?.picture} name={c.user?.name} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-                        {c.user?.name || "User"}
-                      </span>
-                      <time className="text-xs text-zinc-500 dark:text-zinc-400">
-                        {formatDate(c.createdAt)}
-                      </time>
-                      {c.canDelete && (
-                        <button
-                          onClick={() => deleteComment(c._id)}
-                          className="ml-auto text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                    {c.content && (
-                      <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap break-words mb-2">
-                        {c.content}
-                      </p>
-                    )}
-                    {c.attachments?.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {c.attachments.map((a: any, i: number) => {
-                          const attachmentUrl = a.url.startsWith("http")
-                            ? a.url
-                            : `${API_BASE}${a.url}`;
-                          return (
-                            <a
-                              key={i}
-                              href={attachmentUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-2 px-2 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-xs"
-                            >
-                              <AttachmentIcon type={a.type} />
-                              <span className="text-zinc-700 dark:text-zinc-300 font-medium truncate max-w-[150px]">
-                                {a.name || "File"}
-                              </span>
-                              {a.size && (
-                                <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                                  {fmtSize(a.size)}
-                                </span>
-                              )}
-                            </a>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  comment={c}
+                  onDeleted={loadPost}
+                  onUpdated={loadPost}
+                />
               ))
             )}
           </div>

@@ -19,10 +19,10 @@ import {
   Activity,
   Plus,
   X,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
-import StudyHeader from "@/components/features/study/StudyHeader";
 
 type Role = "user" | "teacher" | "admin";
 
@@ -173,215 +173,228 @@ export default function CreateStudyRoomPage() {
   }
 
   return (
-    <>
-      <StudyHeader
-        locale={locale}
-        onCreateClick={() => setShowCreateModal(true)}
-        onRefreshClick={reload}
-        isRefreshing={busy === "reload"}
-      />
-      <div className="space-y-8">
-        {/* Create Room Modal */}
-        {showCreateModal && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                setShowCreateModal(false);
-              }
-            }}
-          >
-            <div
-              className="relative w-full max-w-2xl rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                    <Plus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
-                      Tạo phòng học mới
-                    </h2>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-500 mt-0.5">
-                      Thiết lập một phòng học trực tuyến cho lớp của bạn
-                    </p>
-                  </div>
-                </div>
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <main className="mx-auto max-w-4xl px-4 py-8 pt-20">
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
+                Phòng học
+              </h1>
+              <p className="text-zinc-600 dark:text-zinc-400">
+                Tạo và quản lý phòng học trực tuyến của bạn
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {canCreate && (
                 <button
-                  onClick={() => setShowCreateModal(false)}
-                  className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  aria-label="Đóng"
+                  onClick={() => setShowCreateModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-sm hover:shadow"
                 >
-                  <X className="h-5 w-5" />
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Tạo phòng</span>
+                  <span className="sm:hidden">Tạo</span>
                 </button>
-              </div>
-
-              {/* Modal Content */}
-              <div className="p-6">
-                <CreateStudyRoom
-                  onCreated={() => {
-                    setShowCreateModal(false);
-                    reload();
-                    toast.success("Tạo phòng thành công!");
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!canCreate && (
-          <div className="relative rounded-2xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-900/10 p-6 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                  <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold text-zinc-900 dark:text-white mb-1">
-                  Bạn chỉ có thể tham gia
-                </h3>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  Chỉ <strong className="font-medium">giáo viên</strong> và{" "}
-                  <strong className="font-medium">quản trị viên</strong> mới có
-                  thể tạo phòng. Vai trò hiện tại:{" "}
-                  <strong className="capitalize font-medium text-amber-600 dark:text-amber-400">
-                    {role}
-                  </strong>
-                  .
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Error Alert */}
-        {err && (
-          <div className="relative rounded-2xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/10 p-4 shadow-sm">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-red-900 dark:text-red-300 mb-1">
-                  {err}
-                </p>
-                <button
-                  onClick={reload}
-                  className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
-                >
-                  Thử lại ngay
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Room List */}
-        <div className="space-y-4 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 pt-20">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
-              Danh sách phòng
-            </h2>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-              {rooms.length}
-            </span>
-          </div>
-
-          {rooms.length === 0 ? (
-            <div className="relative rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 p-12 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 mx-auto mb-4">
-                <Users className="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
-              </div>
-              {canCreate ? (
-                <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                  Chưa có phòng nào.{" "}
-                  <span className="text-blue-600 dark:text-blue-400 font-semibold">
-                    Tạo phòng đầu tiên!
-                  </span>
-                </p>
-              ) : (
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  Hiện chưa có phòng học nào được mở. Vui lòng quay lại sau.
-                </p>
               )}
+              <button
+                onClick={reload}
+                disabled={busy === "reload"}
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  busy === "reload"
+                    ? "text-zinc-400 dark:text-zinc-500 cursor-not-allowed"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                }`}
+              >
+                {busy === "reload" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                <span className="hidden sm:inline">Làm mới</span>
+                <span className="sm:hidden">Refresh</span>
+              </button>
             </div>
-          ) : (
-            <div className="grid gap-3">
-              {rooms.map((r) => (
-                <div
-                  key={r.roomName}
-                  className="group relative rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm hover:shadow transition-shadow duration-200"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <h3 className="font-semibold text-zinc-900 dark:text-white text-base">
-                          {r.roomName}
-                        </h3>
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-900/20 text-xs font-medium text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
-                          <Activity className="w-3 h-3" />
-                          {r.numParticipants} online
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-500">
-                        <Clock className="h-3.5 w-3.5" />
-                        {new Date(r.createdAt).toLocaleString("vi-VN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </div>
-                    </div>
+          </div>
+        </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <Link
-                        href={`${prefix}/study/${r.roomName}`}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm hover:shadow"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        <span>Vào phòng</span>
-                      </Link>
-
-                      {canDelete && (
-                        <button
-                          onClick={() => handleDelete(r.roomName)}
-                          disabled={deleting === r.roomName}
-                          className={cn(
-                            "inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2",
-                            deleting === r.roomName
-                              ? "border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 opacity-50 cursor-not-allowed"
-                              : "border-red-300 dark:border-red-700/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          )}
-                        >
-                          {deleting === r.roomName ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              <span>Đang xóa</span>
-                            </>
-                          ) : (
-                            <>
-                              <Trash2 className="h-4 w-4" />
-                              <span className="hidden sm:inline">Xóa</span>
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </div>
+        <div className="space-y-8">
+          {/* Create Room Modal */}
+          {showCreateModal && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setShowCreateModal(false);
+                }
+              }}
+            >
+              <div className="" onClick={(e) => e.stopPropagation()}>
+                {/* Modal Content */}
+                <div className="p-6">
+                  <CreateStudyRoom
+                    onCreated={() => {
+                      setShowCreateModal(false);
+                      reload();
+                      toast.success("Tạo phòng thành công!");
+                    }}
+                    onCancel={() => setShowCreateModal(false)}
+                  />
                 </div>
-              ))}
+              </div>
             </div>
           )}
+
+          {!canCreate && (
+            <div className="relative rounded-2xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-900/10 p-6 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                    <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-semibold text-zinc-900 dark:text-white mb-1">
+                    Bạn chỉ có thể tham gia
+                  </h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    Chỉ <strong className="font-medium">giáo viên</strong> và{" "}
+                    <strong className="font-medium">quản trị viên</strong> mới
+                    có thể tạo phòng. Vai trò hiện tại:{" "}
+                    <strong className="capitalize font-medium text-amber-600 dark:text-amber-400">
+                      {role}
+                    </strong>
+                    .
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Alert */}
+          {err && (
+            <div className="relative rounded-2xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/10 p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-red-900 dark:text-red-300 mb-1">
+                    {err}
+                  </p>
+                  <button
+                    onClick={reload}
+                    className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                  >
+                    Thử lại ngay
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Room List */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                Danh sách phòng
+              </h2>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                {rooms.length}
+              </span>
+            </div>
+
+            {rooms.length === 0 ? (
+              <div className="relative rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 p-12 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 mx-auto mb-4">
+                  <Users className="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
+                </div>
+                {canCreate ? (
+                  <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                    Chưa có phòng nào.{" "}
+                    <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                      Tạo phòng đầu tiên!
+                    </span>
+                  </p>
+                ) : (
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    Hiện chưa có phòng học nào được mở. Vui lòng quay lại sau.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {rooms.map((r) => (
+                  <div
+                    key={r.roomName}
+                    className="group relative rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm hover:shadow transition-shadow duration-200"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h3 className="font-semibold text-zinc-900 dark:text-white text-base">
+                            {r.roomName}
+                          </h3>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-900/20 text-xs font-medium text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
+                            <Activity className="w-3 h-3" />
+                            {r.numParticipants} online
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-500">
+                          <Clock className="h-3.5 w-3.5" />
+                          {new Date(r.createdAt).toLocaleString("vi-VN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <Link
+                          href={`${prefix}/study/${r.roomName}`}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm hover:shadow"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          <span>Vào phòng</span>
+                        </Link>
+
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDelete(r.roomName)}
+                            disabled={deleting === r.roomName}
+                            className={cn(
+                              "inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2",
+                              deleting === r.roomName
+                                ? "border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 opacity-50 cursor-not-allowed"
+                                : "border-red-300 dark:border-red-700/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            )}
+                          >
+                            {deleting === r.roomName ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>Đang xóa</span>
+                              </>
+                            ) : (
+                              <>
+                                <Trash2 className="h-4 w-4" />
+                                <span className="hidden sm:inline">Xóa</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </main>
 
       {/* Confirm Modal */}
       {ConfirmModal}
-    </>
+    </div>
   );
 }

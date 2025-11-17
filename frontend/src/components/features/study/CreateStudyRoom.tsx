@@ -2,27 +2,17 @@
 "use client";
 
 import React, { useMemo, useState, useCallback, useId } from "react";
-import { createRoom } from "@/lib/api/client";
 import { useRouter } from "next/navigation";
+import { Hash, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+
+import { createRoom } from "@/lib/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { toast } from "@/lib/toast";
-import {
-  Hash,
-  Copy,
-  Check,
-  AlertCircle,
-  CheckCircle,
-  Loader2,
-  Plus,
-  Zap,
-  Shield,
-  UserCheck,
-  Sparkles,
-} from "lucide-react";
 
 interface CreateStudyRoomProps {
   onCreated?: () => void;
+  onCancel?: () => void;
 }
 
 type Role = "user" | "teacher" | "admin";
@@ -40,31 +30,23 @@ function slugifyRoom(input: string): string {
     .slice(0, 32);
 }
 
-function randomSuggestion(): string {
-  const n = Math.floor(1000 + Math.random() * 9000);
-  const pool = ["toeic", "ielts", "math", "physics", "english", "grammar"];
-  const pick = pool[Math.floor(Math.random() * pool.length)];
-  return `${pick}-room-${n}`;
+function validateRoom(slug: string): string | null {
+  if (!slug) return "Tên phòng không được để trống.";
+  if (slug.length < 3) return "Tên phòng phải có ít nhất 3 ký tự.";
+  if (slug.length > 32) return "Tên phòng tối đa 32 ký tự.";
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+    return "Chỉ dùng chữ thường, số và dấu gạch (-), không bắt đầu bằng dấu gạch.";
+  }
+  return null;
 }
 
 function cn(...args: Array<string | false | null | undefined>) {
   return args.filter(Boolean).join(" ");
 }
 
-function validateRoom(slug: string): string | null {
-  if (!slug) return "Tên phòng không được để trống.";
-  if (slug.length < 3) return "Tên phòng phải có ít nhất 3 ký tự.";
-  if (slug.length > 32) return "Tên phòng tối đa 32 ký tự.";
-  if (!/^[a-z0-9][a-z0-9-]*$/.test(slug))
-    return "Chỉ dùng chữ thường, số và dấu gạch (-), không bắt đầu bằng dấu gạch.";
-  return null;
-}
-
-export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
+export function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
   const [input, setInput] = useState("");
-  const [room, setRoom] = useState("");
   const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const router = useRouter();
   const basePrefix = useBasePrefix("vi");
@@ -72,48 +54,40 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
 
   const role: Role = (authUser?.role as Role) || "user";
   const displayName = authUser?.name || "Guest";
-  const userId = authUser?.id || `guest-${crypto.randomUUID()}`;
+  const userId =
+    authUser?.id ||
+    `guest-${typeof crypto !== "undefined" ? crypto.randomUUID() : "temp"}`;
 
   const fieldId = useId();
   const helpId = `${fieldId}-help`;
   const errId = `${fieldId}-err`;
 
   const normalized = useMemo(() => slugifyRoom(input), [input]);
-  const finalSlug = room || normalized;
+  const finalSlug = normalized;
   const errorMsg = useMemo(() => validateRoom(finalSlug), [finalSlug]);
   const isValid = !errorMsg && finalSlug.length >= 3;
 
   const canCreateRoom = role === "teacher" || role === "admin";
 
-  const quickUseSuggestion = useCallback(() => {
-    const sug = slugifyRoom(randomSuggestion());
-    setInput(sug);
-    setRoom(sug);
-    toast.success("Đã gợi ý tên phòng!", { duration: 1500 });
-  }, []);
-
-  const onInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    setInput(raw);
-    setRoom(slugifyRoom(raw));
-  }, []);
-
-  const copySlug = useCallback(() => {
-    if (!finalSlug) return;
-    navigator.clipboard.writeText(finalSlug);
-    setCopied(true);
-    toast.success("Đã sao chép tên phòng!", { duration: 1500 });
-    setTimeout(() => setCopied(false), 1500);
-  }, [finalSlug]);
+  const onInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value;
+      // Đơn giản hoá: luôn slugify trực tiếp input
+      setInput(slugifyRoom(raw));
+    },
+    []
+  );
 
   const onCreate = useCallback(async () => {
     if (!isValid) {
       toast.error(errorMsg || "Tên phòng không hợp lệ");
       return;
     }
+
     if (!canCreateRoom) {
       toast.error("Bạn không có quyền tạo phòng học", {
-        description: "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
+        description:
+          "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
       });
       return;
     }
@@ -132,7 +106,8 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
       const message = e?.message || "Không thể tạo phòng. Vui lòng thử lại.";
       if (message.includes("teacher") || message.includes("admin")) {
         toast.error("Bạn không có quyền tạo phòng học", {
-          description: "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
+          description:
+            "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
         });
       } else {
         toast.error("Tạo phòng thất bại", { description: message });
@@ -140,7 +115,18 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
     } finally {
       setLoading(false);
     }
-  }, [finalSlug, isValid, errorMsg, userId, displayName, role, canCreateRoom, onCreated, router, basePrefix]);
+  }, [
+    isValid,
+    errorMsg,
+    canCreateRoom,
+    userId,
+    displayName,
+    role,
+    finalSlug,
+    onCreated,
+    router,
+    basePrefix,
+  ]);
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -152,21 +138,21 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
     [loading, authLoading, isValid, onCreate]
   );
 
+  // Trạng thái yêu cầu đăng nhập
   if (!authUser) {
     return (
-      <div className="relative rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-8 shadow-sm">
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-900/20">
-              <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-            </div>
+      <div className="w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-lg">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-900/20">
+            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-1">
+          <div className="flex-1">
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-white mb-1">
               Yêu cầu đăng nhập
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              Vui lòng đăng nhập để tạo phòng học. Chỉ giáo viên và quản trị viên mới có thể tạo phòng.
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Vui lòng đăng nhập để tạo phòng học. Chỉ giáo viên và quản trị
+              viên mới có thể tạo phòng.
             </p>
           </div>
         </div>
@@ -174,21 +160,23 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
     );
   }
 
+  // Trạng thái không có quyền tạo phòng
   if (!canCreateRoom) {
     return (
-      <div className="relative rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-8 shadow-sm">
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-900/20">
-              <AlertCircle className="h-6 w-6 text-rose-600 dark:text-rose-400" />
-            </div>
+      <div className="w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-lg">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-900/20">
+            <AlertCircle className="h-5 w-5 text-rose-600 dark:text-rose-400" />
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-1">
+          <div className="flex-1">
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-white mb-1">
               Không có quyền tạo phòng
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-2">
-              Vai trò hiện tại: <span className="font-medium capitalize text-rose-600 dark:text-rose-400">{role}</span>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
+              Vai trò hiện tại:{" "}
+              <span className="font-medium capitalize text-rose-600 dark:text-rose-400">
+                {role}
+              </span>
             </p>
             <p className="text-xs text-zinc-500 dark:text-zinc-500">
               Liên hệ quản trị viên để được cấp quyền giáo viên.
@@ -199,17 +187,30 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
     );
   }
 
+  // Popup đơn giản
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-lg">
+      {/* Header đơn giản */}
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+          Tạo phòng học mới
+        </h2>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          Nhập tên phòng học để bắt đầu buổi học trực tuyến.
+        </p>
+      </div>
 
       {/* Form */}
       <div className="space-y-4">
         <div>
-          <label htmlFor={fieldId} className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+          <label
+            htmlFor={fieldId}
+            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
+          >
             Tên phòng học
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <Hash className="h-5 w-5 text-zinc-400 dark:text-zinc-500" />
             </div>
             <input
@@ -217,10 +218,10 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
               value={input}
               onChange={onInputChange}
               onKeyDown={onKeyDown}
-              placeholder="ví dụ: toeic-grammar-class"
+              placeholder="Nhập tên phòng"
               className={cn(
-                "block w-full pl-10 pr-4 py-3 rounded-lg border bg-white dark:bg-zinc-900",
-                "text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500",
+                "block w-full rounded-lg border bg-white dark:bg-zinc-900 px-10 py-3 text-sm",
+                "text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500",
                 "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
                 "transition-all duration-200",
                 isValid
@@ -237,61 +238,57 @@ export function CreateStudyRoom({ onCreated }: CreateStudyRoomProps = {}) {
           </div>
 
           {/* Validation message */}
-          <div className="mt-2 flex items-start gap-2">
+          <div className="mt-2 min-h-[18px]">
             {isValid ? (
-              <>
-                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                <p id={helpId} className="text-xs text-zinc-600 dark:text-zinc-400">
-                  Tên hợp lệ. Nhấn <kbd className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-xs font-mono border border-zinc-200 dark:border-zinc-700">Enter</kbd> để tạo nhanh.
-                </p>
-              </>
+              <p
+                id={helpId}
+                className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400"
+              >
+                <CheckCircle className="h-4 w-4" />
+                Tên phòng hợp lệ.
+              </p>
             ) : errorMsg ? (
-              <>
-                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                <p id={errId} className="text-xs text-red-600 dark:text-red-400 font-medium">
-                  {errorMsg}
-                </p>
-              </>
+              <p
+                id={errId}
+                className="flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400"
+              >
+                <AlertCircle className="h-4 w-4" />
+                {errorMsg}
+              </p>
             ) : null}
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+        <div className="mt-2 flex items-center justify-end gap-3">
           <button
-            onClick={onCreate}
-            disabled={loading || authLoading || !isValid}
-            className={cn(
-              "group relative flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-3 rounded-lg",
-              "text-sm font-medium text-white transition-all duration-200",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
-              loading || !isValid
-                ? "bg-zinc-300 dark:bg-zinc-700 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 shadow-sm hover:shadow"
-            )}
             type="button"
+            onClick={() => onCancel?.()}
+            disabled={loading}
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
           >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Đang tạo…</span>
-              </>
-            ) : (
-              <>
-                <Plus className="h-4 w-4" />
-                <span>Tạo phòng</span>
-              </>
-            )}
+            Hủy
           </button>
 
           <button
             type="button"
-            onClick={quickUseSuggestion}
-            disabled={loading}
-            className="group relative flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={onCreate}
+            disabled={loading || authLoading || !isValid}
+            className={cn(
+              "inline-flex items-center justify-center rounded-lg px-5 py-2 text-sm font-medium text-white transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+              loading || !isValid
+                ? "cursor-not-allowed bg-zinc-300 dark:bg-zinc-700"
+                : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+            )}
           >
-            <Zap className="h-4 w-4" />
-            <span>Gợi ý tên</span>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Đang tạo…
+              </>
+            ) : (
+              "Tạo phòng"
+            )}
           </button>
         </div>
       </div>

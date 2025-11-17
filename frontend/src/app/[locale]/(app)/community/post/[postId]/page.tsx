@@ -3,7 +3,6 @@ import dynamic from "next/dynamic";
 import PageWrapper from "@/components/layout/PageWrapper";
 
 // Dynamic import client components để tối ưu bundle size
-const Header = dynamic(() => import("@/components/features/community/CommunityHeader"));
 const PostDetail = dynamic(
   () => import("@/components/features/community/PostDetail")
 );
@@ -19,7 +18,6 @@ export default async function PostDetailPage({
 
   return (
     <PageWrapper>
-      <Header locale={locale} active="community" />
       <PostDetail postId={postId} />
     </PageWrapper>
   );

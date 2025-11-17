@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import mongoose, { Types } from "mongoose";
 import { CommunityPost } from "../../shared/models/CommunityPost";
 import { CommunityComment } from "../../shared/models/CommunityComment";
+import { Hashtag } from "../../shared/models/Hashtag";
+import { User } from "../../shared/models/User";
 import {
   BUCKET,
   extractKeyFromUrl,
@@ -17,6 +19,7 @@ import {
   emitCommunityCommentDeleted,
 } from "../../shared/services/socket.service";
 import { notifyUser } from "../notification/notification.service";
+import { extractHashtags, extractMentions } from "../../shared/utils/textParser";
 
 function getIO(): SocketIOServer | null {
   return (global as any).io || null;
@@ -149,25 +152,79 @@ export async function createPost(req: Request, res: Response) {
     }
 
     const norm = (a: any): any => ({
-      type: a?.type?.startsWith("image")
+      type: a?.type === "video" || a?.type?.startsWith("video/")
+        ? "video"
+        : a?.type === "image" || a?.type?.startsWith("image/")
         ? "image"
-        : a?.type?.startsWith("file")
-        ? "file"
-        : a?.type?.startsWith("link")
+        : a?.type === "link" || a?.type?.startsWith("link")
         ? "link"
         : "file",
       url: a?.url || "",
       name: a?.name || "",
       size: a?.size || 0,
       key: a?.key || undefined,
+      duration: a?.duration || undefined,
+      thumbnail: a?.thumbnail || undefined,
     });
     const safeFiles = files.map(norm);
 
+    // Extract hashtags and mentions
+    const hashtags = extractHashtags(text);
+    const mentionUsernames = extractMentions(text);
+    
+    // Resolve mentions to user IDs
+    const mentionedUsers = await User.find({
+      $or: [
+        { name: { $in: mentionUsernames } },
+        { email: { $in: mentionUsernames.map(u => `${u}@`) } }, // Partial match
+      ],
+    }).select("_id").lean();
+    const mentionIds = mentionedUsers.map((u: any) => u._id);
+
+    // Create post
     const post = await CommunityPost.create({
       userId: oid(userId),
       content: text,
+      tags: hashtags,
+      mentions: mentionIds,
       attachments: safeFiles.slice(0, 12),
     });
+
+    // Update hashtag counts
+    if (hashtags.length > 0) {
+      await Promise.all(
+        hashtags.map(async (tag) => {
+          await Hashtag.findOneAndUpdate(
+            { name: tag },
+            {
+              $inc: { postsCount: 1 },
+              $set: { lastUsedAt: new Date() },
+            },
+            { upsert: true, new: true }
+          );
+        })
+      );
+    }
+
+    // Send notifications to mentioned users
+    if (mentionIds.length > 0) {
+      const io = getIO();
+      const currentUser = await User.findById(userId).select("name").lean();
+      if (io) {
+        mentionIds.forEach((mentionedId: Types.ObjectId) => {
+          if (String(mentionedId) !== String(userId)) {
+            notifyUser(io, {
+              userId: String(mentionedId),
+              message: `${currentUser?.name || "Someone"} đã nhắc đến bạn trong một bài viết`,
+              link: `/community/post/${post._id}`,
+              type: "mention",
+              meta: { postId: String(post._id) },
+              fromUserId: userId,
+            });
+          }
+        });
+      }
+    }
 
     const [withUser] = await CommunityPost.aggregate([
       { $match: { _id: post._id } },
@@ -397,9 +454,62 @@ export async function editPost(req: Request, res: Response) {
       }
     }
 
+    // Extract hashtags and mentions
+    const hashtags = extractHashtags(text);
+    const mentionUsernames = extractMentions(text);
+    
+    // Resolve mentions to user IDs
+    const mentionedUsers = await User.find({
+      $or: [
+        { name: { $in: mentionUsernames } },
+        { email: { $in: mentionUsernames.map(u => `${u}@`) } },
+      ],
+    }).select("_id").lean();
+    const mentionIds = mentionedUsers.map((u: any) => u._id);
+
+    // Get old hashtags to update counts
+    const oldTags = new Set(post.tags || []);
+    const newTags = new Set(hashtags);
+
+    // Update post
     post.content = text;
+    post.tags = hashtags;
+    post.mentions = mentionIds;
     post.attachments = safeFiles.slice(0, 12);
+    post.isEdited = true;
+    post.editedAt = new Date();
     await post.save();
+
+    // Update hashtag counts
+    const tagsToIncrement = hashtags.filter(t => !oldTags.has(t));
+    const tagsToDecrement = Array.from(oldTags).filter(t => !newTags.has(t));
+
+    if (tagsToIncrement.length > 0) {
+      await Promise.all(
+        tagsToIncrement.map(async (tag) => {
+          await Hashtag.findOneAndUpdate(
+            { name: tag },
+            {
+              $inc: { postsCount: 1 },
+              $set: { lastUsedAt: new Date() },
+            },
+            { upsert: true, new: true }
+          );
+        })
+      );
+    }
+
+    if (tagsToDecrement.length > 0) {
+      await Promise.all(
+        tagsToDecrement.map(async (tag) => {
+          await Hashtag.findOneAndUpdate(
+            { name: tag },
+            { $inc: { postsCount: -1 } },
+            { upsert: false }
+          );
+        })
+      );
+    }
 
     const [withUser] = await CommunityPost.aggregate([
       { $match: { _id: post._id } },

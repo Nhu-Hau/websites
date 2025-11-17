@@ -63,6 +63,10 @@ export interface IUser extends Document {
   updatedAt: Date;
   progressMeta?: IProgressMeta;
   toeicGoal?: IToeicGoal;
+  followersCount?: number;
+  followingCount?: number;
+  bio?: string;
+  coverImage?: string;
 
   comparePassword(candidate: string): Promise<boolean>;
 }
@@ -171,6 +175,10 @@ const userSchema = new Schema<IUser>(
     },
 
     toeicGoal: { type: ToeicGoalSchema, default: null },
+    followersCount: { type: Number, default: 0 },
+    followingCount: { type: Number, default: 0 },
+    bio: { type: String, trim: true, default: "" },
+    coverImage: { type: String, default: null },
   },
   { timestamps: true, versionKey: false }
 );

@@ -2,21 +2,28 @@ import { Server as SocketIOServer } from "socket.io";
 import { Notification } from "../../shared/models/Notification";
 
 export async function notifyUser(
-  io: SocketIOServer,
+  io: SocketIOServer | null,
   payload: {
     userId: string;
     message: string;
     link?: string;
-    type?: "like" | "comment" | "system";
+    type?: "like" | "comment" | "follow" | "mention" | "reaction" | "repost" | "group_invite" | "group_post" | "system";
     meta?: any;
+    fromUserId?: string;
   }
 ) {
+  if (!io) {
+    console.warn("[notifyUser] Socket.IO not available");
+    return null;
+  }
+
   const doc = await Notification.create({
     userId: payload.userId,
     type: payload.type || "system",
     message: payload.message,
     link: payload.link || "#",
     meta: payload.meta || {},
+    fromUserId: payload.fromUserId || null,
   });
 
   const id = String(doc._id);

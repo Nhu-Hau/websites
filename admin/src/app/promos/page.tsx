@@ -31,8 +31,8 @@ export default function PromosPage() {
       const data = await adminListPromoCodes({ page, limit, q });
       setItems(data.items);
       setTotal(data.total);
-    } catch (e: any) {
-      Swal.fire({ icon: "error", title: "Lỗi", text: e?.message || "Không thể tải danh sách mã khuyến mãi" });
+    } catch (e: unknown) {
+      Swal.fire({ icon: "error", title: "Lỗi", text: (e instanceof Error ? e.message : String(e)) || "Không thể tải danh sách mã khuyến mãi" });
     } finally {
       setBusy(false);
     }
@@ -73,8 +73,8 @@ export default function PromosPage() {
       await adminDeletePromoCode(item.code);
       await Swal.fire({ icon: "success", title: "Đã xóa", timer: 2000 });
       void load();
-    } catch (e: any) {
-      Swal.fire({ icon: "error", title: "Lỗi", text: e?.message || "Không thể xóa mã khuyến mãi" });
+    } catch (e: unknown) {
+      Swal.fire({ icon: "error", title: "Lỗi", text: (e instanceof Error ? e.message : String(e)) || "Không thể xóa mã khuyến mãi" });
     }
   };
 
@@ -276,8 +276,8 @@ export default function PromosPage() {
               await Swal.fire({ icon: "success", title: "Đã cập nhật", timer: 2000 });
               setEditModal(null);
               void load();
-            } catch (e: any) {
-              Swal.fire({ icon: "error", title: "Lỗi", text: e?.message || "Không thể cập nhật mã khuyến mãi" });
+            } catch (e: unknown) {
+              Swal.fire({ icon: "error", title: "Lỗi", text: (e instanceof Error ? e.message : String(e)) || "Không thể cập nhật mã khuyến mãi" });
             }
           }}
         />
@@ -289,12 +289,15 @@ export default function PromosPage() {
           onClose={() => setCreateModal(false)}
           onSave={async (data) => {
             try {
-              await adminCreatePromoCode(data);
+              if (!data.code) {
+                throw new Error("Mã khuyến mãi là bắt buộc");
+              }
+              await adminCreatePromoCode(data as Partial<AdminPromoCode> & { code: string });
               await Swal.fire({ icon: "success", title: "Đã tạo", timer: 2000 });
               setCreateModal(false);
               void load();
-            } catch (e: any) {
-              Swal.fire({ icon: "error", title: "Lỗi", text: e?.message || "Không thể tạo mã khuyến mãi" });
+            } catch (e: unknown) {
+              Swal.fire({ icon: "error", title: "Lỗi", text: (e instanceof Error ? e.message : String(e)) || "Không thể tạo mã khuyến mãi" });
             }
           }}
         />
@@ -330,9 +333,20 @@ function EditPromoModal({
     e.preventDefault();
     setBusy(true);
     try {
-      const data: any = {};
-      if (!item && form.code) data.code = form.code.trim().toUpperCase();
-      if (form.type) data.type = form.type || null;
+      const data: Partial<AdminPromoCode> = {};
+      if (!item) {
+        if (!form.code.trim()) {
+          Swal.fire({ icon: "error", title: "Lỗi", text: "Mã khuyến mãi là bắt buộc" });
+          setBusy(false);
+          return;
+        }
+        data.code = form.code.trim().toUpperCase();
+      }
+      if (form.type) {
+        data.type = (form.type === "fixed" || form.type === "percent") ? form.type : null;
+      } else {
+        data.type = null;
+      }
       if (form.value) data.value = parseFloat(form.value) || null;
       if (form.amountAfter) data.amountAfter = parseFloat(form.amountAfter) || null;
       if (form.baseAmount) data.baseAmount = parseFloat(form.baseAmount) || null;
@@ -345,7 +359,7 @@ function EditPromoModal({
       if (item && form.usedCount) data.usedCount = parseInt(form.usedCount) || 0;
 
       await onSave(data);
-    } catch (e: any) {
+    } catch {
       // error handled in parent
     } finally {
       setBusy(false);

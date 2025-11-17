@@ -78,7 +78,7 @@ export default function NewsPage() {
   const loadNews = React.useCallback(async () => {
     setBusy(true);
     try {
-      const data = await adminListNews({ page, limit: LIMIT, q, category, status });
+      const data = await adminListNews({ page, limit: LIMIT, q, category, status: status || undefined });
       setItems(data.items);
       setTotal(data.total);
     } catch (err) {

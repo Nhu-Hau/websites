@@ -4,8 +4,12 @@ set -e
 echo ">>> Vào thư mục project"
 cd /opt/websites
 
+git restore deploy.sh    
+
 echo ">>> Git pull main"
 git pull origin main
+
+chmod +x deploy.sh
 
 echo ">>> Backend: install + build"
 cd backend

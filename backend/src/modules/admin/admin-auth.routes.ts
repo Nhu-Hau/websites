@@ -4,6 +4,8 @@ import { requireAdminAuth } from "../../shared/middleware/auth.middleware";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+const isProd = process.env.NODE_ENV === "production";
+
 const router = express.Router();
 
 // POST /api/admin-auth/login - Admin login
@@ -37,9 +39,10 @@ router.post("/login", async (req, res, next) => {
     // Set cookie
     res.cookie("adminToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
     });
 
     res.json({
@@ -109,9 +112,10 @@ router.post("/refresh", requireAdminAuth, async (req, res, next) => {
     // Set new cookie
     res.cookie("adminToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
     });
 
     res.json({

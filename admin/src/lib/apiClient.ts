@@ -330,6 +330,209 @@ export async function adminDeleteCommunityComment(id: string) {
   return res.json() as Promise<{ message: string }>;
 }
 
+// Study room management
+export type AdminStudyRoom = {
+  roomName: string;
+  createdBy?: { id?: string; name?: string; role?: string };
+  currentHostId?: string;
+  currentHost?: { id?: string; name?: string; role?: string };
+  createdAt?: string;
+  lastActivityAt?: string;
+  numParticipants: number;
+  documentsCount: number;
+  totalDocumentSize: number;
+  commentsCount: number;
+  bannedCount: number;
+};
+
+export type AdminRoomComment = {
+  _id: string;
+  roomName: string;
+  userId: string;
+  userName: string;
+  userRole: string;
+  userAccess: "free" | "premium";
+  content: string;
+  createdAt: string;
+};
+
+export type AdminRoomDocument = {
+  _id: string;
+  roomName: string;
+  fileName: string;
+  originalName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedAt: string;
+  uploadedBy?: { id?: string; name?: string; role?: string };
+};
+
+export async function adminListStudyRooms(params?: { page?: number; limit?: number; q?: string }) {
+  const usp = new URLSearchParams();
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  if (params?.q) usp.set("q", params.q);
+  const res = await fetch(`${API_BASE}/api/admin/study-rooms?${usp.toString()}`, { credentials: "include", cache: "no-store" });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch study rooms failed");
+  }
+  return res.json() as Promise<{ items: AdminStudyRoom[]; total: number; page: number; limit: number; pages: number }>;
+}
+
+export async function adminDeleteStudyRoom(roomName: string) {
+  const res = await fetch(`${API_BASE}/api/admin/study-rooms/${encodeURIComponent(roomName)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete study room failed");
+  }
+  return res.json() as Promise<{ message: string }>;
+}
+
+export async function adminListRoomComments(roomName: string, params?: { page?: number; limit?: number }) {
+  const usp = new URLSearchParams();
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  const res = await fetch(`${API_BASE}/api/admin/study-rooms/${encodeURIComponent(roomName)}/comments?${usp.toString()}`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch room comments failed");
+  }
+  return res.json() as Promise<{ items: AdminRoomComment[]; total: number; page: number; limit: number; pages: number }>;
+}
+
+export async function adminDeleteRoomComment(roomName: string, commentId: string) {
+  const res = await fetch(
+    `${API_BASE}/api/admin/study-rooms/${encodeURIComponent(roomName)}/comments/${encodeURIComponent(commentId)}`,
+    { method: "DELETE", credentials: "include" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete room comment failed");
+  }
+  return res.json() as Promise<{ message: string }>;
+}
+
+export async function adminListRoomDocuments(roomName: string, params?: { page?: number; limit?: number }) {
+  const usp = new URLSearchParams();
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  const res = await fetch(`${API_BASE}/api/admin/study-rooms/${encodeURIComponent(roomName)}/documents?${usp.toString()}`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch room documents failed");
+  }
+  return res.json() as Promise<{ items: AdminRoomDocument[]; total: number; page: number; limit: number; pages: number }>;
+}
+
+export async function adminDeleteRoomDocument(roomName: string, docId: string) {
+  const res = await fetch(
+    `${API_BASE}/api/admin/study-rooms/${encodeURIComponent(roomName)}/documents/${encodeURIComponent(docId)}`,
+    { method: "DELETE", credentials: "include" }
+  );
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete room document failed");
+  }
+  return res.json() as Promise<{ message: string }>;
+}
+
+// News management
+export type AdminNewsItem = {
+  _id: string;
+  title: string;
+  category: string;
+  image: string;
+  paragraphs: string[];
+  publishedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  isPublished: boolean;
+  viewCount: number;
+};
+
+export async function adminListNews(params?: { page?: number; limit?: number; q?: string; category?: string; status?: "draft" | "published" }) {
+  const usp = new URLSearchParams();
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  if (params?.q) usp.set("q", params.q);
+  if (params?.category) usp.set("category", params.category);
+  if (params?.status) usp.set("status", params.status);
+  const res = await fetch(`${API_BASE}/api/admin/news?${usp.toString()}`, { credentials: "include", cache: "no-store" });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch news failed");
+  }
+  return res.json() as Promise<{ items: AdminNewsItem[]; total: number; page: number; limit: number; pages: number }>;
+}
+
+export async function adminCreateNews(body: {
+  title: string;
+  category: string;
+  image: string;
+  paragraphs: string[];
+  publishedAt?: string;
+  isPublished?: boolean;
+}) {
+  const res = await fetch(`${API_BASE}/api/admin/news`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Create news failed");
+  }
+  return res.json() as Promise<{ data: AdminNewsItem }>;
+}
+
+export async function adminUpdateNews(
+  id: string,
+  body: Partial<{
+    title: string;
+    category: string;
+    image: string;
+    paragraphs: string[];
+    publishedAt: string;
+    isPublished: boolean;
+  }>
+) {
+  const res = await fetch(`${API_BASE}/api/admin/news/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Update news failed");
+  }
+  return res.json() as Promise<{ data: AdminNewsItem }>;
+}
+
+export async function adminDeleteNews(id: string) {
+  const res = await fetch(`${API_BASE}/api/admin/news/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete news failed");
+  }
+  return res.json() as Promise<{ message: string }>;
+}
+
 // Admin chat management
 export async function adminDeleteChatMessage(id: string) {
   const res = await fetch(`${API_BASE}/api/admin-chat/admin/messages/${encodeURIComponent(id)}`, {

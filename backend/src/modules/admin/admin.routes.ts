@@ -2,7 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { requireAdminAuth } from "../../shared/middleware/auth.middleware";
 import { deleteUser, listUsers, updateUser, overviewPlacementScores, userScores, userToeicPred, visitorCount, onlineUsersCount, listPlacementAttempts, listProgressAttempts, listPracticeAttempts, vpsStats, restartServer, getPm2Logs } from "./admin.controller";
-import { 
+import {
   listCommunityPosts,
   createCommunityPost,
   deleteCommunityPost, 
@@ -35,6 +35,21 @@ import {
   updatePromoCode,
   deletePromoCode
 } from "./admin-promo.controller";
+import {
+  adminListStudyRooms,
+  adminDeleteStudyRoom,
+  adminListRoomComments,
+  adminDeleteRoomComment,
+  adminListRoomDocuments,
+  adminDeleteRoomDocument,
+} from "./admin-study-room.controller";
+import {
+  adminListNews,
+  adminGetNews,
+  adminCreateNews,
+  adminUpdateNews,
+  adminDeleteNews,
+} from "./admin-news.controller";
 
 const router = Router();
 
@@ -91,6 +106,21 @@ router.get("/promos/:code", getPromoCode);
 router.post("/promos", createPromoCode);
 router.patch("/promos/:code", updatePromoCode);
 router.delete("/promos/:code", deletePromoCode);
+
+// Study rooms admin routes
+router.get("/study-rooms", adminListStudyRooms);
+router.delete("/study-rooms/:roomName", adminDeleteStudyRoom);
+router.get("/study-rooms/:roomName/comments", adminListRoomComments);
+router.delete("/study-rooms/:roomName/comments/:commentId", adminDeleteRoomComment);
+router.get("/study-rooms/:roomName/documents", adminListRoomDocuments);
+router.delete("/study-rooms/:roomName/documents/:docId", adminDeleteRoomDocument);
+
+// News admin routes
+router.get("/news", adminListNews);
+router.post("/news", adminCreateNews);
+router.get("/news/:id", adminGetNews);
+router.patch("/news/:id", adminUpdateNews);
+router.delete("/news/:id", adminDeleteNews);
 
 export default router;
 

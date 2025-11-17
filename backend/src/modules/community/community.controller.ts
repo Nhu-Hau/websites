@@ -383,10 +383,10 @@ export async function editPost(req: Request, res: Response) {
     const safeFiles = files.map(norm);
 
     // Xóa các file cũ không còn trong attachments mới
-    const oldKeys = new Set(
+    const oldKeys = new Set<string>(
       (post.attachments || [])
         .map((a: any) => getS3KeyFromAttachment(a))
-        .filter(Boolean)
+        .filter((k: string | null): k is string => typeof k === "string" && k !== null)
     );
     const newKeys = new Set(
       safeFiles.map((a: any) => a.key).filter(Boolean)
@@ -770,10 +770,10 @@ export async function editComment(req: Request, res: Response) {
     const safeFiles = files.map(norm);
 
     // Xóa các file cũ không còn trong attachments mới
-    const oldKeys = new Set(
+    const oldKeys = new Set<string>(
       (comment.attachments || [])
         .map((a: any) => getS3KeyFromAttachment(a))
-        .filter(Boolean)
+        .filter((k: string | null): k is string => typeof k === "string" && k !== null)
     );
     const newKeys = new Set(
       safeFiles.map((a: any) => a.key).filter(Boolean)

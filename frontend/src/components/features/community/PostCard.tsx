@@ -68,6 +68,19 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
   const [repostCaption, setRepostCaption] = React.useState("");
   const [originalPost, setOriginalPost] = React.useState<any>(null);
   const [loadingOriginal, setLoadingOriginal] = React.useState(false);
+  // Local state for liked/saved to keep in sync
+  const [likedState, setLikedState] = React.useState(post.liked || false);
+  const [savedState, setSavedState] = React.useState(post.saved || false);
+  const [likesCountState, setLikesCountState] = React.useState(post.likesCount || 0);
+  const [savedCountState, setSavedCountState] = React.useState(post.savedCount || 0);
+
+  // Sync with prop changes
+  React.useEffect(() => {
+    setLikedState(post.liked || false);
+    setSavedState(post.saved || false);
+    setLikesCountState(post.likesCount || 0);
+    setSavedCountState(post.savedCount || 0);
+  }, [post.liked, post.saved, post.likesCount, post.savedCount]);
 
   // Fetch original post if this is a repost
   React.useEffect(() => {
@@ -380,14 +393,32 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         <div className="px-5 py-4 border-t border-zinc-100 dark:border-zinc-800">
           <ActionBar
             postId={post._id}
-            liked={post.liked}
-            saved={post.saved}
-            likesCount={post.likesCount}
+            liked={likedState}
+            saved={savedState}
+            likesCount={likesCountState}
             commentsCount={post.commentsCount}
-            savedCount={post.savedCount}
+            savedCount={savedCountState}
             repostCount={post.repostCount}
             canDelete={post.canDelete}
             canEdit={post.canDelete}
+            onLikeChange={(liked, count) => {
+              setLikedState(liked);
+              setLikesCountState(count);
+              // Update post object for parent component
+              if (typeof post === "object") {
+                (post as any).liked = liked;
+                (post as any).likesCount = count;
+              }
+            }}
+            onSaveChange={(saved, count) => {
+              setSavedState(saved);
+              setSavedCountState(count);
+              // Update post object for parent component
+              if (typeof post === "object") {
+                (post as any).saved = saved;
+                (post as any).savedCount = count;
+              }
+            }}
             onCommentClick={handleCommentClick}
             onShareClick={handleShare}
             onRepostClick={handleRepost}

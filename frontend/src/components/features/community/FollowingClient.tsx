@@ -26,8 +26,38 @@ export default function FollowingClient({ initialPosts }: FollowingClientProps) 
     initialPosts ? initialPosts.items.length < initialPosts.total : true
   );
 
+  React.useEffect(() => {
+    if (!user) {
+      setPosts([]);
+      setHasMore(false);
+      return;
+    }
+    // Reload if we have user but no posts or initialPosts failed
+    if (user && posts.length === 0 && (!initialPosts || !initialPosts.items || initialPosts.items.length === 0)) {
+      fetch(`${API_BASE}/api/community/posts/following?page=1&limit=20`, {
+        credentials: "include",
+      })
+        .then((res) => {
+          if (res.ok) return res.json();
+          if (res.status === 401) {
+            setPosts([]);
+            setHasMore(false);
+          }
+          return null;
+        })
+        .then((data) => {
+          if (data && data.items) {
+            setPosts(data.items);
+            setPage(data.page || 1);
+            setHasMore(data.items.length < data.total);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [user]);
+
   const loadMore = React.useCallback(async () => {
-    if (loading || !hasMore) return;
+    if (loading || !hasMore || !user) return;
 
     setLoading(true);
     try {
@@ -41,13 +71,16 @@ export default function FollowingClient({ initialPosts }: FollowingClientProps) 
         setPosts((prev) => [...prev, ...data.items]);
         setPage(nextPage);
         setHasMore(data.items.length > 0 && posts.length + data.items.length < data.total);
+      } else if (res.status === 401) {
+        setPosts([]);
+        setHasMore(false);
       }
     } catch (error) {
       console.error("[loadMore] ERROR", error);
     } finally {
       setLoading(false);
     }
-  }, [page, loading, hasMore, posts.length]);
+  }, [page, loading, hasMore, posts.length, user]);
 
   const { elementRef } = useInfiniteScroll({
     hasMore,
@@ -56,20 +89,28 @@ export default function FollowingClient({ initialPosts }: FollowingClientProps) 
   });
 
   const handlePostChanged = React.useCallback(() => {
+    if (!user) return;
     // Reload first page
     fetch(`${API_BASE}/api/community/posts/following?page=1&limit=20`, {
       credentials: "include",
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.ok) return res.json();
+        if (res.status === 401) {
+          setPosts([]);
+          setHasMore(false);
+        }
+        return null;
+      })
       .then((data) => {
-        if (data.items) {
+        if (data && data.items) {
           setPosts(data.items);
           setPage(1);
           setHasMore(data.items.length < data.total);
         }
       })
       .catch(console.error);
-  }, []);
+  }, [user]);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 pt-20">

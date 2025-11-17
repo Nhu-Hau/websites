@@ -39,6 +39,8 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
       );
       if (!r.ok) {
         if (r.status === 401) {
+          setTotal(0);
+          setPosts([]);
           toast.error(t("loginRequired") || "Vui lòng đăng nhập");
           return;
         }
@@ -70,13 +72,14 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
   // Listen for saved posts changes
   React.useEffect(() => {
     const handleSavedPostsChanged = () => {
+      // Reload current page when saved posts change
       load(page);
     };
     window.addEventListener("savedPostsChanged", handleSavedPostsChanged);
     return () => {
       window.removeEventListener("savedPostsChanged", handleSavedPostsChanged);
     };
-  }, [load, page]);
+  }, [page, load]);
 
   const onChangePage = React.useCallback(
     (p: number) => {

@@ -19,6 +19,7 @@ type NewPostFormProps = {
   initialContent?: string;
   initialAttachments?: Attachment[];
   postId?: string; // For edit mode
+  groupId?: string; // For posting in a group
 };
 
 type PreviewItem = {
@@ -35,6 +36,7 @@ export default function NewPostForm({
   initialContent = "",
   initialAttachments = [],
   postId,
+  groupId,
 }: NewPostFormProps) {
   const t = useTranslations("community.newPost");
   const [content, setContent] = React.useState(initialContent);
@@ -208,11 +210,16 @@ export default function NewPostForm({
         : `${API_BASE}/api/community/posts`;
       const method = postId ? "PUT" : "POST";
 
+      const body: any = { content: text, attachments };
+      if (groupId) {
+        body.groupId = groupId;
+      }
+
       const res = await fetch(url, {
         method,
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: text, attachments }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {

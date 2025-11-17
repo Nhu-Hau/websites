@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { UserPlus, UserMinus, Settings, Camera } from "lucide-react";
+import { UserPlus, UserMinus, Settings, Camera, X, ImageIcon, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
@@ -11,6 +11,7 @@ import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import PostCard from "./PostCard";
 import TextWithHighlights from "./TextWithHighlights";
 import ImageCropper from "./ImageCropper";
+import { useConfirmModal } from "@/components/common/ConfirmModal";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
@@ -27,7 +28,7 @@ export default function ProfileClient({
 }: ProfileClientProps) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, refresh } = useAuth();
   const isOwnProfile = currentUser?.id === userId;
   const t = useTranslations("community.profile");
 
@@ -42,6 +43,8 @@ export default function ProfileClient({
   const [cropperImage, setCropperImage] = React.useState<string | null>(null);
   const [cropperType, setCropperType] = React.useState<"avatar" | "cover" | null>(null);
   const [uploading, setUploading] = React.useState(false);
+  const [showAvatarMenu, setShowAvatarMenu] = React.useState(false);
+  const confirmModal = useConfirmModal();
 
   React.useEffect(() => {
     if (currentUser?.id && userId !== currentUser.id) {
@@ -182,37 +185,105 @@ export default function ProfileClient({
       <div className="flex flex-col sm:flex-row gap-6 mb-8">
         {/* Avatar */}
         <div className="relative -mt-16 sm:-mt-20">
-          <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold ring-4 ring-white dark:ring-zinc-900">
-            {profile.picture ? (
-              <img
-                src={profile.picture.startsWith("http") ? profile.picture : `${API_BASE}${profile.picture}`}
-                alt={profile.name}
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              (profile.name?.[0] || "U").toUpperCase()
-            )}
-          </div>
-          {isOwnProfile && (
-            <label className="absolute bottom-0 right-0 p-2 bg-white dark:bg-zinc-900 rounded-full border-2 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    setCropperImage(reader.result as string);
-                    setCropperType("avatar");
-                    setShowCropper(true);
-                  };
-                  reader.readAsDataURL(file);
-                }}
-              />
-              <Camera className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
-            </label>
+          {isOwnProfile ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowAvatarMenu(!showAvatarMenu)}
+                className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold ring-4 ring-white dark:ring-zinc-900 hover:ring-blue-500 dark:hover:ring-blue-400 transition-all cursor-pointer overflow-hidden"
+              >
+                {profile.picture ? (
+                  <img
+                    src={profile.picture.startsWith("http") ? profile.picture : `${API_BASE}${profile.picture}`}
+                    alt={profile.name}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  (profile.name?.[0] || "U").toUpperCase()
+                )}
+              </button>
+              {showAvatarMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowAvatarMenu(false)}
+                  />
+                  <div className="absolute top-full left-0 mt-2 z-50 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-lg py-2 min-w-[180px]">
+                    <label className="flex items-center gap-3 px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setShowAvatarMenu(false);
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setCropperImage(reader.result as string);
+                            setCropperType("avatar");
+                            setShowCropper(true);
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                      <ImageIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                      <span className="text-sm text-zinc-900 dark:text-zinc-100">
+                        {t("changeAvatar") || "Đăng lại ảnh"}
+                      </span>
+                    </label>
+                    {profile.picture && (
+                      <button
+                        onClick={() => {
+                          setShowAvatarMenu(false);
+                          confirmModal.show({
+                            title: t("deleteAvatarConfirm") || "Xóa ảnh đại diện?",
+                            message: t("deleteAvatarMessage") || "Bạn có chắc muốn xóa ảnh đại diện?",
+                            icon: "warning",
+                            confirmText: t("delete") || "Xóa",
+                            cancelText: t("cancel") || "Hủy",
+                            confirmColor: "red",
+                          }, async () => {
+                            try {
+                              const res = await fetch(`${API_BASE}/api/auth/avatar`, {
+                                method: "DELETE",
+                                credentials: "include",
+                              });
+                              if (!res.ok) throw new Error("Failed to delete avatar");
+                              setProfile((p: any) => ({ ...p, picture: undefined }));
+                              if (typeof window !== "undefined") {
+                                window.dispatchEvent(new CustomEvent("auth:avatar-changed", { detail: undefined }));
+                              }
+                              refresh();
+                              toast.success(t("deleteAvatarSuccess") || "Đã xóa avatar");
+                            } catch (error: any) {
+                              toast.error(error?.message || t("deleteAvatarError") || "Lỗi khi xóa avatar");
+                            }
+                          });
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                          {t("deleteAvatar") || "Xóa ảnh"}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold ring-4 ring-white dark:ring-zinc-900">
+              {profile.picture ? (
+                <img
+                  src={profile.picture.startsWith("http") ? profile.picture : `${API_BASE}${profile.picture}`}
+                  alt={profile.name}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                (profile.name?.[0] || "U").toUpperCase()
+              )}
+            </div>
           )}
         </div>
 
@@ -343,6 +414,9 @@ export default function ProfileClient({
         )}
       </div>
 
+      {/* Confirm Modal */}
+      {confirmModal.Modal}
+
       {/* Image Cropper Modal */}
       {showCropper && cropperImage && cropperType && (
         <ImageCropper
@@ -377,6 +451,11 @@ export default function ProfileClient({
                 
                 // Update profile state
                 setProfile((p: any) => ({ ...p, picture: newPicture }));
+                // Refresh auth context to update avatar in UserMenu, PostCard, CommentItem
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new CustomEvent("auth:avatar-changed", { detail: newPicture }));
+                }
+                refresh();
                 toast.success(t("uploadAvatar"));
               } else {
                 // Cover image - use community upload endpoint

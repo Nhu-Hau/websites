@@ -135,9 +135,10 @@ export async function createPost(req: Request, res: Response) {
     const userId = (req as any).auth?.userId;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    let { content, attachments } = (req.body || {}) as {
+    let { content, attachments, groupId } = (req.body || {}) as {
       content?: string;
       attachments?: any[];
+      groupId?: string;
     };
 
     // 🔒 Chuẩn hoá dữ liệu
@@ -181,6 +182,25 @@ export async function createPost(req: Request, res: Response) {
     }).select("_id").lean();
     const mentionIds = mentionedUsers.map((u: any) => u._id);
 
+    // Validate groupId if provided
+    let validGroupId = null;
+    if (groupId && mongoose.isValidObjectId(groupId)) {
+      const { StudyGroup } = await import("../../shared/models/StudyGroup");
+      const group = await StudyGroup.findById(groupId);
+      if (group) {
+        // Check if user is a member
+        const uid = oid(userId);
+        const isMember = group.members.some((m: any) => String(m) === String(uid));
+        if (!isMember && String(group.adminId) !== String(uid)) {
+          return res.status(403).json({ message: "You must be a member to post in this group" });
+        }
+        validGroupId = oid(groupId);
+        // Update group posts count
+        group.postsCount += 1;
+        await group.save();
+      }
+    }
+
     // Create post
     const post = await CommunityPost.create({
       userId: oid(userId),
@@ -188,6 +208,7 @@ export async function createPost(req: Request, res: Response) {
       tags: hashtags,
       mentions: mentionIds,
       attachments: safeFiles.slice(0, 12),
+      groupId: validGroupId,
     });
 
     // Update hashtag counts
@@ -896,6 +917,8 @@ export async function editComment(req: Request, res: Response) {
 
     comment.content = text;
     comment.attachments = safeFiles.slice(0, 8);
+    comment.isEdited = true;
+    comment.editedAt = new Date();
     await comment.save();
 
     const [withUser] = await CommunityComment.aggregate([

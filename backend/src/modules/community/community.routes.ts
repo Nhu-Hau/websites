@@ -36,6 +36,7 @@ import { createPoll, votePoll, getPoll } from "./poll.controller";
 import { addReaction, removeReaction, getReactions } from "./reaction.controller";
 import { getHashtagPosts, getTrendingHashtags } from "./hashtag.controller";
 import { getFollowingPosts } from "./following.controller";
+import { createGroup, getGroup, listGroups, joinGroup, leaveGroup, getGroupPosts } from "./groups.controller";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -90,5 +91,13 @@ router.get("/hashtags/trending", getTrendingHashtags);
 
 // Following feed
 router.get("/posts/following", requireAuth, getFollowingPosts);
+
+// Groups routes
+router.post("/groups", requireAuth, createGroup);
+router.get("/groups", attachAuthIfPresent, listGroups);
+router.get("/groups/:groupId", attachAuthIfPresent, getGroup);
+router.post("/groups/:groupId/join", requireAuth, joinGroup);
+router.post("/groups/:groupId/leave", requireAuth, leaveGroup);
+router.get("/groups/:groupId/posts", attachAuthIfPresent, getGroupPosts);
 
 export default router;

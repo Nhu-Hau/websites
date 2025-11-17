@@ -424,6 +424,14 @@ export default function PostDetail({ postId }: { postId: string }) {
               repostCount={post.repostCount}
               canDelete={post.canDelete}
               canEdit={post.canDelete}
+              onLikeChange={(liked, count) => {
+                // Update post state to keep in sync
+                setPost((p: any) => p ? { ...p, liked, likesCount: count } : p);
+              }}
+              onSaveChange={(saved, count) => {
+                // Update post state to keep in sync
+                setPost((p: any) => p ? { ...p, saved, savedCount: count } : p);
+              }}
               onCommentClick={() => {}}
               onShareClick={sharePost}
             />

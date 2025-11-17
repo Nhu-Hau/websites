@@ -181,9 +181,28 @@ export async function getFollowing(req: Request, res: Response) {
         name: user.name,
         email: user.email,
         picture: user.picture,
+        bio: user.bio,
+        followersCount: 0, // Will be populated below
         isFollowing: true, // They are following this user
       };
     });
+
+    // Get followers count for each user
+    if (following.length > 0) {
+      const userIds = following.map((f: any) => f._id);
+      const followersCounts = await Follow.aggregate([
+        { $match: { followingId: { $in: userIds } } },
+        { $group: { _id: "$followingId", count: { $sum: 1 } } },
+      ]);
+
+      const countMap = new Map(
+        followersCounts.map((item: any) => [String(item._id), item.count])
+      );
+
+      following.forEach((f: any) => {
+        f.followersCount = countMap.get(String(f._id)) || 0;
+      });
+    }
 
     // Check if current user also follows these users
     if (userId && userId !== targetUserId) {

@@ -150,7 +150,22 @@ export function logout(_req: Request, res: Response) {
 // POST /auth/refresh
 export async function refresh(req: Request, res: Response) {
   try {
-    const rt = req.cookies?.[refreshCookieName]; // ví dụ 'refresh_token'
+    // Support both cookie (web) and body/header (mobile) for refresh token
+    let rt: string | undefined;
+    
+    // Try from request body first (for mobile apps)
+    if (req.body?.refreshToken) {
+      rt = req.body.refreshToken;
+    } 
+    // Try from Authorization header (Bearer token)
+    else if (req.headers.authorization?.startsWith("Bearer ")) {
+      rt = req.headers.authorization.substring(7);
+    }
+    // Fallback to cookie (for web)
+    else {
+      rt = req.cookies?.[refreshCookieName];
+    }
+
     if (!rt) return res.status(401).json({ message: "Không có refresh token" });
 
     // LẤY userId từ refresh token (KHÔNG dùng req.auth)
@@ -178,10 +193,16 @@ export async function refresh(req: Request, res: Response) {
       await user.save();
     }
 
-    // Set lại cookie access (và refresh nếu có xoay vòng)
+    // Set lại cookie access (và refresh nếu có xoay vòng) - for web
     setAuthCookies(res, access, nextRefresh);
 
-    return res.status(200).json({ message: "Cấp mới access token thành công" });
+    return res.status(200).json({ 
+      message: "Cấp mới access token thành công",
+      // Always return tokens in response body for mobile apps compatibility
+      // Web clients can ignore these and use cookies instead
+      accessToken: access, 
+      refreshToken: nextRefresh || rt,
+    });
   } catch {
     return res
       .status(401)
@@ -330,6 +351,10 @@ export async function register(req: Request, res: Response) {
     return res.status(201).json({
       user: toSafeUser(user),
       message: "Đăng ký tài khoản thành công",
+      // Always return tokens in response body for mobile apps compatibility
+      // Web clients can ignore these and use cookies instead
+      accessToken: access,
+      refreshToken: refresh,
     });
   } catch (e) {
     console.error("[register] ERROR", e);
@@ -411,6 +436,10 @@ export async function login(req: Request, res: Response) {
     return res.status(200).json({
       user: toSafeUser(user),
       message: "Đăng nhập thành công",
+      // Always return tokens in response body for mobile apps compatibility
+      // Web clients can ignore these and use cookies instead
+      accessToken: access,
+      refreshToken: refresh,
     });
   } catch (e) {
     console.error("[login] ERROR", e);
@@ -504,6 +533,10 @@ export async function completeGoogle(req: Request, res: Response) {
     return res.status(201).json({
       user: toSafeUser(user),
       message: "Đăng ký bằng Google thành công",
+      // Always return tokens in response body for mobile apps compatibility
+      // Web clients can ignore these and use cookies instead
+      accessToken: access,
+      refreshToken: refresh,
     });
   } catch (e) {
     return res

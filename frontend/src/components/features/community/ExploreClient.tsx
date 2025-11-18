@@ -26,7 +26,7 @@ export default function ExploreClient() {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
           Khám phá

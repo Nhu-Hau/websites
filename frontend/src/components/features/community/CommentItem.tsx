@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Edit2, Trash2, X, Check } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import type { CommunityComment } from "@/types/community.types";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
@@ -34,23 +33,21 @@ function Avatar({ url, name }: { url?: string; name?: string }) {
   );
 }
 
-function formatDate(dateString: string, tDate: any) {
+function formatDate(dateString: string) {
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return tDate("justNow");
-  if (diffInSeconds < 3600) return tDate("minutesAgo", { minutes: Math.floor(diffInSeconds / 60) });
+  if (diffInSeconds < 60) return "Vừa xong";
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
   if (diffInSeconds < 86400)
-    return tDate("hoursAgo", { hours: Math.floor(diffInSeconds / 3600) });
+    return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
   if (diffInSeconds < 604800)
-    return tDate("daysAgo", { days: Math.floor(diffInSeconds / 86400) });
+    return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
   return date.toLocaleDateString();
 }
 
 export default function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps) {
-  const t = useTranslations("community.comments");
-  const tDate = useTranslations("community.date");
   const [isEditing, setIsEditing] = React.useState(false);
   const [editContent, setEditContent] = React.useState(comment.content);
   const [saving, setSaving] = React.useState(false);
@@ -59,11 +56,11 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
   const handleDelete = () => {
     show(
       {
-        title: t("delete.title"),
-        message: t("delete.message"),
+        title: "Xóa bình luận?",
+        message: "Bạn có chắc chắn muốn xóa bình luận này?",
         icon: "warning",
-        confirmText: t("delete.confirm"),
-        cancelText: t("delete.cancel"),
+        confirmText: "Xóa",
+        cancelText: "Hủy",
         confirmColor: "red",
       },
       async () => {
@@ -76,13 +73,13 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
             }
           );
           if (res.ok) {
-            toast.success(t("delete.success"));
+            toast.success("Đã xóa bình luận");
             onDeleted();
           } else {
-            toast.error(t("delete.error"));
+            toast.error("Lỗi khi xóa bình luận");
           }
         } catch {
-          toast.error(t("delete.errorGeneral"));
+          toast.error("Không thể xóa bình luận");
         }
       }
     );
@@ -107,10 +104,10 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
         }),
       });
       if (!res.ok) throw new Error("Failed to update");
-      toast.success(t("updateSuccess"));
+      toast.success("Đã cập nhật bình luận");
       handleEditSuccess();
     } catch {
-      toast.error(t("updateError"));
+      toast.error("Lỗi khi cập nhật bình luận");
     } finally {
       setSaving(false);
     }
@@ -121,7 +118,7 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
       <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {t("edit")}
+            Chỉnh sửa bình luận
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -168,11 +165,11 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
               {comment.user?.name || "User"}
             </span>
             <time className="text-xs text-zinc-500 dark:text-zinc-400">
-              {formatDate(comment.createdAt, tDate)}
+              {formatDate(comment.createdAt)}
             </time>
             {comment.isEdited && comment.editedAt && (
               <span className="text-xs text-zinc-500 dark:text-zinc-400 italic">
-                ({t("edited")})
+                (đã chỉnh sửa)
               </span>
             )}
             {comment.canDelete && (

@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Smile } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
 
@@ -21,7 +20,6 @@ export default function ReactionPicker({
   currentReaction,
   onReactionChange,
 }: ReactionPickerProps) {
-  const t = useTranslations("community.reactions");
   const { user } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [reacting, setReacting] = React.useState(false);
@@ -41,7 +39,7 @@ export default function ReactionPicker({
 
   const handleReaction = async (emoji: string) => {
     if (!user) {
-      toast.error(t("loginRequired"));
+      toast.error("Vui lòng đăng nhập");
       return;
     }
 
@@ -67,7 +65,7 @@ export default function ReactionPicker({
       setOpen(false);
       onReactionChange?.();
     } catch (error) {
-      toast.error(t("error"));
+      toast.error("Lỗi khi thêm reaction");
     } finally {
       setReacting(false);
     }

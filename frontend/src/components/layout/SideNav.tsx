@@ -32,118 +32,112 @@ export default function SideNav() {
   const { user } = useAuth();
 
   const navItems: NavItem[] = [
-    {
-      label: "Bảng tin",
-      href: `${basePrefix}/community`,
-      icon: Home,
-    },
-    {
-      label: "Đang theo dõi",
-      href: `${basePrefix}/community/following`,
-      icon: UserPlus,
-    },
-    {
-      label: "Xu hướng",
-      href: `${basePrefix}/community/trending`,
-      icon: TrendingUp,
-    },
-    {
-      label: "Đã lưu",
-      href: `${basePrefix}/community/saved`,
-      icon: Bookmark,
-    },
+    { label: "Bảng tin", href: `${basePrefix}/community`, icon: Home },
+    { label: "Đang theo dõi", href: `${basePrefix}/community/following`, icon: UserPlus },
+    { label: "Xu hướng", href: `${basePrefix}/community/trending`, icon: TrendingUp },
+    { label: "Đã lưu", href: `${basePrefix}/community/saved`, icon: Bookmark },
     {
       label: "Hồ sơ cá nhân",
       href: user?.id ? `${basePrefix}/community/profile/${user.id}` : `${basePrefix}/community`,
       icon: User,
     },
-    {
-      label: "Nhóm học",
-      href: `${basePrefix}/community/groups`,
-      icon: Users,
-    },
-    {
-      label: "Phòng học",
-      href: `${basePrefix}/study/create`,
-      icon: GraduationCap,
-    },
-    {
-      label: "Khám phá",
-      href: `${basePrefix}/community/explore`,
-      icon: Search,
-    },
-    {
-      label: "Cài đặt",
-      href: `${basePrefix}/account`,
-      icon: Settings,
-    },
+    { label: "Nhóm học", href: `${basePrefix}/community/groups`, icon: Users },
+    { label: "Phòng học", href: `${basePrefix}/study/create`, icon: GraduationCap },
+    { label: "Khám phá", href: `${basePrefix}/community/explore`, icon: Search },
+    { label: "Cài đặt", href: `${basePrefix}/account`, icon: Settings },
   ];
 
   const isActive = (href: string) => {
     if (href === `${basePrefix}/community`) {
-      return pathname === `${basePrefix}/community` || pathname === `${basePrefix}/community/`;
+      return (
+        pathname === `${basePrefix}/community` ||
+        pathname === `${basePrefix}/community/`
+      );
     }
     return pathname.startsWith(href);
   };
 
   return (
     <>
-      {/* Side Navigation - Desktop only */}
       <aside
         className={cn(
-          "hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-40",
-          "bg-white dark:bg-zinc-950",
-          "border-r border-zinc-200 dark:border-zinc-800",
-          "w-64"
+          "hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 w-72",
+          "bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm",
+          "border-r border-zinc-200/80 dark:border-zinc-800/80 shadow-sm"
         )}
       >
         <div className="flex flex-col h-full w-full pt-6">
-          {/* Navigation Items */}
-          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-            {/* Community Quick Actions */}
-            <div className="mb-4">
-              <Link
-                href={`${basePrefix}/community/new`}
-                className={cn(
-                  "flex items-center justify-center gap-2 px-4 py-3 rounded-xl",
-                  "text-sm font-medium text-white bg-blue-600 dark:bg-blue-500",
-                  "hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors",
-                  "shadow-sm hover:shadow"
-                )}
-              >
-                <Plus className="h-4 w-4" />
-                <span>Đăng bài mới</span>
-              </Link>
-            </div>
+          {/* Quick Action */}
+          <div className="px-4 mb-4">
+            <Link
+              href={`${basePrefix}/community/new`}
+              className={cn(
+                "flex items-center justify-center gap-2 px-4 py-3 rounded-xl",
+                "text-sm font-semibold text-white",
+                "bg-sky-600 hover:bg-sky-700",
+                "dark:bg-sky-500 dark:hover:bg-sky-600",
+                "shadow-sm hover:shadow transition-all"
+              )}
+            >
+              <Plus className="h-4 w-4" />
+              <span>Đăng bài mới</span>
+            </Link>
+          </div>
 
-            {/* Main Navigation */}
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
+
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl",
-                    "text-sm font-medium transition-colors",
-                    "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                    "group relative flex items-center gap-3 rounded-2xl px-4 py-2",
+                    "transition-all duration-200 text-sm font-medium",
                     active
-                      ? "bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400"
-                      : "text-zinc-700 dark:text-zinc-300"
+                      ? "bg-sky-50 text-sky-800 shadow-sm ring-1 ring-sky-200 dark:bg-sky-900/20 dark:text-sky-100 dark:ring-sky-700"
+                      : "text-zinc-700 hover:bg-zinc-100 hover:text-sky-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-sky-300"
                   )}
                 >
-                  <Icon
+                  {/* Indicator bar */}
+                  <span
                     className={cn(
-                      "h-5 w-5",
-                      active
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-zinc-500 dark:text-zinc-400"
+                      "absolute inset-y-2 left-1 w-1 rounded-full bg-sky-500/80 transition-opacity",
+                      active ? "opacity-100" : "opacity-0 group-hover:opacity-60"
                     )}
                   />
-                  <span>{item.label}</span>
+
+                  {/* Gradient overlay */}
+                  <span
+                    className={cn(
+                      "pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-r from-sky-100/50 to-transparent opacity-0 transition-opacity duration-200",
+                      active
+                        ? "opacity-100"
+                        : "group-hover:opacity-60 dark:from-sky-500/10"
+                    )}
+                  />
+
+                  {/* Icon box */}
+                  <div
+                    className={cn(
+                      "relative flex h-9 w-9 items-center justify-center rounded-xl border text-[13px] font-semibold transition-all",
+                      active
+                        ? "bg-sky-500 border-sky-300 text-white shadow-sm dark:border-sky-600 dark:bg-sky-500"
+                        : "bg-white border-zinc-200 text-zinc-500 shadow-sm group-hover:border-sky-300 group-hover:text-sky-600 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:group-hover:border-sky-600 dark:group-hover:text-sky-300"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </div>
+
+                  {/* Label */}
+                  <span className="relative text-left">{item.label}</span>
+
+                  {/* Badge */}
                   {item.badge && item.badge > 0 && (
-                    <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">
+                    <span className="ml-auto px-2 py-0.5 text-[11px] font-semibold rounded-full bg-red-500 text-white">
                       {item.badge}
                     </span>
                   )}
@@ -151,13 +145,11 @@ export default function SideNav() {
               );
             })}
           </nav>
-
         </div>
       </aside>
 
-      {/* Desktop Spacer */}
-      <div className="hidden lg:block w-64 flex-shrink-0" />
+      {/* Spacer */}
+      <div className="hidden lg:block w-72 flex-shrink-0" />
     </>
   );
 }
-

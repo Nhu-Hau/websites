@@ -46,14 +46,14 @@ export default function LayoutClient({
   // Hide Footer on community and study pages
   const hideFooterOnCommunity = pathname?.includes("/community") || pathname?.includes("/study");
 
-  // Show chip navigation on mobile for community and dashboard
+  // Show chip navigation on screens <lg for community and dashboard
   // Include community-related routes: /community, /study/create, /account
+  // Note: lg:hidden class in HorizontalChipNav will handle the responsive display
   const showCommunityChips = 
-    (pathname?.includes("/community") || 
-     pathname?.includes("/study/create") || 
-     pathname?.includes("/account")) && 
-    isMobile;
-  const showDashboardChips = (pathname?.includes("/dashboard") || pathname?.includes("/mobile/dashboard")) && isMobile;
+    pathname?.includes("/community") || 
+    pathname?.includes("/study/create") || 
+    pathname?.includes("/account");
+  const showDashboardChips = pathname?.includes("/dashboard") || pathname?.includes("/mobile/dashboard");
 
   // Show bottom bar on all pages, but hide it when ChatSheet is open on mobile
   // (ChatPanel on desktop doesn't cover BottomTabBar, so we only hide on mobile)

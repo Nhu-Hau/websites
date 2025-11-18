@@ -65,7 +65,7 @@ export function useSelectionTranslation(isPremium: boolean) {
         if (!response.ok) {
           const error = await response.json();
           if (error.isPremiumOnly) {
-            toast.error("Premium subscription required");
+            toast.error("Cần tài khoản Premium để sử dụng tính năng này");
             return;
           }
           throw new Error(error.error || "Translation failed");
@@ -75,7 +75,7 @@ export function useSelectionTranslation(isPremium: boolean) {
         setSelectionData(data.data);
       } catch (error: any) {
         console.error("Error translating selection:", error);
-        toast.error(error.message || "Failed to translate selection");
+        toast.error(error.message || "Không thể dịch đoạn văn");
       } finally {
         setLoading(false);
       }

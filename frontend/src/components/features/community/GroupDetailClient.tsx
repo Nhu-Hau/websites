@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
 import { Users, UserPlus, UserMinus, Image as ImageIcon, ArrowLeft } from "lucide-react";
 import PostCard from "@/components/features/community/PostCard";
 import Pagination from "@/components/features/community/Pagination";
@@ -39,7 +38,6 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const { user } = useAuth();
-  const t = useTranslations("community.groups");
 
   const [group, setGroup] = React.useState<StudyGroup | null>(null);
   const [posts, setPosts] = React.useState<CommunityPost[]>([]);
@@ -60,7 +58,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
       });
       if (!r.ok) {
         if (r.status === 404) {
-          toast.error(t("notFound") || "Group not found");
+          toast.error("Không tìm thấy nhóm");
           router.push(`${basePrefix}/community/groups`);
           return;
         }
@@ -79,10 +77,10 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
       setIsAdmin(userIsAdmin);
       setIsMember(userIsMember);
     } catch (e) {
-      toast.error(t("error") || "Failed to load group");
+      toast.error("Không thể tải nhóm");
       console.error("[loadGroup] ERROR", e);
     }
-  }, [groupId, currentUserId, basePrefix, router, t]);
+  }, [groupId, currentUserId, basePrefix, router]);
 
   const loadPosts = React.useCallback(async (p = 1) => {
     try {
@@ -195,7 +193,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 
   const handleJoin = async () => {
     if (!currentUserId) {
-      toast.error(t("loginRequired") || "Please login");
+      toast.error("Vui lòng đăng nhập");
       return;
     }
     setJoining(true);
@@ -206,15 +204,15 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
       });
       if (!r.ok) {
         const data = await r.json();
-        throw new Error(data.message || "Failed to join group");
+        throw new Error(data.message || "Không thể tham gia nhóm");
       }
       const data = await r.json();
       setGroup(data);
       setIsMember(true);
-      toast.success(t("joined") || "Joined group successfully");
+      toast.success("Đã tham gia nhóm thành công");
       loadGroup(); // Reload to update member count
     } catch (e: any) {
-      toast.error(e.message || t("joinError") || "Failed to join group");
+      toast.error(e.message || "Không thể tham gia nhóm");
       console.error("[handleJoin] ERROR", e);
     } finally {
       setJoining(false);
@@ -223,7 +221,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 
   const handleLeave = async () => {
     if (!currentUserId) {
-      toast.error(t("loginRequired") || "Please login");
+      toast.error("Vui lòng đăng nhập");
       return;
     }
     setLeaving(true);
@@ -234,15 +232,15 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
       });
       if (!r.ok) {
         const data = await r.json();
-        throw new Error(data.message || "Failed to leave group");
+        throw new Error(data.message || "Không thể rời nhóm");
       }
       const data = await r.json();
       setGroup(data);
       setIsMember(false);
-      toast.success(t("left") || "Left group successfully");
+      toast.success("Đã rời nhóm thành công");
       loadGroup(); // Reload to update member count
     } catch (e: any) {
-      toast.error(e.message || t("leaveError") || "Failed to leave group");
+      toast.error(e.message || "Không thể rời nhóm");
       console.error("[handleLeave] ERROR", e);
     } finally {
       setLeaving(false);

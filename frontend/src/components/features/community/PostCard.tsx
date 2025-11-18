@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -11,7 +12,8 @@ import MediaGallery from "./MediaGallery";
 import ActionBar from "./ActionBar";
 import NewPostForm from "./NewPostForm";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 type Props = {
   post: CommunityPost & { user?: any };
@@ -83,15 +85,19 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
 
   const [likedState, setLikedState] = React.useState(() => getInitialLiked());
   const [savedState, setSavedState] = React.useState(() => getInitialSaved());
-  const [likesCountState, setLikesCountState] = React.useState(typeof post.likesCount === "number" ? post.likesCount : 0);
-  const [savedCountState, setSavedCountState] = React.useState(typeof post.savedCount === "number" ? post.savedCount : 0);
+  const [likesCountState, setLikesCountState] = React.useState(
+    typeof post.likesCount === "number" ? post.likesCount : 0
+  );
+  const [savedCountState, setSavedCountState] = React.useState(
+    typeof post.savedCount === "number" ? post.savedCount : 0
+  );
 
   // Sync with prop changes - check localStorage first, then use server value
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "[]");
       const isLikedInStorage = likedPosts.includes(post._id);
-      
+
       // If localStorage has the post, use that value (it's more up-to-date from user actions)
       if (isLikedInStorage) {
         setLikedState(true);
@@ -149,16 +155,25 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
   // Fetch original post if this is a repost
   React.useEffect(() => {
     // Validate post.repostedFrom is a valid string and valid ObjectId before fetching
-    if (post.repostedFrom && typeof post.repostedFrom === 'string' && post.repostedFrom.trim() && !originalPost && !loadingOriginal) {
+    if (
+      post.repostedFrom &&
+      typeof post.repostedFrom === "string" &&
+      post.repostedFrom.trim() &&
+      !originalPost &&
+      !loadingOriginal
+    ) {
       // Check if it's a valid MongoDB ObjectId format (24 hex characters)
       const trimmedId = post.repostedFrom.trim();
       const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(trimmedId);
       if (!isValidObjectId) {
         // Invalid ObjectId format, don't fetch
-        console.warn("[PostCard] Invalid repostedFrom ObjectId:", post.repostedFrom);
+        console.warn(
+          "[PostCard] Invalid repostedFrom ObjectId:",
+          post.repostedFrom
+        );
         return;
       }
-      
+
       setLoadingOriginal(true);
       fetch(`${apiBase}/api/community/posts/${trimmedId}`, {
         credentials: "include",
@@ -178,7 +193,10 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
           if (res.status === 400 || res.status === 404) {
             try {
               const errorData = await res.json().catch(() => ({}));
-              console.warn("[PostCard] Original post not found or invalid:", errorData.message || res.status);
+              console.warn(
+                "[PostCard] Original post not found or invalid:",
+                errorData.message || res.status
+              );
             } catch (e) {
               // Ignore JSON parse errors
             }
@@ -207,36 +225,41 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         router.push(`${basePrefix}/community/post/${post._id}`);
       }
     }
-  }, [router, basePrefix, post._id, post.repostedFrom, originalPost, isEditing]);
+  }, [
+    router,
+    basePrefix,
+    post._id,
+    post.repostedFrom,
+    originalPost,
+    isEditing,
+  ]);
 
-  const handleDelete = React.useCallback(
-    async () => {
-      show(
-        {
-          title: "Xóa bài viết?",
-          message: "Bạn có chắc muốn xóa bài viết này? Hành động này không thể hoàn tác.",
-          icon: "warning",
-          confirmText: "Xóa",
-          cancelText: "Hủy",
-          confirmColor: "red",
-        },
-        async () => {
-          try {
-            const r = await fetch(`${apiBase}/api/community/posts/${post._id}`, {
-              method: "DELETE",
-              credentials: "include",
-            });
-            if (!r.ok) throw new Error();
-            toast.success("Đã xóa bài viết");
-            onChanged();
-          } catch {
-            toast.error("Lỗi khi xóa bài viết");
-          }
+  const handleDelete = React.useCallback(async () => {
+    show(
+      {
+        title: "Xóa bài viết?",
+        message:
+          "Bạn có chắc muốn xóa bài viết này? Hành động này không thể hoàn tác.",
+        icon: "warning",
+        confirmText: "Xóa",
+        cancelText: "Hủy",
+        confirmColor: "red",
+      },
+      async () => {
+        try {
+          const r = await fetch(`${apiBase}/api/community/posts/${post._id}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+          if (!r.ok) throw new Error();
+          toast.success("Đã xóa bài viết");
+          onChanged();
+        } catch {
+          toast.error("Lỗi khi xóa bài viết");
         }
-      );
-    },
-    [post._id, apiBase, onChanged, show]
-  );
+      }
+    );
+  }, [post._id, apiBase, onChanged, show]);
 
   const handleEdit = React.useCallback(() => {
     setIsEditing(true);
@@ -253,12 +276,15 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
 
   const handleRepostSubmit = React.useCallback(async () => {
     try {
-      const res = await fetch(`${apiBase}/api/community/posts/${post._id}/repost`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repostCaption: repostCaption.trim() }),
-      });
+      const res = await fetch(
+        `${apiBase}/api/community/posts/${post._id}/repost`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ repostCaption: repostCaption.trim() }),
+        }
+      );
       if (!res.ok) throw new Error("Failed to repost");
       toast.success("Đã chia sẻ lại bài viết");
       setShowRepostModal(false);
@@ -269,18 +295,15 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
     }
   }, [post._id, apiBase, repostCaption, onChanged]);
 
-  const handleShare = React.useCallback(
-    async () => {
-      try {
-        await navigator.share({
-          title: "Community Post",
-          text: post.content?.slice(0, 100) || "",
-          url: `${window.location.origin}${basePrefix}/community/post/${post._id}`,
-        });
-      } catch {}
-    },
-    [post._id, post.content, basePrefix]
-  );
+  const handleShare = React.useCallback(async () => {
+    try {
+      await navigator.share({
+        title: "Community Post",
+        text: post.content?.slice(0, 100) || "",
+        url: `${window.location.origin}${basePrefix}/community/post/${post._id}`,
+      });
+    } catch {}
+  }, [post._id, post.content, basePrefix]);
 
   const handleReport = React.useCallback(() => {
     show(
@@ -372,7 +395,9 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    router.push(`${basePrefix}/community/profile/${post.userId}`);
+                    router.push(
+                      `${basePrefix}/community/profile/${post.userId}`
+                    );
                   }}
                   className="font-semibold text-zinc-900 dark:text-zinc-100 text-base hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
@@ -427,17 +452,24 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    router.push(`${basePrefix}/community/profile/${originalPost.userId}`);
+                    router.push(
+                      `${basePrefix}/community/profile/${originalPost.userId}`
+                    );
                   }}
                   className="flex-shrink-0"
                 >
-                  <Avatar name={originalPost.user?.name} url={originalPost.user?.picture} />
+                  <Avatar
+                    name={originalPost.user?.name}
+                    url={originalPost.user?.picture}
+                  />
                 </button>
                 <div className="flex-1 min-w-0">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`${basePrefix}/community/profile/${originalPost.userId}`);
+                      router.push(
+                        `${basePrefix}/community/profile/${originalPost.userId}`
+                      );
                     }}
                     className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
@@ -453,9 +485,10 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                   {originalPost.content}
                 </p>
               )}
-              {originalPost.attachments && originalPost.attachments.length > 0 && (
-                <MediaGallery attachments={originalPost.attachments} />
-              )}
+              {originalPost.attachments &&
+                originalPost.attachments.length > 0 && (
+                  <MediaGallery attachments={originalPost.attachments} />
+                )}
             </div>
           </div>
         )}
@@ -465,7 +498,9 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
           <div className="mx-5 mb-4 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 bg-zinc-50 dark:bg-zinc-800/50">
             <div className="text-center py-4">
               <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent mx-auto mb-2" />
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Đang tải bài viết gốc...</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Đang tải bài viết gốc...
+              </p>
             </div>
           </div>
         )}
@@ -480,11 +515,13 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         )}
 
         {/* Media Gallery (only show if not a repost) */}
-        {!post.repostedFrom && post.attachments && post.attachments.length > 0 && (
-          <div className="px-5 pb-4">
-            <MediaGallery attachments={post.attachments} />
-          </div>
-        )}
+        {!post.repostedFrom &&
+          post.attachments &&
+          post.attachments.length > 0 && (
+            <div className="px-5 pb-4">
+              <MediaGallery attachments={post.attachments} />
+            </div>
+          )}
 
         {/* Actions */}
         <div className="px-5 py-4 border-t border-zinc-100 dark:border-zinc-800">
@@ -503,12 +540,19 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
               setLikesCountState(count);
               // Update localStorage
               if (typeof window !== "undefined") {
-                const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "[]");
+                const likedPosts = JSON.parse(
+                  localStorage.getItem("likedPosts") || "[]"
+                );
                 if (liked && !likedPosts.includes(post._id)) {
                   likedPosts.push(post._id);
-                  localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+                  localStorage.setItem(
+                    "likedPosts",
+                    JSON.stringify(likedPosts)
+                  );
                 } else if (!liked && likedPosts.includes(post._id)) {
-                  const filtered = likedPosts.filter((id: string) => id !== post._id);
+                  const filtered = likedPosts.filter(
+                    (id: string) => id !== post._id
+                  );
                   localStorage.setItem("likedPosts", JSON.stringify(filtered));
                 }
               }

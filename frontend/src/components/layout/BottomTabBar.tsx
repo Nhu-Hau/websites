@@ -9,39 +9,37 @@ import {
   Users,
 } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 export default function BottomTabBar() {
   const pathname = usePathname();
   const base = useBasePrefix();
-  const t = useTranslations("nav");
 
   const tabs = [
     {
       id: "dashboard",
-      label: t("dashboard"),
+      label: "Bảng điều khiển",
       icon: LayoutDashboard,
       href: `${base}/mobile/dashboard`,
       match: (path: string) => path.includes("/mobile/dashboard") || (path.includes("/dashboard") && !path.includes("/mobile/")),
     },
     {
       id: "practice",
-      label: t("practiceLR.title"),
+      label: "Luyện L&R",
       icon: BookOpen,
       href: `${base}/mobile/practice`,
       match: (path: string) => path.includes("/mobile/practice") || (path.includes("/practice") && !path.includes("/mobile/") && !path.includes("/history")),
     },
     {
       id: "study",
-      label: t("study.title"),
+      label: "Học tập",
       icon: GraduationCap,
       href: `${base}/mobile/study`,
       match: (path: string) => path.includes("/mobile/study") || (path.includes("/vocabulary") || path.includes("/news") || path.includes("/study/create")) && !path.includes("/mobile/"),
     },
     {
       id: "community",
-      label: t("study.study.forum"),
+      label: "Cộng đồng",
       icon: Users,
       href: `${base}/community`,
       match: (path: string) => path.includes("/community") || path.includes("/study/create") || path.includes("/account"),

@@ -1,6 +1,5 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { cn } from "@/lib/utils";
@@ -34,7 +33,6 @@ const STUDY_OPTIONS = [
 ];
 
 export default function MobileStudyPage() {
-  const t = useTranslations("nav");
   const base = useBasePrefix();
 
   return (
@@ -49,7 +47,7 @@ export default function MobileStudyPage() {
 
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              {t("study.title")}
+              Học tập
             </h1>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
               Chọn cách học phù hợp:{" "}

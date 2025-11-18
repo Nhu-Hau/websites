@@ -77,7 +77,7 @@ export default function HashtagClient({ tag, initialData }: HashtagClientProps) 
   }, [tag]);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div>
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">

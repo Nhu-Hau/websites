@@ -16,7 +16,6 @@ import {
   Share2,
   Send,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
 import type { CommunityComment } from "@/types/community.types";
@@ -85,14 +84,6 @@ export default function PostDetail({ postId }: { postId: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const basePrefix = useBasePrefix();
-  const locale = React.useMemo(
-    () => pathname.split("/")[1] || "en",
-    [pathname]
-  );
-  const t = useTranslations("community.postDetail");
-  const tPosts = useTranslations("community.posts");
-  const tComments = useTranslations("community.comments");
-  const tDate = useTranslations("community.date");
   const { show, Modal: ConfirmModal } = useConfirmModal();
 
   const [post, setPost] = React.useState<any>(null);
@@ -125,12 +116,12 @@ export default function PostDetail({ postId }: { postId: string }) {
       setOriginalPost(data.originalPost || null);
       setComments(data.comments?.items ?? []);
     } catch {
-      toast.error(t("loading"));
+      toast.error("Lỗi khi tải bài viết");
     } finally {
       setLoading(false);
       loadingRef.current = false;
     }
-  }, [postId, t]);
+  }, [postId]);
 
   React.useEffect(() => {
     loadPost();
@@ -210,7 +201,7 @@ export default function PostDetail({ postId }: { postId: string }) {
         likesCount: data.likesCount,
       }));
     } catch {
-      toast.error(t("likeError"));
+      toast.error("Không thể thích bài viết");
     }
   };
 
@@ -247,7 +238,7 @@ export default function PostDetail({ postId }: { postId: string }) {
     if (submittingRef.current) return;
     const content = cmtInput.trim();
     if (!content && cmtAttaches.length === 0) {
-      toast.error(tComments("enterContent"));
+      toast.error("Vui lòng nhập nội dung hoặc đính kèm tệp");
       return;
     }
 
@@ -272,9 +263,9 @@ export default function PostDetail({ postId }: { postId: string }) {
       );
       setCmtInput("");
       setCmtAttaches([]);
-      toast.success(tComments("postSuccess"));
+      toast.success("Đã đăng bình luận!");
     } catch {
-      toast.error(tComments("postError"));
+      toast.error("Lỗi khi đăng bình luận");
     } finally {
       submittingRef.current = false;
     }
@@ -283,11 +274,11 @@ export default function PostDetail({ postId }: { postId: string }) {
   const deletePost = async () => {
     show(
       {
-        title: tPosts("delete.title"),
-        message: tPosts("delete.message"),
+        title: "Xóa bài viết?",
+        message: "Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.",
         icon: "warning",
-        confirmText: tPosts("delete.confirm"),
-        cancelText: tPosts("delete.cancel"),
+        confirmText: "Xóa",
+        cancelText: "Hủy",
         confirmColor: "red",
       },
       async () => {
@@ -296,7 +287,7 @@ export default function PostDetail({ postId }: { postId: string }) {
           credentials: "include",
         });
         if (res.ok) router.push(`${basePrefix}/community`);
-        else toast.error(t("deleteError"));
+        else toast.error("Không thể xóa");
       }
     );
   };
@@ -304,11 +295,11 @@ export default function PostDetail({ postId }: { postId: string }) {
   const deleteComment = async (commentId: string) => {
     show(
       {
-        title: tComments("delete.title"),
-        message: tComments("delete.message"),
+        title: "Xóa bình luận?",
+        message: "Bạn có chắc chắn muốn xóa bình luận này?",
         icon: "warning",
-        confirmText: tComments("delete.confirm"),
-        cancelText: tComments("delete.cancel"),
+        confirmText: "Xóa",
+        cancelText: "Hủy",
         confirmColor: "red",
       },
       async () => {
@@ -320,7 +311,7 @@ export default function PostDetail({ postId }: { postId: string }) {
           }
         );
         if (res.ok) loadPost();
-        else toast.error(t("deleteCommentError"));
+        else toast.error("Không thể xóa bình luận");
       }
     );
   };
@@ -337,16 +328,12 @@ export default function PostDetail({ postId }: { postId: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-        <main className="mx-auto max-w-4xl px-4 py-8">
-          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-8">
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-48" />
-              <div className="h-32 bg-zinc-200 dark:bg-zinc-700 rounded" />
-              <div className="h-24 bg-zinc-200 dark:bg-zinc-700 rounded" />
-            </div>
-          </div>
-        </main>
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-48" />
+          <div className="h-32 bg-zinc-200 dark:bg-zinc-700 rounded" />
+          <div className="h-24 bg-zinc-200 dark:bg-zinc-700 rounded" />
+        </div>
       </div>
     );
   }
@@ -354,8 +341,7 @@ export default function PostDetail({ postId }: { postId: string }) {
   if (!post) return null;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20">
-      <main className="mx-auto max-w-4xl px-4 py-8">
+    <div>
         {/* Post */}
         <article className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm mb-6">
           {/* Header */}
@@ -505,7 +491,7 @@ export default function PostDetail({ postId }: { postId: string }) {
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="p-6 border-b border-zinc-100 dark:border-zinc-800">
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              {t("comments")} ({comments.length})
+              Bình luận ({comments.length})
             </h2>
           </div>
 
@@ -517,7 +503,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                   <MessageCircle className="h-8 w-8 text-zinc-400 dark:text-zinc-600" />
                 </div>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {t("noComments")}
+                  Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
                 </p>
               </div>
             ) : (
@@ -582,7 +568,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                     submitComment();
                   }
                 }}
-                placeholder={tComments("placeholder")}
+                placeholder="Viết bình luận..."
                 className="flex-1 min-h-[60px] max-h-[160px] resize-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                 rows={1}
               />
@@ -610,7 +596,6 @@ export default function PostDetail({ postId }: { postId: string }) {
             </div>
           </div>
         </div>
-      </main>
 
       {/* Confirm Modal */}
       {ConfirmModal}

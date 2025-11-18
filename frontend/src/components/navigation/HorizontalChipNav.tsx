@@ -27,7 +27,7 @@ export default function HorizontalChipNav({
   return (
     <div
       className={cn(
-        "lg:hidden sticky top-14 z-30",
+        "lg:hidden sticky top-14 md:top-16 z-30",
         "bg-white/95 dark:bg-zinc-950/95",
         "backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800/80",
         "shadow-sm",

@@ -2,7 +2,6 @@
 
 import React from "react";
 import { X, Image as ImageIcon, Video, Upload, Send } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import type { Attachment } from "@/types/community.types";
 
@@ -38,7 +37,6 @@ export default function NewPostForm({
   postId,
   groupId,
 }: NewPostFormProps) {
-  const t = useTranslations("community.newPost");
   const [content, setContent] = React.useState(initialContent);
   const [previews, setPreviews] = React.useState<PreviewItem[]>([]);
   const [uploading, setUploading] = React.useState(false);
@@ -68,7 +66,7 @@ export default function NewPostForm({
     const remainingSlots = MAX_FILES - previews.length;
 
     if (fileArray.length > remainingSlots) {
-      toast.error(t("maxFiles", { max: MAX_FILES, remaining: remainingSlots }));
+      toast.error(`Bạn chỉ có thể tải lên tối đa ${MAX_FILES} tệp. Còn ${remainingSlots} chỗ trống.`);
       return;
     }
 
@@ -80,13 +78,13 @@ export default function NewPostForm({
       const isVideo = ACCEPTED_VIDEO_TYPES.includes(file.type);
 
       if (!isImage && !isVideo) {
-        toast.error(t("invalidFile", { filename: file.name }));
+        toast.error(`${file.name} không phải là tệp hình ảnh hoặc video được hỗ trợ.`);
         continue;
       }
 
       // Validate file size
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(t("fileTooLarge", { filename: file.name }));
+        toast.error(`${file.name} quá lớn. Kích thước tối đa là 50MB.`);
         continue;
       }
 
@@ -142,7 +140,7 @@ export default function NewPostForm({
       };
     } catch (error) {
       console.error("[uploadFile] ERROR", error);
-      toast.error(t("uploadError", { filename: file.name }));
+      toast.error(`Không thể tải lên ${file.name}`);
       return null;
     }
   };
@@ -152,7 +150,7 @@ export default function NewPostForm({
 
     const text = content.trim();
     if (!text && previews.length === 0) {
-      toast.error(t("contentRequired"));
+      toast.error("Vui lòng nhập nội dung hoặc đính kèm tệp");
       return;
     }
 
@@ -199,7 +197,7 @@ export default function NewPostForm({
       }
 
       if (hasUploadError) {
-        toast.error(t("uploadFailed"));
+        toast.error("Một số tệp tải lên thất bại. Vui lòng thử lại.");
         setSubmitting(false);
         return;
       }
@@ -226,14 +224,14 @@ export default function NewPostForm({
         throw new Error("Failed to create post");
       }
 
-      toast.success(postId ? t("updateSuccess") : t("createSuccess"));
+      toast.success(postId ? "Đã cập nhật bài viết!" : "Đã tạo bài viết!");
       setContent("");
       setPreviews([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
       onSuccess?.();
     } catch (error) {
       console.error("[handleSubmit] ERROR", error);
-      toast.error(t("createError"));
+      toast.error("Lỗi khi tạo bài viết");
     } finally {
       setSubmitting(false);
     }
@@ -264,13 +262,13 @@ export default function NewPostForm({
             el.style.height = "auto";
             el.style.height = Math.min(el.scrollHeight, 300) + "px";
           }}
-          placeholder={t("placeholder")}
+          placeholder="Bạn đang nghĩ gì? Chia sẻ mẹo học TOEIC, câu hỏi hoặc tài nguyên..."
           className="w-full min-h-[120px] max-h-[300px] resize-none rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
           rows={5}
         />
         <div className="mt-2 flex justify-between items-center">
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {t("ctrlEnter")}
+            Nhấn Ctrl+Enter để đăng
           </p>
           <p
             className={`text-xs font-medium ${

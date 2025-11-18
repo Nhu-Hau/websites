@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -27,7 +26,6 @@ export default function FollowingListClient({
 }: FollowingListClientProps) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
-  const t = useTranslations("community.profile");
   
   const [following, setFollowing] = React.useState(initialFollowing?.items || []);
   const [loading, setLoading] = React.useState(false);
@@ -69,10 +67,10 @@ export default function FollowingListClient({
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 pt-28 lg:pt-24">
+    <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-          {t("following") || "Đang theo dõi"}
+          Đang theo dõi
         </h1>
       </div>
 
@@ -102,7 +100,7 @@ export default function FollowingListClient({
                 )}
                 {user.followersCount !== undefined && (
                   <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
-                    {user.followersCount} {t("followers") || "người theo dõi"}
+                    {user.followersCount} người theo dõi
                   </p>
                 )}
               </div>
@@ -112,7 +110,7 @@ export default function FollowingListClient({
       ) : (
         <div className="text-center py-12">
           <p className="text-zinc-600 dark:text-zinc-400">
-            {t("noFollowing") || "Chưa theo dõi ai"}
+            Chưa theo dõi ai
           </p>
         </div>
       )}

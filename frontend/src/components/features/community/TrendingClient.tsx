@@ -38,7 +38,7 @@ export default function TrendingClient({ initialPosts }: TrendingClientProps) {
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
           Xu hướng

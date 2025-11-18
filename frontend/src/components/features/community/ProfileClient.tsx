@@ -183,7 +183,7 @@ export default function ProfileClient({
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center py-16">
         <div className="text-center">
           <p className="text-zinc-600 dark:text-zinc-400">Đang tải...</p>
         </div>
@@ -192,7 +192,7 @@ export default function ProfileClient({
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pt-28 lg:pt-24">
+    <div>
       {/* Cover Image */}
       <div className="relative h-64 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-4 overflow-hidden">
         {profile.coverImage ? (

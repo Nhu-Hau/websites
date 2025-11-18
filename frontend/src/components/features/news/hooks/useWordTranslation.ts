@@ -109,7 +109,7 @@ export function useWordTranslation(isPremium: boolean) {
         if (!response.ok) {
           const error = await response.json();
           if (error.isPremiumOnly) {
-            toast.error("Premium subscription required");
+            toast.error("Cần tài khoản Premium để sử dụng tính năng này");
             return;
           }
           throw new Error(error.error || "Translation failed");
@@ -119,7 +119,7 @@ export function useWordTranslation(isPremium: boolean) {
         setWordData(data.data);
       } catch (error: any) {
         console.error("Error translating word:", error);
-        toast.error(error.message || "Failed to translate word");
+        toast.error(error.message || "Không thể dịch từ");
       } finally {
         setLoading(false);
       }

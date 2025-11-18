@@ -2,11 +2,18 @@
 
 import { usePathname } from "next/navigation";
 import { SnackbarProvider } from "notistack";
-import ChatBox from "../../components/common/ChatBox";
-import AdminChatBox from "../../components/common/AdminChatBox";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import SideNav from "@/components/layout/SideNav";
+import BottomTabBar from "@/components/layout/BottomTabBar";
+import MobileAvatarSheet from "@/components/layout/MobileAvatarSheet";
+import ChatFAB from "@/components/layout/ChatFAB";
+import ChatPanel from "@/components/layout/ChatPanel";
+import ChatSheet from "@/components/layout/ChatSheet";
+import { useMobileAvatarSheet } from "@/context/MobileAvatarSheetContext";
+import { useAuth } from "@/context/AuthContext";
+import { useChat } from "@/context/ChatContext";
+import { useIsMobile } from "@/hooks/common/useIsMobile";
 
 export default function LayoutClient({
   children,
@@ -14,8 +21,12 @@ export default function LayoutClient({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { open, setOpen, user, me } = useMobileAvatarSheet();
+  const { user: ctxUser } = useAuth();
+  const { open: isChatOpen } = useChat();
+  const isMobile = useIsMobile();
 
-  // ẩn ChatBox + AdminChatBox + Footer ở các trang luyện test hoặc placement
+  // ẩn Chat + Footer ở các trang luyện test hoặc placement
   const hideAll =
     /^\/[a-z]{2}\/(practice|study)\/[^/]+(\/\d+\/\d+)?$/.test(pathname) || // /vi/practice/part.1/1/2
     /^\/[a-z]{2}\/placement$/.test(pathname) ||
@@ -32,6 +43,11 @@ export default function LayoutClient({
   
   // Hide Footer on community and study pages
   const hideFooterOnCommunity = pathname?.includes("/community") || pathname?.includes("/study");
+
+  // Show bottom bar on all pages, but hide it when ChatSheet is open on mobile
+  // (ChatPanel on desktop doesn't cover BottomTabBar, so we only hide on mobile)
+  const shouldShowBottomBar = true;
+  const shouldHideBottomBarForChat = isChatOpen && isMobile;
 
   return (
     <SnackbarProvider
@@ -50,21 +66,35 @@ export default function LayoutClient({
         <div className="flex min-h-screen">
           <SideNav />
           <div className="flex-1 lg:ml-0">
-            <main className="min-h-screen">{children}</main>
+            <main className={`min-h-screen ${shouldShowBottomBar ? "pb-16" : ""}`}>{children}</main>
           </div>
         </div>
       ) : (
-        <main>{children}</main>
+        <main className={shouldShowBottomBar ? "pb-16" : ""}>{children}</main>
       )}
 
-      {/* ẩn cả ChatBox + AdminChatBox + Footer nếu hideAll */}
+      {/* Bottom Tab Bar - Hide when ChatSheet is open on mobile */}
+      {shouldShowBottomBar && !shouldHideBottomBarForChat && <BottomTabBar />}
+
+      {/* Mobile Avatar Sheet - Render ở cấp cao để tránh container có transform/overflow */}
+      <MobileAvatarSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        user={user || ctxUser}
+        me={me}
+      />
+
+      {/* Chat System - Unified FAB + Panel/Sheet */}
       {!hideAll && (
         <>
-          <ChatBox />
-          <AdminChatBox />
-          {!hideFooterOnly && !hideFooterOnCommunity && <Footer />}
+          <ChatFAB />
+          <ChatPanel />
+          <ChatSheet />
         </>
       )}
+
+      {/* Footer */}
+      {!hideAll && !hideFooterOnly && !hideFooterOnCommunity && <Footer />}
     </SnackbarProvider>
   );
 }

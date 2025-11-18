@@ -587,6 +587,22 @@ export default function AdminChatBox() {
                           <FiCopy className="h-3.5 w-3.5 text-gray-600 dark:text-gray-300" />
                         </button>
                       )}
+
+                      {/* Delete button (user messages only) */}
+                      {m.role === "user" && m.id && (
+                        <button
+                          onClick={() => {
+                            setMessages((prev) => prev.filter((msg) => msg.id !== m.id));
+                          }}
+                          className="absolute -top-2 -left-2 opacity-0 group-hover:opacity-100 
+                          p-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 shadow-md
+                          transition hover:scale-110 hover:bg-red-100 dark:hover:bg-red-900/50
+                          focus:outline-none focus:ring-2 focus:ring-red-400"
+                          aria-label="Xóa tin nhắn"
+                        >
+                          <FiTrash2 className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 ))}

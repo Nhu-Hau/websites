@@ -53,7 +53,7 @@ function Avatar({ url, name }: { url?: string; name?: string }) {
     );
   }
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 text-sm font-semibold ring-1 ring-zinc-200 dark:ring-zinc-700">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-400 text-white text-sm font-semibold ring-1 ring-zinc-200 dark:ring-zinc-700">
       {(name?.[0] ?? "?").toUpperCase()}
     </div>
   );
@@ -71,26 +71,30 @@ function formatDate(dateString: string) {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return "Just now";
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-  if (diffInSeconds < 86400)
-    return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  if (diffInSeconds < 604800)
-    return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  return date.toLocaleDateString();
+  if (diffInSeconds < 60) return "Vừa xong";
+  if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} phút trước`;
+  }
+  if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} giờ trước`;
+  }
+  if (diffInSeconds < 604800) {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days} ngày trước`;
+  }
+  return date.toLocaleDateString("vi-VN");
 }
 
 export default function PostDetail({ postId }: { postId: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const basePrefix = useBasePrefix();
-  const locale = React.useMemo(
-    () => pathname.split("/")[1] || "en",
-    [pathname]
-  );
   const { show, Modal: ConfirmModal } = useConfirmModal();
 
   const [post, setPost] = React.useState<any>(null);
+  const [originalPost, setOriginalPost] = React.useState<any>(null);
   const [comments, setComments] = React.useState<CommunityComment[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [cmtInput, setCmtInput] = React.useState("");
@@ -116,9 +120,10 @@ export default function PostDetail({ postId }: { postId: string }) {
       if (!res.ok) throw new Error("Failed to load post");
       const data = await res.json();
       setPost(data.post);
+      setOriginalPost(data.originalPost || null);
       setComments(data.comments?.items ?? []);
     } catch {
-      toast.error("Error loading post");
+      toast.error("Lỗi khi tải bài viết");
     } finally {
       setLoading(false);
       loadingRef.current = false;
@@ -203,7 +208,7 @@ export default function PostDetail({ postId }: { postId: string }) {
         likesCount: data.likesCount,
       }));
     } catch {
-      toast.error("Unable to like post");
+      toast.error("Không thể thích bài viết");
     }
   };
 
@@ -240,7 +245,7 @@ export default function PostDetail({ postId }: { postId: string }) {
     if (submittingRef.current) return;
     const content = cmtInput.trim();
     if (!content && cmtAttaches.length === 0) {
-      toast.error("Please enter content or attach a file");
+      toast.error("Vui lòng nhập nội dung hoặc đính kèm tệp");
       return;
     }
 
@@ -265,9 +270,9 @@ export default function PostDetail({ postId }: { postId: string }) {
       );
       setCmtInput("");
       setCmtAttaches([]);
-      toast.success("Comment posted!");
+      toast.success("Đã đăng bình luận!");
     } catch {
-      toast.error("Error posting comment");
+      toast.error("Lỗi khi đăng bình luận");
     } finally {
       submittingRef.current = false;
     }
@@ -276,11 +281,11 @@ export default function PostDetail({ postId }: { postId: string }) {
   const deletePost = async () => {
     show(
       {
-        title: "Delete post?",
-        message: "Are you sure you want to delete this post?",
+        title: "Xóa bài viết?",
+        message: "Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.",
         icon: "warning",
-        confirmText: "Delete",
-        cancelText: "Cancel",
+        confirmText: "Xóa",
+        cancelText: "Hủy",
         confirmColor: "red",
       },
       async () => {
@@ -289,7 +294,7 @@ export default function PostDetail({ postId }: { postId: string }) {
           credentials: "include",
         });
         if (res.ok) router.push(`${basePrefix}/community`);
-        else toast.error("Failed to delete");
+        else toast.error("Không thể xóa");
       }
     );
   };
@@ -297,11 +302,11 @@ export default function PostDetail({ postId }: { postId: string }) {
   const deleteComment = async (commentId: string) => {
     show(
       {
-        title: "Delete comment?",
-        message: "Are you sure you want to delete this comment?",
+        title: "Xóa bình luận?",
+        message: "Bạn có chắc chắn muốn xóa bình luận này?",
         icon: "warning",
-        confirmText: "Delete",
-        cancelText: "Cancel",
+        confirmText: "Xóa",
+        cancelText: "Hủy",
         confirmColor: "red",
       },
       async () => {
@@ -313,7 +318,7 @@ export default function PostDetail({ postId }: { postId: string }) {
           }
         );
         if (res.ok) loadPost();
-        else toast.error("Failed to delete comment");
+        else toast.error("Không thể xóa bình luận");
       }
     );
   };
@@ -330,16 +335,12 @@ export default function PostDetail({ postId }: { postId: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-        <main className="mx-auto max-w-4xl px-4 py-8">
-          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-8">
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-48" />
-              <div className="h-32 bg-zinc-200 dark:bg-zinc-700 rounded" />
-              <div className="h-24 bg-zinc-200 dark:bg-zinc-700 rounded" />
-            </div>
-          </div>
-        </main>
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-48" />
+          <div className="h-32 bg-zinc-200 dark:bg-zinc-700 rounded" />
+          <div className="h-24 bg-zinc-200 dark:bg-zinc-700 rounded" />
+        </div>
       </div>
     );
   }
@@ -347,8 +348,7 @@ export default function PostDetail({ postId }: { postId: string }) {
   if (!post) return null;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-16">
-      <main className="mx-auto max-w-4xl px-4 py-8">
+    <div>
         {/* Post */}
         <article className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm mb-6">
           {/* Header */}
@@ -357,19 +357,42 @@ export default function PostDetail({ postId }: { postId: string }) {
               <Avatar url={post.user?.picture} name={post.user?.name} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  <button
+                    onClick={() => router.push(`${basePrefix}/community/profile/${post.userId}`)}
+                    className="font-semibold text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
                     {post.user?.name || "User"}
-                  </h3>
+                  </button>
                   <time className="text-sm text-zinc-500 dark:text-zinc-400">
                     {formatDate(post.createdAt)}
                   </time>
+                  {post.isEdited && post.editedAt && (
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+                      (Đã chỉnh sửa)
+                    </span>
+                  )}
+                  {post.repostedFrom && originalPost && (
+                    <button
+                      onClick={() => router.push(`${basePrefix}/community/post/${originalPost._id}`)}
+                      className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                    >
+                      <Share2 className="h-3 w-3" />
+                      Đã chia sẻ - Xem bài gốc
+                    </button>
+                  )}
+                  {post.repostedFrom && !originalPost && (
+                    <span className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                      <Share2 className="h-3 w-3" />
+                      Đã chia sẻ
+                    </span>
+                  )}
                   {post.canDelete && (
                     <button
                       onClick={deletePost}
                       className="ml-auto inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
-                      <span>Delete</span>
+                      <span>Xóa</span>
                     </button>
                   )}
                 </div>
@@ -377,8 +400,60 @@ export default function PostDetail({ postId }: { postId: string }) {
             </div>
           </div>
 
-          {/* Content */}
-          {post.content && (
+          {/* Repost Caption */}
+          {post.repostedFrom && post.repostCaption && (
+            <div className="px-6 pt-4 pb-2">
+              <p className="text-sm text-zinc-700 dark:text-zinc-300 italic">
+                {post.repostCaption}
+              </p>
+            </div>
+          )}
+
+          {/* Original Post (when reposted) */}
+          {post.repostedFrom && originalPost && (
+            <div className="mx-6 mb-4 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden bg-zinc-50 dark:bg-zinc-800/50">
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <button
+                    onClick={() => router.push(`${basePrefix}/community/profile/${originalPost.userId}`)}
+                    className="flex-shrink-0"
+                  >
+                    <Avatar url={originalPost.user?.picture} name={originalPost.user?.name} />
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={() => router.push(`${basePrefix}/community/profile/${originalPost.userId}`)}
+                        className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      >
+                        {originalPost.user?.name || "User"}
+                      </button>
+                      <time className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {formatDate(originalPost.createdAt)}
+                      </time>
+                      <button
+                        onClick={() => router.push(`${basePrefix}/community/post/${originalPost._id}`)}
+                        className="ml-auto text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                      >
+                        Xem bài viết →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                {originalPost.content && (
+                  <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap break-words mb-3">
+                    {originalPost.content}
+                  </p>
+                )}
+                {originalPost.attachments && originalPost.attachments.length > 0 && (
+                  <MediaGallery attachments={originalPost.attachments} />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Content (only show if not a repost or no original post yet) */}
+          {!post.repostedFrom && post.content && (
             <div className="p-6 pb-4">
               <p className="text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap break-words">
                 {post.content}
@@ -386,8 +461,8 @@ export default function PostDetail({ postId }: { postId: string }) {
             </div>
           )}
 
-          {/* Media Gallery */}
-          {post.attachments && post.attachments.length > 0 && (
+          {/* Media Gallery (only show if not a repost) */}
+          {!post.repostedFrom && post.attachments && post.attachments.length > 0 && (
             <div className="px-6 pb-4">
               <MediaGallery attachments={post.attachments} />
             </div>
@@ -405,6 +480,14 @@ export default function PostDetail({ postId }: { postId: string }) {
               repostCount={post.repostCount}
               canDelete={post.canDelete}
               canEdit={post.canDelete}
+              onLikeChange={(liked, count) => {
+                // Update post state to keep in sync
+                setPost((p: any) => p ? { ...p, liked, likesCount: count } : p);
+              }}
+              onSaveChange={(saved, count) => {
+                // Update post state to keep in sync
+                setPost((p: any) => p ? { ...p, saved, savedCount: count } : p);
+              }}
               onCommentClick={() => {}}
               onShareClick={sharePost}
             />
@@ -415,7 +498,7 @@ export default function PostDetail({ postId }: { postId: string }) {
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="p-6 border-b border-zinc-100 dark:border-zinc-800">
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Comments ({comments.length})
+              Bình luận ({comments.length})
             </h2>
           </div>
 
@@ -427,7 +510,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                   <MessageCircle className="h-8 w-8 text-zinc-400 dark:text-zinc-600" />
                 </div>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  No comments yet. Be the first to comment!
+                  Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
                 </p>
               </div>
             ) : (
@@ -492,7 +575,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                     submitComment();
                   }
                 }}
-                placeholder="Write a comment..."
+                placeholder="Viết bình luận..."
                 className="flex-1 min-h-[60px] max-h-[160px] resize-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                 rows={1}
               />
@@ -520,7 +603,6 @@ export default function PostDetail({ postId }: { postId: string }) {
             </div>
           </div>
         </div>
-      </main>
 
       {/* Confirm Modal */}
       {ConfirmModal}

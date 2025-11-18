@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import PracticeProgressChart from "./PracticeProgressChart";
+import AssessmentChart from "./AssessmentChart";
 import GoalProgressServer from "./GoalProgressServer";
 
-function PracticeProgressChartSkeleton() {
+function AssessmentChartSkeleton() {
   return (
     <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 animate-pulse">
       <div className="flex items-center gap-3 mb-6">
@@ -16,7 +16,6 @@ function PracticeProgressChartSkeleton() {
     </div>
   );
 }
-
 function GoalProgressSkeleton() {
   return (
     <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 animate-pulse">
@@ -35,8 +34,8 @@ function GoalProgressSkeleton() {
 export default function ResultsTabContent() {
   return (
     <div className="space-y-6">
-      <Suspense fallback={<PracticeProgressChartSkeleton />}>
-        <PracticeProgressChart />
+      <Suspense fallback={<AssessmentChartSkeleton />}>
+        <AssessmentChart />
       </Suspense>
       <Suspense fallback={<GoalProgressSkeleton />}>
         <GoalProgressServer />
@@ -44,4 +43,3 @@ export default function ResultsTabContent() {
     </div>
   );
 }
-

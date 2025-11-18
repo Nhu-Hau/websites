@@ -176,7 +176,7 @@ export function Notification() {
         <div
           className={cn(
             "absolute right-0 mt-3.5 z-50",
-            "w-72 sm:w-80 max-w-[90vw]",
+            "w-[calc(100vw-2rem)] sm:w-[28rem] md:w-64 lg:w-72 max-w-[90vw]",
             "rounded-2xl border border-zinc-200/70 bg-white/95 shadow-2xl ring-1 ring-black/5",
             "dark:border-zinc-700/70 dark:bg-zinc-900/95 dark:ring-white/10",
             "backdrop-blur-xl p-3 sm:p-4",

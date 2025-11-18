@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -5,12 +6,19 @@ import { X, Image as ImageIcon, Video, Upload, Send } from "lucide-react";
 import { toast } from "@/lib/toast";
 import type { Attachment } from "@/types/community.types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 const MAX_FILES = 12;
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-const MAX_VIDEO_DURATION = 30; // 30 seconds
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+const MAX_VIDEO_DURATION = 30; // 30 seconds (hiện tại backend tự xử lý)
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+];
 const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
 type NewPostFormProps = {
@@ -18,6 +26,7 @@ type NewPostFormProps = {
   initialContent?: string;
   initialAttachments?: Attachment[];
   postId?: string; // For edit mode
+  groupId?: string; // For posting in a group
 };
 
 type PreviewItem = {
@@ -34,6 +43,7 @@ export default function NewPostForm({
   initialContent = "",
   initialAttachments = [],
   postId,
+  groupId,
 }: NewPostFormProps) {
   const [content, setContent] = React.useState(initialContent);
   const [previews, setPreviews] = React.useState<PreviewItem[]>([]);
@@ -43,7 +53,7 @@ export default function NewPostForm({
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const maxChars = 2000;
 
-  // Initialize with existing attachments if editing
+  // Init attachments khi edit
   React.useEffect(() => {
     if (initialAttachments.length > 0 && previews.length === 0) {
       const existing: PreviewItem[] = initialAttachments.map((att) => ({
@@ -55,7 +65,7 @@ export default function NewPostForm({
       }));
       setPreviews(existing);
     }
-  }, [initialAttachments]);
+  }, [initialAttachments, previews.length]);
 
   const handleFileSelect = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -64,25 +74,27 @@ export default function NewPostForm({
     const remainingSlots = MAX_FILES - previews.length;
 
     if (fileArray.length > remainingSlots) {
-      toast.error(`You can only upload up to ${MAX_FILES} files. ${remainingSlots} slots remaining.`);
+      toast.error(
+        `Bạn chỉ có thể tải lên tối đa ${MAX_FILES} tệp. Còn ${remainingSlots} chỗ trống.`
+      );
       return;
     }
 
     const newPreviews: PreviewItem[] = [];
 
     for (const file of fileArray) {
-      // Validate file type
       const isImage = ACCEPTED_IMAGE_TYPES.includes(file.type);
       const isVideo = ACCEPTED_VIDEO_TYPES.includes(file.type);
 
       if (!isImage && !isVideo) {
-        toast.error(`${file.name} is not a supported image or video file.`);
+        toast.error(
+          `${file.name} không phải là tệp hình ảnh hoặc video được hỗ trợ.`
+        );
         continue;
       }
 
-      // Validate file size
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`${file.name} is too large. Maximum size is 50MB.`);
+        toast.error(`${file.name} quá lớn. Kích thước tối đa là 50MB.`);
         continue;
       }
 
@@ -111,7 +123,10 @@ export default function NewPostForm({
     });
   };
 
-  const uploadFile = async (file: File, index: number): Promise<Attachment | null> => {
+  const uploadFile = async (
+    file: File,
+    index: number
+  ): Promise<Attachment | null> => {
     const formData = new FormData();
     formData.append("file", file);
 
@@ -138,7 +153,7 @@ export default function NewPostForm({
       };
     } catch (error) {
       console.error("[uploadFile] ERROR", error);
-      toast.error(`Failed to upload ${file.name}`);
+      toast.error(`Không thể tải lên ${file.name}`);
       return null;
     }
   };
@@ -148,14 +163,13 @@ export default function NewPostForm({
 
     const text = content.trim();
     if (!text && previews.length === 0) {
-      toast.error("Please enter content or attach files");
+      toast.error("Vui lòng nhập nội dung hoặc đính kèm tệp");
       return;
     }
 
     setSubmitting(true);
 
     try {
-      // Upload files that haven't been uploaded yet
       const attachments: Attachment[] = [];
       let hasUploadError = false;
 
@@ -195,42 +209,46 @@ export default function NewPostForm({
       }
 
       if (hasUploadError) {
-        toast.error("Some files failed to upload. Please try again.");
+        toast.error("Một số tệp tải lên thất bại. Vui lòng thử lại.");
         setSubmitting(false);
         return;
       }
 
-      // Submit post
       const url = postId
         ? `${API_BASE}/api/community/posts/${postId}`
         : `${API_BASE}/api/community/posts`;
       const method = postId ? "PUT" : "POST";
 
+      const body: any = { content: text, attachments };
+      if (groupId) {
+        body.groupId = groupId;
+      }
+
       const res = await fetch(url, {
         method,
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: text, attachments }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
         throw new Error("Failed to create post");
       }
 
-      toast.success(postId ? "Post updated!" : "Post created!");
+      toast.success(postId ? "Đã cập nhật bài viết!" : "Đã tạo bài viết!");
       setContent("");
       setPreviews([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
       onSuccess?.();
     } catch (error) {
       console.error("[handleSubmit] ERROR", error);
-      toast.error("Error creating post");
+      toast.error("Lỗi khi tạo bài viết");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Cleanup preview URLs
+  // Cleanup preview URL khi unmount
   React.useEffect(() => {
     return () => {
       previews.forEach((item) => {
@@ -240,6 +258,15 @@ export default function NewPostForm({
       });
     };
   }, [previews]);
+
+  const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      if (!submitting && !uploading && (content.trim() || previews.length > 0)) {
+        handleSubmit();
+      }
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -255,13 +282,14 @@ export default function NewPostForm({
             el.style.height = "auto";
             el.style.height = Math.min(el.scrollHeight, 300) + "px";
           }}
-          placeholder="What's on your mind? Share your TOEIC learning tips, questions, or resources..."
-          className="w-full min-h-[120px] max-h-[300px] resize-none rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+          onKeyDown={handleTextareaKeyDown}
+          placeholder="Bạn đang nghĩ gì? Chia sẻ mẹo học TOEIC, câu hỏi hoặc tài nguyên..."
+          className="w-full min-h-[120px] max-h-[300px] resize-none rounded-2xl border border-zinc-200/80 bg-white/95 px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-xs outline-none transition-all duration-150 focus:border-sky-300 focus:ring-2 focus:ring-sky-500 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-100 dark:placeholder-zinc-400"
           rows={5}
         />
-        <div className="mt-2 flex justify-between items-center">
+        <div className="mt-2 flex items-center justify-between">
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Press Ctrl+Enter to submit
+            Nhấn <span className="font-medium">Ctrl + Enter</span> để đăng
           </p>
           <p
             className={`text-xs font-medium ${
@@ -277,36 +305,36 @@ export default function NewPostForm({
 
       {/* Preview Grid */}
       {previews.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {previews.map((item, index) => (
             <div
               key={index}
-              className="relative group aspect-square rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
+              className="group relative aspect-square overflow-hidden rounded-xl border border-zinc-200/80 bg-zinc-100/80 dark:border-zinc-700/80 dark:bg-zinc-800/80"
             >
               {item.type === "image" ? (
                 <img
                   src={item.preview}
                   alt={`Preview ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-zinc-900">
-                  <Video className="w-12 h-12 text-white" />
+                <div className="flex h-full w-full items-center justify-center bg-zinc-900">
+                  <Video className="h-12 w-12 text-white/90" />
                 </div>
               )}
 
               {item.uploading && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 </div>
               )}
 
               <button
                 onClick={() => removePreview(index)}
-                className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
                 aria-label="Remove"
               >
-                <X className="w-4 h-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -314,7 +342,7 @@ export default function NewPostForm({
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between gap-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+      <div className="flex items-center justify-between gap-4 border-t border-zinc-100/80 pt-4 dark:border-zinc-800/80">
         <div className="flex items-center gap-2">
           <input
             type="file"
@@ -324,16 +352,16 @@ export default function NewPostForm({
             ref={fileInputRef}
             onChange={(e) => {
               handleFileSelect(e.target.files);
-              e.target.value = ""; // Reset input
+              e.target.value = "";
             }}
           />
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading || previews.length >= MAX_FILES}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 rounded-lg border border-zinc-200/80 bg-white/95 px-4 py-2 text-sm font-medium text-zinc-700 shadow-xs transition-colors hover:bg-zinc-50 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-300 dark:hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Upload className="h-4 w-4" />
-            <span>Add Media</span>
+            <Upload className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+            <span>Thêm ảnh/video</span>
           </button>
           {previews.length > 0 && (
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -344,18 +372,20 @@ export default function NewPostForm({
 
         <button
           onClick={handleSubmit}
-          disabled={uploading || submitting || (!content.trim() && previews.length === 0)}
-          className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm hover:shadow"
+          disabled={
+            uploading || submitting || (!content.trim() && previews.length === 0)
+          }
+          className="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-6 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-sky-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
         >
           {submitting || uploading ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-              <span>{uploading ? "Uploading..." : "Posting..."}</span>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <span>{uploading ? "Đang tải lên..." : "Đang đăng..."}</span>
             </>
           ) : (
             <>
               <Send className="h-4 w-4" />
-              <span>{postId ? "Update" : "Post"}</span>
+              <span>{postId ? "Cập nhật" : "Đăng bài"}</span>
             </>
           )}
         </button>
@@ -363,4 +393,3 @@ export default function NewPostForm({
     </div>
   );
 }
-

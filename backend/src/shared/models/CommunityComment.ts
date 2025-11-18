@@ -14,7 +14,10 @@ export interface ICommunityComment extends Document {
   postId: Types.ObjectId;
   userId: Types.ObjectId;
   content: string;           // <-- KHÔNG required
+  mentions: Types.ObjectId[]; // User IDs mentioned in content
   attachments: IAttachment[];
+  editedAt?: Date; // When the comment was last edited
+  isEdited: boolean; // Flag to show "(đã chỉnh sửa)"
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,7 +40,10 @@ const CommunityCommentSchema = new Schema<ICommunityComment>(
     postId: { type: Schema.Types.ObjectId, ref: "CommunityPost", required: true, index: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     content: { type: String, trim: true, default: "" },  // <-- KHÔNG required
+    mentions: { type: [Schema.Types.ObjectId], ref: "User", default: [], index: true },
     attachments: { type: [AttachmentSchema], default: [] },
+    editedAt: { type: Date, default: null },
+    isEdited: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false }
 );

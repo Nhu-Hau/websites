@@ -5,6 +5,8 @@ import { routing } from "@/routing";
 import { cookies } from "next/headers";
 import { ThemeProvider } from "../../context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { MobileAvatarSheetProvider } from "@/context/MobileAvatarSheetContext";
+import { ChatProvider } from "@/context/ChatContext";
 import CornerToast from "@/components/common/CornerToast";
 import SocketBridge from "@/components/layout/SocketBridge";
 import LayoutClient from "./layoutClient";
@@ -30,7 +32,11 @@ export default async function LocaleLayout({
     <ThemeProvider defaultTheme={theme}>
       <NextIntlClientProvider locale={locale}>
         <AuthProvider>
-          <LayoutClient>{children}</LayoutClient>
+          <MobileAvatarSheetProvider>
+            <ChatProvider>
+              <LayoutClient>{children}</LayoutClient>
+            </ChatProvider>
+          </MobileAvatarSheetProvider>
         </AuthProvider>
       </NextIntlClientProvider>
       <CornerToast />

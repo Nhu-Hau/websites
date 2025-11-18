@@ -56,7 +56,7 @@ export default function CommunityPageClient({
       setTotal(j.total || 0);
       setPosts(j.items ?? []);
     } catch (e) {
-      toast.error("Error loading posts");
+      toast.error("Lỗi khi tải bài viết");
       console.error("[load] ERROR", e);
     } finally {
       setLoading(false);
@@ -87,6 +87,8 @@ export default function CommunityPageClient({
       liked?: boolean;
       userId?: string;
     }) => {
+      // Don't update if this is the current user's own like action
+      // (they already updated it optimistically)
       if (p.userId && currentUserId && p.userId === currentUserId) return;
       setPosts((prev) =>
         prev.map((post) => {
@@ -95,6 +97,8 @@ export default function CommunityPageClient({
             typeof p.likesCount === "number"
               ? p.likesCount
               : Number(post.likesCount) || 0;
+          // Only update likesCount from socket events, not liked field
+          // (liked field is user-specific and should come from API)
           return { ...post, likesCount: safeLikes };
         })
       );
@@ -181,7 +185,7 @@ export default function CommunityPageClient({
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              Loading...
+              Đang tải...
             </p>
           </div>
         </div>
@@ -206,10 +210,10 @@ export default function CommunityPageClient({
             </svg>
           </div>
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-            No posts yet
+            Chưa có bài viết nào
           </h3>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-sm">
-            Be the first to share with the community!
+            Hãy là người đầu tiên chia sẻ với cộng đồng!
           </p>
         </div>
       )}

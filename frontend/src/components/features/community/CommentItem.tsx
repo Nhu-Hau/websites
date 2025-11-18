@@ -38,12 +38,12 @@ function formatDate(dateString: string) {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return "Just now";
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 60) return "Vừa xong";
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
   if (diffInSeconds < 86400)
-    return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
   if (diffInSeconds < 604800)
-    return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
   return date.toLocaleDateString();
 }
 
@@ -56,11 +56,11 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
   const handleDelete = () => {
     show(
       {
-        title: "Delete comment?",
-        message: "Are you sure you want to delete this comment?",
+        title: "Xóa bình luận?",
+        message: "Bạn có chắc chắn muốn xóa bình luận này?",
         icon: "warning",
-        confirmText: "Delete",
-        cancelText: "Cancel",
+        confirmText: "Xóa",
+        cancelText: "Hủy",
         confirmColor: "red",
       },
       async () => {
@@ -73,13 +73,13 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
             }
           );
           if (res.ok) {
-            toast.success("Comment deleted");
+            toast.success("Đã xóa bình luận");
             onDeleted();
           } else {
-            toast.error("Failed to delete comment");
+            toast.error("Lỗi khi xóa bình luận");
           }
         } catch {
-          toast.error("Error deleting comment");
+          toast.error("Không thể xóa bình luận");
         }
       }
     );
@@ -104,10 +104,10 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
         }),
       });
       if (!res.ok) throw new Error("Failed to update");
-      toast.success("Comment updated");
+      toast.success("Đã cập nhật bình luận");
       handleEditSuccess();
     } catch {
-      toast.error("Error updating comment");
+      toast.error("Lỗi khi cập nhật bình luận");
     } finally {
       setSaving(false);
     }
@@ -118,7 +118,7 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
       <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Edit Comment
+            Chỉnh sửa bình luận
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -167,6 +167,11 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
             <time className="text-xs text-zinc-500 dark:text-zinc-400">
               {formatDate(comment.createdAt)}
             </time>
+            {comment.isEdited && comment.editedAt && (
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+                (đã chỉnh sửa)
+              </span>
+            )}
             {comment.canDelete && (
               <div className="ml-auto flex items-center gap-2">
                 <button

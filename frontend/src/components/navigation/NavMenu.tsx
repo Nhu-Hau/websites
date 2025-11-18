@@ -7,9 +7,9 @@ export default function NavMenu() {
   const menu = MenuNav();
 
   return (
-    <nav className="w-full lg:w-auto h-full">
+    <nav className="w-full lg:w-auto h-full lg:block hidden">
       <ul
-        className="flex flex-col lg:flex-row lg:items-center
+        className="flex flex-row lg:items-center
                    gap-3 xs:gap-4 lg:gap-6 2xl:gap-8
                    text-sm xs:text-[15px] sm:text-base
                    font-semibold h-full"

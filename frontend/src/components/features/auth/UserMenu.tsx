@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -22,7 +22,8 @@ import { useLocaleSwitch } from "@/hooks/routing/useLocaleSwitch";
 import useClickOutside from "@/hooks/common/useClickOutside";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/lib/toast";
-import { useBasePrefix } from "@/hooks/routing/useBasePrefix"; // 👈 THÊM
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useMobileAvatarSheet } from "@/context/MobileAvatarSheetContext";
 
 /* ================= Types ================= */
 type Role = "user" | "admin" | "teacher";
@@ -129,12 +130,30 @@ export default function UserMenu() {
   const router = useRouter();
   const { locale } = useLocaleSwitch();
   const base = useBasePrefix(locale || "vi"); // 👈 DÙNG base prefix thống nhất
+  const { setOpen, setUser, setMe } = useMobileAvatarSheet();
 
-  const [open, setOpen] = useState(false);
-  const [me, setMe] = useState<SafeUser | null>(null);
+  const [open, setOpenLocal] = useState(false);
+  const [me, setMeLocal] = useState<SafeUser | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  useClickOutside(wrapperRef, () => setOpen(false));
+  useClickOutside(wrapperRef, () => {
+    setOpenLocal(false);
+  });
+
+  // Detect mobile - use md breakpoint (768px)
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Check immediately
+    checkMobile();
+    
+    // Listen for resize
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const fetchMe = React.useCallback(async () => {
     try {
@@ -145,18 +164,24 @@ export default function UserMenu() {
       if (!r.ok) return;
       const j = await r.json();
       const u = pickUserFromMe(j);
-      if (u) setMe(u);
+      if (u) {
+        setMeLocal(u);
+        setMe(u); // Update context
+      }
     } catch {
       /* ignore */
     }
-  }, []);
+  }, [setMe]);
 
   React.useEffect(() => {
     (async () => {
       if (!ctxUser) {
-        setMe(null);
+        setMeLocal(null);
+        setMe(null); // Update context
+        setUser(null); // Update context
         return;
       }
+      setUser(ctxUser); // Update context
       await fetchMe();
     })();
 
@@ -179,10 +204,11 @@ export default function UserMenu() {
       window.removeEventListener("practice:updated", onPracticeUpdated as any);
       clearInterval(t);
     };
-  }, [ctxUser, fetchMe]);
+  }, [ctxUser, fetchMe, setMe, setUser]);
 
   const handleLogout = async () => {
-    setOpen(false);
+    setOpenLocal(false);
+    setOpen(false); // Update context
     try {
       await logout();
       toast.success("Đăng xuất thành công");
@@ -218,17 +244,55 @@ export default function UserMenu() {
 
   const avatarSrc = (me as any)?.picture || (ctxUser as any)?.picture;
 
+  // On mobile, use MobileAvatarSheet (visible only on mobile)
+  if (isMobile) {
+    return (
+      <div className="md:hidden">
+        <button
+          type="button"
+          aria-label={ctxUser ? "Quản lý tài khoản" : "Đăng nhập/Đăng ký"}
+          onClick={() => {
+            const newOpen = !open;
+            setOpenLocal(newOpen);
+            setOpen(newOpen); // Update context
+            if (newOpen) {
+              setUser(ctxUser); // Update context
+              setMe(me); // Update context
+            }
+          }}
+          className="group rounded-full focus:outline-none transition-all duration-200 flex items-center"
+        >
+          {avatarSrc ? (
+            <img
+              src={avatarSrc}
+              alt={me?.name || "avatar"}
+              className="w-8 h-8 rounded-full object-cover border-2 border-zinc-200 dark:border-zinc-700"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/30 dark:to-sky-800/20 flex items-center justify-center">
+              <UserIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+            </div>
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  // Desktop: use dropdown (hidden on mobile)
   return (
     <div
       ref={wrapperRef}
-      className="relative"
+      className="relative hidden md:block"
       data-tooltip-id={open ? undefined : "user-tooltip"}
       data-tooltip-content={ctxUser ? "Quản lý tài khoản" : "Đăng nhập/Đăng ký"}
     >
       <button
         type="button"
         aria-label={ctxUser ? "Quản lý tài khoản" : "Đăng nhập/Đăng ký"}
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={() => {
+          const newOpen = !open;
+          setOpenLocal(newOpen);
+        }}
         className={`group rounded-full focus:outline-none transition-all duration-200 hover:scale-105 flex items-center ${
           avatarSrc ? "p-0.5" : "p-2 hover:bg-sky-100 dark:hover:bg-sky-900/50"
         }`}
@@ -246,13 +310,13 @@ export default function UserMenu() {
         )}
       </button>
 
-      {open && (
+      {open && !isMobile && (
         <div
           className="absolute right-2 xs:right-0 mt-2
              w-[min(19rem,calc(100vw-1rem))] sm:w-80
              max-w-[calc(100vw-0.75rem)]
              bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl rounded-2xl
-             p-3 xs:p-4 border border-zinc-200/80 dark:border-zinc-700/80 z-50 animate-in fade-in zoom-in-95 duration-200"
+             p-3 xs:p-4 border border-zinc-200/80 dark:border-zinc-700/80 z-[55] animate-in fade-in zoom-in-95 duration-200"
         >
           {ctxUser ? (
             <>
@@ -282,7 +346,9 @@ export default function UserMenu() {
               {/* Trang cá nhân */}
               <Link
                 href={`${base}/account`}
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  setOpenLocal(false);
+                }}
                 className="flex items-center gap-3 px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200 group"
               >
                 <IdCard className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -368,7 +434,9 @@ export default function UserMenu() {
                   <Link
                     key={row.key}
                     href={row.href}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpenLocal(false);
+                    }}
                     className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200 group"
                   >
                     <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
@@ -411,7 +479,9 @@ export default function UserMenu() {
                   {/* ĐĂNG NHẬP */}
                   <Link
                     href={`${base}/login`}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpenLocal(false);
+                    }}
                     className={`group flex items-center gap-3 p-1.5 rounded-xl transition-all duration-200 bg-zinc-50 dark:bg-zinc-800 hover:bg-sky-50 dark:hover:bg-sky-900/30`}
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-900/30 shadow-sm">
@@ -433,7 +503,9 @@ export default function UserMenu() {
                   {/* ĐĂNG KÝ */}
                   <Link
                     href={`${base}/register`}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpenLocal(false);
+                    }}
                     className={`group flex items-center gap-3 p-1.5 rounded-xl transition-all duration-200 bg-zinc-50 dark:bg-zinc-800 hover:bg-sky-50 dark:hover:bg-sky-900/30`}
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sky-100 dark:bg-sky-900/30 shadow-sm">

@@ -11,12 +11,6 @@ export default async function CreateStudyRoomWrapper({
 }) {
   const { locale } = await params;
 
-  return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <main className="">
-        <CreateStudyRoomPage />
-      </main>
-    </div>
-  );
+  return <CreateStudyRoomPage />;
 }
 

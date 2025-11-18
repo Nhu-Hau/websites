@@ -13,7 +13,6 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
-import { useTranslations } from "next-intl";
 import useClickOutside from "@/hooks/common/useClickOutside";
 import { useAuth } from "@/context/AuthContext";
 import { postJson } from "@/lib/api/client";
@@ -357,7 +356,6 @@ function LearningInsightCard({ insightText }: { insightText: string }) {
 }
 
 export default function ChatBox() {
-  const t = useTranslations("chat");
   const { user } = useAuth();
   const basePrefix = useBasePrefix();
   const [open, setOpen] = useState(false);
@@ -427,14 +425,23 @@ export default function ChatBox() {
           }
         );
         // Emit event nếu có Learning Insight mới (trước khi set state)
-        const prevLearningInsightCount = messages.filter(m => m.isLearningInsight).length;
-        const learningInsights = formattedMessages.filter(m => m.isLearningInsight);
-        
-        if (learningInsights.length > prevLearningInsightCount && typeof window !== "undefined") {
+        const prevLearningInsightCount = messages.filter(
+          (m) => m.isLearningInsight
+        ).length;
+        const learningInsights = formattedMessages.filter(
+          (m) => m.isLearningInsight
+        );
+
+        if (
+          learningInsights.length > prevLearningInsightCount &&
+          typeof window !== "undefined"
+        ) {
           // Có Learning Insight mới, emit event
-          window.dispatchEvent(new CustomEvent("learning-insight:received", {
-            detail: { count: learningInsights.length }
-          }));
+          window.dispatchEvent(
+            new CustomEvent("learning-insight:received", {
+              detail: { count: learningInsights.length },
+            })
+          );
         }
 
         setMessages(formattedMessages);
@@ -530,7 +537,10 @@ export default function ChatBox() {
     window.addEventListener("chatbox:open-and-refresh", handleOpenAndRefresh);
     return () => {
       window.removeEventListener("test-submitted", handleTestSubmitted);
-      window.removeEventListener("chatbox:open-and-refresh", handleOpenAndRefresh);
+      window.removeEventListener(
+        "chatbox:open-and-refresh",
+        handleOpenAndRefresh
+      );
     };
   }, [user, loadChatHistory]);
 
@@ -682,7 +692,7 @@ export default function ChatBox() {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === tempAssistantId
-            ? { ...m, pending: false, content: t("demoReply") }
+            ? { ...m, pending: false, content: "Xin chào! Tôi là trợ lý AI chuyên về TOEIC. Tôi có thể giúp bạn luyện thi, giải thích ngữ pháp, từ vựng và chiến lược làm bài. Bạn muốn hỏi gì?" }
             : m
         )
       );
@@ -718,13 +728,13 @@ export default function ChatBox() {
     }
   };
 
- return (
+  return (
     <>
       {/* Floating Action Button với badge unread */}
       <div className="fixed bottom-6 right-6 z-[70]">
         <button
           onClick={() => setOpen((v) => !v)}
-          aria-label={open ? t("closeChat") : t("openChat")}
+          aria-label={open ? "Đóng chat" : "Mở chat"}
           className="relative flex h-14 w-14 items-center justify-center 
         rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white
         shadow-xl shadow-indigo-500/30 ring-4 ring-white/20
@@ -800,11 +810,11 @@ export default function ChatBox() {
 
               <div className="leading-tight">
                 <h3 className="font-semibold text-gray-900 dark:text-white text-sm xs:text-base">
-                  {t("title")}
+                  Trợ lý AI TOEIC
                 </h3>
                 <p className="text-[11px] xs:text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                  {t("subtitle")}
+                  Sẵn sàng hỗ trợ bạn
                 </p>
               </div>
             </div>
@@ -826,7 +836,7 @@ export default function ChatBox() {
                 className="rounded-xl p-2 xs:p-2.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700
               focus:outline-none focus:ring-2 focus:ring-gray-400 transition
               dark:text-gray-400 dark:hover:bg-zinc-800 dark:hover:text-gray-200"
-                aria-label={t("close")}
+                aria-label="Đóng"
               >
                 <FiX className="h-4 w-4 xs:h-4.5 xs:w-4.5" />
               </button>
@@ -871,7 +881,7 @@ export default function ChatBox() {
                     ? "Vui lòng đăng nhập để bắt đầu trò chuyện"
                     : user.access !== "premium"
                     ? "Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
-                    : t("empty")}
+                    : "Hãy bắt đầu cuộc trò chuyện với trợ lý AI TOEIC"}
                 </p>
               </div>
             ) : (
@@ -900,7 +910,7 @@ export default function ChatBox() {
                       {m.role === "assistant" && (
                         <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-75">
                           <FaGraduationCap className="h-3.5 w-3.5" />
-                          <span className="font-medium">{t("ai")}</span>
+                          <span className="font-medium">AI</span>
                         </div>
                       )}
 
@@ -942,6 +952,27 @@ export default function ChatBox() {
                           aria-label="Sao chép"
                         >
                           <FiCopy className="h-3.5 w-3.5 text-gray-600 dark:text-gray-300" />
+                        </button>
+                      )}
+
+                      {/* Delete button (user messages only) */}
+                      {m.role === "user" && (m.id || m._id) && (
+                        <button
+                          onClick={() => {
+                            const msgId = m.id || m._id;
+                            setMessages((prev) =>
+                              prev.filter(
+                                (msg) => (msg.id || msg._id) !== msgId
+                              )
+                            );
+                          }}
+                          className="absolute -top-2 -left-2 opacity-70 group-hover:opacity-100 
+                          p-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 shadow-md
+                          transition hover:scale-110 hover:bg-red-100 dark:hover:bg-red-900/50
+                          focus:outline-none focus:ring-2 focus:ring-red-400"
+                          aria-label="Xóa tin nhắn"
+                        >
+                          <FiTrash2 className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
                         </button>
                       )}
                     </div>
@@ -990,7 +1021,7 @@ export default function ChatBox() {
                       ? "Đăng nhập để chat..."
                       : user.access !== "premium"
                       ? "Cần tài khoản Premium để sử dụng..."
-                      : t("placeholder")
+                      : "Nhập tin nhắn..."}
                   }
                   disabled={!user || sending || user?.access !== "premium"}
                   rows={1}

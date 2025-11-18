@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import mongoose, { Types } from "mongoose";
 import { CommunityPost } from "../../shared/models/CommunityPost";
 import { CommunityComment } from "../../shared/models/CommunityComment";
+import { Hashtag } from "../../shared/models/Hashtag";
+import { User } from "../../shared/models/User";
 import {
   BUCKET,
   extractKeyFromUrl,
@@ -17,6 +19,7 @@ import {
   emitCommunityCommentDeleted,
 } from "../../shared/services/socket.service";
 import { notifyUser } from "../notification/notification.service";
+import { extractHashtags, extractMentions } from "../../shared/utils/textParser";
 
 function getIO(): SocketIOServer | null {
   return (global as any).io || null;
@@ -75,7 +78,16 @@ export async function listPosts(req: Request, res: Response) {
 
     const [items, total] = await Promise.all([
       CommunityPost.aggregate([
-        { $match: { isHidden: false } }, // Chỉ lấy bài không bị ẩn
+        { 
+          $match: { 
+            isHidden: false,
+            // Exclude posts that belong to groups (only show public posts)
+            $or: [
+              { groupId: { $exists: false } },
+              { groupId: null }
+            ]
+          } 
+        },
         { $sort: { createdAt: -1 } },
         { $skip: skip },
         { $limit: limit },
@@ -96,7 +108,13 @@ export async function listPosts(req: Request, res: Response) {
           },
         },
       ]),
-      CommunityPost.countDocuments({ isHidden: false }),
+      CommunityPost.countDocuments({ 
+        isHidden: false,
+        $or: [
+          { groupId: { $exists: false } },
+          { groupId: null }
+        ]
+      }),
     ]);
 
     // trong listPosts, thay đoạn return out = items.map(...)
@@ -132,9 +150,10 @@ export async function createPost(req: Request, res: Response) {
     const userId = (req as any).auth?.userId;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    let { content, attachments } = (req.body || {}) as {
+    let { content, attachments, groupId } = (req.body || {}) as {
       content?: string;
       attachments?: any[];
+      groupId?: string;
     };
 
     // 🔒 Chuẩn hoá dữ liệu
@@ -149,25 +168,99 @@ export async function createPost(req: Request, res: Response) {
     }
 
     const norm = (a: any): any => ({
-      type: a?.type?.startsWith("image")
+      type: a?.type === "video" || a?.type?.startsWith("video/")
+        ? "video"
+        : a?.type === "image" || a?.type?.startsWith("image/")
         ? "image"
-        : a?.type?.startsWith("file")
-        ? "file"
-        : a?.type?.startsWith("link")
+        : a?.type === "link" || a?.type?.startsWith("link")
         ? "link"
         : "file",
       url: a?.url || "",
       name: a?.name || "",
       size: a?.size || 0,
       key: a?.key || undefined,
+      duration: a?.duration || undefined,
+      thumbnail: a?.thumbnail || undefined,
     });
     const safeFiles = files.map(norm);
 
+    // Extract hashtags and mentions
+    const hashtags = extractHashtags(text);
+    const mentionUsernames = extractMentions(text);
+    
+    // Resolve mentions to user IDs
+    const mentionedUsers = await User.find({
+      $or: [
+        { name: { $in: mentionUsernames } },
+        { email: { $in: mentionUsernames.map(u => `${u}@`) } }, // Partial match
+      ],
+    }).select("_id").lean();
+    const mentionIds = mentionedUsers.map((u: any) => u._id);
+
+    // Validate groupId if provided
+    let validGroupId = null;
+    if (groupId && mongoose.isValidObjectId(groupId)) {
+      const { StudyGroup } = await import("../../shared/models/StudyGroup");
+      const group = await StudyGroup.findById(groupId);
+      if (group) {
+        // Check if user is a member
+        const uid = oid(userId);
+        const isMember = group.members.some((m: any) => String(m) === String(uid));
+        if (!isMember && String(group.adminId) !== String(uid)) {
+          return res.status(403).json({ message: "You must be a member to post in this group" });
+        }
+        validGroupId = oid(groupId);
+        // Update group posts count
+        group.postsCount += 1;
+        await group.save();
+      }
+    }
+
+    // Create post
     const post = await CommunityPost.create({
       userId: oid(userId),
       content: text,
+      tags: hashtags,
+      mentions: mentionIds,
       attachments: safeFiles.slice(0, 12),
+      groupId: validGroupId,
     });
+
+    // Update hashtag counts
+    if (hashtags.length > 0) {
+      await Promise.all(
+        hashtags.map(async (tag) => {
+          await Hashtag.findOneAndUpdate(
+            { name: tag },
+            {
+              $inc: { postsCount: 1 },
+              $set: { lastUsedAt: new Date() },
+            },
+            { upsert: true, new: true }
+          );
+        })
+      );
+    }
+
+    // Send notifications to mentioned users
+    if (mentionIds.length > 0) {
+      const io = getIO();
+      const currentUser = (await User.findById(userId).select("name").lean()) as any;
+      if (io) {
+        mentionIds.forEach((mentionedId: Types.ObjectId) => {
+          if (String(mentionedId) !== String(userId)) {
+            notifyUser(io, {
+              userId: String(mentionedId),
+              message: `${currentUser?.name || "Someone"} đã nhắc đến bạn trong một bài viết`,
+              link: `/community/post/${post._id}`,
+              type: "mention",
+              meta: { postId: String(post._id) },
+              fromUserId: userId,
+            });
+          }
+        });
+      }
+    }
 
     const [withUser] = await CommunityPost.aggregate([
       { $match: { _id: post._id } },
@@ -280,6 +373,61 @@ export async function getPost(req: Request, res: Response) {
       `[getPost] Post ${postId}: canDelete=${canDelete}, liked=${liked}, saved=${saved}`
     );
 
+    // Fetch original post if this is a repost
+    let originalPost = null;
+    if (postAgg.repostedFrom) {
+      try {
+        const originalPostId = String(postAgg.repostedFrom);
+        if (mongoose.isValidObjectId(originalPostId)) {
+          const [originalPostAgg] = await CommunityPost.aggregate([
+            { $match: { _id: oid(originalPostId), isHidden: false } },
+            {
+              $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user",
+              },
+            },
+            { $addFields: { user: { $first: "$user" } } },
+            {
+              $project: {
+                "user.password": 0,
+                "user.email": 0,
+                "user.partLevels": 0,
+              },
+            },
+          ]);
+          if (originalPostAgg) {
+            const originalLiked =
+              userId && Array.isArray(originalPostAgg.likedBy)
+                ? originalPostAgg.likedBy.some(
+                    (x: Types.ObjectId) => String(x) === String(userId)
+                  )
+                : false;
+            const originalSaved =
+              userId && Array.isArray(originalPostAgg.savedBy)
+                ? originalPostAgg.savedBy.some(
+                    (x: Types.ObjectId) => String(x) === String(userId)
+                  )
+                : false;
+            const originalCanDelete = !!userId && String(originalPostAgg.userId) === String(userId);
+            originalPost = {
+              ...originalPostAgg,
+              liked: originalLiked,
+              saved: originalSaved,
+              canDelete: originalCanDelete,
+              savedCount: Number(originalPostAgg.savedCount) || 0,
+              repostCount: Number(originalPostAgg.repostCount) || 0,
+            };
+          }
+        }
+      } catch (e) {
+        console.error("[getPost] Error fetching original post:", e);
+        // Continue without original post
+      }
+    }
+
     return res.json({
       post: { 
         ...postAgg, 
@@ -289,6 +437,7 @@ export async function getPost(req: Request, res: Response) {
         savedCount: Number(postAgg.savedCount) || 0,
         repostCount: Number(postAgg.repostCount) || 0,
       },
+      originalPost,
       comments: {
         page,
         limit,
@@ -392,14 +541,67 @@ export async function editPost(req: Request, res: Response) {
       safeFiles.map((a: any) => a.key).filter(Boolean)
     );
     for (const oldKey of oldKeys) {
-      if (oldKey && !newKeys.has(oldKey)) {
+      if (oldKey && typeof oldKey === "string" && !newKeys.has(oldKey)) {
         await safeDeleteS3(oldKey);
       }
     }
 
+    // Extract hashtags and mentions
+    const hashtags: string[] = extractHashtags(text);
+    const mentionUsernames: string[] = extractMentions(text);
+    
+    // Resolve mentions to user IDs
+    const mentionedUsers = await User.find({
+      $or: [
+        { name: { $in: mentionUsernames } },
+        { email: { $in: mentionUsernames.map(u => `${u}@`) } },
+      ],
+    }).select("_id").lean();
+    const mentionIds = mentionedUsers.map((u: any) => u._id);
+
+    // Get old hashtags to update counts
+    const oldTags = new Set<string>(post.tags || []);
+    const newTags = new Set<string>(hashtags);
+
+    // Update post
     post.content = text;
+    post.tags = hashtags;
+    post.mentions = mentionIds;
     post.attachments = safeFiles.slice(0, 12);
+    post.isEdited = true;
+    post.editedAt = new Date();
     await post.save();
+
+    // Update hashtag counts
+    const tagsToIncrement = hashtags.filter((t) => !oldTags.has(t));
+    const tagsToDecrement = Array.from(oldTags).filter((t) => !newTags.has(t));
+
+    if (tagsToIncrement.length > 0) {
+      await Promise.all(
+        tagsToIncrement.map(async (tag) => {
+          await Hashtag.findOneAndUpdate(
+            { name: tag },
+            {
+              $inc: { postsCount: 1 },
+              $set: { lastUsedAt: new Date() },
+            },
+            { upsert: true, new: true }
+          );
+        })
+      );
+    }
+
+    if (tagsToDecrement.length > 0) {
+      await Promise.all(
+        tagsToDecrement.map(async (tag) => {
+          await Hashtag.findOneAndUpdate(
+            { name: tag },
+            { $inc: { postsCount: -1 } },
+            { upsert: false }
+          );
+        })
+      );
+    }
 
     const [withUser] = await CommunityPost.aggregate([
       { $match: { _id: post._id } },
@@ -641,7 +843,7 @@ export async function toggleLike(req: Request, res: Response) {
     }
     await post.save();
 
-    const payload = { likesCount: post.likesCount, liked: !wasLiked };
+    const payload = { likesCount: post.likesCount, liked: !wasLiked, userId: String(userId) };
 
     const io = getIO();
     if (io) {
@@ -779,13 +981,15 @@ export async function editComment(req: Request, res: Response) {
       safeFiles.map((a: any) => a.key).filter(Boolean)
     );
     for (const oldKey of oldKeys) {
-      if (oldKey && !newKeys.has(oldKey)) {
+      if (oldKey && typeof oldKey === "string" && !newKeys.has(oldKey)) {
         await safeDeleteS3(oldKey);
       }
     }
 
     comment.content = text;
     comment.attachments = safeFiles.slice(0, 8);
+    comment.isEdited = true;
+    comment.editedAt = new Date();
     await comment.save();
 
     const [withUser] = await CommunityComment.aggregate([
@@ -917,6 +1121,21 @@ export async function listSavedPosts(req: Request, res: Response) {
     const userId = (req as any).auth?.userId;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
+    // Validate userId - ensure it's a string and not empty
+    if (typeof userId !== "string" || !userId.trim()) {
+      console.error("[listSavedPosts] Invalid userId type:", typeof userId, userId);
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    // Validate userId
+    let userObjectId: Types.ObjectId;
+    try {
+      userObjectId = oid(String(userId).trim());
+    } catch (e) {
+      console.error("[listSavedPosts] Failed to convert userId to ObjectId:", userId, e);
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
     const page = Math.max(1, parseInt(String(req.query.page || "1"), 10));
     const limit = Math.min(
       50,
@@ -924,12 +1143,13 @@ export async function listSavedPosts(req: Request, res: Response) {
     );
     const skip = (page - 1) * limit;
 
+    // savedBy is an array, use $in to match if the ObjectId is in the array
     const [items, total] = await Promise.all([
       CommunityPost.aggregate([
         {
           $match: {
             isHidden: false,
-            savedBy: oid(userId),
+            savedBy: { $in: [userObjectId] }, // Match if ObjectId is in array
           },
         },
         { $sort: { createdAt: -1 } },
@@ -954,7 +1174,7 @@ export async function listSavedPosts(req: Request, res: Response) {
       ]),
       CommunityPost.countDocuments({
         isHidden: false,
-        savedBy: oid(userId),
+        savedBy: { $in: [userObjectId] }, // Match if ObjectId is in array
       }),
     ]);
 
@@ -977,8 +1197,12 @@ export async function listSavedPosts(req: Request, res: Response) {
     });
 
     return res.json({ page, limit, total, items: out });
-  } catch (e) {
+  } catch (e: any) {
     console.error("[listSavedPosts] ERROR", e);
+    // Check if it's a validation error
+    if (e.message && e.message.includes("Invalid ObjectId")) {
+      return res.status(400).json({ message: e.message });
+    }
     return res.status(500).json({ message: "Server error" });
   }
 }

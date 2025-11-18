@@ -19,6 +19,8 @@ export type CommunityPost = {
   userId: string;
   user?: UserLite;
   content: string;
+  tags?: string[];
+  mentions?: string[];
   attachments: Attachment[];
   likesCount: number;
   commentsCount: number;
@@ -29,6 +31,27 @@ export type CommunityPost = {
   canDelete?: boolean;
   repostedFrom?: string;
   repostCaption?: string;
+  isEdited?: boolean;
+  editedAt?: string;
+  groupId?: string;
+  practiceAttemptId?: string;
+  poll?: {
+    _id: string;
+    question: string;
+    options: Array<{
+      text: string;
+      votesCount: number;
+      voted?: boolean;
+    }>;
+    votersCount: number;
+    hasVoted?: boolean;
+    endsAt?: string;
+  };
+  reactions?: {
+    type: string;
+    count: number;
+    userReacted?: boolean;
+  }[];
   createdAt: string;
   updatedAt: string;
 };
@@ -39,8 +62,16 @@ export type CommunityComment = {
   userId: string;
   user?: UserLite;
   content: string;
+  mentions?: string[];
   attachments: Attachment[];
   canDelete?: boolean;
+  isEdited?: boolean;
+  editedAt?: string;
+  reactions?: {
+    type: string;
+    count: number;
+    userReacted?: boolean;
+  }[];
   createdAt: string;
   updatedAt: string;
 };

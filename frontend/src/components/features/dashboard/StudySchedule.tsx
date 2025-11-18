@@ -15,12 +15,12 @@ import {
   Repeat,
   Pencil,
   Trash2,
-  ChevronRight,
   Loader2,
   Trophy,
   Target,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 
 type StudyPlan =
   | "practice_p1"
@@ -63,7 +63,7 @@ const PLAN_OPTIONS: { value: StudyPlan; label: string; color: string }[] = [
   {
     value: "auto",
     label: "Tự động (Smart Auto)",
-    color: "from-indigo-600 to-indigo-500",
+    color: "from-indigo-600 to-sky-500",
   },
   {
     value: "progress",
@@ -223,7 +223,7 @@ export default function StudyScheduleClient({
       const res = await fetch("/api/study-schedules/upcoming", {
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to fetch upcoming");
+      if (!res.ok) throw new Error("Failed");
       const json = await res.json();
       setUpcoming(json.data || null);
     } catch {
@@ -326,34 +326,47 @@ export default function StudyScheduleClient({
 
   return (
     <div className="space-y-6">
-      {/* ===== Card Schedule ===== */}
-      <div className="rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-6 shadow-sm hover:shadow-md transition-shadow">
-        <div className="flex items-center justify-between mb-6">
+      {/* ===== PLANNER CARD ===== */}
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/95 p-5 shadow-sm ring-1 ring-black/[0.02] transition-all duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95">
+        {/* accent line */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500" />
+
+        {/* header */}
+        <div className="mb-5 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-700">
-              <Calendar className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
+              <Calendar className="relative z-10 h-5 w-5 text-zinc-700 dark:text-zinc-200" />
+              <div className="pointer-events-none absolute inset-0 rounded-xl bg-white/60 blur-md dark:bg-white/10" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
-                Lên lịch học
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                Lên lịch học thông minh
               </h2>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Thiết lập buổi học tự động, thông minh
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                Đặt lịch luyện tập cố định để giữ nhịp học TOEIC và tránh quên
+                bài.
               </p>
             </div>
           </div>
+
+          <div className="hidden rounded-full border border-zinc-200/80 bg-zinc-50 px-3 py-1 text-[11px] font-medium text-zinc-600 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900/80 dark:text-zinc-300 sm:inline-flex items-center gap-1.5">
+            <AlarmClock className="h-3.5 w-3.5" />
+            <span>Lời nhắc qua Email / Web</span>
+          </div>
         </div>
 
+        {/* form */}
         <form
           onSubmit={submit}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          className="grid grid-cols-1 gap-6 lg:grid-cols-2"
         >
-          {/* Left: When */}
-          <div className="space-y-4">
+          {/* LEFT – WHEN */}
+          <div className="space-y-5">
+            {/* recurrence */}
             <div>
-              <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-                Lặp lịch
-              </label>
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Chu kỳ lặp
+              </p>
               <div className="flex flex-wrap gap-2">
                 {[
                   { k: "once", label: "Một lần" },
@@ -370,19 +383,21 @@ export default function StudyScheduleClient({
                       onClick={() =>
                         setRecurrenceMode(k as typeof recurrenceMode)
                       }
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                      className={cn(
+                        "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
                         active
-                          ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm"
-                          : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700"
-                      }`}
+                          ? "bg-zinc-900 text-white shadow-sm dark:bg-zinc-50 dark:text-zinc-900"
+                          : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      )}
                     >
                       {label}
                     </button>
                   );
                 })}
               </div>
+
               {recurrenceMode === "custom" && (
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   {weekdayLabels.map((lb, idx) => (
                     <DayPill
                       key={idx}
@@ -401,11 +416,14 @@ export default function StudyScheduleClient({
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-                Ngày & giờ
-              </label>
-              <div className="flex flex-wrap gap-2 mb-2">
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-200/70 to-transparent dark:via-zinc-700/70" />
+
+            {/* date & time */}
+            <div className="space-y-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Ngày & giờ học
+              </p>
+              <div className="flex flex-wrap gap-2">
                 {[
                   { k: "today", label: "Hôm nay" },
                   { k: "tomorrow", label: "Ngày mai" },
@@ -417,11 +435,12 @@ export default function StudyScheduleClient({
                       key={k}
                       type="button"
                       onClick={() => setWhenType(k as typeof whenType)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                      className={cn(
+                        "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
                         active
-                          ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm"
-                          : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700"
-                      }`}
+                          ? "bg-indigo-600 text-white shadow-sm dark:bg-indigo-500"
+                          : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      )}
                     >
                       {label}
                     </button>
@@ -432,35 +451,37 @@ export default function StudyScheduleClient({
                     type="date"
                     value={customDate}
                     onChange={(e) => setCustomDate(e.target.value)}
-                    className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-semibold focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
+                    className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                   />
                 )}
               </div>
-              <div className="relative">
-                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+
+              <div className="relative mt-2">
+                <Clock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
                 <input
                   type="time"
                   value={timeHHmm}
                   onChange={(e) => setTimeHHmm(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-semibold text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
+                  className="w-full rounded-lg border border-zinc-200 bg-white px-10 py-2 text-sm font-semibold text-zinc-900 shadow-sm outline-none placeholder:text-zinc-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                   required
                 />
               </div>
             </div>
           </div>
 
-          {/* Right: Plan + Options */}
-          <div className="space-y-4">
+          {/* RIGHT – PLAN & OPTIONS */}
+          <div className="space-y-5">
+            {/* plan */}
             <div>
-              <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 Loại buổi học
-              </label>
+              </p>
               <div className="relative">
-                <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+                <BookOpen className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
                 <select
                   value={plan}
                   onChange={(e) => setPlan(e.target.value as StudyPlan)}
-                  className="w-full pl-10 pr-14 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-semibold text-zinc-900 dark:text-white appearance-none focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
+                  className="w-full appearance-none rounded-lg border border-zinc-200 bg-white px-10 py-2 text-sm font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                 >
                   {PLAN_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -468,25 +489,27 @@ export default function StudyScheduleClient({
                     </option>
                   ))}
                 </select>
-
-                {/* Thanh màu hiển thị theo PLAN_OPTIONS/PLAN_COLORS */}
                 <div
-                  className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-2 w-10 rounded-full bg-gradient-to-r ${PLAN_COLORS[plan]}`}
+                  className={cn(
+                    "pointer-events-none absolute right-3 top-1/2 h-2 w-12 -translate-y-1/2 rounded-full bg-gradient-to-r",
+                    PLAN_COLORS[plan]
+                  )}
                 />
               </div>
             </div>
 
+            {/* duration + remind */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1.5">
+                <p className="mb-1.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
                   Thời lượng
-                </label>
+                </p>
                 <select
                   value={durationMin}
                   onChange={(e) =>
                     setDurationMin(Number(e.target.value) as Duration)
                   }
-                  className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-semibold focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
+                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                 >
                   {DURATIONS.map((d) => (
                     <option key={d} value={d}>
@@ -496,15 +519,15 @@ export default function StudyScheduleClient({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1.5">
+                <p className="mb-1.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
                   Nhắc trước
-                </label>
+                </p>
                 <select
                   value={remindMinutes}
                   onChange={(e) =>
                     setRemindMinutes(Number(e.target.value) as any)
                   }
-                  className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-semibold focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
+                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                 >
                   {REMIND_MINUTES.map((m) => (
                     <option key={m} value={m}>
@@ -515,40 +538,45 @@ export default function StudyScheduleClient({
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+            {/* notify */}
+            <div className="flex flex-wrap items-center gap-4 rounded-lg bg-zinc-50/80 px-3 py-2 dark:bg-zinc-900/70">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Nhắc lịch
+              </p>
+              <label className="flex items-center gap-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                 <input
                   type="checkbox"
                   checked={notifyEmail}
                   onChange={(e) => setNotifyEmail(e.target.checked)}
-                  className="w-4 h-4 rounded border border-zinc-300 dark:border-zinc-600 text-zinc-900 focus:ring-2 focus:ring-zinc-500"
+                  className="h-4 w-4 rounded border border-zinc-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 dark:border-zinc-600"
                 />
-                <Bell className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
+                <Bell className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
                 Email
               </label>
-              <label className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+              <label className="flex items-center gap-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                 <input
                   type="checkbox"
                   checked={notifyWeb}
                   onChange={(e) => setNotifyWeb(e.target.checked)}
-                  className="w-4 h-4 rounded border border-zinc-300 dark:border-zinc-600 text-zinc-900 focus:ring-2 focus:ring-zinc-500"
+                  className="h-4 w-4 rounded border border-zinc-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 dark:border-zinc-600"
                 />
-                <BellRing className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
-                Web
+                <BellRing className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                Web push
               </label>
             </div>
           </div>
 
+          {/* SUBMIT */}
           <div className="lg:col-span-2">
             <button
               type="submit"
               disabled={saving}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold text-sm shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-sky-500 to-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Đang lưu...
+                  Đang lưu lịch học...
                 </>
               ) : (
                 <>
@@ -561,76 +589,91 @@ export default function StudyScheduleClient({
         </form>
       </div>
 
-      {/* ===== Upcoming ===== */}
+      {/* ===== UPCOMING CARD ===== */}
       {loadingUpcoming ? (
-        <div className="rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-6 shadow-sm">
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-zinc-600 dark:text-zinc-400" />
+        <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-6 text-center shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/95">
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-zinc-500 dark:text-zinc-400" />
           </div>
         </div>
       ) : !upcoming ? (
-        <div className="rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-6 text-center shadow-sm">
-          <div className="mx-auto w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center mb-4">
-            <AlarmClock className="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
-          </div>
-          <p className="text-base font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-            Chưa có lịch sắp tới
-          </p>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Hãy tạo lịch học ở trên để bắt đầu!
-          </p>
-        </div>
-      ) : (
-        <div className="rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-6 shadow-sm hover:shadow-md transition-shadow mt-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-700">
-              <AlarmClock className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+        <div className="rounded-2xl border border-dashed border-zinc-200/90 bg-white/95 p-6 shadow-sm dark:border-zinc-700/90 dark:bg-zinc-900/95">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
+              <AlarmClock className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
-                Lịch sắp tới
-              </h3>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                {upcoming.status === "completed"
-                  ? "Đã hoàn thành"
-                  : upcoming.status === "missed"
-                  ? "Đã bỏ lỡ"
-                  : "Sắp diễn ra"}
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                Chưa có lịch sắp tới
+              </p>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                Hãy tạo một lịch học ở trên, hệ thống sẽ nhắc bạn đúng giờ để
+                giữ thói quen học.
               </p>
             </div>
           </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-sm ring-1 ring-black/[0.02] transition-all duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95">
+          {/* header */}
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
+                <AlarmClock className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                  Lịch học sắp tới
+                </h3>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                  {upcoming.status === "completed"
+                    ? "Buổi học gần nhất đã hoàn thành."
+                    : upcoming.status === "missed"
+                    ? "Bạn đã bỏ lỡ buổi học trước."
+                    : "Nhớ tham gia đúng giờ để giữ streak nhé!"}
+                </p>
+              </div>
+            </div>
 
+            <div className="hidden rounded-full bg-zinc-50 px-3 py-1 text-[11px] font-medium text-zinc-600 dark:bg-zinc-900/80 dark:text-zinc-300 sm:inline-flex items-center gap-1.5">
+              <Target className="h-3.5 w-3.5" />
+              <span>{PLAN_LABELS[upcoming.plan]}</span>
+            </div>
+          </div>
+
+          {/* content theo trạng thái */}
           {upcoming.status === "completed" ? (
-            <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+            <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/90 px-4 py-3 dark:border-emerald-800/80 dark:bg-emerald-900/25">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 <div>
                   <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
-                    Hoàn thành!
+                    Hoàn thành buổi học!
                   </p>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                    {isoToLocalHHmm(upcoming.startAt)}{" "}
-                    {isoPrettyDay(upcoming.startAt)} • {upcoming.durationMin}{" "}
+                  <p className="text-xs text-emerald-800/90 dark:text-emerald-200/90">
+                    {isoPrettyDay(upcoming.startAt)} •{" "}
+                    {isoToLocalHHmm(upcoming.startAt)} • {upcoming.durationMin}{" "}
                     phút • {PLAN_LABELS[upcoming.plan]}
                   </p>
                   {upcoming.streak > 0 && (
-                    <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1 flex items-center gap-1.5">
-                      <Trophy className="h-3.5 w-3.5" /> Chuỗi:{" "}
-                      {upcoming.streak} ngày
+                    <p className="mt-1 flex items-center gap-1.5 text-[11px] text-emerald-800 dark:text-emerald-200">
+                      <Trophy className="h-3.5 w-3.5" />
+                      Chuỗi hiện tại: {upcoming.streak} ngày
                     </p>
                   )}
                 </div>
               </div>
             </div>
           ) : upcoming.status === "missed" ? (
-            <div className="p-4 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800">
+            <div className="rounded-xl border border-rose-200/80 bg-rose-50/90 px-4 py-3 dark:border-rose-800/80 dark:bg-rose-900/25">
               <div className="flex items-center gap-2">
                 <XCircle className="h-5 w-5 text-rose-600 dark:text-rose-400" />
                 <div>
                   <p className="text-sm font-semibold text-rose-900 dark:text-rose-100">
                     Bạn đã bỏ lỡ buổi học
                   </p>
-                  <p className="text-xs text-rose-700 dark:text-rose-300">
+                  <p className="text-xs text-rose-800/90 dark:text-rose-200/90">
+                    {isoPrettyDay(upcoming.startAt)} •{" "}
                     {isoToLocalHHmm(upcoming.startAt)} • {upcoming.durationMin}{" "}
                     phút • {PLAN_LABELS[upcoming.plan]}
                   </p>
@@ -638,47 +681,49 @@ export default function StudyScheduleClient({
               </div>
             </div>
           ) : (
-            <div className="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-700/50 border border-zinc-200 dark:border-zinc-600">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-4 py-4 dark:border-zinc-700/80 dark:bg-zinc-900/80">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                    {isoToLocalHHmm(upcoming.startAt)}{" "}
-                    {isoPrettyDay(upcoming.startAt)} • {upcoming.durationMin}{" "}
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                    {isoPrettyDay(upcoming.startAt)} •{" "}
+                    {isoToLocalHHmm(upcoming.startAt)} • {upcoming.durationMin}{" "}
                     phút
                   </p>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                  <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
                     {PLAN_LABELS[upcoming.plan]}
                   </p>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 mt-1.5">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
                     {upcoming.remindMinutes && (
                       <span className="flex items-center gap-1">
-                        <Bell className="h-3.5 w-3.5" />{" "}
-                        {upcoming.remindMinutes} phút
+                        <Bell className="h-3.5 w-3.5" />
+                        Nhắc trước {upcoming.remindMinutes} phút
                       </span>
                     )}
                     {upcoming.notifyEmail && <span>Email</span>}
                     {upcoming.notifyWeb && <span>Web</span>}
                   </div>
                   {upcoming.recurrence?.mode && (
-                    <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 flex items-center gap-1">
+                    <p className="mt-1 flex items-center gap-1 text-[11px] text-zinc-600 dark:text-zinc-400">
                       <Repeat className="h-3.5 w-3.5" />
                       {upcoming.recurrence.mode === "daily"
-                        ? "Hàng ngày"
+                        ? "Lặp lại hàng ngày"
                         : upcoming.recurrence.mode === "weekdays"
-                        ? "Thứ 2–6"
+                        ? "Lặp lại Thứ 2–6"
                         : `Ngày: ${(upcoming.recurrence.days || [])
                             .map((d) => weekdayLabels[d])
                             .join(", ")}`}
                     </p>
                   )}
                   {upcoming.streak > 0 && (
-                    <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-                      Chuỗi: {upcoming.streak} ngày
+                    <p className="mt-1 text-[11px] text-zinc-600 dark:text-zinc-400">
+                      Chuỗi hiện tại: {upcoming.streak} ngày
                     </p>
                   )}
                 </div>
+
                 <div className="flex gap-2">
                   <button
+                    type="button"
                     onClick={() => {
                       setEditing(true);
                       setWhenType("tomorrow");
@@ -696,103 +741,107 @@ export default function StudyScheduleClient({
                         setRecurrenceDays([]);
                       }
                     }}
-                    className="px-3 py-2 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all flex items-center gap-1.5"
+                    className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 shadow-sm transition-all hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
                   >
                     <Pencil className="h-4 w-4" />
                     Sửa
                   </button>
                   <button
+                    type="button"
                     onClick={cancelUpcoming}
-                    className="px-3 py-2 rounded-lg bg-red-600 dark:bg-red-500 text-white text-xs font-semibold hover:bg-red-700 dark:hover:bg-red-600 shadow-sm hover:shadow-md transition-all flex items-center gap-1.5"
+                    className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600"
                   >
                     <Trash2 className="h-4 w-4" />
                     Huỷ
                   </button>
                 </div>
               </div>
+
+              {editing &&
+                (upcoming.status as StudyStatus) !== "completed" &&
+                (upcoming.status as StudyStatus) !== "missed" && (
+                  <div className="mt-4 rounded-lg border border-zinc-200 bg-white/95 p-3 text-xs dark:border-zinc-700 dark:bg-zinc-900/95">
+                    <p className="mb-3 font-semibold text-zinc-700 dark:text-zinc-200">
+                      Chỉnh sửa nhanh lịch này
+                    </p>
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                      <div>
+                        <p className="mb-1 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
+                          Giờ
+                        </p>
+                        <input
+                          type="time"
+                          value={timeHHmm}
+                          onChange={(e) => setTimeHHmm(e.target.value)}
+                          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                        />
+                      </div>
+                      <div>
+                        <p className="mb-1 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
+                          Thời lượng
+                        </p>
+                        <select
+                          value={durationMin}
+                          onChange={(e) =>
+                            setDurationMin(Number(e.target.value) as Duration)
+                          }
+                          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                        >
+                          {DURATIONS.map((d) => (
+                            <option key={d} value={d}>
+                              {d} phút
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <p className="mb-1 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
+                          Loại
+                        </p>
+                        <select
+                          value={plan}
+                          onChange={(e) => setPlan(e.target.value as StudyPlan)}
+                          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                        >
+                          {PLAN_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          patchUpcoming({
+                            startAt: startLocal,
+                            durationMin,
+                            plan,
+                            remindMinutes,
+                            notifyEmail,
+                            notifyWeb,
+                            recurrence: recurrence as any,
+                          } as any)
+                        }
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:shadow-md dark:bg-zinc-100 dark:text-zinc-900"
+                      >
+                        <Save className="h-4 w-4" />
+                        Lưu
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditing(false)}
+                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                      >
+                        Huỷ
+                      </button>
+                    </div>
+                  </div>
+                )}
             </div>
           )}
-
-          {editing &&
-            upcoming?.status !== "completed" &&
-            upcoming?.status !== "missed" && (
-              <div className="mt-6 p-4 rounded-lg bg-zinc-50 dark:bg-zinc-700/50 border border-zinc-200 dark:border-zinc-600">
-                <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-4">
-                  Chỉnh sửa nhanh
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold mb-1.5 text-zinc-600 dark:text-zinc-400">
-                      Giờ
-                    </label>
-                    <input
-                      type="time"
-                      value={timeHHmm}
-                      onChange={(e) => setTimeHHmm(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-semibold focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1.5 text-zinc-600 dark:text-zinc-400">
-                      Thời lượng
-                    </label>
-                    <select
-                      value={durationMin}
-                      onChange={(e) =>
-                        setDurationMin(Number(e.target.value) as Duration)
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-semibold focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
-                    >
-                      {DURATIONS.map((d) => (
-                        <option key={d} value={d}>
-                          {d} phút
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1.5 text-zinc-600 dark:text-zinc-400">
-                      Loại
-                    </label>
-                    <select
-                      value={plan}
-                      onChange={(e) => setPlan(e.target.value as StudyPlan)}
-                      className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-semibold focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
-                    >
-                      {PLAN_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={() =>
-                      patchUpcoming({
-                        startAt: startLocal,
-                        durationMin,
-                        plan,
-                        remindMinutes,
-                        notifyEmail,
-                        notifyWeb,
-                        recurrence: recurrence as any,
-                      } as any)
-                    }
-                    className="flex-1 px-3 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold hover:shadow-md transition-all flex items-center justify-center gap-1.5 text-xs"
-                  >
-                    <Save className="h-4 w-4" /> Lưu
-                  </button>
-                  <button
-                    onClick={() => setEditing(false)}
-                    className="px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all text-xs"
-                  >
-                    Huỷ
-                  </button>
-                </div>
-              </div>
-            )}
         </div>
       )}
     </div>

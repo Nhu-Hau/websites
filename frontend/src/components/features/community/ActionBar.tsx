@@ -52,10 +52,11 @@ export default function ActionBar({
   const [acting, setActing] = React.useState(false);
 
   React.useEffect(() => {
-    setIsLiked(liked);
-    setIsSaved(saved);
-    setLikes(likesCount);
-    setSaves(savedCount);
+    // Ensure liked is always a boolean
+    setIsLiked(typeof liked === "boolean" ? liked : false);
+    setIsSaved(typeof saved === "boolean" ? saved : false);
+    setLikes(typeof likesCount === "number" ? likesCount : 0);
+    setSaves(typeof savedCount === "number" ? savedCount : 0);
   }, [liked, saved, likesCount, savedCount]);
 
   const handleLike = async (e: React.MouseEvent) => {
@@ -86,7 +87,7 @@ export default function ActionBar({
       setIsLiked(!newLiked);
       setLikes(likes);
       onLikeChange?.(liked, likes);
-      toast.error("Unable to like post");
+      toast.error("Lỗi khi thích bài viết");
     } finally {
       setActing(false);
     }
@@ -111,16 +112,26 @@ export default function ActionBar({
       });
       if (!res.ok) throw new Error("Failed to save");
       const data = await res.json();
-      if (typeof data.savedCount === "number") {
-        setSaves(data.savedCount);
-        setIsSaved(data.saved);
-        onSaveChange?.(data.saved, data.savedCount);
-      }
+        if (typeof data.savedCount === "number") {
+          setSaves(data.savedCount);
+          setIsSaved(data.saved);
+          onSaveChange?.(data.saved, data.savedCount);
+          // Show toast
+          if (data.saved) {
+            toast.success("Đã lưu bài viết");
+          } else {
+            toast.success("Đã bỏ lưu bài viết");
+          }
+          // Trigger custom event to refresh saved posts page (saved state is now in DB)
+          if (typeof window !== "undefined" && window.location.pathname.includes("/community/saved")) {
+            window.dispatchEvent(new CustomEvent("savedPostsChanged"));
+          }
+        }
     } catch {
       setIsSaved(!newSaved);
       setSaves(saves);
       onSaveChange?.(saved, saves);
-      toast.error("Unable to save post");
+      toast.error("Lỗi khi lưu bài viết");
     } finally {
       setActing(false);
     }
@@ -189,7 +200,7 @@ export default function ActionBar({
             ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
             : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         }`}
-        aria-label={isSaved ? "Unsave" : "Save"}
+        aria-label={isSaved ? "Bỏ lưu" : "Lưu"}
       >
         <Bookmark className={`h-5 w-5 ${isSaved ? "fill-current" : ""}`} />
         {saves > 0 && <span>{saves}</span>}

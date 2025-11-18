@@ -13,7 +13,8 @@ export interface IAttachment {
 export interface ICommunityPost extends Document {
   userId: Types.ObjectId;
   content: string;            // <-- KHÔNG required
-  tags: string[];
+  tags: string[]; // Hashtags extracted from content
+  mentions: Types.ObjectId[]; // User IDs mentioned in content
   attachments: IAttachment[];
   likedBy: Types.ObjectId[];
   likesCount: number;
@@ -27,6 +28,10 @@ export interface ICommunityPost extends Document {
   repostCaption?: string; // Caption for repost
   repostedBy: Types.ObjectId[]; // Users who reposted this
   repostCount: number; // Count of reposts
+  editedAt?: Date; // When the post was last edited
+  isEdited: boolean; // Flag to show "(đã chỉnh sửa)"
+  groupId?: Types.ObjectId; // If post belongs to a study group
+  practiceAttemptId?: Types.ObjectId; // If post is linked to a practice attempt (Discuss This Question)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,7 +53,8 @@ const CommunityPostSchema = new Schema<ICommunityPost>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     content: { type: String, trim: true, default: "" },  // <-- KHÔNG required
-    tags: { type: [String], default: [] },
+    tags: { type: [String], default: [], index: true }, // Hashtags for search
+    mentions: { type: [Schema.Types.ObjectId], ref: "User", default: [], index: true },
     attachments: { type: [AttachmentSchema], default: [] },
     likedBy: { type: [Schema.Types.ObjectId], ref: "User", default: [], index: true },
     likesCount: { type: Number, default: 0 },
@@ -62,6 +68,10 @@ const CommunityPostSchema = new Schema<ICommunityPost>(
     repostCaption: { type: String, trim: true, default: "" },
     repostedBy: { type: [Schema.Types.ObjectId], ref: "User", default: [] },
     repostCount: { type: Number, default: 0 },
+    editedAt: { type: Date, default: null },
+    isEdited: { type: Boolean, default: false },
+    groupId: { type: Schema.Types.ObjectId, ref: "StudyGroup", default: null, index: true },
+    practiceAttemptId: { type: Schema.Types.ObjectId, ref: "PracticeAttempt", default: null, index: true },
   },
   { timestamps: true, versionKey: false }
 );

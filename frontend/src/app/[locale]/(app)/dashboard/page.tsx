@@ -9,14 +9,16 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-16">
       <div className="flex">
-        {/* Side Navigation */}
-        <Suspense fallback={null}>
-          <DashboardSideNav />
-        </Suspense>
+        {/* Side Navigation - Desktop only */}
+        <div className="hidden lg:block">
+          <Suspense fallback={null}>
+            <DashboardSideNav />
+          </Suspense>
+        </div>
 
         {/* Main Content Area */}
         <main className="flex-1 min-w-0">
-          <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-8 max-w-7xl mx-auto">
+          <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pt-28 lg:pt-8 pb-20 lg:pb-8 max-w-7xl mx-auto">
             <DashboardContent
               progressTab={<ProgressTabContent />}
               resultsTab={<ResultsTabContent />}

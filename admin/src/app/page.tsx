@@ -194,25 +194,27 @@ export default function Home() {
   const bw = (width - pad * 2) / (bars.length || 1);
 
   return (
-    <div className="py-8 space-y-8">
+    <div className="h-full flex flex-col bg-zinc-50">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-zinc-900">Dashboard Admin</h1>
-          <p className="text-zinc-600 mt-1">Quản lý và theo dõi hiệu suất người dùng</p>
+      <div className="flex-shrink-0 px-6 py-4 bg-white border-b border-zinc-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900">Dashboard Admin</h1>
+            <p className="text-sm text-zinc-600 mt-0.5">Quản lý và theo dõi hiệu suất người dùng</p>
+          </div>
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
+        <div className="flex-shrink-0 mx-6 mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
           <X className="h-5 w-5" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="border-b border-zinc-200">
-        <div className="flex gap-1 overflow-x-auto">
+      <div className="flex-shrink-0 border-b border-zinc-200 bg-white">
+        <div className="flex gap-1 overflow-x-auto px-6">
           <button
             onClick={() => setActiveTab('overview')}
             className={`px-6 py-3 border-b-2 font-medium transition-colors whitespace-nowrap ${
@@ -268,7 +270,7 @@ export default function Home() {
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
-        <>
+        <div className="flex-1 overflow-auto px-6 py-6">
           <div className="space-y-6">
             {/* Statistics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -443,12 +445,12 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* TOEIC Predicted Tab */}
       {activeTab === 'toeic-pred' && (
-        <>
+        <div className="flex-1 overflow-auto px-6 py-6">
           <div className="space-y-6">
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-6">
               <div className="flex items-center gap-3">
@@ -541,12 +543,12 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Placement Tab */}
       {activeTab === 'placement' && (
-        <>
+        <div className="flex-1 overflow-auto px-6 py-6">
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-zinc-200 shadow-sm">
               <div className="p-6 border-b border-zinc-200">
@@ -672,12 +674,12 @@ export default function Home() {
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Progress Tab */}
       {activeTab === 'progress' && (
-        <>
+        <div className="flex-1 overflow-auto px-6 py-6">
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-zinc-200 shadow-sm">
               <div className="p-6 border-b border-zinc-200">
@@ -915,12 +917,12 @@ export default function Home() {
               </div>
             )}
           </div>
-        </>
+        </div>
       )}
 
       {/* Practice Tab */}
       {activeTab === 'practice' && (
-        <>
+        <div className="flex-1 overflow-auto px-6 py-6">
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-zinc-200 shadow-sm">
               <div className="p-6 border-b border-zinc-200">
@@ -1167,7 +1169,7 @@ export default function Home() {
               </div>
             )}
           </div>
-        </>
+        </div>
       )}
 
     </div>

@@ -29,7 +29,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ToastProvider>
           <AdminHeader />
-          <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+          <main className="h-[calc(100vh-64px)] overflow-hidden flex flex-col">{children}</main>
         </ToastProvider>
       </body>
     </html>

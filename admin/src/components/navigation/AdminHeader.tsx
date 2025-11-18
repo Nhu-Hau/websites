@@ -14,7 +14,7 @@ export default function AdminHeader() {
 
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-zinc-200">
-      <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-4">
+      <div className="w-full px-6 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 text-zinc-700"

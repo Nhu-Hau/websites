@@ -375,8 +375,8 @@ export default function AdminChatPage() {
 
   return (
     <>
-      <div className="h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 flex flex-col overflow-hidden">
-        <div className="max-w-7xl mx-auto w-full h-full flex flex-col p-6 gap-6">
+      <div className="h-full flex flex-col bg-zinc-50 overflow-hidden">
+        <div className="w-full h-full flex flex-col px-6 py-6 gap-6">
           <header className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">

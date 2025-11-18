@@ -102,8 +102,8 @@ export default function VpsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="h-full flex flex-col bg-zinc-50 overflow-hidden">
+      <div className="flex-1 overflow-auto px-6 py-6">
         <div className="space-y-6">
           {/* Header */}
           <div>

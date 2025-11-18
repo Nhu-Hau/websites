@@ -20,7 +20,7 @@ export default function MobilePracticePage() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#e5e7eb_0,_#fafafa_40%,_#f4f4f5_100%)] pt-14 pb-20 dark:bg-[radial-gradient(circle_at_top,_#020617_0,_#020617_40%,_#020617_100%)]">
-      <div className="px-4 py-6">
+      <div className="px-6 py-6">
         {/* Header */}
         <div className="mb-6 space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-[11px] font-medium text-zinc-600 shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300">
@@ -29,9 +29,9 @@ export default function MobilePracticePage() {
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white shadow-sm dark:bg-zinc-50 dark:text-zinc-900">
+            {/* <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white shadow-sm dark:bg-zinc-50 dark:text-zinc-900">
               <BookOpen className="h-5 w-5" />
-            </div>
+            </div> */}
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                 Luyện L&R
@@ -97,7 +97,7 @@ export default function MobilePracticePage() {
                     <div className="flex items-center justify-between gap-2">
                       <div>
                         <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                          Part {part.num} · {partLabel}
+                          {partLabel}
                         </h3>
                         <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
                           {part.name}

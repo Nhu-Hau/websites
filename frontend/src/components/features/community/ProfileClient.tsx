@@ -8,22 +8,9 @@ import {
   UserMinus,
   Settings,
   Camera,
-  X,
   ImageIcon,
   Trash2,
   Trophy,
-  Flame,
-  Calendar,
-  BookOpen,
-  Target,
-  TrendingUp,
-  Award,
-  Star,
-  Sparkles,
-  Sun,
-  Moon,
-  Zap,
-  Crown,
 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { toast } from "@/lib/toast";
@@ -35,156 +22,41 @@ import ImageCropper from "./ImageCropper";
 import FollowingModal from "./FollowingModal";
 import FollowersModal from "./FollowersModal";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
-import type { BadgeType } from "@/components/features/dashboard/Badges";
+import { BADGE_CONFIG, type BadgeType } from "@/components/features/dashboard/Badges";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
-// Badge config matching Badges.tsx
-const BADGE_CONFIG: Record<
-  BadgeType,
-  {
-    name: string;
-    description: string;
-    icon: React.ComponentType<{ className?: string }>;
-    gradient: string;
-    textColor: string;
-    borderColor: string;
-  }
-> = {
-  streak_7_days: {
-    name: "Chuỗi học 7 ngày",
-    description: "Học liên tiếp 7 ngày",
-    icon: Flame,
-    gradient: "from-orange-500 to-red-500",
-    textColor: "text-orange-600 dark:text-orange-400",
-    borderColor: "border-orange-300/80 dark:border-orange-700/80",
-  },
-  streak_30_days: {
-    name: "Chuỗi học 30 ngày",
-    description: "Học liên tiếp 30 ngày",
-    icon: Calendar,
-    gradient: "from-red-600 to-rose-600",
-    textColor: "text-red-600 dark:text-red-400",
-    borderColor: "border-red-300/80 dark:border-red-700/80",
-  },
-  practice_10_tests: {
-    name: "Luyện tập chăm chỉ",
-    description: "Hoàn thành 10 bài Practice Test",
-    icon: BookOpen,
-    gradient: "from-blue-600 to-indigo-600",
-    textColor: "text-blue-600 dark:text-blue-400",
-    borderColor: "border-blue-300/80 dark:border-blue-700/80",
-  },
-  goal_50_percent: {
-    name: "Tiến độ mục tiêu",
-    description: "Đạt tiến độ mục tiêu TOEIC trên 50%",
-    icon: Target,
-    gradient: "from-purple-600 to-violet-600",
-    textColor: "text-purple-600 dark:text-purple-400",
-    borderColor: "border-purple-300/80 dark:border-purple-700/80",
-  },
-  part_improvement_20: {
-    name: "Cải thiện xuất sắc",
-    description: "Cải thiện điểm một Part trên 20 điểm",
-    icon: TrendingUp,
-    gradient: "from-emerald-600 to-teal-600",
-    textColor: "text-emerald-600 dark:text-emerald-400",
-    borderColor: "border-emerald-300/80 dark:border-emerald-700/80",
-  },
-  first_placement: {
-    name: "Bắt đầu hành trình",
-    description: "Làm bài Placement Test lần đầu",
-    icon: Star,
-    gradient: "from-yellow-500 to-amber-500",
-    textColor: "text-yellow-600 dark:text-yellow-400",
-    borderColor: "border-yellow-300/80 dark:border-yellow-700/80",
-  },
-  first_progress: {
-    name: "Kiểm tra tiến độ",
-    description: "Làm bài Progress Test lần đầu",
-    icon: Award,
-    gradient: "from-indigo-600 to-blue-600",
-    textColor: "text-indigo-600 dark:text-indigo-400",
-    borderColor: "border-indigo-300/80 dark:border-indigo-700/80",
-  },
-  first_practice: {
-    name: "Bước đầu luyện tập",
-    description: "Làm bài Practice lần đầu",
-    icon: Sparkles,
-    gradient: "from-pink-600 to-rose-600",
-    textColor: "text-pink-600 dark:text-pink-400",
-    borderColor: "border-pink-300/80 dark:border-pink-700/80",
-  },
-  perfect_score: {
-    name: "Điểm tuyệt đối",
-    description: "Đạt 100% trong một bài test",
-    icon: Trophy,
-    gradient: "from-amber-600 to-yellow-600",
-    textColor: "text-amber-600 dark:text-amber-400",
-    borderColor: "border-amber-300/80 dark:border-amber-700/80",
-  },
-  early_bird: {
-    name: "Chim sớm",
-    description: "Học vào buổi sáng sớm (trước 7h)",
-    icon: Sun,
-    gradient: "from-yellow-500 to-orange-500",
-    textColor: "text-yellow-600 dark:text-yellow-400",
-    borderColor: "border-yellow-300/80 dark:border-yellow-700/80",
-  },
-  night_owl: {
-    name: "Cú đêm",
-    description: "Học vào buổi tối muộn (sau 22h)",
-    icon: Moon,
-    gradient: "from-indigo-600 to-purple-600",
-    textColor: "text-indigo-600 dark:text-indigo-400",
-    borderColor: "border-indigo-300/80 dark:border-indigo-700/80",
-  },
-  marathon: {
-    name: "Marathon học tập",
-    description: "Hoàn thành 5+ bài test trong một ngày",
-    icon: Zap,
-    gradient: "from-cyan-600 to-teal-600",
-    textColor: "text-cyan-600 dark:text-cyan-400",
-    borderColor: "border-cyan-300/80 dark:border-cyan-700/80",
-  },
-  consistency_king: {
-    name: "Vua kiên trì",
-    description: "Học đều đặn trong 14 ngày",
-    icon: Crown,
-    gradient: "from-violet-600 to-purple-600",
-    textColor: "text-violet-600 dark:text-violet-400",
-    borderColor: "border-violet-300/80 dark:border-violet-700/80",
-  },
-  practice_50_tests: {
-    name: "Chiến binh luyện tập",
-    description: "Hoàn thành 50 bài Practice Test",
-    icon: Trophy,
-    gradient: "from-sky-600 to-indigo-600",
-    textColor: "text-sky-600 dark:text-sky-400",
-    borderColor: "border-sky-300/80 dark:border-sky-700/80",
-  },
-  progress_5_tests: {
-    name: "Chuyên gia tiến độ",
-    description: "Hoàn thành 5 Progress Test",
-    icon: Award,
-    gradient: "from-emerald-600 to-lime-600",
-    textColor: "text-emerald-600 dark:text-emerald-400",
-    borderColor: "border-emerald-300/80 dark:border-emerald-700/80",
-  },
-  goal_100_percent: {
-    name: "Chinh phục mục tiêu",
-    description: "Đạt 100% mục tiêu TOEIC đã đặt",
-    icon: Target,
-    gradient: "from-fuchsia-600 to-rose-600",
-    textColor: "text-fuchsia-600 dark:text-fuchsia-400",
-    borderColor: "border-fuchsia-300/80 dark:border-fuchsia-700/80",
-  },
-};
+interface Profile {
+  _id?: string;
+  name?: string;
+  bio?: string;
+  picture?: string;
+  coverImage?: string | null;
+  postsCount?: number;
+  followersCount?: number;
+  followingCount?: number;
+  toeicGoal?: {
+    startScore?: number;
+    targetScore?: number;
+  };
+  badges?: Array<{
+    _id: string;
+    badgeType: string;
+    metadata?: {
+      partKey?: string;
+      improvement?: number;
+      streak?: number;
+      progress?: number;
+    };
+  }>;
+}
 
 interface ProfileClientProps {
   userId: string;
-  initialProfile?: unknown;
-  initialPosts?: unknown;
+  initialProfile?: Profile | null;
+  initialPosts?: {
+    items?: unknown[];
+  } | null;
 }
 
 export default function ProfileClient({
@@ -197,10 +69,9 @@ export default function ProfileClient({
   const { user: currentUser, refresh } = useAuth();
   const isOwnProfile = currentUser?.id === userId;
 
-  const [profile, setProfile] = React.useState(initialProfile);
+  const [profile, setProfile] = React.useState<Profile | null | undefined>(initialProfile);
   const [posts, setPosts] = React.useState(initialPosts?.items || []);
   const [isFollowing, setIsFollowing] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
   const [followLoading, setFollowLoading] = React.useState(false);
   
   // Image cropper state
@@ -247,10 +118,13 @@ export default function ProfileClient({
       );
       if (res.ok) {
         setIsFollowing(true);
-        setProfile((p: any) => ({
+        setProfile((p) => {
+          if (!p) return p;
+          return {
           ...p,
-          followersCount: (p?.followersCount || 0) + 1,
-        }));
+            followersCount: (p.followersCount || 0) + 1,
+          };
+        });
         toast.success("Đã theo dõi");
       } else {
         toast.error("Có lỗi xảy ra khi theo dõi");
@@ -275,10 +149,13 @@ export default function ProfileClient({
       );
       if (res.ok) {
         setIsFollowing(false);
-        setProfile((p: any) => ({
+        setProfile((p) => {
+          if (!p) return p;
+          return {
           ...p,
-          followersCount: Math.max(0, (p?.followersCount || 0) - 1),
-        }));
+            followersCount: Math.max(0, (p.followersCount || 0) - 1),
+          };
+        });
         toast.success("Đã bỏ theo dõi");
       } else {
         toast.error("Có lỗi xảy ra khi bỏ theo dõi");
@@ -315,7 +192,7 @@ export default function ProfileClient({
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pt-20">
+    <div className="max-w-4xl mx-auto px-4 py-8 pt-28 lg:pt-24">
       {/* Cover Image */}
       <div className="relative h-64 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-4 overflow-hidden">
         {profile.coverImage ? (
@@ -346,7 +223,10 @@ export default function ProfileClient({
                         body: JSON.stringify({ coverImage: null }),
                       });
                       if (!res.ok) throw new Error("Failed to delete cover image");
-                      setProfile((p: any) => ({ ...p, coverImage: null }));
+                      setProfile((p) => {
+                        if (!p) return p;
+                        return { ...p, coverImage: null };
+                      });
                       toast.success("Đã xóa ảnh bìa");
                     } catch (error: any) {
                       toast.error(error?.message || "Lỗi khi xóa ảnh bìa");
@@ -449,7 +329,10 @@ export default function ProfileClient({
                                 credentials: "include",
                               });
                               if (!res.ok) throw new Error("Failed to delete avatar");
-                              setProfile((p: any) => ({ ...p, picture: undefined }));
+                              setProfile((p) => {
+                                if (!p) return p;
+                                return { ...p, picture: undefined };
+                              });
                               if (typeof window !== "undefined") {
                                 window.dispatchEvent(new CustomEvent("auth:avatar-changed", { detail: undefined }));
                               }
@@ -600,7 +483,7 @@ export default function ProfileClient({
             Huy hiệu ({profile.badges.length})
           </h2>
           <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
-            {profile.badges.map((badge: any) => {
+            {profile.badges.map((badge) => {
               const config = BADGE_CONFIG[badge.badgeType as BadgeType];
               if (!config) return null;
 
@@ -722,7 +605,10 @@ export default function ProfileClient({
                 const newPicture = uploadData.picture || uploadData.url;
                 
                 // Update profile state
-                setProfile((p: any) => ({ ...p, picture: newPicture }));
+                setProfile((p) => {
+                  if (!p) return p;
+                  return { ...p, picture: newPicture };
+                });
                 // Refresh auth context to update avatar in UserMenu, PostCard, CommentItem
                 if (typeof window !== "undefined") {
                   window.dispatchEvent(new CustomEvent("auth:avatar-changed", { detail: newPicture }));
@@ -756,7 +642,10 @@ export default function ProfileClient({
                 
                 if (!updateRes.ok) throw new Error("Update failed");
                 const data = await updateRes.json();
-                setProfile((p: any) => ({ ...p, coverImage: data.coverImage }));
+                setProfile((p) => {
+                  if (!p) return p;
+                  return { ...p, coverImage: data.coverImage };
+                });
                 toast.success("Đã cập nhật ảnh bìa");
               }
             } catch (error: any) {

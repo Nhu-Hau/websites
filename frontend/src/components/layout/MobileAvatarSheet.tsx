@@ -194,7 +194,10 @@ export default function MobileAvatarSheet({
     return { key, label, lv, href };
   });
 
-  const avatarSrc = me?.picture || user?.picture || ctxUser?.picture;
+  const avatarSrc =
+    ("picture" in (me || {}) ? me.picture : undefined) ||
+    ("picture" in (user || {}) ? user.picture : undefined) ||
+    ("picture" in (ctxUser || {}) ? (ctxUser as any).picture : undefined);
 
   if (!open) return null;
 
@@ -385,9 +388,7 @@ export default function MobileAvatarSheet({
 
                 {/* Đổi giao diện */}
                 <button
-                  onClick={() =>
-                    setTheme(theme === "light" ? "dark" : "light")
-                  }
+                  onClick={() => setTheme(theme === "light" ? "dark" : "light")}
                   className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-2 transition-all duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30"
                 >
                   {theme === "light" ? (

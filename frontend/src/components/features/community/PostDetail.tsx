@@ -354,7 +354,7 @@ export default function PostDetail({ postId }: { postId: string }) {
   if (!post) return null;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-16">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20">
       <main className="mx-auto max-w-4xl px-4 py-8">
         {/* Post */}
         <article className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm mb-6">

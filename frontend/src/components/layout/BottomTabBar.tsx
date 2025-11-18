@@ -43,8 +43,8 @@ export default function BottomTabBar() {
       id: "community",
       label: t("study.study.forum"),
       icon: Users,
-      href: `${base}/mobile/community`,
-      match: (path: string) => path.includes("/mobile/community") || path.includes("/community"),
+      href: `${base}/community`,
+      match: (path: string) => path.includes("/community") || path.includes("/study/create") || path.includes("/account"),
     },
   ];
 

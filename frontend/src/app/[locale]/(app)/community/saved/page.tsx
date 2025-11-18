@@ -14,7 +14,7 @@ export default async function SavedPostsPage({
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <main className="mx-auto max-w-4xl px-4 py-8 pt-20">
+      <main className="mx-auto max-w-4xl px-4 py-6 lg:py-8 pt-16 pb-20 lg:pb-8">
         <Suspense fallback={
           <div className="flex items-center justify-center py-16">
             <div className="flex flex-col items-center gap-4">

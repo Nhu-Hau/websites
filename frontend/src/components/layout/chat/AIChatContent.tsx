@@ -646,6 +646,20 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
 
   return (
     <div className="flex flex-col h-full">
+      {/* Header with Clear Button */}
+      {messages.length > 0 && user && user.access === "premium" && (
+        <div className="flex-shrink-0 px-3 xs:px-4 pt-3 pb-2 flex justify-end">
+          <button
+            onClick={clearChat}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+            aria-label="Xóa tất cả cuộc trò chuyện"
+          >
+            <FiTrash2 className="h-3.5 w-3.5" />
+            <span>Xóa tất cả</span>
+          </button>
+        </div>
+      )}
+
       {/* Error */}
       <AnimatePresence>
         {error && (

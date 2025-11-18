@@ -425,7 +425,7 @@ export default function Account() {
   const levelBadgeClass = LEVEL_BADGE[user.level] || LEVEL_BADGE[1];
 
   return (
-    <div className="max-w-4xl mx-auto pt-20 space-y-6">
+    <div className="max-w-4xl mx-auto pt-28 lg:pt-24 space-y-6 px-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>

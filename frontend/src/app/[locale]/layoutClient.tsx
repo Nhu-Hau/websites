@@ -10,6 +10,8 @@ import MobileAvatarSheet from "@/components/layout/MobileAvatarSheet";
 import ChatFAB from "@/components/layout/ChatFAB";
 import ChatPanel from "@/components/layout/ChatPanel";
 import ChatSheet from "@/components/layout/ChatSheet";
+import CommunityChipNav from "@/components/navigation/CommunityChipNav";
+import DashboardChipNav from "@/components/navigation/DashboardChipNav";
 import { useMobileAvatarSheet } from "@/context/MobileAvatarSheetContext";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
@@ -38,11 +40,20 @@ export default function LayoutClient({
     /^\/[a-z]{2}\/practice\/history\/[^/]+$/.test(pathname) ||
     /^\/[a-z]{2}\/progress$/.test(pathname); // /vi/practice/history/abc123
 
-  // Show SideNav only on community pages
-  const showSideNav = pathname?.includes("/community") || pathname?.includes("/study");
+  // Show SideNav only on community pages (desktop only)
+  const showSideNav = (pathname?.includes("/community") || pathname?.includes("/study")) && !isMobile;
   
   // Hide Footer on community and study pages
   const hideFooterOnCommunity = pathname?.includes("/community") || pathname?.includes("/study");
+
+  // Show chip navigation on mobile for community and dashboard
+  // Include community-related routes: /community, /study/create, /account
+  const showCommunityChips = 
+    (pathname?.includes("/community") || 
+     pathname?.includes("/study/create") || 
+     pathname?.includes("/account")) && 
+    isMobile;
+  const showDashboardChips = (pathname?.includes("/dashboard") || pathname?.includes("/mobile/dashboard")) && isMobile;
 
   // Show bottom bar on all pages, but hide it when ChatSheet is open on mobile
   // (ChatPanel on desktop doesn't cover BottomTabBar, so we only hide on mobile)
@@ -61,6 +72,10 @@ export default function LayoutClient({
     >
       {/* Always show Header */}
       <Header />
+      
+      {/* Mobile Chip Navigation */}
+      {showCommunityChips && <CommunityChipNav />}
+      {showDashboardChips && <DashboardChipNav />}
       
       {showSideNav ? (
         <div className="flex min-h-screen">

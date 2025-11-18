@@ -427,14 +427,23 @@ export default function ChatBox() {
           }
         );
         // Emit event nếu có Learning Insight mới (trước khi set state)
-        const prevLearningInsightCount = messages.filter(m => m.isLearningInsight).length;
-        const learningInsights = formattedMessages.filter(m => m.isLearningInsight);
-        
-        if (learningInsights.length > prevLearningInsightCount && typeof window !== "undefined") {
+        const prevLearningInsightCount = messages.filter(
+          (m) => m.isLearningInsight
+        ).length;
+        const learningInsights = formattedMessages.filter(
+          (m) => m.isLearningInsight
+        );
+
+        if (
+          learningInsights.length > prevLearningInsightCount &&
+          typeof window !== "undefined"
+        ) {
           // Có Learning Insight mới, emit event
-          window.dispatchEvent(new CustomEvent("learning-insight:received", {
-            detail: { count: learningInsights.length }
-          }));
+          window.dispatchEvent(
+            new CustomEvent("learning-insight:received", {
+              detail: { count: learningInsights.length },
+            })
+          );
         }
 
         setMessages(formattedMessages);
@@ -530,7 +539,10 @@ export default function ChatBox() {
     window.addEventListener("chatbox:open-and-refresh", handleOpenAndRefresh);
     return () => {
       window.removeEventListener("test-submitted", handleTestSubmitted);
-      window.removeEventListener("chatbox:open-and-refresh", handleOpenAndRefresh);
+      window.removeEventListener(
+        "chatbox:open-and-refresh",
+        handleOpenAndRefresh
+      );
     };
   }, [user, loadChatHistory]);
 
@@ -718,7 +730,7 @@ export default function ChatBox() {
     }
   };
 
- return (
+  return (
     <>
       {/* Floating Action Button với badge unread */}
       <div className="fixed bottom-6 right-6 z-[70]">
@@ -946,12 +958,17 @@ export default function ChatBox() {
                       )}
 
                       {/* Delete button (user messages only) */}
-                      {m.role === "user" && m.id && (
+                      {m.role === "user" && (m.id || m._id) && (
                         <button
                           onClick={() => {
-                            setMessages((prev) => prev.filter((msg) => msg.id !== m.id));
+                            const msgId = m.id || m._id;
+                            setMessages((prev) =>
+                              prev.filter(
+                                (msg) => (msg.id || msg._id) !== msgId
+                              )
+                            );
                           }}
-                          className="absolute -top-2 -left-2 opacity-0 group-hover:opacity-100 
+                          className="absolute -top-2 -left-2 opacity-70 group-hover:opacity-100 
                           p-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 shadow-md
                           transition hover:scale-110 hover:bg-red-100 dark:hover:bg-red-900/50
                           focus:outline-none focus:ring-2 focus:ring-red-400"

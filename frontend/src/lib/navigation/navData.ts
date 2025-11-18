@@ -1,12 +1,10 @@
 "use client";
 import type { NavItemType } from "../../types/nav.types";
 import { useTranslations, useLocale } from "next-intl";
-import { useAuth } from "@/context/AuthContext";
 
 export function MenuNav(): NavItemType[] {
   const t = useTranslations("nav");
   const locale = useLocale();
-  const { user } = useAuth();
 
   const items: NavItemType[] = [
     {
@@ -48,10 +46,6 @@ export function MenuNav(): NavItemType[] {
         {
           label: t("study.study.forum"),
           href: `/${locale}/community`,
-        },
-        {
-          label: t("study.study.createStudyRoom"),
-          href: `/${locale}/study/create`,
         },
         {
           label: t("study.study.vocabulary"),

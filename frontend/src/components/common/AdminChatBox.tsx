@@ -589,12 +589,13 @@ export default function AdminChatBox() {
                       )}
 
                       {/* Delete button (user messages only) */}
-                      {m.role === "user" && m.id && (
+                      {m.role === "user" && (m.id || m._id) && (
                         <button
                           onClick={() => {
-                            setMessages((prev) => prev.filter((msg) => msg.id !== m.id));
+                            const msgId = m.id || m._id;
+                            setMessages((prev) => prev.filter((msg) => (msg.id || msg._id) !== msgId));
                           }}
-                          className="absolute -top-2 -left-2 opacity-0 group-hover:opacity-100 
+                          className="absolute -top-2 -left-2 opacity-70 group-hover:opacity-100 
                           p-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 shadow-md
                           transition hover:scale-110 hover:bg-red-100 dark:hover:bg-red-900/50
                           focus:outline-none focus:ring-2 focus:ring-red-400"

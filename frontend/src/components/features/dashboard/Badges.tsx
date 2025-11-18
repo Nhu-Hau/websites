@@ -67,7 +67,7 @@ interface BadgesProps {
 
 /* ================== Config badge ================== */
 
-const BADGE_CONFIG: Record<
+export const BADGE_CONFIG: Record<
   BadgeType,
   {
     name: string;

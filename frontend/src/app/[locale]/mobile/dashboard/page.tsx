@@ -7,7 +7,7 @@ import ActivityTabContent from "@/components/features/dashboard/ActivityTabConte
 export default async function MobileDashboardPage() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-14 pb-20">
-      <div className="px-4 py-6 max-w-4xl mx-auto">
+      <div className="px-4 py-6 pt-28 pb-20 max-w-4xl mx-auto">
         <Suspense fallback={<DashboardContentSkeleton />}>
           <DashboardContent
             progressTab={<ProgressTabContent />}
@@ -37,4 +37,5 @@ function DashboardContentSkeleton() {
     </div>
   );
 }
+
 

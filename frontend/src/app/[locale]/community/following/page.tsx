@@ -20,8 +20,15 @@ export default async function FollowingPage() {
     console.error("[FollowingPage] Error:", error);
   }
 
-  return <FollowingClient initialPosts={initialPosts} />;
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <main className="mx-auto max-w-2xl px-4 py-6 lg:py-8 pt-16 pb-20 lg:pb-8">
+        <FollowingClient initialPosts={initialPosts} />
+      </main>
+    </div>
+  );
 }
+
 
 
 

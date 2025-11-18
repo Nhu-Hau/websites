@@ -20,8 +20,15 @@ export default async function TrendingPage() {
     console.error("[TrendingPage] Error:", error);
   }
 
-  return <TrendingClient initialPosts={initialPosts} />;
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <main className="mx-auto max-w-2xl px-4 py-6 lg:py-8 pt-16 lg:pb-8">
+        <TrendingClient initialPosts={initialPosts} />
+      </main>
+    </div>
+  );
 }
+
 
 
 

@@ -1,8 +1,15 @@
 import ExploreClient from "@/components/features/community/ExploreClient";
 
 export default function ExplorePage() {
-  return <ExploreClient />;
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <main className="mx-auto max-w-4xl px-4 py-6 lg:py-8 pt-16 pb-20 lg:pb-8">
+        <ExploreClient />
+      </main>
+    </div>
+  );
 }
+
 
 
 

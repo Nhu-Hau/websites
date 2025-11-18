@@ -344,41 +344,49 @@ export class ChatService {
   }
 
   /** Bộ lọc “chỉ Tiếng Anh” – nới để không chặn nhầm câu chữa ngữ pháp */
-  private isEnglishRelated(messages: Partial<IChatMessage>[]) {
-    const lastMsg = messages.length
-      ? String(messages[messages.length - 1]?.content ?? "")
-      : "";
-    const lower = lastMsg.toLowerCase();
+private isEnglishRelated(messages: Partial<IChatMessage>[]) {
+  const lastMsg = messages.length
+    ? String(messages[messages.length - 1]?.content ?? "")
+    : "";
+  const lower = lastMsg.toLowerCase().trim();
 
-    // 1) Từ khóa trực tiếp về English/ELT
-    const directRe =
-      /(tiếng anh|english|toeic|ielts|grammar|ngữ pháp|vocabulary|từ vựng|phát âm|pronunciation|listening|reading|writing|speaking|dịch|translate|sửa câu|thì|tenses|part\s*5|part\s*6|part\s*7|bài tập tiếng anh|collocation|phrasal verb|ielts task)/i;
-    if (directRe.test(lower)) return true;
+  if (!lastMsg.trim()) return false;
 
-    // 2) Có từ tiếng Anh + tín hiệu "chữa bài" tiếng Việt (vd: "he are students sai chỗ nào")
-    const hasAsciiWord = /[a-z][a-z'\-]+/i.test(lastMsg); // có từ a-z
-    const viCue =
-      /(sai|đúng|sửa|chữa|nghĩa|dịch|câu này|check|kiểm tra|phân tích|giải thích)/i.test(
-        lower
-      );
-    if (hasAsciiWord && viCue) return true;
+  // 0) Một số regex dùng chung
+  const directRe =
+    /(tiếng anh|english|toeic|ielts|grammar|ngữ pháp|vocabulary|từ vựng|phát âm|pronunciation|listening|reading|writing|speaking|dịch|translate|sửa câu|chữa câu|thì|tenses|part\s*5|part\s*6|part\s*7|bài tập tiếng anh|collocation|phrasal verb|ielts task)/i;
 
-    // 3) Nhiều chữ cái tiếng Anh => có thể là câu English
-    const letters = (lastMsg.match(/[a-z]/gi) || []).length;
-    const ratio = letters / Math.max(lastMsg.length, 1);
-    if (ratio > 0.25) return true;
+  const hasAsciiWord = /[a-z][a-z'\-]+/i.test(lastMsg); // có từ a-z
+  const viCueRe =
+    /(sai|đúng|sửa|chữa|nghĩa|dịch|câu này|check|kiểm tra|phân tích|giải thích)/i;
 
-    // 4) Loại trừ vài chủ đề kỹ thuật thường nhầm
-    if (
-      /(router|openwrt|docker|git|gmail|smtp|openai|mp3|android|rom|vlan|zerotier|mongodb|express|react|node\.js)/i.test(
-        lower
-      )
-    ) {
-      return false;
-    }
+  const technicalRe =
+    /(router|openwrt|docker|git|github|gmail|smtp|openai|mp3|android|rom|vlan|zerotier|mongodb|express|react|next\.js|node\.js|typescript|javascript|frontend|backend|localhost|http(s)?:\/\/)/i;
 
-    return false;
-  }
+  // 1) Từ khóa trực tiếp về English/ELT -> luôn true
+  if (directRe.test(lower)) return true;
+
+  // 2) Có từ tiếng Anh + tín hiệu "chữa bài" tiếng Việt (vd: "he are students sai chỗ nào")
+  if (hasAsciiWord && viCueRe.test(lower)) return true;
+
+  // 3) Nếu chứa nhiều từ khoá kỹ thuật mà KHÔNG hề nhắc gì đến học tiếng Anh -> false
+  // (đặt trước khi dùng heuristic tỉ lệ chữ cái)
+  if (technicalRe.test(lower)) return false;
+
+  // 4) Heuristic: tỉ lệ chữ cái tiếng Anh cao -> có thể là câu English thuần
+  const letters = (lastMsg.match(/[a-z]/gi) || []).length;
+  const ratio = letters / Math.max(lastMsg.length, 1);
+
+  // Có thể chỉnh ngưỡng lên cao hơn một chút để tránh bắt nhầm
+  // ví dụ: câu dài, > ~20 ký tự, chủ yếu là a-z và khoảng trắng
+  const isLikelyEnglishSentence =
+    ratio > 0.4 && lastMsg.length > 15 && /\s/.test(lastMsg);
+
+  if (isLikelyEnglishSentence) return true;
+
+  // 5) Còn lại -> không liên quan tiếng Anh
+  return false;
+}
 
   /** Tính level từ điểm TOEIC */
   private calculateLevelFromToeic(

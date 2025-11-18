@@ -76,3 +76,4 @@ export default function TrendingClient({ initialPosts }: TrendingClientProps) {
 }
 
 
+

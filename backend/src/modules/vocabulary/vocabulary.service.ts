@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { VocabularyModel } from "./vocabulary.model";
 import {
   VocabularySet,
+  VocabularyTerm,
   CreateVocabularySetDTO,
   UpdateVocabularySetDTO,
   AddTermDTO,

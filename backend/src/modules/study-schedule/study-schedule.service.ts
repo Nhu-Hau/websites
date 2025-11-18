@@ -85,7 +85,7 @@ export async function createOrUpdateSchedule(
     .lean();
 
   let streak = 1; // Mặc định là 1
-  if (lastCompleted) {
+  if (lastCompleted && !Array.isArray(lastCompleted)) {
     const lastDate = new Date(lastCompleted.startAt);
     lastDate.setHours(0, 0, 0, 0);
     const targetDateOnly = new Date(targetDate);

@@ -47,3 +47,4 @@ export const StudyGroup =
   mongoose.model<IStudyGroup>("StudyGroup", StudyGroupSchema, "study_groups");
 
 
+

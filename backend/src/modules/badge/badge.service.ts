@@ -285,7 +285,7 @@ async function checkPerfectScoreBadge(userId: Types.ObjectId): Promise<BadgeChec
     acc: 100,
   }).lean();
 
-  if (perfectPractice) {
+  if (perfectPractice && !Array.isArray(perfectPractice)) {
     return {
       earned: true,
       badgeType: "perfect_score",
@@ -299,7 +299,7 @@ async function checkPerfectScoreBadge(userId: Types.ObjectId): Promise<BadgeChec
     acc: 100,
   }).lean();
 
-  if (perfectProgress) {
+  if (perfectProgress && !Array.isArray(perfectProgress)) {
     return {
       earned: true,
       badgeType: "perfect_score",

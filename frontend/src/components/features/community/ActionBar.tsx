@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Heart, MessageCircle, Share2, Bookmark, Repeat2, Edit2, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -46,7 +45,6 @@ export default function ActionBar({
   onDeleteClick,
   className = "",
 }: ActionBarProps) {
-  const t = useTranslations("community.posts");
   const [isLiked, setIsLiked] = React.useState(liked);
   const [isSaved, setIsSaved] = React.useState(saved);
   const [likes, setLikes] = React.useState(likesCount);
@@ -54,10 +52,11 @@ export default function ActionBar({
   const [acting, setActing] = React.useState(false);
 
   React.useEffect(() => {
-    setIsLiked(liked);
-    setIsSaved(saved);
-    setLikes(likesCount);
-    setSaves(savedCount);
+    // Ensure liked is always a boolean
+    setIsLiked(typeof liked === "boolean" ? liked : false);
+    setIsSaved(typeof saved === "boolean" ? saved : false);
+    setLikes(typeof likesCount === "number" ? likesCount : 0);
+    setSaves(typeof savedCount === "number" ? savedCount : 0);
   }, [liked, saved, likesCount, savedCount]);
 
   const handleLike = async (e: React.MouseEvent) => {
@@ -88,7 +87,7 @@ export default function ActionBar({
       setIsLiked(!newLiked);
       setLikes(likes);
       onLikeChange?.(liked, likes);
-      toast.error(t("likeError"));
+      toast.error("Lỗi khi thích bài viết");
     } finally {
       setActing(false);
     }
@@ -117,7 +116,13 @@ export default function ActionBar({
           setSaves(data.savedCount);
           setIsSaved(data.saved);
           onSaveChange?.(data.saved, data.savedCount);
-          // Trigger custom event to refresh saved posts page
+          // Show toast
+          if (data.saved) {
+            toast.success("Đã lưu bài viết");
+          } else {
+            toast.success("Đã bỏ lưu bài viết");
+          }
+          // Trigger custom event to refresh saved posts page (saved state is now in DB)
           if (typeof window !== "undefined" && window.location.pathname.includes("/community/saved")) {
             window.dispatchEvent(new CustomEvent("savedPostsChanged"));
           }
@@ -126,7 +131,7 @@ export default function ActionBar({
       setIsSaved(!newSaved);
       setSaves(saves);
       onSaveChange?.(saved, saves);
-      toast.error(t("saveError"));
+      toast.error("Lỗi khi lưu bài viết");
     } finally {
       setActing(false);
     }
@@ -195,7 +200,7 @@ export default function ActionBar({
             ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
             : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         }`}
-        aria-label={isSaved ? t("unsaved") : t("saved")}
+        aria-label={isSaved ? "Bỏ lưu" : "Lưu"}
       >
         <Bookmark className={`h-5 w-5 ${isSaved ? "fill-current" : ""}`} />
         {saves > 0 && <span>{saves}</span>}

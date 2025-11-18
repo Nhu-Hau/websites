@@ -141,6 +141,8 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
       liked?: boolean;
       userId?: string;
     }) => {
+      // Don't update if this is the current user's own like action
+      // (they already updated it optimistically)
       if (p.userId && currentUserId && p.userId === currentUserId) return;
       setPosts((prev) =>
         prev.map((post) => {
@@ -149,6 +151,8 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
             typeof p.likesCount === "number"
               ? p.likesCount
               : Number(post.likesCount) || 0;
+          // Only update likesCount from socket events, not liked field
+          // (liked field is user-specific and should come from API)
           return { ...post, likesCount: safeLikes };
         })
       );
@@ -335,12 +339,12 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
                 </span>
                 {group.postsCount !== undefined && (
                   <span>
-                    {group.postsCount} {t("posts") || "posts"}
+                    {group.postsCount} {t("posts") || "bài viết"}
                   </span>
                 )}
                 {admin && (
                   <span>
-                    {t("admin") || "Admin"}: {admin.name || "Unknown"}
+                    {t("admin") || "Quản trị viên"}: {admin.name || "Không xác định"}
                   </span>
                 )}
               </div>

@@ -54,7 +54,7 @@ function Avatar({ url, name }: { url?: string; name?: string }) {
     );
   }
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 text-sm font-semibold ring-1 ring-zinc-200 dark:ring-zinc-700">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm font-semibold ring-1 ring-zinc-200 dark:ring-zinc-700">
       {(name?.[0] ?? "?").toUpperCase()}
     </div>
   );
@@ -96,6 +96,7 @@ export default function PostDetail({ postId }: { postId: string }) {
   const { show, Modal: ConfirmModal } = useConfirmModal();
 
   const [post, setPost] = React.useState<any>(null);
+  const [originalPost, setOriginalPost] = React.useState<any>(null);
   const [comments, setComments] = React.useState<CommunityComment[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [cmtInput, setCmtInput] = React.useState("");
@@ -121,6 +122,7 @@ export default function PostDetail({ postId }: { postId: string }) {
       if (!res.ok) throw new Error("Failed to load post");
       const data = await res.json();
       setPost(data.post);
+      setOriginalPost(data.originalPost || null);
       setComments(data.comments?.items ?? []);
     } catch {
       toast.error(t("loading"));
@@ -376,7 +378,16 @@ export default function PostDetail({ postId }: { postId: string }) {
                       ({tPosts("edited")})
                     </span>
                   )}
-                  {post.repostedFrom && (
+                  {post.repostedFrom && originalPost && (
+                    <button
+                      onClick={() => router.push(`${basePrefix}/community/post/${originalPost._id}`)}
+                      className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                    >
+                      <Share2 className="h-3 w-3" />
+                      {tPosts("reposted")} - Xem bài gốc
+                    </button>
+                  )}
+                  {post.repostedFrom && !originalPost && (
                     <span className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
                       <Share2 className="h-3 w-3" />
                       {tPosts("reposted")}
@@ -396,8 +407,60 @@ export default function PostDetail({ postId }: { postId: string }) {
             </div>
           </div>
 
-          {/* Content */}
-          {post.content && (
+          {/* Repost Caption */}
+          {post.repostedFrom && post.repostCaption && (
+            <div className="px-6 pt-4 pb-2">
+              <p className="text-sm text-zinc-700 dark:text-zinc-300 italic">
+                {post.repostCaption}
+              </p>
+            </div>
+          )}
+
+          {/* Original Post (when reposted) */}
+          {post.repostedFrom && originalPost && (
+            <div className="mx-6 mb-4 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden bg-zinc-50 dark:bg-zinc-800/50">
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <button
+                    onClick={() => router.push(`${basePrefix}/community/profile/${originalPost.userId}`)}
+                    className="flex-shrink-0"
+                  >
+                    <Avatar url={originalPost.user?.picture} name={originalPost.user?.name} />
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={() => router.push(`${basePrefix}/community/profile/${originalPost.userId}`)}
+                        className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      >
+                        {originalPost.user?.name || "User"}
+                      </button>
+                      <time className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {formatDate(originalPost.createdAt, tDate)}
+                      </time>
+                      <button
+                        onClick={() => router.push(`${basePrefix}/community/post/${originalPost._id}`)}
+                        className="ml-auto text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                      >
+                        Xem bài viết →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                {originalPost.content && (
+                  <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap break-words mb-3">
+                    {originalPost.content}
+                  </p>
+                )}
+                {originalPost.attachments && originalPost.attachments.length > 0 && (
+                  <MediaGallery attachments={originalPost.attachments} />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Content (only show if not a repost or no original post yet) */}
+          {!post.repostedFrom && post.content && (
             <div className="p-6 pb-4">
               <p className="text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap break-words">
                 {post.content}
@@ -405,8 +468,8 @@ export default function PostDetail({ postId }: { postId: string }) {
             </div>
           )}
 
-          {/* Media Gallery */}
-          {post.attachments && post.attachments.length > 0 && (
+          {/* Media Gallery (only show if not a repost) */}
+          {!post.repostedFrom && post.attachments && post.attachments.length > 0 && (
             <div className="px-6 pb-4">
               <MediaGallery attachments={post.attachments} />
             </div>

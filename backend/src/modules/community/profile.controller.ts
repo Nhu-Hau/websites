@@ -3,6 +3,7 @@ import mongoose, { Types } from "mongoose";
 import { User } from "../../shared/models/User";
 import { CommunityPost } from "../../shared/models/CommunityPost";
 import { Follow } from "../../shared/models/Follow";
+import { getUserBadges } from "../badge/badge.service";
 
 function oid(id: string) {
   try {
@@ -33,9 +34,10 @@ export async function getUserProfile(req: Request, res: Response) {
     });
 
     // Get followers and following counts
-    const [followersCount, followingCount] = await Promise.all([
+    const [followersCount, followingCount, badges] = await Promise.all([
       Follow.countDocuments({ followingId: userId }),
       Follow.countDocuments({ followerId: userId }),
+      getUserBadges(oid(userId)).catch(() => []), // Get badges, return empty array on error
     ]);
 
     return res.json({
@@ -43,6 +45,7 @@ export async function getUserProfile(req: Request, res: Response) {
       postsCount,
       followersCount,
       followingCount,
+      badges: badges || [],
     });
   } catch (e) {
     console.error("[getUserProfile] ERROR", e);
@@ -79,6 +82,8 @@ export async function getUserPosts(req: Request, res: Response) {
             "user.password": 0,
             "user.email": 0,
             "user.partLevels": 0,
+            "user.refreshTokenHash": 0,
+            // Keep user.picture, user.name, and other fields
           },
         },
       ]),
@@ -123,7 +128,14 @@ export async function updateUserProfile(req: Request, res: Response) {
 
     const updateData: any = {};
     if (bio !== undefined) updateData.bio = String(bio).trim();
-    if (coverImage !== undefined) updateData.coverImage = String(coverImage).trim();
+    if (coverImage !== undefined) {
+      // Allow null or empty string to delete cover image
+      if (coverImage === null || coverImage === "") {
+        updateData.coverImage = null;
+      } else {
+        updateData.coverImage = String(coverImage).trim();
+      }
+    }
 
     const user = await User.findByIdAndUpdate(
       userId,
@@ -141,5 +153,6 @@ export async function updateUserProfile(req: Request, res: Response) {
     return res.status(500).json({ message: "Server error" });
   }
 }
+
 
 

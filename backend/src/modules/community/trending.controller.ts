@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { CommunityPost } from "../../shared/models/CommunityPost";
-import { getTrendingPosts } from "../../shared/utils/trendingScore";
+import { getTrendingPosts as calculateTrendingPosts } from "../../shared/utils/trendingScore";
 import mongoose from "mongoose";
 
 function oid(id: string) {
@@ -56,16 +56,16 @@ export async function getTrendingPosts(req: Request, res: Response) {
     ]);
 
     // Calculate trending scores and sort
-    const trending = getTrendingPosts(allPosts, period);
+    const trending: any[] = calculateTrendingPosts(allPosts, period);
 
     // Paginate
-    const total = trending.length;
-    const items = trending.slice(skip, skip + limit);
+    const total: number = trending.length;
+    const items: any[] = trending.slice(skip, skip + limit);
 
     const currentUserId: string | undefined = (req as any).auth?.userId;
     const uid = currentUserId ? String(currentUserId) : null;
 
-    const out = items.map((p: any) => {
+    const out: any[] = items.map((p: any) => {
       const isOwner = !!uid && String(p.userId) === uid;
       const isLiked =
         !!uid &&
@@ -91,5 +91,6 @@ export async function getTrendingPosts(req: Request, res: Response) {
     return res.status(500).json({ message: "Server error" });
   }
 }
+
 
 

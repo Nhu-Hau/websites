@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { StudyGroup } from "../../shared/models/StudyGroup";
-import { User } from "../../shared/models/User";
 
 function oid(id: string) {
   try {

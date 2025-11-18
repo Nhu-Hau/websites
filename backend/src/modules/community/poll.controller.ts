@@ -105,7 +105,7 @@ export async function votePoll(req: Request, res: Response) {
     }
 
     // Check if user already voted
-    if (poll.voters.some((v) => String(v) === userId)) {
+    if ((poll.voters || []).some((v: any) => String(v) === userId)) {
       return res.status(400).json({ message: "Already voted" });
     }
 
@@ -152,18 +152,18 @@ export async function getPoll(req: Request, res: Response) {
     const { pollId } = req.params;
 
     const poll = await Poll.findById(pollId).lean();
-    if (!poll) {
+    if (!poll || Array.isArray(poll)) {
       return res.status(404).json({ message: "Poll not found" });
     }
 
     const hasVoted = userId
-      ? poll.voters.some((v) => String(v) === userId)
+      ? (poll.voters || []).some((v: any) => String(v) === userId)
       : false;
 
-    const options = poll.options.map((opt: any) => ({
+    const options = (poll.options || []).map((opt: any) => ({
       text: opt.text,
       votesCount: opt.votesCount,
-      hasVoted: hasVoted && opt.votes.some((v: any) => String(v) === userId),
+      hasVoted: hasVoted && (opt.votes || []).some((v: any) => String(v) === userId),
     }));
 
     return res.json({
@@ -171,7 +171,7 @@ export async function getPoll(req: Request, res: Response) {
       postId: poll.postId,
       question: poll.question,
       options,
-      votersCount: poll.votersCount,
+      votersCount: poll.votersCount || 0,
       hasVoted,
       endsAt: poll.endsAt,
       createdAt: poll.createdAt,

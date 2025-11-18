@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
 import PostCard from "@/components/features/community/PostCard";
 import Pagination from "@/components/features/community/Pagination";
 import type { CommunityPost } from "@/types/community.types";
@@ -20,7 +19,6 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const t = useTranslations("community.savedPosts");
 
   const [posts, setPosts] = React.useState<CommunityPost[]>([]);
   const [page, setPage] = React.useState(initialPage);
@@ -41,21 +39,58 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
         if (r.status === 401) {
           setTotal(0);
           setPosts([]);
-          toast.error(t("loginRequired") || "Vui lòng đăng nhập");
+          setLoading(false);
+          toast.error("Vui lòng đăng nhập để xem bài viết đã lưu");
           return;
         }
-        throw new Error("Failed to load saved posts");
+        let errorData: any = {};
+        try {
+          errorData = await r.json();
+        } catch (e) {
+          // If JSON parse fails, use status text
+          errorData = { message: r.statusText || "Failed to load saved posts" };
+        }
+        // Don't throw error for 400 status with "postId không hợp lệ" - just log and show empty
+        if (r.status === 400 && errorData.message?.includes("postId không hợp lệ")) {
+          console.warn("[SavedPostsClient] Backend returned error about invalid postId, likely due to invalid repostedFrom in saved posts");
+          // Set empty state and continue
+          setTotal(0);
+          setPosts([]);
+          setLoading(false);
+          // Don't show error toast for this specific case
+          return;
+        }
+        throw new Error(errorData.message || "Failed to load saved posts");
       }
       const j = await r.json();
-      setTotal(j.total || 0);
-      setPosts(j.items ?? []);
-    } catch (e) {
-      toast.error(t("error"));
-      console.error("[load] ERROR", e);
+      // Handle both formats: { items, total } or { page, limit, total, items }
+      let items = j.items || [];
+      // Filter out posts with invalid repostedFrom IDs to prevent errors
+      items = items.filter((p: any) => {
+        if (p.repostedFrom && typeof p.repostedFrom === 'string') {
+          const isValid = /^[0-9a-fA-F]{24}$/.test(p.repostedFrom.trim());
+          if (!isValid) {
+            console.warn("[SavedPostsClient] Filtering out post with invalid repostedFrom:", p._id);
+            return false;
+          }
+        }
+        return true;
+      });
+      const total = j.total || 0;
+      setTotal(total);
+      setPosts(items);
+    } catch (e: any) {
+      console.error("[SavedPostsClient] Load error:", e);
+      // Only show error toast if it's not a 401 (already handled)
+      if (e.message && !e.message.includes("401")) {
+        toast.error(e.message || "Có lỗi xảy ra khi tải bài viết đã lưu");
+      }
+      setTotal(0);
+      setPosts([]);
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, []);
 
   React.useEffect(() => {
     load(initialPage);
@@ -111,10 +146,10 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
     <div className="space-y-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-          {t("title")}
+          Bài viết đã lưu
         </h1>
         <p className="text-zinc-600 dark:text-zinc-400">
-          {t("description")}
+          Những bài viết bạn đã lưu để xem lại sau
         </p>
       </div>
 
@@ -129,7 +164,7 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              {t("loading")}
+              Đang tải...
             </p>
           </div>
         </div>
@@ -154,10 +189,10 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
             </svg>
           </div>
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-            {t("noPosts")}
+            Chưa có bài viết nào
           </h3>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-sm">
-            {t("noPostsDesc")}
+            Bạn chưa lưu bài viết nào. Hãy lưu những bài viết bạn thích để xem lại sau.
           </p>
         </div>
       )}

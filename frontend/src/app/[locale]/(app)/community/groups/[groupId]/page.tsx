@@ -10,7 +10,7 @@ export default async function GroupDetailPage({
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <main className="mx-auto max-w-4xl px-4 py-8 pt-20">
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div>Đang tải...</div>}>
           <GroupDetailClient groupId={params.groupId} />
         </Suspense>
       </main>

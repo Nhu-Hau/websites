@@ -1,7 +1,7 @@
 //backend/src/routes/community.routes.ts
 import { Router } from "express";
 import multer from "multer";
-import { requireAuth } from "../../shared/middleware/auth.middleware";
+import { requireAuth, requirePremium } from "../../shared/middleware/auth.middleware";
 import { attachAuthIfPresent } from "../../shared/middleware/auth.middleware";
 import {
   listPosts,
@@ -92,8 +92,8 @@ router.get("/hashtags/trending", getTrendingHashtags);
 // Following feed
 router.get("/posts/following", requireAuth, getFollowingPosts);
 
-// Groups routes
-router.post("/groups", requireAuth, createGroup);
+// Groups routes - require premium to create
+router.post("/groups", requireAuth, requirePremium, createGroup);
 router.get("/groups", attachAuthIfPresent, listGroups);
 router.get("/groups/:groupId", attachAuthIfPresent, getGroup);
 router.post("/groups/:groupId/join", requireAuth, joinGroup);

@@ -26,35 +26,69 @@ export default function FollowingClient({ initialPosts }: FollowingClientProps) 
     initialPosts ? initialPosts.items.length < initialPosts.total : true
   );
 
+  // Set initial posts on mount
+  React.useEffect(() => {
+    if (initialPosts) {
+      setPosts(initialPosts.items || []);
+      setPage(initialPosts.page || 1);
+      setHasMore((initialPosts.items?.length || 0) < (initialPosts.total || 0));
+    }
+  }, [initialPosts]);
+
+  // Load posts on mount if we don't have initialPosts or if initialPosts is empty
   React.useEffect(() => {
     if (!user) {
       setPosts([]);
       setHasMore(false);
+      setLoading(false);
       return;
     }
-    // Reload if we have user but no posts or initialPosts failed
-    if (user && posts.length === 0 && (!initialPosts || !initialPosts.items || initialPosts.items.length === 0)) {
-      fetch(`${API_BASE}/api/community/posts/following?page=1&limit=20`, {
-        credentials: "include",
-      })
-        .then((res) => {
-          if (res.ok) return res.json();
-          if (res.status === 401) {
-            setPosts([]);
-            setHasMore(false);
-          }
-          return null;
-        })
-        .then((data) => {
-          if (data && data.items) {
-            setPosts(data.items);
-            setPage(data.page || 1);
-            setHasMore(data.items.length < data.total);
-          }
-        })
-        .catch(console.error);
+    
+    // If we have initialPosts with items, use them
+    if (initialPosts && initialPosts.items && initialPosts.items.length > 0) {
+      setLoading(false);
+      return;
     }
-  }, [user]);
+    
+    // Otherwise, fetch posts
+    setLoading(true);
+    fetch(`${API_BASE}/api/community/posts/following?page=1&limit=20`, {
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then((res) => {
+        if (res.ok) return res.json();
+        if (res.status === 401) {
+          setPosts([]);
+          setHasMore(false);
+          return null;
+        }
+        // Try to parse error message
+        return res.json().then((err) => {
+          console.error("[FollowingClient] Error response:", err);
+          return null;
+        }).catch(() => null);
+      })
+      .then((data) => {
+        if (data && data.items) {
+          setPosts(data.items);
+          setPage(data.page || 1);
+          setHasMore(data.items.length < data.total);
+        } else {
+          // If no data or empty items, set empty state
+          setPosts([]);
+          setHasMore(false);
+        }
+      })
+      .catch((err) => {
+        console.error("[FollowingClient] Load error:", err);
+        setPosts([]);
+        setHasMore(false);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [user, initialPosts]); // Include initialPosts to re-fetch if it changes
 
   const loadMore = React.useCallback(async () => {
     if (loading || !hasMore || !user) return;
@@ -123,7 +157,16 @@ export default function FollowingClient({ initialPosts }: FollowingClientProps) 
         </p>
       </div>
 
-      {posts.length > 0 ? (
+      {loading && posts.length === 0 ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Đang tải bài viết...
+            </p>
+          </div>
+        </div>
+      ) : posts.length > 0 ? (
         <>
           <div className="space-y-4">
             {posts.map((post) => (

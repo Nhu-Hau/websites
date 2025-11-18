@@ -3,7 +3,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Flag, Repeat2 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import type { CommunityPost } from "@/types/community.types";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
@@ -39,27 +38,25 @@ function Avatar({ name, url }: { name?: string; url?: string }) {
   );
 }
 
-function formatDate(dateString: string, tDate: any) {
+function formatDate(dateString: string) {
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return tDate("justNow");
+  if (diffInSeconds < 60) return "Vừa xong";
   if (diffInSeconds < 3600)
-    return tDate("minutesAgo", { minutes: Math.floor(diffInSeconds / 60) });
+    return `${Math.floor(diffInSeconds / 60)} phút trước`;
   if (diffInSeconds < 86400)
-    return tDate("hoursAgo", { hours: Math.floor(diffInSeconds / 3600) });
+    return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
   if (diffInSeconds < 604800)
-    return tDate("daysAgo", { days: Math.floor(diffInSeconds / 86400) });
-  return date.toLocaleDateString();
+    return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
+  return date.toLocaleDateString("vi-VN");
 }
 
 function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const { show, Modal: ConfirmModal } = useConfirmModal();
-  const t = useTranslations("community.posts");
-  const tDate = useTranslations("community.date");
 
   const [isEditing, setIsEditing] = React.useState(false);
   const [reporting, setReporting] = React.useState(false);
@@ -68,37 +65,132 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
   const [repostCaption, setRepostCaption] = React.useState("");
   const [originalPost, setOriginalPost] = React.useState<any>(null);
   const [loadingOriginal, setLoadingOriginal] = React.useState(false);
-  // Local state for liked/saved to keep in sync
-  const [likedState, setLikedState] = React.useState(post.liked || false);
-  const [savedState, setSavedState] = React.useState(post.saved || false);
-  const [likesCountState, setLikesCountState] = React.useState(post.likesCount || 0);
-  const [savedCountState, setSavedCountState] = React.useState(post.savedCount || 0);
+  // Local state for liked/saved to keep in sync - ensure proper types
+  // Check localStorage first for liked/saved state to sync across pages
+  const getInitialLiked = () => {
+    if (typeof post.liked === "boolean") return post.liked;
+    if (typeof window !== "undefined") {
+      const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "[]");
+      return likedPosts.includes(post._id);
+    }
+    return false;
+  };
 
-  // Sync with prop changes
+  const getInitialSaved = () => {
+    // Saved state is now stored in DB, use server value directly
+    return typeof post.saved === "boolean" ? post.saved : false;
+  };
+
+  const [likedState, setLikedState] = React.useState(() => getInitialLiked());
+  const [savedState, setSavedState] = React.useState(() => getInitialSaved());
+  const [likesCountState, setLikesCountState] = React.useState(typeof post.likesCount === "number" ? post.likesCount : 0);
+  const [savedCountState, setSavedCountState] = React.useState(typeof post.savedCount === "number" ? post.savedCount : 0);
+
+  // Sync with prop changes - check localStorage first, then use server value
   React.useEffect(() => {
-    setLikedState(post.liked || false);
-    setSavedState(post.saved || false);
-    setLikesCountState(post.likesCount || 0);
-    setSavedCountState(post.savedCount || 0);
-  }, [post.liked, post.saved, post.likesCount, post.savedCount]);
+    if (typeof window !== "undefined") {
+      const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "[]");
+      const isLikedInStorage = likedPosts.includes(post._id);
+      
+      // If localStorage has the post, use that value (it's more up-to-date from user actions)
+      if (isLikedInStorage) {
+        setLikedState(true);
+        // Also update localStorage if server says liked
+        if (typeof post.liked === "boolean" && post.liked) {
+          if (!likedPosts.includes(post._id)) {
+            likedPosts.push(post._id);
+            localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+          }
+        }
+      } else {
+        // If not in localStorage, use server value
+        if (typeof post.liked === "boolean") {
+          setLikedState(post.liked);
+          // Update localStorage to match server
+          if (post.liked && !likedPosts.includes(post._id)) {
+            likedPosts.push(post._id);
+            localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+          } else if (!post.liked && likedPosts.includes(post._id)) {
+            const filtered = likedPosts.filter((id: string) => id !== post._id);
+            localStorage.setItem("likedPosts", JSON.stringify(filtered));
+          }
+        } else {
+          setLikedState(false);
+        }
+      }
+
+      // Saved posts: use server value directly (stored in DB, no localStorage needed)
+      if (typeof post.saved === "boolean") {
+        setSavedState(post.saved);
+      } else {
+        setSavedState(false);
+      }
+    } else {
+      // Server-side: use server value
+      if (typeof post.liked === "boolean") {
+        setLikedState(post.liked);
+      } else {
+        setLikedState(false);
+      }
+      if (typeof post.saved === "boolean") {
+        setSavedState(post.saved);
+      } else {
+        setSavedState(false);
+      }
+    }
+    if (typeof post.likesCount === "number") {
+      setLikesCountState(post.likesCount);
+    }
+    if (typeof post.savedCount === "number") {
+      setSavedCountState(post.savedCount);
+    }
+  }, [post.liked, post.saved, post.likesCount, post.savedCount, post._id]);
 
   // Fetch original post if this is a repost
   React.useEffect(() => {
-    if (post.repostedFrom && !originalPost && !loadingOriginal) {
+    // Validate post.repostedFrom is a valid string and valid ObjectId before fetching
+    if (post.repostedFrom && typeof post.repostedFrom === 'string' && post.repostedFrom.trim() && !originalPost && !loadingOriginal) {
+      // Check if it's a valid MongoDB ObjectId format (24 hex characters)
+      const trimmedId = post.repostedFrom.trim();
+      const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(trimmedId);
+      if (!isValidObjectId) {
+        // Invalid ObjectId format, don't fetch
+        console.warn("[PostCard] Invalid repostedFrom ObjectId:", post.repostedFrom);
+        return;
+      }
+      
       setLoadingOriginal(true);
-      fetch(`${apiBase}/api/community/posts/${post.repostedFrom}?page=1&limit=1`, {
+      fetch(`${apiBase}/api/community/posts/${trimmedId}`, {
         credentials: "include",
         cache: "no-store",
       })
-        .then((res) => {
-          if (res.ok) return res.json();
-          throw new Error("Failed to load original post");
+        .then(async (res) => {
+          if (res.ok) {
+            try {
+              return await res.json();
+            } catch (e) {
+              console.error("[PostCard] Failed to parse response:", e);
+              return null;
+            }
+          }
+          // If post not found (404) or invalid (400), silently fail
+          // Don't show error toast for missing original posts
+          if (res.status === 400 || res.status === 404) {
+            try {
+              const errorData = await res.json().catch(() => ({}));
+              console.warn("[PostCard] Original post not found or invalid:", errorData.message || res.status);
+            } catch (e) {
+              // Ignore JSON parse errors
+            }
+          }
+          return null;
         })
         .then((data) => {
-          if (data.post) setOriginalPost(data.post);
+          if (data && data.post) setOriginalPost(data.post);
         })
         .catch((err) => {
           console.error("[PostCard] Failed to load original post:", err);
+          // Silently fail - don't show error toast for missing original posts
         })
         .finally(() => {
           setLoadingOriginal(false);
@@ -108,19 +200,24 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
 
   const handleCardClick = React.useCallback(() => {
     if (!isEditing) {
-      router.push(`${basePrefix}/community/post/${post._id}`);
+      // If this is a repost and we have original post, redirect to original post
+      if (post.repostedFrom && originalPost) {
+        router.push(`${basePrefix}/community/post/${originalPost._id}`);
+      } else {
+        router.push(`${basePrefix}/community/post/${post._id}`);
+      }
     }
-  }, [router, basePrefix, post._id, isEditing]);
+  }, [router, basePrefix, post._id, post.repostedFrom, originalPost, isEditing]);
 
   const handleDelete = React.useCallback(
     async () => {
       show(
         {
-          title: t("delete.title"),
-          message: t("delete.message"),
+          title: "Xóa bài viết?",
+          message: "Bạn có chắc muốn xóa bài viết này? Hành động này không thể hoàn tác.",
           icon: "warning",
-          confirmText: t("delete.confirm"),
-          cancelText: t("delete.cancel"),
+          confirmText: "Xóa",
+          cancelText: "Hủy",
           confirmColor: "red",
         },
         async () => {
@@ -130,15 +227,15 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
               credentials: "include",
             });
             if (!r.ok) throw new Error();
-            toast.success(t("delete.success"));
+            toast.success("Đã xóa bài viết");
             onChanged();
           } catch {
-            toast.error(t("delete.error"));
+            toast.error("Lỗi khi xóa bài viết");
           }
         }
       );
     },
-    [post._id, apiBase, onChanged, show, t]
+    [post._id, apiBase, onChanged, show]
   );
 
   const handleEdit = React.useCallback(() => {
@@ -163,14 +260,14 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         body: JSON.stringify({ repostCaption: repostCaption.trim() }),
       });
       if (!res.ok) throw new Error("Failed to repost");
-      toast.success(t("repost.success"));
+      toast.success("Đã chia sẻ lại bài viết");
       setShowRepostModal(false);
       setRepostCaption("");
       onChanged();
     } catch {
-      toast.error(t("repost.error"));
+      toast.error("Lỗi khi chia sẻ lại bài viết");
     }
-  }, [post._id, apiBase, repostCaption, onChanged, t]);
+  }, [post._id, apiBase, repostCaption, onChanged]);
 
   const handleShare = React.useCallback(
     async () => {
@@ -188,11 +285,11 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
   const handleReport = React.useCallback(() => {
     show(
       {
-        title: t("report.title"),
-        message: t("report.message"),
+        title: "Báo cáo bài viết?",
+        message: "Bạn có chắc muốn báo cáo bài viết này?",
         icon: "warning",
-        confirmText: t("report.confirm"),
-        cancelText: t("report.cancel"),
+        confirmText: "Báo cáo",
+        cancelText: "Hủy",
         confirmColor: "blue",
       },
       async () => {
@@ -207,20 +304,20 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
           );
           const j = await r.json().catch(() => ({}));
           if (r.ok) {
-            toast.success(j.message || t("report.success"));
+            toast.success(j.message || "Đã báo cáo bài viết");
             setReportedOnce(true);
             onChanged();
           } else {
-            toast.error(j.message || t("report.error"));
+            toast.error(j.message || "Lỗi khi báo cáo bài viết");
           }
         } catch {
-          toast.error(t("report.errorGeneral"));
+          toast.error("Lỗi khi báo cáo bài viết");
         } finally {
           setReporting(false);
         }
       }
     );
-  }, [post._id, apiBase, onChanged, show, t]);
+  }, [post._id, apiBase, onChanged, show]);
 
   const handleCommentClick = React.useCallback(() => {
     router.push(`${basePrefix}/community/post/${post._id}`);
@@ -232,13 +329,13 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              {t("edit")}
+              Chỉnh sửa bài viết
             </h3>
             <button
               onClick={() => setIsEditing(false)}
               className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
             >
-              {t("cancel")}
+              Hủy
             </button>
           </div>
           <NewPostForm
@@ -282,17 +379,17 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                   {post.user?.name || "User"}
                 </button>
                 <time className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {formatDate(post.createdAt, tDate)}
+                  {formatDate(post.createdAt)}
                 </time>
                 {post.isEdited && post.editedAt && (
                   <span className="text-xs text-zinc-500 dark:text-zinc-400 italic">
-                    ({t("edited")})
+                    (Đã chỉnh sửa)
                   </span>
                 )}
                 {post.repostedFrom && (
                   <span className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
                     <Repeat2 className="h-3 w-3" />
-                    {t("reposted")}
+                    Đã chia sẻ lại
                   </span>
                 )}
               </div>
@@ -347,7 +444,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                     {originalPost.user?.name || "User"}
                   </button>
                   <time className="text-xs text-zinc-500 dark:text-zinc-400 ml-2">
-                    {formatDate(originalPost.createdAt, tDate)}
+                    {formatDate(originalPost.createdAt)}
                   </time>
                 </div>
               </div>
@@ -368,7 +465,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
           <div className="mx-5 mb-4 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 bg-zinc-50 dark:bg-zinc-800/50">
             <div className="text-center py-4">
               <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent mx-auto mb-2" />
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">{t("loadingOriginalPost") || "Đang tải bài viết gốc..."}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Đang tải bài viết gốc...</p>
             </div>
           </div>
         )}
@@ -404,6 +501,17 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
             onLikeChange={(liked, count) => {
               setLikedState(liked);
               setLikesCountState(count);
+              // Update localStorage
+              if (typeof window !== "undefined") {
+                const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "[]");
+                if (liked && !likedPosts.includes(post._id)) {
+                  likedPosts.push(post._id);
+                  localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+                } else if (!liked && likedPosts.includes(post._id)) {
+                  const filtered = likedPosts.filter((id: string) => id !== post._id);
+                  localStorage.setItem("likedPosts", JSON.stringify(filtered));
+                }
+              }
               // Update post object for parent component
               if (typeof post === "object") {
                 (post as any).liked = liked;
@@ -418,6 +526,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                 (post as any).saved = saved;
                 (post as any).savedCount = count;
               }
+              // Saved state is now stored in DB, no localStorage needed
             }}
             onCommentClick={handleCommentClick}
             onShareClick={handleShare}
@@ -433,12 +542,12 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full mx-4 p-6 shadow-xl">
             <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-              {t("repost.title")}
+              Chia sẻ lại bài viết
             </h3>
             <textarea
               value={repostCaption}
               onChange={(e) => setRepostCaption(e.target.value)}
-              placeholder={t("repost.placeholder")}
+              placeholder="Thêm ghi chú của bạn (tùy chọn)..."
               className="w-full min-h-[100px] rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors mb-4"
               rows={4}
             />
@@ -450,13 +559,13 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                 }}
                 className="px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
               >
-                {t("repost.cancel")}
+                Hủy
               </button>
               <button
                 onClick={handleRepostSubmit}
                 className="px-4 py-2 rounded-lg bg-blue-600 dark:bg-blue-500 text-white text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
               >
-                {t("repost.confirm")}
+                Chia sẻ lại
               </button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { requireAdminAuth } from "../../shared/middleware/auth.middleware";
-import { deleteUser, listUsers, updateUser, overviewPlacementScores, userScores, userToeicPred, visitorCount, onlineUsersCount, listPlacementAttempts, listProgressAttempts, listPracticeAttempts, vpsStats, restartServer, getPm2Logs } from "./admin.controller";
+import { deleteUser, listUsers, updateUser, overviewPlacementScores, userScores, userToeicPred, visitorCount, onlineUsersCount, listPlacementAttempts, listProgressAttempts, listPracticeAttempts, deletePlacementAttempt, deleteProgressAttempt, deletePracticeAttempt, deleteUserScore, deleteUserToeicPred, vpsStats, restartServer, getPm2Logs } from "./admin.controller";
 import {
   listCommunityPosts,
   createCommunityPost,
@@ -71,8 +71,13 @@ router.get("/vps/pm2-logs/:app", getPm2Logs);
 
 // Attempts admin routes
 router.get("/attempts/placement", listPlacementAttempts);
+router.delete("/attempts/placement/:id", deletePlacementAttempt);
 router.get("/attempts/progress", listProgressAttempts);
+router.delete("/attempts/progress/:id", deleteProgressAttempt);
 router.get("/attempts/practice", listPracticeAttempts);
+router.delete("/attempts/practice/:id", deletePracticeAttempt);
+router.delete("/analytics/user-score/:userId", deleteUserScore);
+router.delete("/analytics/user-toeic-pred/:userId", deleteUserToeicPred);
 
 // Community admin routes
 router.get("/community/posts", listCommunityPosts);

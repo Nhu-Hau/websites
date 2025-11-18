@@ -2,8 +2,8 @@
 "use client";
 
 import React from "react";
-import { adminOverview, adminUserScores, adminUserToeicPred, adminListPlacementAttempts, adminListProgressAttempts, adminListPracticeAttempts, AdminPlacementAttempt, AdminProgressAttempt, AdminPracticeAttempt, adminVisitorCount, adminOnlineUsersCount } from "@/lib/apiClient";
-import { Users, TrendingUp, BarChart3, FileText, Activity, Award, X, Eye, Wifi } from "lucide-react";
+import { adminOverview, adminUserScores, adminUserToeicPred, adminListPlacementAttempts, adminListProgressAttempts, adminListPracticeAttempts, AdminPlacementAttempt, AdminProgressAttempt, AdminPracticeAttempt, adminVisitorCount, adminOnlineUsersCount, adminDeletePlacementAttempt, adminDeleteProgressAttempt, adminDeletePracticeAttempt, adminDeleteUserScore, adminDeleteUserToeicPred } from "@/lib/apiClient";
+import { Users, TrendingUp, BarChart3, FileText, Activity, Award, X, Eye, Wifi, Trash2 } from "lucide-react";
 import { useSocket } from "@/hooks/useSocket";
 
 export default function Home() {
@@ -26,6 +26,9 @@ export default function Home() {
   const [selectedUserId, setSelectedUserId] = React.useState<string | null>(null);
   const [selectedUserPractices, setSelectedUserPractices] = React.useState<AdminPracticeAttempt[]>([]);
   const [loadingUserPractices, setLoadingUserPractices] = React.useState(false);
+  const [selectedProgressUserId, setSelectedProgressUserId] = React.useState<string | null>(null);
+  const [selectedUserProgresses, setSelectedUserProgresses] = React.useState<AdminProgressAttempt[]>([]);
+  const [loadingUserProgresses, setLoadingUserProgresses] = React.useState(false);
   const [visitorCount, setVisitorCount] = React.useState<{ totalVisits: number; uniqueVisitorsLast30Days: number } | null>(null);
   const [onlineUsers, setOnlineUsers] = React.useState<number>(0);
   const { socket, connected } = useSocket();
@@ -107,7 +110,7 @@ export default function Home() {
     (async () => {
       if (me?.role !== 'admin' || activeTab !== 'progress') return;
       try {
-        const result = await adminListProgressAttempts({ page: progressPage, limit: 20 });
+        const result = await adminListProgressAttempts({ page: progressPage, limit: 1000 }); // Lấy tất cả để group theo user
         setProgressAttempts(result.items);
         setProgressTotal(result.total);
       } catch (e: any) {
@@ -115,6 +118,25 @@ export default function Home() {
       }
     })();
   }, [me, activeTab, progressPage]);
+
+  // Fetch progress attempts của user được chọn
+  React.useEffect(() => {
+    (async () => {
+      if (!selectedProgressUserId) {
+        setSelectedUserProgresses([]);
+        return;
+      }
+      setLoadingUserProgresses(true);
+      try {
+        const result = await adminListProgressAttempts({ userId: selectedProgressUserId, limit: 1000 });
+        setSelectedUserProgresses(result.items);
+      } catch (e: any) {
+        setError(e?.message || 'Lỗi tải progress attempts của user');
+      } finally {
+        setLoadingUserProgresses(false);
+      }
+    })();
+  }, [selectedProgressUserId]);
 
   React.useEffect(() => {
     (async () => {
@@ -355,6 +377,7 @@ export default function Home() {
                       <th className="p-4 font-semibold text-zinc-700">Listening</th>
                       <th className="p-4 font-semibold text-zinc-700">Reading</th>
                       <th className="p-4 font-semibold text-zinc-700">Ngày làm</th>
+                      <th className="p-4 font-semibold text-zinc-700">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -377,11 +400,37 @@ export default function Home() {
                             day: 'numeric'
                           })}
                         </td>
+                        <td className="p-4">
+                          <button
+                            onClick={async () => {
+                              if (!confirm(`Bạn có chắc muốn xóa điểm của ${u.name}?`)) return;
+                              try {
+                                await adminDeleteUserScore(u._id);
+                                setUserScores(userScores.filter(s => s._id !== u._id));
+                                setError(undefined);
+                                // Reload data
+                                const [overview, scores] = await Promise.all([
+                                  adminOverview(),
+                                  adminUserScores(),
+                                ]);
+                                const byLevel = (overview.byLevel as any);
+                                setData({ totalUsers: overview.totalUsers, avgOverall: overview.avgOverall, byLevel, histogram: overview.histogram });
+                                setUserScores(scores.users);
+                              } catch (e: any) {
+                                setError(e?.message || 'Lỗi xóa điểm');
+                              }
+                            }}
+                            className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-colors flex items-center gap-1.5"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Xóa
+                          </button>
+                        </td>
                       </tr>
                     ))}
                     {userScores.length === 0 && (
                       <tr>
-                        <td className="p-12 text-center text-zinc-500" colSpan={6}>
+                        <td className="p-12 text-center text-zinc-500" colSpan={7}>
                           <div className="flex flex-col items-center gap-2">
                             <FileText className="h-8 w-8 text-zinc-300" />
                             <p>Chưa có dữ liệu</p>
@@ -431,6 +480,7 @@ export default function Home() {
                       <th className="p-4 font-semibold text-zinc-700">Tổng điểm</th>
                       <th className="p-4 font-semibold text-zinc-700">Listening</th>
                       <th className="p-4 font-semibold text-zinc-700">Reading</th>
+                      <th className="p-4 font-semibold text-zinc-700">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -453,11 +503,32 @@ export default function Home() {
                         </td>
                         <td className="p-4 text-zinc-700">{u.toeicPred?.listening ?? <span className="text-zinc-400">-</span>}</td>
                         <td className="p-4 text-zinc-700">{u.toeicPred?.reading ?? <span className="text-zinc-400">-</span>}</td>
+                        <td className="p-4">
+                          <button
+                            onClick={async () => {
+                              if (!confirm(`Bạn có chắc muốn xóa điểm TOEIC dự đoán của ${u.name}?`)) return;
+                              try {
+                                await adminDeleteUserToeicPred(u._id);
+                                setUserToeicPred(userToeicPred.filter(s => s._id !== u._id));
+                                setError(undefined);
+                                // Reload data
+                                const toeicPred = await adminUserToeicPred();
+                                setUserToeicPred(toeicPred.users);
+                              } catch (e: any) {
+                                setError(e?.message || 'Lỗi xóa điểm TOEIC dự đoán');
+                              }
+                            }}
+                            className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-colors flex items-center gap-1.5"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Xóa
+                          </button>
+                        </td>
                       </tr>
                     ))}
                     {userToeicPred.length === 0 && (
                       <tr>
-                        <td className="p-12 text-center text-zinc-500" colSpan={6}>
+                        <td className="p-12 text-center text-zinc-500" colSpan={7}>
                           <div className="flex flex-col items-center gap-2">
                             <Award className="h-8 w-8 text-zinc-300" />
                             <p>Chưa có dữ liệu</p>
@@ -501,6 +572,7 @@ export default function Home() {
                       <th className="p-4 font-semibold text-zinc-700">Reading</th>
                       <th className="p-4 font-semibold text-zinc-700">Độ chính xác</th>
                       <th className="p-4 font-semibold text-zinc-700">Ngày làm</th>
+                      <th className="p-4 font-semibold text-zinc-700">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -543,11 +615,30 @@ export default function Home() {
                             day: 'numeric'
                           })}
                         </td>
+                        <td className="p-4">
+                          <button
+                            onClick={async () => {
+                              if (!confirm(`Bạn có chắc muốn xóa bài làm placement của ${a.userName}?`)) return;
+                              try {
+                                await adminDeletePlacementAttempt(a._id);
+                                setPlacementAttempts(placementAttempts.filter(item => item._id !== a._id));
+                                setPlacementTotal(placementTotal - 1);
+                                setError(undefined);
+                              } catch (e: any) {
+                                setError(e?.message || 'Lỗi xóa bài làm placement');
+                              }
+                            }}
+                            className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-colors flex items-center gap-1.5"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Xóa
+                          </button>
+                        </td>
                       </tr>
                     ))}
                     {placementAttempts.length === 0 && (
                       <tr>
-                        <td className="p-12 text-center text-zinc-500" colSpan={8}>
+                        <td className="p-12 text-center text-zinc-500" colSpan={9}>
                           <div className="flex flex-col items-center gap-2">
                             <Activity className="h-8 w-8 text-zinc-300" />
                             <p>Chưa có dữ liệu</p>
@@ -606,59 +697,73 @@ export default function Home() {
                     <tr className="text-left">
                       <th className="p-4 font-semibold text-zinc-700">Người dùng</th>
                       <th className="p-4 font-semibold text-zinc-700">Email</th>
-                      <th className="p-4 font-semibold text-zinc-700">Level</th>
-                      <th className="p-4 font-semibold text-zinc-700">Tổng điểm</th>
-                      <th className="p-4 font-semibold text-zinc-700">Listening</th>
-                      <th className="p-4 font-semibold text-zinc-700">Reading</th>
-                      <th className="p-4 font-semibold text-zinc-700">Độ chính xác</th>
-                      <th className="p-4 font-semibold text-zinc-700">Ngày làm</th>
+                      <th className="p-4 font-semibold text-zinc-700">Số bài Progress</th>
+                      <th className="p-4 font-semibold text-zinc-700">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {progressAttempts.map((a, idx) => (
-                      <tr 
-                        key={a._id} 
-                        className={`border-t border-zinc-100 hover:bg-zinc-50 transition-colors ${
-                          idx % 2 === 0 ? 'bg-white' : 'bg-zinc-50/50'
-                        }`}
-                      >
-                        <td className="p-4 font-medium text-zinc-900">{a.userName}</td>
-                        <td className="p-4 font-mono text-xs text-zinc-600">{a.userEmail}</td>
-                        <td className="p-4">
-                          <span className="px-3 py-1 rounded-full border text-xs font-medium bg-blue-100 text-blue-800 border-blue-200">
-                            Level {a.level}
-                          </span>
-                        </td>
-                        <td className="p-4 font-semibold text-lg text-tealCustom">{a.overall}</td>
-                        <td className="p-4 text-zinc-700">
-                          <span className="font-medium">{a.listening.score}</span>
-                          <span className="text-zinc-500 text-xs ml-1">({a.listening.correct}/{a.listening.total})</span>
-                        </td>
-                        <td className="p-4 text-zinc-700">
-                          <span className="font-medium">{a.reading.score}</span>
-                          <span className="text-zinc-500 text-xs ml-1">({a.reading.correct}/{a.reading.total})</span>
-                        </td>
-                        <td className="p-4">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            a.acc >= 0.8 ? 'bg-green-100 text-green-700' :
-                            a.acc >= 0.6 ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
-                            {(a.acc * 100).toFixed(1)}%
-                          </span>
-                        </td>
-                        <td className="p-4 text-xs text-zinc-500">
-                          {new Date(a.submittedAt).toLocaleDateString('vi-VN', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </td>
-                      </tr>
-                    ))}
+                    {(() => {
+                      // Group progress attempts theo user
+                      const userMap = new Map<string, { userId: string; userName: string; userEmail: string; attempts: AdminProgressAttempt[] }>();
+                      progressAttempts.forEach((a) => {
+                        if (!userMap.has(a.userId)) {
+                          userMap.set(a.userId, { userId: a.userId, userName: a.userName, userEmail: a.userEmail, attempts: [] });
+                        }
+                        userMap.get(a.userId)!.attempts.push(a);
+                      });
+                      const users = Array.from(userMap.values());
+                      return users.map((user, idx) => (
+                        <tr 
+                          key={user.userId} 
+                          className={`border-t border-zinc-100 hover:bg-zinc-50 transition-colors ${
+                            idx % 2 === 0 ? 'bg-white' : 'bg-zinc-50/50'
+                          }`}
+                        >
+                          <td className="p-4 font-medium text-zinc-900">{user.userName}</td>
+                          <td className="p-4 font-mono text-xs text-zinc-600">{user.userEmail}</td>
+                          <td className="p-4">
+                            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                              {user.attempts.length} bài
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setSelectedProgressUserId(user.userId)}
+                                className="px-4 py-2 text-sm border border-tealCustom text-tealCustom rounded-lg hover:bg-teal-50 transition-colors font-medium"
+                              >
+                                Xem chi tiết
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm(`Bạn có chắc muốn xóa tất cả ${user.attempts.length} bài progress của ${user.userName}?`)) return;
+                                  try {
+                                    // Xóa tất cả attempts của user
+                                    await Promise.all(user.attempts.map(a => adminDeleteProgressAttempt(a._id)));
+                                    setProgressAttempts(progressAttempts.filter(a => a.userId !== user.userId));
+                                    setProgressTotal(progressTotal - user.attempts.length);
+                                    setError(undefined);
+                                    // Reload data
+                                    const result = await adminListProgressAttempts({ page: progressPage, limit: 1000 });
+                                    setProgressAttempts(result.items);
+                                    setProgressTotal(result.total);
+                                  } catch (e: any) {
+                                    setError(e?.message || 'Lỗi xóa bài progress');
+                                  }
+                                }}
+                                className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-colors flex items-center gap-1.5"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Xóa tất cả
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ));
+                    })()}
                     {progressAttempts.length === 0 && (
                       <tr>
-                        <td className="p-12 text-center text-zinc-500" colSpan={8}>
+                        <td className="p-12 text-center text-zinc-500" colSpan={4}>
                           <div className="flex flex-col items-center gap-2">
                             <TrendingUp className="h-8 w-8 text-zinc-300" />
                             <p>Chưa có dữ liệu</p>
@@ -669,28 +774,146 @@ export default function Home() {
                   </tbody>
                 </table>
               </div>
-              {progressTotal > 20 && (
-                <div className="p-4 border-t border-zinc-200 flex gap-2 justify-center items-center">
-                  <button
-                    onClick={() => setProgressPage(p => Math.max(1, p - 1))}
-                    disabled={progressPage === 1}
-                    className="px-4 py-2 border border-zinc-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 transition-colors"
-                  >
-                    Trước
-                  </button>
-                  <span className="px-4 py-2 text-sm text-zinc-600">
-                    Trang {progressPage} / {Math.ceil(progressTotal / 20)}
-                  </span>
-                  <button
-                    onClick={() => setProgressPage(p => p + 1)}
-                    disabled={progressPage >= Math.ceil(progressTotal / 20)}
-                    className="px-4 py-2 border border-zinc-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 transition-colors"
-                  >
-                    Sau
-                  </button>
-                </div>
-              )}
             </div>
+
+            {/* Modal hiển thị bài progress của user */}
+            {selectedProgressUserId && (
+              <div 
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                style={{ animation: 'fadeIn 0.2s ease-out' }}
+                onClick={() => setSelectedProgressUserId(null)}
+              >
+                <div 
+                  className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+                  style={{ animation: 'slideUp 0.3s ease-out' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-6 border-b border-zinc-200 flex justify-between items-center bg-gradient-to-r from-teal-50 to-blue-50">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-tealCustom rounded-full p-2">
+                        <TrendingUp className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-zinc-900">
+                          Bài Progress của {selectedUserProgresses[0]?.userName || 'User'}
+                        </h3>
+                        <p className="text-sm text-zinc-600 mt-1">
+                          {selectedUserProgresses.length} bài progress
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSelectedProgressUserId(null)}
+                      className="text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 rounded-full p-2 transition-colors"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="p-6 overflow-auto flex-1">
+                    {loadingUserProgresses ? (
+                      <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-tealCustom mx-auto mb-4"></div>
+                        <p className="text-zinc-500">Đang tải...</p>
+                      </div>
+                    ) : selectedUserProgresses.length === 0 ? (
+                      <div className="text-center py-12">
+                        <TrendingUp className="h-12 w-12 text-zinc-300 mx-auto mb-4" />
+                        <p className="text-zinc-500">Chưa có bài progress nào</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-zinc-50 sticky top-0">
+                            <tr className="text-left">
+                              <th className="p-4 font-semibold text-zinc-700">Level</th>
+                              <th className="p-4 font-semibold text-zinc-700">Tổng điểm</th>
+                              <th className="p-4 font-semibold text-zinc-700">Listening</th>
+                              <th className="p-4 font-semibold text-zinc-700">Reading</th>
+                              <th className="p-4 font-semibold text-zinc-700">Độ chính xác</th>
+                              <th className="p-4 font-semibold text-zinc-700">Ngày làm</th>
+                              <th className="p-4 font-semibold text-zinc-700">Thao tác</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedUserProgresses
+                              .sort((a, b) => a.level - b.level)
+                              .map((a, idx) => (
+                              <tr 
+                                key={a._id} 
+                                className={`border-t border-zinc-100 hover:bg-zinc-50 transition-colors ${
+                                  idx % 2 === 0 ? 'bg-white' : 'bg-zinc-50/50'
+                                }`}
+                              >
+                                <td className="p-4">
+                                  <span className="px-3 py-1 rounded-full border text-xs font-medium bg-blue-100 text-blue-800 border-blue-200">
+                                    Level {a.level}
+                                  </span>
+                                </td>
+                                <td className="p-4 font-semibold text-lg text-tealCustom">{a.overall}</td>
+                                <td className="p-4 text-zinc-700">
+                                  <span className="font-medium">{a.listening.score}</span>
+                                  <span className="text-zinc-500 text-xs ml-1">({a.listening.correct}/{a.listening.total})</span>
+                                </td>
+                                <td className="p-4 text-zinc-700">
+                                  <span className="font-medium">{a.reading.score}</span>
+                                  <span className="text-zinc-500 text-xs ml-1">({a.reading.correct}/{a.reading.total})</span>
+                                </td>
+                                <td className="p-4">
+                                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                    a.acc >= 0.8 ? 'bg-green-100 text-green-700' :
+                                    a.acc >= 0.6 ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-red-100 text-red-700'
+                                  }`}>
+                                    {(a.acc * 100).toFixed(1)}%
+                                  </span>
+                                </td>
+                                <td className="p-4 text-xs text-zinc-500">
+                                  {new Date(a.submittedAt).toLocaleDateString('vi-VN', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  })}
+                                </td>
+                                <td className="p-4">
+                                  <button
+                                    onClick={async () => {
+                                      if (!confirm(`Bạn có chắc muốn xóa bài progress Level ${a.level} của ${a.userName}?`)) return;
+                                      try {
+                                        await adminDeleteProgressAttempt(a._id);
+                                        setSelectedUserProgresses(selectedUserProgresses.filter(item => item._id !== a._id));
+                                        // Update main list
+                                        setProgressAttempts(progressAttempts.filter(item => item._id !== a._id));
+                                        setProgressTotal(progressTotal - 1);
+                                        setError(undefined);
+                                        // Reload data
+                                        const result = await adminListProgressAttempts({ page: progressPage, limit: 1000 });
+                                        setProgressAttempts(result.items);
+                                        setProgressTotal(result.total);
+                                        // Reload selected user progresses
+                                        if (selectedProgressUserId) {
+                                          const userResult = await adminListProgressAttempts({ userId: selectedProgressUserId, limit: 1000 });
+                                          setSelectedUserProgresses(userResult.items);
+                                        }
+                                      } catch (e: any) {
+                                        setError(e?.message || 'Lỗi xóa bài progress');
+                                      }
+                                    }}
+                                    className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-colors flex items-center gap-1.5"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    Xóa
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -747,12 +970,36 @@ export default function Home() {
                             </span>
                           </td>
                           <td className="p-4">
-                            <button
-                              onClick={() => setSelectedUserId(user.userId)}
-                              className="px-4 py-2 text-sm border border-tealCustom text-tealCustom rounded-lg hover:bg-teal-50 transition-colors font-medium"
-                            >
-                              Xem chi tiết
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setSelectedUserId(user.userId)}
+                                className="px-4 py-2 text-sm border border-tealCustom text-tealCustom rounded-lg hover:bg-teal-50 transition-colors font-medium"
+                              >
+                                Xem chi tiết
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm(`Bạn có chắc muốn xóa tất cả ${user.attempts.length} bài practice của ${user.userName}?`)) return;
+                                  try {
+                                    // Xóa tất cả attempts của user
+                                    await Promise.all(user.attempts.map(a => adminDeletePracticeAttempt(a._id)));
+                                    setPracticeAttempts(practiceAttempts.filter(a => a.userId !== user.userId));
+                                    setPracticeTotal(practiceTotal - user.attempts.length);
+                                    setError(undefined);
+                                    // Reload data
+                                    const result = await adminListPracticeAttempts({ page: practicePage, limit: 1000 });
+                                    setPracticeAttempts(result.items);
+                                    setPracticeTotal(result.total);
+                                  } catch (e: any) {
+                                    setError(e?.message || 'Lỗi xóa bài practice');
+                                  }
+                                }}
+                                className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-colors flex items-center gap-1.5"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Xóa tất cả
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ));
@@ -828,7 +1075,7 @@ export default function Home() {
                               <th className="p-4 font-semibold text-zinc-700">Độ chính xác</th>
                               <th className="p-4 font-semibold text-zinc-700">Thời gian</th>
                               <th className="p-4 font-semibold text-zinc-700">Ngày làm</th>
-                              {/* <th className="p-4 font-semibold text-zinc-700">Retake</th> */}
+                              <th className="p-4 font-semibold text-zinc-700">Thao tác</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -880,13 +1127,34 @@ export default function Home() {
                                   })}
                                 </td>
                                 <td className="p-4">
-                                  {a.isRetake ? (
-                                    <span className="px-2 py-1 rounded-full border text-xs font-medium bg-orange-100 text-orange-800 border-orange-200">
-                                      Retake
-                                    </span>
-                                  ) : (
-                                    <span className="text-zinc-400">-</span>
-                                  )}
+                                  <button
+                                    onClick={async () => {
+                                      if (!confirm(`Bạn có chắc muốn xóa bài practice ${a.partKey} Level ${a.level} của ${a.userName}?`)) return;
+                                      try {
+                                        await adminDeletePracticeAttempt(a._id);
+                                        setSelectedUserPractices(selectedUserPractices.filter(item => item._id !== a._id));
+                                        // Update main list
+                                        setPracticeAttempts(practiceAttempts.filter(item => item._id !== a._id));
+                                        setPracticeTotal(practiceTotal - 1);
+                                        setError(undefined);
+                                        // Reload data
+                                        const result = await adminListPracticeAttempts({ page: practicePage, limit: 1000 });
+                                        setPracticeAttempts(result.items);
+                                        setPracticeTotal(result.total);
+                                        // Reload selected user practices
+                                        if (selectedUserId) {
+                                          const userResult = await adminListPracticeAttempts({ userId: selectedUserId, limit: 1000 });
+                                          setSelectedUserPractices(userResult.items);
+                                        }
+                                      } catch (e: any) {
+                                        setError(e?.message || 'Lỗi xóa bài practice');
+                                      }
+                                    }}
+                                    className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-colors flex items-center gap-1.5"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    Xóa
+                                  </button>
                                 </td>
                               </tr>
                             ))}

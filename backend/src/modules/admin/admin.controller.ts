@@ -494,6 +494,149 @@ export async function listPracticeAttempts(req: Request, res: Response) {
   }
 }
 
+// DELETE /api/admin/attempts/placement/:id
+export async function deletePlacementAttempt(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "ID không hợp lệ" });
+    }
+
+    const attempt = await PlacementAttempt.findById(id);
+    if (!attempt) {
+      return res.status(404).json({ message: "Không tìm thấy bài làm placement" });
+    }
+
+    const userId = attempt.userId;
+    
+    // Xóa attempt
+    await attempt.deleteOne();
+
+    // Kiểm tra xem đây có phải là lastPlacementAttemptId của user không
+    const user = await User.findById(userId);
+    if (user && user.lastPlacementAttemptId && String(user.lastPlacementAttemptId) === id) {
+      // Tìm attempt mới nhất khác (nếu có)
+      const latestAttempt = await PlacementAttempt.findOne({ userId })
+        .sort({ submittedAt: -1 })
+        .select("_id");
+      
+      if (latestAttempt) {
+        user.lastPlacementAttemptId = latestAttempt._id;
+      } else {
+        user.lastPlacementAttemptId = undefined;
+        user.level = 1; // Reset về level 1 nếu không còn attempt nào
+        user.toeicPred = undefined; // Xóa TOEIC prediction
+      }
+      await user.save();
+    }
+
+    return res.json({ message: "Đã xóa bài làm placement" });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: "Lỗi khi xóa bài làm placement" });
+  }
+}
+
+// DELETE /api/admin/attempts/progress/:id
+export async function deleteProgressAttempt(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "ID không hợp lệ" });
+    }
+
+    const attempt = await ProgressAttempt.findById(id);
+    if (!attempt) {
+      return res.status(404).json({ message: "Không tìm thấy bài làm progress" });
+    }
+
+    await attempt.deleteOne();
+    return res.json({ message: "Đã xóa bài làm progress" });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: "Lỗi khi xóa bài làm progress" });
+  }
+}
+
+// DELETE /api/admin/attempts/practice/:id
+export async function deletePracticeAttempt(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "ID không hợp lệ" });
+    }
+
+    const attempt = await PracticeAttempt.findById(id);
+    if (!attempt) {
+      return res.status(404).json({ message: "Không tìm thấy bài làm practice" });
+    }
+
+    await attempt.deleteOne();
+    return res.json({ message: "Đã xóa bài làm practice" });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: "Lỗi khi xóa bài làm practice" });
+  }
+}
+
+// DELETE /api/admin/analytics/user-score/:userId - Xóa placement attempt của user (xóa điểm trong tab Tổng quan)
+export async function deleteUserScore(req: Request, res: Response) {
+  try {
+    const { userId } = req.params;
+    if (!mongoose.isValidObjectId(userId)) {
+      return res.status(400).json({ message: "ID người dùng không hợp lệ" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    if (!user.lastPlacementAttemptId) {
+      return res.status(404).json({ message: "Người dùng chưa có bài làm placement" });
+    }
+
+    const attemptId = user.lastPlacementAttemptId;
+    
+    // Xóa attempt
+    await PlacementAttempt.findByIdAndDelete(attemptId);
+
+    // Reset user
+    user.lastPlacementAttemptId = undefined;
+    user.level = 1;
+    user.toeicPred = undefined;
+    await user.save();
+
+    return res.json({ message: "Đã xóa điểm placement của người dùng" });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: "Lỗi khi xóa điểm người dùng" });
+  }
+}
+
+// DELETE /api/admin/analytics/user-toeic-pred/:userId - Xóa TOEIC prediction của user
+export async function deleteUserToeicPred(req: Request, res: Response) {
+  try {
+    const { userId } = req.params;
+    if (!mongoose.isValidObjectId(userId)) {
+      return res.status(400).json({ message: "ID người dùng không hợp lệ" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    user.toeicPred = undefined;
+    await user.save();
+
+    return res.json({ message: "Đã xóa điểm TOEIC dự đoán của người dùng" });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: "Lỗi khi xóa điểm TOEIC dự đoán" });
+  }
+}
+
 // GET /api/admin/analytics/vps-stats
 export async function vpsStats(_req: Request, res: Response) {
   try {

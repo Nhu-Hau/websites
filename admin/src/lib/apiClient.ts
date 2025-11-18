@@ -249,6 +249,36 @@ export async function adminListPracticeAttempts(params?: { page?: number; limit?
   return res.json() as Promise<{ items: AdminPracticeAttempt[]; total: number; page: number; limit: number; pages: number }>;
 }
 
+export async function adminDeletePlacementAttempt(id: string) {
+  const res = await fetch(`/api/admin/attempts/placement/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete placement attempt failed'); }
+  return res.json() as Promise<{ message: string }>;
+}
+
+export async function adminDeleteProgressAttempt(id: string) {
+  const res = await fetch(`/api/admin/attempts/progress/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete progress attempt failed'); }
+  return res.json() as Promise<{ message: string }>;
+}
+
+export async function adminDeletePracticeAttempt(id: string) {
+  const res = await fetch(`/api/admin/attempts/practice/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete practice attempt failed'); }
+  return res.json() as Promise<{ message: string }>;
+}
+
+export async function adminDeleteUserScore(userId: string) {
+  const res = await fetch(`/api/admin/analytics/user-score/${encodeURIComponent(userId)}`, { method: 'DELETE', credentials: 'include' });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete user score failed'); }
+  return res.json() as Promise<{ message: string }>;
+}
+
+export async function adminDeleteUserToeicPred(userId: string) {
+  const res = await fetch(`/api/admin/analytics/user-toeic-pred/${encodeURIComponent(userId)}`, { method: 'DELETE', credentials: 'include' });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete user TOEIC prediction failed'); }
+  return res.json() as Promise<{ message: string }>;
+}
+
 export type AdminCommunityPost = {
   _id: string;
   userId: any;

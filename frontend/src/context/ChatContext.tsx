@@ -13,7 +13,7 @@ interface ChatContextType {
     admin: number;
     ai: number;
   };
-  setUnreadCount: (count: { admin: number; ai: number }) => void;
+  setUnreadCount: React.Dispatch<React.SetStateAction<{ admin: number; ai: number }>>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);

@@ -1021,7 +1021,7 @@ export default function ChatBox() {
                       ? "Đăng nhập để chat..."
                       : user.access !== "premium"
                       ? "Cần tài khoản Premium để sử dụng..."
-                      : "Nhập tin nhắn..."}
+                      : "Nhập tin nhắn..."
                   }
                   disabled={!user || sending || user?.access !== "premium"}
                   rows={1}

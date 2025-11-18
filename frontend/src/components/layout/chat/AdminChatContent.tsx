@@ -3,6 +3,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState, useCallback } from "react";
+import Link from "next/link";
 import {
   FiSend,
   FiTrash2,
@@ -567,17 +568,17 @@ export default function AdminChatContent({ isMobile = false }: { isMobile?: bool
 
         {!user && (
           <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-            <a href="/login" className="text-orange-600 hover:underline">
+            <Link href="/login" className="text-orange-600 hover:underline">
               Đăng nhập
-            </a>{" "}
+            </Link>{" "}
             để chat với admin
           </p>
         )}
         {user && user.access !== "premium" && (
           <p className="mt-2 text-center text-xs text-orange-600 dark:text-orange-400">
-            <a href="/account" className="hover:underline font-medium">
+            <Link href="/account" className="hover:underline font-medium">
               Nâng cấp lên Premium
-            </a>{" "}
+            </Link>{" "}
             để sử dụng chat với Admin
           </p>
         )}

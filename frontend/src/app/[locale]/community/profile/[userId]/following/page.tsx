@@ -4,8 +4,9 @@ import FollowingListClient from "@/components/features/community/FollowingListCl
 export default async function ProfileFollowingPage({
   params,
 }: {
-  params: { userId: string };
+  params: Promise<{ userId: string; locale: string }>;
 }) {
+  const { userId } = await params;
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
@@ -13,7 +14,7 @@ export default async function ProfileFollowingPage({
   let initialFollowing = null;
 
   try {
-    const res = await fetch(`${API_BASE}/api/community/users/${params.userId}/following`, {
+    const res = await fetch(`${API_BASE}/api/community/users/${userId}/following`, {
       headers: token ? { Cookie: `token=${token}` } : {},
       cache: "no-store",
     });
@@ -27,7 +28,7 @@ export default async function ProfileFollowingPage({
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <main className="mx-auto max-w-4xl px-4 py-6 lg:py-8 pt-20 lg:pt-28 pb-20 lg:pb-8">
-        <FollowingListClient userId={params.userId} initialFollowing={initialFollowing} />
+        <FollowingListClient userId={userId} initialFollowing={initialFollowing} />
       </main>
     </div>
   );

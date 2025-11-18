@@ -298,7 +298,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
         className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
-        {t("back") || "Back to Groups"}
+        Back to Groups
       </Link>
 
       {/* Group Header */}
@@ -333,16 +333,16 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
               <div className="flex items-center gap-6 text-sm text-zinc-600 dark:text-zinc-400">
                 <span className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  {group.membersCount || 0} {t("members")}
+                  {group.membersCount || 0} thành viên
                 </span>
                 {group.postsCount !== undefined && (
                   <span>
-                    {group.postsCount} {t("posts") || "bài viết"}
+                    {group.postsCount} bài viết
                   </span>
                 )}
                 {admin && (
                   <span>
-                    {t("admin") || "Quản trị viên"}: {admin.name || "Không xác định"}
+                    Quản trị viên: {admin.name || "Không xác định"}
                   </span>
                 )}
               </div>
@@ -360,12 +360,12 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
                     {leaving ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-red-700 dark:border-red-400 border-t-transparent" />
-                        {t("leaving") || "Leaving..."}
+                        Đang rời...
                       </>
                     ) : (
                       <>
                         <UserMinus className="h-4 w-4" />
-                        {t("leave") || "Leave Group"}
+                        Rời nhóm
                       </>
                     )}
                   </button>
@@ -378,12 +378,12 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
                     {joining ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                        {t("joining") || "Joining..."}
+                        Đang tham gia...
                       </>
                     ) : (
                       <>
                         <UserPlus className="h-4 w-4" />
-                        {t("join") || "Join Group"}
+                        Tham gia nhóm
                       </>
                     )}
                   </button>
@@ -398,7 +398,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
       {isMember && (
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-            {t("createPost") || "Create Post"}
+            Tạo bài viết
           </h2>
           <NewPostForm groupId={groupId} onSuccess={handlePostCreated} />
         </div>
@@ -415,11 +415,11 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
         ) : (
           <div className="text-center py-12 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
             <p className="text-zinc-600 dark:text-zinc-400">
-              {t("noPosts") || "No posts yet"}
+              Chưa có bài viết nào
             </p>
             {isMember && (
               <p className="text-sm text-zinc-500 dark:text-zinc-500 mt-2">
-                {t("beFirst") || "Be the first to post!"}
+                Hãy là người đầu tiên đăng bài!
               </p>
             )}
           </div>

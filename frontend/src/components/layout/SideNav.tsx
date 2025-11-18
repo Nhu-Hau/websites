@@ -38,7 +38,7 @@ export default function SideNav() {
     { label: "Đã lưu", href: `${basePrefix}/community/saved`, icon: Bookmark },
     {
       label: "Hồ sơ cá nhân",
-      href: user?.id ? `${basePrefix}/community/profile/${user.id}` : `${basePrefix}/community`,
+      href: user?.id ? `${basePrefix}/community/profile/${user.id}` : `${basePrefix}/account`,
       icon: User,
     },
     { label: "Nhóm học", href: `${basePrefix}/community/groups`, icon: Users },
@@ -74,9 +74,9 @@ export default function SideNav() {
               className={cn(
                 "flex items-center justify-center gap-2 px-4 py-3 rounded-xl",
                 "text-sm font-semibold text-white",
-                "bg-sky-600 hover:bg-sky-700",
-                "dark:bg-sky-500 dark:hover:bg-sky-600",
-                "shadow-sm hover:shadow transition-all"
+                "from-blue-500 to-sky-600 hover:to-sky-600 bg-gradient-to-r hover:from-blue-600",
+                "dark:from-blue-500 dark:to-sky-600 dark:hover:from-blue-600 dark:hover:to-sky-700",
+                "shadow-sm hover:shadow transition-all bg-gradient-to-r"
               )}
             >
               <Plus className="h-4 w-4" />
@@ -86,13 +86,13 @@ export default function SideNav() {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
-            {navItems.map((item) => {
+            {navItems.map((item, index) => {
               const Icon = item.icon;
               const active = isActive(item.href);
 
               return (
                 <Link
-                  key={item.href}
+                  key={`${item.label}-${index}`}
                   href={item.href}
                   className={cn(
                     "group relative flex items-center gap-3 rounded-2xl px-4 py-2",

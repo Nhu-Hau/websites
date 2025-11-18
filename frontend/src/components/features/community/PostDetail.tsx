@@ -53,7 +53,7 @@ function Avatar({ url, name }: { url?: string; name?: string }) {
     );
   }
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm font-semibold ring-1 ring-zinc-200 dark:ring-zinc-700">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-400 text-white text-sm font-semibold ring-1 ring-zinc-200 dark:ring-zinc-700">
       {(name?.[0] ?? "?").toUpperCase()}
     </div>
   );
@@ -66,18 +66,25 @@ function fmtSize(bytes?: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(dateString: string, tDate: any) {
+function formatDate(dateString: string) {
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return tDate("justNow");
-  if (diffInSeconds < 3600) return tDate("minutesAgo", { minutes: Math.floor(diffInSeconds / 60) });
-  if (diffInSeconds < 86400)
-    return tDate("hoursAgo", { hours: Math.floor(diffInSeconds / 3600) });
-  if (diffInSeconds < 604800)
-    return tDate("daysAgo", { days: Math.floor(diffInSeconds / 86400) });
-  return date.toLocaleDateString();
+  if (diffInSeconds < 60) return "Vừa xong";
+  if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} phút trước`;
+  }
+  if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} giờ trước`;
+  }
+  if (diffInSeconds < 604800) {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days} ngày trước`;
+  }
+  return date.toLocaleDateString("vi-VN");
 }
 
 export default function PostDetail({ postId }: { postId: string }) {
@@ -357,11 +364,11 @@ export default function PostDetail({ postId }: { postId: string }) {
                     {post.user?.name || "User"}
                   </button>
                   <time className="text-sm text-zinc-500 dark:text-zinc-400">
-                    {formatDate(post.createdAt, tDate)}
+                    {formatDate(post.createdAt)}
                   </time>
                   {post.isEdited && post.editedAt && (
                     <span className="text-xs text-zinc-500 dark:text-zinc-400 italic">
-                      ({tPosts("edited")})
+                      (Đã chỉnh sửa)
                     </span>
                   )}
                   {post.repostedFrom && originalPost && (
@@ -370,13 +377,13 @@ export default function PostDetail({ postId }: { postId: string }) {
                       className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                     >
                       <Share2 className="h-3 w-3" />
-                      {tPosts("reposted")} - Xem bài gốc
+                      Đã chia sẻ - Xem bài gốc
                     </button>
                   )}
                   {post.repostedFrom && !originalPost && (
                     <span className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
                       <Share2 className="h-3 w-3" />
-                      {tPosts("reposted")}
+                      Đã chia sẻ
                     </span>
                   )}
                   {post.canDelete && (
@@ -385,7 +392,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                       className="ml-auto inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
-                      <span>{tPosts("delete.confirm")}</span>
+                      <span>Xóa</span>
                     </button>
                   )}
                 </div>
@@ -422,7 +429,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                         {originalPost.user?.name || "User"}
                       </button>
                       <time className="text-xs text-zinc-500 dark:text-zinc-400">
-                        {formatDate(originalPost.createdAt, tDate)}
+                        {formatDate(originalPost.createdAt)}
                       </time>
                       <button
                         onClick={() => router.push(`${basePrefix}/community/post/${originalPost._id}`)}

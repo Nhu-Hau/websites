@@ -34,7 +34,7 @@ function Avatar({ name, url }: { name?: string; url?: string }) {
     );
   }
   return (
-    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm font-semibold ring-2 ring-zinc-200 dark:ring-zinc-700">
+    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-400 text-white text-sm font-semibold ring-2 ring-zinc-200 dark:ring-zinc-700">
       {(name?.[0] ?? "?").toUpperCase()}
     </div>
   );
@@ -67,8 +67,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
   const [repostCaption, setRepostCaption] = React.useState("");
   const [originalPost, setOriginalPost] = React.useState<any>(null);
   const [loadingOriginal, setLoadingOriginal] = React.useState(false);
-  // Local state for liked/saved to keep in sync - ensure proper types
-  // Check localStorage first for liked/saved state to sync across pages
+
   const getInitialLiked = () => {
     if (typeof post.liked === "boolean") return post.liked;
     if (typeof window !== "undefined") {
@@ -79,7 +78,6 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
   };
 
   const getInitialSaved = () => {
-    // Saved state is now stored in DB, use server value directly
     return typeof post.saved === "boolean" ? post.saved : false;
   };
 
@@ -92,16 +90,13 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
     typeof post.savedCount === "number" ? post.savedCount : 0
   );
 
-  // Sync with prop changes - check localStorage first, then use server value
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "[]");
       const isLikedInStorage = likedPosts.includes(post._id);
 
-      // If localStorage has the post, use that value (it's more up-to-date from user actions)
       if (isLikedInStorage) {
         setLikedState(true);
-        // Also update localStorage if server says liked
         if (typeof post.liked === "boolean" && post.liked) {
           if (!likedPosts.includes(post._id)) {
             likedPosts.push(post._id);
@@ -109,10 +104,8 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
           }
         }
       } else {
-        // If not in localStorage, use server value
         if (typeof post.liked === "boolean") {
           setLikedState(post.liked);
-          // Update localStorage to match server
           if (post.liked && !likedPosts.includes(post._id)) {
             likedPosts.push(post._id);
             localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
@@ -125,14 +118,12 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         }
       }
 
-      // Saved posts: use server value directly (stored in DB, no localStorage needed)
       if (typeof post.saved === "boolean") {
         setSavedState(post.saved);
       } else {
         setSavedState(false);
       }
     } else {
-      // Server-side: use server value
       if (typeof post.liked === "boolean") {
         setLikedState(post.liked);
       } else {
@@ -152,9 +143,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
     }
   }, [post.liked, post.saved, post.likesCount, post.savedCount, post._id]);
 
-  // Fetch original post if this is a repost
   React.useEffect(() => {
-    // Validate post.repostedFrom is a valid string and valid ObjectId before fetching
     if (
       post.repostedFrom &&
       typeof post.repostedFrom === "string" &&
@@ -162,15 +151,10 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
       !originalPost &&
       !loadingOriginal
     ) {
-      // Check if it's a valid MongoDB ObjectId format (24 hex characters)
       const trimmedId = post.repostedFrom.trim();
       const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(trimmedId);
       if (!isValidObjectId) {
-        // Invalid ObjectId format, don't fetch
-        console.warn(
-          "[PostCard] Invalid repostedFrom ObjectId:",
-          post.repostedFrom
-        );
+        console.warn("[PostCard] Invalid repostedFrom ObjectId:", post.repostedFrom);
         return;
       }
 
@@ -188,8 +172,6 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
               return null;
             }
           }
-          // If post not found (404) or invalid (400), silently fail
-          // Don't show error toast for missing original posts
           if (res.status === 400 || res.status === 404) {
             try {
               const errorData = await res.json().catch(() => ({}));
@@ -197,9 +179,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                 "[PostCard] Original post not found or invalid:",
                 errorData.message || res.status
               );
-            } catch (e) {
-              // Ignore JSON parse errors
-            }
+            } catch (e) {}
           }
           return null;
         })
@@ -208,7 +188,6 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         })
         .catch((err) => {
           console.error("[PostCard] Failed to load original post:", err);
-          // Silently fail - don't show error toast for missing original posts
         })
         .finally(() => {
           setLoadingOriginal(false);
@@ -218,21 +197,13 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
 
   const handleCardClick = React.useCallback(() => {
     if (!isEditing) {
-      // If this is a repost and we have original post, redirect to original post
       if (post.repostedFrom && originalPost) {
         router.push(`${basePrefix}/community/post/${originalPost._id}`);
       } else {
         router.push(`${basePrefix}/community/post/${post._id}`);
       }
     }
-  }, [
-    router,
-    basePrefix,
-    post._id,
-    post.repostedFrom,
-    originalPost,
-    isEditing,
-  ]);
+  }, [router, basePrefix, post._id, post.repostedFrom, originalPost, isEditing]);
 
   const handleDelete = React.useCallback(async () => {
     show(
@@ -348,26 +319,24 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
 
   if (isEditing) {
     return (
-      <article className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-lg overflow-hidden">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Chỉnh sửa bài viết
-            </h3>
-            <button
-              onClick={() => setIsEditing(false)}
-              className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
-              Hủy
-            </button>
-          </div>
-          <NewPostForm
-            postId={post._id}
-            initialContent={post.content}
-            initialAttachments={post.attachments}
-            onSuccess={handleEditSuccess}
-          />
+      <article className="rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            Chỉnh sửa bài viết
+          </h3>
+          <button
+            onClick={() => setIsEditing(false)}
+            className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+          >
+            Hủy
+          </button>
         </div>
+        <NewPostForm
+          postId={post._id}
+          initialContent={post.content}
+          initialAttachments={post.attachments}
+          onSuccess={handleEditSuccess}
+        />
       </article>
     );
   }
@@ -376,10 +345,10 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
     <>
       <article
         onClick={handleCardClick}
-        className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer overflow-hidden"
+        className="cursor-pointer overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/95 shadow-sm ring-1 ring-black/[0.02] transition-all duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95"
       >
         {/* Header */}
-        <div className="p-5 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="border-b border-zinc-100/80 px-5 py-4 dark:border-zinc-800/80">
           <div className="flex items-start gap-3">
             <button
               onClick={(e) => {
@@ -391,7 +360,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
               <Avatar name={post.user?.name} url={post.user?.picture} />
             </button>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -399,7 +368,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                       `${basePrefix}/community/profile/${post.userId}`
                     );
                   }}
-                  className="font-semibold text-zinc-900 dark:text-zinc-100 text-base hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  className="text-base font-semibold text-zinc-900 transition-colors hover:text-sky-600 dark:text-zinc-100 dark:hover:text-sky-400"
                 >
                   {post.user?.name || "User"}
                 </button>
@@ -407,12 +376,12 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                   {formatDate(post.createdAt)}
                 </time>
                 {post.isEdited && post.editedAt && (
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+                  <span className="text-xs italic text-zinc-500 dark:text-zinc-400">
                     (Đã chỉnh sửa)
                   </span>
                 )}
                 {post.repostedFrom && (
-                  <span className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                  <span className="inline-flex items-center gap-1 text-xs text-sky-600 dark:text-sky-400">
                     <Repeat2 className="h-3 w-3" />
                     Đã chia sẻ lại
                   </span>
@@ -426,7 +395,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                   handleReport();
                 }}
                 disabled={reporting || reportedOnce}
-                className="p-2 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-sky-50 hover:text-sky-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-sky-900/20 dark:hover:text-sky-400"
                 aria-label="Report post"
               >
                 <Flag className="h-4 w-4" />
@@ -438,7 +407,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         {/* Repost Caption */}
         {post.repostedFrom && post.repostCaption && (
           <div className="px-5 pt-4 pb-2">
-            <p className="text-sm text-zinc-700 dark:text-zinc-300 italic">
+            <p className="text-sm italic text-zinc-700 dark:text-zinc-300">
               {post.repostCaption}
             </p>
           </div>
@@ -446,9 +415,9 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
 
         {/* Original Post (when reposted) */}
         {post.repostedFrom && originalPost && (
-          <div className="mx-5 mb-4 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden bg-zinc-50 dark:bg-zinc-800/50">
+          <div className="mx-5 mb-4 overflow-hidden rounded-xl border border-zinc-200/80 bg-zinc-50/90 dark:border-zinc-700/80 dark:bg-zinc-800/60">
             <div className="p-4">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="mb-3 flex items-center gap-2">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -463,7 +432,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                     url={originalPost.user?.picture}
                   />
                 </button>
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -471,17 +440,17 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                         `${basePrefix}/community/profile/${originalPost.userId}`
                       );
                     }}
-                    className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    className="text-sm font-semibold text-zinc-900 transition-colors hover:text-sky-600 dark:text-zinc-100 dark:hover:text-sky-400"
                   >
                     {originalPost.user?.name || "User"}
                   </button>
-                  <time className="text-xs text-zinc-500 dark:text-zinc-400 ml-2">
+                  <time className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
                     {formatDate(originalPost.createdAt)}
                   </time>
                 </div>
               </div>
               {originalPost.content && (
-                <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap break-words mb-3">
+                <p className="mb-3 whitespace-pre-wrap break-words text-sm leading-relaxed text-zinc-900 dark:text-zinc-100">
                   {originalPost.content}
                 </p>
               )}
@@ -495,9 +464,9 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
 
         {/* Loading Original Post */}
         {post.repostedFrom && loadingOriginal && (
-          <div className="mx-5 mb-4 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 bg-zinc-50 dark:bg-zinc-800/50">
-            <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent mx-auto mb-2" />
+          <div className="mx-5 mb-4 rounded-xl border border-zinc-200/80 bg-zinc-50/90 p-4 dark:border-zinc-700/80 dark:bg-zinc-800/60">
+            <div className="py-4 text-center">
+              <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Đang tải bài viết gốc...
               </p>
@@ -508,7 +477,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         {/* Content (only show if not a repost or no original post yet) */}
         {!post.repostedFrom && post.content && (
           <div className="px-5 py-4">
-            <p className="text-zinc-900 dark:text-zinc-100 text-sm leading-relaxed whitespace-pre-wrap break-words">
+            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-zinc-900 dark:text-zinc-100">
               {post.content}
             </p>
           </div>
@@ -524,7 +493,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
           )}
 
         {/* Actions */}
-        <div className="px-5 py-4 border-t border-zinc-100 dark:border-zinc-800">
+        <div className="border-t border-zinc-100/80 px-5 py-4 dark:border-zinc-800/80">
           <ActionBar
             postId={post._id}
             liked={likedState}
@@ -538,7 +507,6 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
             onLikeChange={(liked, count) => {
               setLikedState(liked);
               setLikesCountState(count);
-              // Update localStorage
               if (typeof window !== "undefined") {
                 const likedPosts = JSON.parse(
                   localStorage.getItem("likedPosts") || "[]"
@@ -556,7 +524,6 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                   localStorage.setItem("likedPosts", JSON.stringify(filtered));
                 }
               }
-              // Update post object for parent component
               if (typeof post === "object") {
                 (post as any).liked = liked;
                 (post as any).likesCount = count;
@@ -565,12 +532,10 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
             onSaveChange={(saved, count) => {
               setSavedState(saved);
               setSavedCountState(count);
-              // Update post object for parent component
               if (typeof post === "object") {
                 (post as any).saved = saved;
                 (post as any).savedCount = count;
               }
-              // Saved state is now stored in DB, no localStorage needed
             }}
             onCommentClick={handleCommentClick}
             onShareClick={handleShare}
@@ -583,31 +548,31 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
 
       {/* Repost Modal */}
       {showRepostModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full mx-4 p-6 shadow-xl">
-            <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-xl ring-1 ring-black/[0.06] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+            <h3 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
               Chia sẻ lại bài viết
             </h3>
             <textarea
               value={repostCaption}
               onChange={(e) => setRepostCaption(e.target.value)}
               placeholder="Thêm ghi chú của bạn (tùy chọn)..."
-              className="w-full min-h-[100px] rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors mb-4"
+              className="mb-4 min-h-[100px] w-full rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-sm outline-none transition-colors focus:border-sky-500 focus:ring-2 focus:ring-sky-500/70 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-400"
               rows={4}
             />
-            <div className="flex gap-3 justify-end">
+            <div className="flex justify-end gap-3">
               <button
                 onClick={() => {
                   setShowRepostModal(false);
                   setRepostCaption("");
                 }}
-                className="px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
                 Hủy
               </button>
               <button
                 onClick={handleRepostSubmit}
-                className="px-4 py-2 rounded-lg bg-blue-600 dark:bg-blue-500 text-white text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+                className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600"
               >
                 Chia sẻ lại
               </button>

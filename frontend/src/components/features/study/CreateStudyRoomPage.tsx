@@ -18,7 +18,6 @@ import {
   Clock,
   Activity,
   Plus,
-  X,
   RefreshCw,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -159,10 +158,10 @@ export default function CreateStudyRoomPage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center space-y-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/20 mx-auto">
-            <Loader2 className="h-6 w-6 text-blue-600 dark:text-blue-400 animate-spin" />
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="space-y-4 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 dark:bg-sky-900/20">
+            <Loader2 className="h-6 w-6 animate-spin text-sky-600 dark:text-sky-400" />
           </div>
           <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
             Đang tải…
@@ -174,23 +173,23 @@ export default function CreateStudyRoomPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <main className="mx-auto max-w-4xl px-4 py-6 lg:py-8 pt-20 lg:pt-28 pb-20 lg:pb-8">
+      <main className="mx-auto max-w-4xl px-4 pb-20 pt-20 lg:pb-8 lg:pt-28">
         {/* Page Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
+              <h1 className="mb-2 text-3xl font-bold text-zinc-900 dark:text-white">
                 Phòng học
               </h1>
-              <p className="text-zinc-600 dark:text-zinc-400">
-                Tạo và quản lý phòng học trực tuyến của bạn
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                Tạo và quản lý phòng học trực tuyến của bạn.
               </p>
             </div>
             <div className="flex items-center gap-2">
               {canCreate && (
                 <button
                   onClick={() => setShowCreateModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-sm hover:shadow"
+                  className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-md dark:bg-sky-500 dark:hover:bg-sky-400"
                 >
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">Tạo phòng</span>
@@ -200,11 +199,12 @@ export default function CreateStudyRoomPage() {
               <button
                 onClick={reload}
                 disabled={busy === "reload"}
-                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all",
                   busy === "reload"
-                    ? "text-zinc-400 dark:text-zinc-500 cursor-not-allowed"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                }`}
+                    ? "cursor-not-allowed text-zinc-400 dark:text-zinc-500"
+                    : "text-zinc-600 hover:-translate-y-0.5 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                )}
               >
                 {busy === "reload" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -222,46 +222,46 @@ export default function CreateStudyRoomPage() {
           {/* Create Room Modal */}
           {showCreateModal && (
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setShowCreateModal(false);
                 }
               }}
             >
-              <div className="" onClick={(e) => e.stopPropagation()}>
-                {/* Modal Content */}
-                <div className="p-6">
-                  <CreateStudyRoom
-                    onCreated={() => {
-                      setShowCreateModal(false);
-                      reload();
-                      toast.success("Tạo phòng thành công!");
-                    }}
-                    onCancel={() => setShowCreateModal(false)}
-                  />
-                </div>
+              <div
+                className="w-full max-w-md rounded-2xl border border-zinc-200/80 bg-white/95 p-1 shadow-2xl ring-1 ring-black/5 dark:border-zinc-800/80 dark:bg-zinc-900/95"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <CreateStudyRoom
+                  onCreated={() => {
+                    setShowCreateModal(false);
+                    reload();
+                    toast.success("Tạo phòng thành công!");
+                  }}
+                  onCancel={() => setShowCreateModal(false)}
+                />
               </div>
             </div>
           )}
 
           {!canCreate && (
-            <div className="relative rounded-2xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-900/10 p-6 shadow-sm">
+            <div className="relative rounded-2xl border border-amber-200/80 bg-amber-50/95 p-6 shadow-sm ring-1 ring-amber-100/60 dark:border-amber-800/60 dark:bg-amber-900/10">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30">
                     <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-semibold text-zinc-900 dark:text-white mb-1">
+                <div className="min-w-0 flex-1">
+                  <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-white">
                     Bạn chỉ có thể tham gia
                   </h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
                     Chỉ <strong className="font-medium">giáo viên</strong> và{" "}
                     <strong className="font-medium">quản trị viên</strong> mới
                     có thể tạo phòng. Vai trò hiện tại:{" "}
-                    <strong className="capitalize font-medium text-amber-600 dark:text-amber-400">
+                    <strong className="font-medium capitalize text-amber-700 dark:text-amber-400">
                       {role}
                     </strong>
                     .
@@ -273,16 +273,16 @@ export default function CreateStudyRoomPage() {
 
           {/* Error Alert */}
           {err && (
-            <div className="relative rounded-2xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/10 p-4 shadow-sm">
+            <div className="relative rounded-2xl border border-red-200/80 bg-red-50/95 p-4 shadow-sm ring-1 ring-red-100/60 dark:border-red-800/70 dark:bg-red-900/15">
               <div className="flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-red-900 dark:text-red-300 mb-1">
+                <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" />
+                <div className="min-w-0 flex-1">
+                  <p className="mb-1 text-sm font-medium text-red-900 dark:text-red-200">
                     {err}
                   </p>
                   <button
                     onClick={reload}
-                    className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+                    className="text-xs font-medium text-red-600 hover:underline dark:text-red-400"
                   >
                     Thử lại ngay
                   </button>
@@ -297,22 +297,25 @@ export default function CreateStudyRoomPage() {
               <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
                 Danh sách phòng
               </h2>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+              <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                 {rooms.length}
               </span>
             </div>
 
             {rooms.length === 0 ? (
-              <div className="relative rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 p-12 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 mx-auto mb-4">
-                  <Users className="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
+              <div className="relative rounded-2xl border border-dashed border-zinc-300/80 bg-white/90 p-12 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-700/80 dark:bg-zinc-900/90">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
+                  <Users className="h-8 w-8" />
                 </div>
                 {canCreate ? (
-                  <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                  <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     Chưa có phòng nào.{" "}
-                    <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                    <button
+                      onClick={() => setShowCreateModal(true)}
+                      className="font-semibold text-sky-600 underline-offset-2 hover:underline dark:text-sky-400"
+                    >
                       Tạo phòng đầu tiên!
-                    </span>
+                    </button>
                   </p>
                 ) : (
                   <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -325,16 +328,16 @@ export default function CreateStudyRoomPage() {
                 {rooms.map((r) => (
                   <div
                     key={r.roomName}
-                    className="group relative rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm hover:shadow transition-shadow duration-200"
+                    className="group relative rounded-2xl border border-zinc-200/80 bg-white/95 p-4 shadow-sm ring-1 ring-black/[0.02] transition-all duration-150 hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0 space-y-2">
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <h3 className="font-semibold text-zinc-900 dark:text-white text-base">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
                             {r.roomName}
                           </h3>
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-900/20 text-xs font-medium text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
-                            <Activity className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-800/70 dark:bg-emerald-900/20 dark:text-emerald-300">
+                            <Activity className="h-3 w-3" />
                             {r.numParticipants} online
                           </span>
                         </div>
@@ -350,10 +353,10 @@ export default function CreateStudyRoomPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex flex-shrink-0 items-center gap-2">
                         <Link
                           href={`${prefix}/study/${r.roomName}`}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm hover:shadow"
+                          className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:bg-sky-500 dark:hover:bg-sky-400"
                         >
                           <ExternalLink className="h-4 w-4" />
                           <span>Vào phòng</span>
@@ -364,10 +367,10 @@ export default function CreateStudyRoomPage() {
                             onClick={() => handleDelete(r.roomName)}
                             disabled={deleting === r.roomName}
                             className={cn(
-                              "inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2",
+                              "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2",
                               deleting === r.roomName
-                                ? "border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 opacity-50 cursor-not-allowed"
-                                : "border-red-300 dark:border-red-700/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                ? "cursor-not-allowed border-red-300 text-red-600 opacity-60 dark:border-red-700 dark:text-red-400"
+                                : "border-red-200 text-red-600 hover:-translate-y-0.5 hover:bg-red-50 dark:border-red-700/70 dark:text-red-400 dark:hover:bg-red-900/20"
                             )}
                           >
                             {deleting === r.roomName ? (

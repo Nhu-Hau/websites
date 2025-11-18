@@ -49,7 +49,7 @@ export function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = 
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const basePrefix = useBasePrefix("vi");
+  const basePrefix = useBasePrefix(); // không hard-code "vi"
   const { user: authUser, loading: authLoading } = useAuth();
 
   const role: Role = (authUser?.role as Role) || "user";
@@ -72,7 +72,6 @@ export function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = 
   const onInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const raw = e.target.value;
-      // Đơn giản hoá: luôn slugify trực tiếp input
       setInput(slugifyRoom(raw));
     },
     []
@@ -138,16 +137,16 @@ export function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = 
     [loading, authLoading, isValid, onCreate]
   );
 
-  // Trạng thái yêu cầu đăng nhập
+  // Yêu cầu đăng nhập
   if (!authUser) {
     return (
-      <div className="w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-lg">
+      <div className="w-full max-w-md rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-lg ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-900/20">
             <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="flex-1">
-            <h3 className="text-base font-semibold text-zinc-900 dark:text-white mb-1">
+            <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-white">
               Yêu cầu đăng nhập
             </h3>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -160,21 +159,21 @@ export function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = 
     );
   }
 
-  // Trạng thái không có quyền tạo phòng
+  // Không có quyền tạo phòng
   if (!canCreateRoom) {
     return (
-      <div className="w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-lg">
+      <div className="w-full max-w-md rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-lg ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-900/20">
             <AlertCircle className="h-5 w-5 text-rose-600 dark:text-rose-400" />
           </div>
           <div className="flex-1">
-            <h3 className="text-base font-semibold text-zinc-900 dark:text-white mb-1">
+            <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-white">
               Không có quyền tạo phòng
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
+            <p className="mb-1 text-sm text-zinc-600 dark:text-zinc-400">
               Vai trò hiện tại:{" "}
-              <span className="font-medium capitalize text-rose-600 dark:text-rose-400">
+              <span className="capitalize font-medium text-rose-600 dark:text-rose-400">
                 {role}
               </span>
             </p>
@@ -187,10 +186,10 @@ export function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = 
     );
   }
 
-  // Popup đơn giản
+  // Form tạo phòng
   return (
-    <div className="w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-lg">
-      {/* Header đơn giản */}
+    <div className="w-full max-w-md rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-lg ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+      {/* Header */}
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
           Tạo phòng học mới
@@ -205,7 +204,7 @@ export function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = 
         <div>
           <label
             htmlFor={fieldId}
-            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2"
+            className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
           >
             Tên phòng học
           </label>
@@ -218,17 +217,14 @@ export function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = 
               value={input}
               onChange={onInputChange}
               onKeyDown={onKeyDown}
-              placeholder="Nhập tên phòng"
+              placeholder="toeic-lr-class"
               className={cn(
-                "block w-full rounded-lg border bg-white dark:bg-zinc-900 px-10 py-3 text-sm",
-                "text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500",
-                "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
-                "transition-all duration-200",
+                "block w-full rounded-xl border bg-white px-10 py-3 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition-all duration-200 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500",
                 isValid
-                  ? "border-green-300 dark:border-green-700/50 focus:ring-green-500"
+                  ? "border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/60 dark:border-emerald-700/60"
                   : errorMsg
-                  ? "border-red-300 dark:border-red-700/50 focus:ring-red-500"
-                  : "border-zinc-300 dark:border-zinc-700"
+                  ? "border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-500/60 dark:border-red-700/70"
+                  : "border-zinc-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-500/60 dark:border-zinc-700"
               )}
               autoComplete="off"
               aria-invalid={!isValid}
@@ -242,7 +238,7 @@ export function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = 
             {isValid ? (
               <p
                 id={helpId}
-                className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400"
+                className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400"
               >
                 <CheckCircle className="h-4 w-4" />
                 Tên phòng hợp lệ.
@@ -265,7 +261,7 @@ export function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = 
             type="button"
             onClick={() => onCancel?.()}
             disabled={loading}
-            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
+            className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Hủy
           </button>
@@ -275,10 +271,10 @@ export function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = 
             onClick={onCreate}
             disabled={loading || authLoading || !isValid}
             className={cn(
-              "inline-flex items-center justify-center rounded-lg px-5 py-2 text-sm font-medium text-white transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+              "inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900",
               loading || !isValid
                 ? "cursor-not-allowed bg-zinc-300 dark:bg-zinc-700"
-                : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                : "bg-sky-600 hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-md dark:bg-sky-500 dark:hover:bg-sky-400"
             )}
           >
             {loading ? (

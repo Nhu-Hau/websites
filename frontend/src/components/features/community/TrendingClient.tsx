@@ -5,7 +5,8 @@ import PostCard from "./PostCard";
 import type { CommunityPost } from "@/types/community.types";
 import { useAuth } from "@/context/AuthContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 interface TrendingClientProps {
   initialPosts?: {
@@ -18,11 +19,12 @@ interface TrendingClientProps {
 
 export default function TrendingClient({ initialPosts }: TrendingClientProps) {
   const { user } = useAuth();
-  const [posts, setPosts] = React.useState<CommunityPost[]>(initialPosts?.items || []);
+  const [posts, setPosts] = React.useState<CommunityPost[]>(
+    initialPosts?.items || []
+  );
   const [loading, setLoading] = React.useState(false);
 
   const handlePostChanged = React.useCallback(() => {
-    // Reload trending posts
     setLoading(true);
     fetch(`${API_BASE}/api/community/posts/trending?period=24h`, {
       credentials: "include",
@@ -38,19 +40,20 @@ export default function TrendingClient({ initialPosts }: TrendingClientProps) {
   }, []);
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="mb-2">
+        <h1 className="mb-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Xu hướng
         </h1>
-        <p className="text-zinc-600 dark:text-zinc-400">
-          Những bài viết đang được quan tâm nhất trong 24 giờ qua
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          Những bài viết được tương tác nhiều nhất trong 24 giờ qua.
         </p>
       </div>
 
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
         </div>
       )}
 
@@ -67,14 +70,10 @@ export default function TrendingClient({ initialPosts }: TrendingClientProps) {
           ))}
         </div>
       ) : !loading ? (
-        <div className="text-center py-12 text-zinc-600 dark:text-zinc-400">
-          Chưa có bài viết nào trong xu hướng
+        <div className="rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 py-12 text-center text-sm text-zinc-600 shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95 dark:text-zinc-400">
+          Chưa có bài viết nào trong xu hướng.
         </div>
       ) : null}
     </div>
   );
 }
-
-
-
-

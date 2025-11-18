@@ -96,12 +96,12 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
       setTotal(j.total || 0);
       setPosts(j.items ?? []);
     } catch (e) {
-      toast.error(t("error") || "Failed to load posts");
+      toast.error("Không thể tải bài viết");
       console.error("[loadPosts] ERROR", e);
     } finally {
       setLoading(false);
     }
-  }, [groupId, t]);
+  }, [groupId]);
 
   React.useEffect(() => {
     loadGroup();

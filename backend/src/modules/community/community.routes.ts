@@ -45,6 +45,14 @@ router.post("/upload", requireAuth, upload.single("file"), uploadAttachment);
 
 // ✅ Thêm attachAuthIfPresent cho GET
 router.get("/posts", attachAuthIfPresent, listPosts);
+
+// ⚠️ IMPORTANT: Specific routes MUST come BEFORE dynamic routes
+// These routes must be before /posts/:postId to avoid matching issues
+router.get("/posts/saved", requireAuth, listSavedPosts);
+router.get("/posts/following", requireAuth, getFollowingPosts);
+router.get("/posts/trending", attachAuthIfPresent, getTrendingPosts);
+
+// Dynamic route - must come after specific routes
 router.get("/posts/:postId", attachAuthIfPresent, getPost);
 
 // các route còn lại bắt buộc auth
@@ -55,7 +63,6 @@ router.post("/posts/:postId/like", requireAuth, toggleLike);
 router.post("/posts/:postId/save", requireAuth, toggleSave);
 router.post("/posts/:postId/repost", requireAuth, repost);
 router.post("/posts/:postId/report", requireAuth, reportPost);
-router.get("/posts/saved", requireAuth, listSavedPosts);
 router.post("/posts/:postId/comments", requireAuth, addComment);
 router.put("/comments/:commentId", requireAuth, editComment);
 router.delete("/comments/:commentId", requireAuth, deleteComment);
@@ -72,9 +79,6 @@ router.get("/users/:userId/profile", attachAuthIfPresent, getUserProfile);
 router.get("/users/:userId/posts", attachAuthIfPresent, getUserPosts);
 router.put("/users/profile", requireAuth, updateUserProfile);
 
-// Trending routes
-router.get("/posts/trending", attachAuthIfPresent, getTrendingPosts);
-
 // Poll routes
 router.post("/posts/:postId/poll", requireAuth, createPoll);
 router.post("/polls/:pollId/vote", requireAuth, votePoll);
@@ -86,11 +90,8 @@ router.delete("/posts/:postId/reaction", requireAuth, removeReaction);
 router.get("/posts/:postId/reactions", attachAuthIfPresent, getReactions);
 
 // Hashtag routes
-router.get("/hashtags/:tag", attachAuthIfPresent, getHashtagPosts);
 router.get("/hashtags/trending", getTrendingHashtags);
-
-// Following feed
-router.get("/posts/following", requireAuth, getFollowingPosts);
+router.get("/hashtags/:tag", attachAuthIfPresent, getHashtagPosts);
 
 // Groups routes - require premium to create
 router.post("/groups", requireAuth, requirePremium, createGroup);

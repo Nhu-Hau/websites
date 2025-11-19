@@ -20,6 +20,7 @@ import { Send, Upload, Download, X, AlertCircle, Trash2, MessageSquare } from "l
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/lib/toast";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
+import { cn } from "@/lib/utils";
 
 type Role = "student" | "teacher" | "admin";
 type Me = { id: string; name: string; role: Role };
@@ -56,11 +57,12 @@ interface Props {
   roomName: string;
   isHost?: boolean;
   hostIdentity?: string;
+  className?: string;
 }
 
 const LS_KEY = (room: string) => `livechat:${room}`;
 
-export default function ChatPanel({ me, roomName }: Props) {
+export default function ChatPanel({ me, roomName, className }: Props) {
   const room = useRoomContext();
   const { user: authUser } = useAuth();
   const { show, Modal: ConfirmModal } = useConfirmModal();
@@ -498,7 +500,12 @@ export default function ChatPanel({ me, roomName }: Props) {
   }, [msgs, me.id, canDownload, handleDownload]);
 
   return (
-    <aside className="flex flex-col h-[calc(100dvh-5rem)] md:h-[calc(100dvh-6rem)] border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <aside
+      className={cn(
+        "flex flex-col h-[calc(100dvh-5rem)] md:h-[calc(100dvh-6rem)] border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900",
+        className
+      )}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
         <div>

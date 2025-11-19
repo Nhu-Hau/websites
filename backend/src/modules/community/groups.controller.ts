@@ -248,3 +248,39 @@ export async function getGroupPosts(req: Request, res: Response) {
   }
 }
 
+/** Delete a group (admin only) */
+export async function deleteGroup(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { groupId } = req.params;
+    if (!mongoose.isValidObjectId(groupId)) {
+      return res.status(400).json({ message: "Invalid group ID" });
+    }
+
+    const group = await StudyGroup.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (String(group.adminId) !== String(userId)) {
+      return res.status(403).json({ message: "Only the group owner can delete this group" });
+    }
+
+    const { CommunityPost } = await import("../../shared/models/CommunityPost");
+
+    await Promise.all([
+      CommunityPost.deleteMany({ groupId: group._id }),
+      group.deleteOne(),
+    ]);
+
+    return res.json({ success: true, groupId });
+  } catch (e) {
+    console.error("[deleteGroup] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+

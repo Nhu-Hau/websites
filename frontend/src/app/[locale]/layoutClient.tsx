@@ -28,6 +28,14 @@ export default function LayoutClient({
   const { open: isChatOpen } = useChat();
   const isMobile = useIsMobile();
 
+  const normalizedPath = pathname?.split("?")[0] || "";
+  const pathSegments = normalizedPath.split("/").filter(Boolean);
+  const topSegment = pathSegments[1];
+  const subSegment = pathSegments[2];
+  const isStudySection = topSegment === "study";
+  const isStudyCreatePage = isStudySection && subSegment === "create";
+  const isStudyRoomPage = isStudySection && !!subSegment && !isStudyCreatePage;
+
   // ẩn Chat + Footer ở các trang luyện test hoặc placement
   const hideAll =
     /^\/[a-z]{2}\/(practice|study)\/[^/]+(\/\d+\/\d+)?$/.test(pathname) || // /vi/practice/part.1/1/2
@@ -41,23 +49,29 @@ export default function LayoutClient({
     /^\/[a-z]{2}\/progress$/.test(pathname); // /vi/practice/history/abc123
 
   // Show SideNav only on community pages (desktop only)
-  const showSideNav = (pathname?.includes("/community") || pathname?.includes("/study")) && !isMobile;
+  const showSideNav =
+    (pathname?.includes("/community") ||
+      (pathname?.includes("/study") && !isStudyRoomPage)) &&
+    !isMobile &&
+    !isStudyRoomPage;
   
   // Hide Footer on community and study pages
-  const hideFooterOnCommunity = pathname?.includes("/community") || pathname?.includes("/study");
+  const hideFooterOnCommunity =
+    (pathname?.includes("/community") || pathname?.includes("/study")) && !isStudyRoomPage;
 
   // Show chip navigation on screens <lg for community and dashboard
   // Include community-related routes: /community, /study/create, /account
   // Note: lg:hidden class in HorizontalChipNav will handle the responsive display
-  const showCommunityChips = 
-    pathname?.includes("/community") || 
-    pathname?.includes("/study/create") || 
-    pathname?.includes("/account");
+  const showCommunityChips =
+    !isStudyRoomPage &&
+    (pathname?.includes("/community") ||
+      pathname?.includes("/study/create") ||
+      pathname?.includes("/account"));
   const showDashboardChips = pathname?.includes("/dashboard") || pathname?.includes("/mobile/dashboard");
 
   // Show bottom bar on all pages, but hide it when ChatSheet is open on mobile
   // (ChatPanel on desktop doesn't cover BottomTabBar, so we only hide on mobile)
-  const shouldShowBottomBar = true;
+  const shouldShowBottomBar = !isStudyRoomPage;
   const shouldHideBottomBarForChat = isChatOpen && isMobile;
 
   return (

@@ -12,7 +12,7 @@ export default async function ProfilePage({
     .getAll()
     .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
-  const authHeaders = cookieHeader ? { Cookie: cookieHeader } : {};
+  const authHeaders: Record<string, string> = cookieHeader ? { Cookie: cookieHeader } : {};
 
   // Fetch user profile data
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";

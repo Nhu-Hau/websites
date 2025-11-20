@@ -73,7 +73,7 @@ type SafeUser = {
   picture?: string;
   createdAt?: string;
   updatedAt?: string;
-  partLevels?: any; // BE đang lưu chuẩn ở partLevels.part["1".."7"]
+  partLevels?: any;
   toeicPred?: {
     overall?: number | null;
     listening?: number | null;
@@ -136,23 +136,21 @@ function round5_990(n?: number | null) {
   return Math.min(990, Math.max(10, Math.round(n / 5) * 5));
 }
 
-// Chuẩn hoá partLevels từ DB về dạng { "part.1": 1|2|3, ... }
 function normalizePartLevels(raw: any): Partial<Record<PartKey, Lvl>> {
   const out: Partial<Record<PartKey, Lvl>> = {};
   if (!raw || typeof raw !== "object") return out;
   for (const p of PARTS) {
-    const num = p.split(".")[1]; // "1".."7"
+    const num = p.split(".")[1];
     let v: any = raw[p];
     if (v == null && raw.part && typeof raw.part === "object")
       v = raw.part[num];
-    if (v == null && raw[num] != null) v = raw[num]; // legacy
+    if (v == null && raw[num] != null) v = raw[num];
     const n = Number(v);
     if (n === 1 || n === 2 || n === 3) out[p] = n as Lvl;
   }
   return out;
 }
 
-/** Đọc File -> dataURL */
 function fileToDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const fr = new FileReader();
@@ -162,7 +160,6 @@ function fileToDataURL(file: File): Promise<string> {
   });
 }
 
-/** Tạo blob từ vùng crop (vuông) + resize về 512x512 */
 async function getCroppedBlob(
   imageSrc: string,
   cropPixels: { x: number; y: number; width: number; height: number },
@@ -211,7 +208,7 @@ async function getCroppedBlob(
 
 /* ================= Component ================= */
 export default function Account() {
-  const base = useBasePrefix("vi"); // ví dụ: "/vi"
+  const base = useBasePrefix("vi");
   const locale = base.slice(1) || "vi";
   const router = useRouter();
   const { user: ctxUser, setUser: setCtxUser } = useAuth() as any;
@@ -220,13 +217,12 @@ export default function Account() {
   const [user, setUser] = useState<SafeUser | null>((ctxUser as any) ?? null);
   const [loading, setLoading] = useState(!ctxUser);
   const [latest, setLatest] = useState<AttemptLite | null>(null);
-  const [recent, setRecent] = useState<AttemptLite[]>([]); // lịch sử gần đây
+  const [recent, setRecent] = useState<AttemptLite[]>([]);
 
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Crop modal state
   const [cropOpen, setCropOpen] = useState(false);
   const [rawImage, setRawImage] = useState<string | null>(null);
   const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -255,7 +251,6 @@ export default function Account() {
     let alive = true;
     (async () => {
       try {
-        // me
         if (ctxUser) {
           setUser(ctxUser as any);
         } else {
@@ -273,7 +268,6 @@ export default function Account() {
           setUser(u);
         }
 
-        // placement gần nhất (để fallback điểm)
         const r = await fetch("/api/placement/attempts?limit=1", {
           credentials: "include",
           cache: "no-store",
@@ -300,7 +294,6 @@ export default function Account() {
           }
         }
 
-        // lịch sử luyện tập gần đây cho bảng “Hoạt động gần đây”
         const rh = await fetch("/api/practice/history?limit=10", {
           credentials: "include",
           cache: "no-store",
@@ -323,7 +316,6 @@ export default function Account() {
     };
   }, [ctxUser, router, base]);
 
-  // Chọn ảnh -> mở cropper
   async function onPickAvatar(files: FileList | null) {
     if (!files || !files[0]) return;
     const f = files[0];
@@ -338,7 +330,6 @@ export default function Account() {
     setCropOpen(true);
   }
 
-  // Lưu crop -> upload
   async function handleSaveCrop() {
     if (!rawImage || !croppedAreaPixels) return;
     try {
@@ -371,13 +362,12 @@ export default function Account() {
     }
   }
 
-  // Xoá avatar
   async function handleDeleteAvatar() {
     if (!user?.picture) {
       toast.error("Bạn chưa có ảnh đại diện");
       return;
     }
-    
+
     show(
       {
         title: "Xóa ảnh đại diện?",
@@ -413,7 +403,7 @@ export default function Account() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-6 mt-16 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 pt-24 pb-8 space-y-6">
         <div className="h-6 w-48 bg-zinc-200 dark:bg-zinc-800 rounded animate-pulse" />
         <div className="h-24 bg-zinc-100 dark:bg-zinc-900 rounded-2xl animate-pulse" />
         <div className="h-72 bg-zinc-100 dark:bg-zinc-900 rounded-2xl animate-pulse" />
@@ -422,24 +412,22 @@ export default function Account() {
   }
   if (!user) return null;
 
-  const levelBadgeClass = LEVEL_BADGE[user.level] || LEVEL_BADGE[1];
-
   return (
-    <div className="max-w-4xl mx-auto pt-28 lg:pt-24 space-y-6 px-4">
+    <div className="max-w-4xl mx-auto pt-24 lg:pt-24 pb-10 space-y-6 px-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-3">
-            <Settings className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-2 gap-3">
+        <div className="w-full md:w-auto">
+          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2 sm:gap-3">
+            <Settings className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400" />
             Cài đặt tài khoản
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
             Quản lý thông tin cá nhân và cài đặt tài khoản của bạn
           </p>
         </div>
         <Link
           href={`${base}/community/profile/${user.id}`}
-          className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+          className="w-full md:w-auto inline-flex justify-center items-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm sm:text-base font-medium hover:bg-blue-700 transition-colors gap-2"
         >
           <User className="h-4 w-4" />
           Xem hồ sơ công khai
@@ -447,17 +435,17 @@ export default function Account() {
       </div>
 
       {/* ===== Profile Card ===== */}
-      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 bg-white dark:bg-zinc-900">
-        <div className="flex items-center gap-4">
+      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 sm:p-5 bg-white dark:bg-zinc-900">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
           <div className="relative">
             {user.picture ? (
               <img
                 src={user.picture}
                 alt={user.name || "avatar"}
-                className="w-20 h-20 rounded-full object-cover border border-zinc-200 dark:border-zinc-700"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border border-zinc-200 dark:border-zinc-700"
               />
             ) : (
-              <div className="w-20 h-20 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-zinc-500">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs sm:text-sm text-zinc-500">
                 No Avatar
               </div>
             )}
@@ -478,22 +466,24 @@ export default function Account() {
             />
           </div>
 
-          <div className="flex-1">
-            <div className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <div className="flex-1 w-full">
+            <div className="text-lg sm:text-xl font-semibold text-zinc-900 dark:text-zinc-100">
               {user.name || "—"}
             </div>
-            <div className="text-sm text-zinc-600 dark:text-zinc-300">
+            <div className="text-sm text-zinc-600 dark:text-zinc-300 break-all">
               {user.email}
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              {/* Role */}
               <span className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs capitalize border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                {user.role === "admin" ? "Admin" : user.role === "teacher" ? "Teacher" : "User"}
+                {user.role === "admin"
+                  ? "Admin"
+                  : user.role === "teacher"
+                  ? "Teacher"
+                  : "User"}
               </span>
 
-              {/* Access */}
               <span
                 className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs ${
                   ACCESS_BADGE[user.access]
@@ -518,7 +508,7 @@ export default function Account() {
           </div>
 
           {/* TOEIC estimated */}
-          <div className="shrink-0 rounded-xl border border-zinc-200 dark:border-zinc-700 px-3 py-2 text-sm bg-white/70 dark:bg-zinc-800/50">
+          <div className="w-fit sm:self-start rounded-xl border border-zinc-200 dark:border-zinc-700 px-3 py-2 text-sm bg-white/70 dark:bg-zinc-800/50 flex flex-col items-end">
             <div className="flex items-center gap-2 dark:text-white">
               <Gauge className="w-4 h-4" />
               <span>TOEIC ước lượng</span>
@@ -532,7 +522,6 @@ export default function Account() {
           </div>
         </div>
 
-        {/* CTA upgrade nếu free */}
         {user.access === "free" && (
           <div className="mt-3">
             <Link
@@ -547,14 +536,16 @@ export default function Account() {
       </section>
 
       {/* ===== Stats Grid ===== */}
-      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 bg-white/90 dark:bg-zinc-900/80 backdrop-blur-sm">
+      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 sm:p-5 bg-white/90 dark:bg-zinc-900/80 backdrop-blur-sm">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
               Thời gian tạo
             </div>
             <div className="font-medium text-zinc-900 dark:text-zinc-100">
-              {user.createdAt ? new Date(user.createdAt).toLocaleDateString("vi-VN") : "—"}
+              {user.createdAt
+                ? new Date(user.createdAt).toLocaleDateString("vi-VN")
+                : "—"}
             </div>
           </div>
 
@@ -573,7 +564,9 @@ export default function Account() {
                   Xem kết quả
                 </Link>
               ) : (
-                <span className="text-zinc-500 dark:text-zinc-400">Chưa có</span>
+                <span className="text-zinc-500 dark:text-zinc-400">
+                  Chưa có
+                </span>
               )}
             </div>
           </div>
@@ -610,7 +603,7 @@ export default function Account() {
 
       {/* ===== Recent Activity ===== */}
       {recent.length > 0 && (
-        <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 bg-white/90 dark:bg-zinc-900/80 backdrop-blur-sm">
+        <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 sm:p-5 bg-white/90 dark:bg-zinc-900/80 backdrop-blur-sm">
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 flex items-center gap-2">
             <Activity className="w-4 h-4" />
             Hoạt động gần đây
@@ -619,7 +612,7 @@ export default function Account() {
             {recent.slice(0, 5).map((attempt) => (
               <div
                 key={attempt._id}
-                className="flex items-center justify-between p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 text-sm"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 text-sm"
               >
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-zinc-500" />
@@ -631,13 +624,15 @@ export default function Account() {
                       : "Practice"}
                   </span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 justify-between sm:justify-end">
                   <span className="font-medium text-zinc-900 dark:text-zinc-100">
                     {attempt.acc}%
                   </span>
                   {attempt.submittedAt && (
                     <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {new Date(attempt.submittedAt).toLocaleDateString("vi-VN")}
+                      {new Date(attempt.submittedAt).toLocaleDateString(
+                        "vi-VN"
+                      )}
                     </span>
                   )}
                 </div>
@@ -647,7 +642,7 @@ export default function Account() {
           {recent.length > 5 && (
             <Link
               href={`${base}/practice/history`}
-              className="mt-3 text-sm text-sky-700 dark:text-sky-300 hover:underline flex items-center gap-1"
+              className="mt-3 inline-flex items-center gap-1 text-sm text-sky-700 dark:text-sky-300 hover:underline"
             >
               Xem tất cả <ChevronRight className="w-4 h-4" />
             </Link>
@@ -709,7 +704,6 @@ export default function Account() {
         </div>
       )}
 
-      {/* Confirm Modal */}
       {ConfirmModal}
     </div>
   );

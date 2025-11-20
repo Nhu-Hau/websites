@@ -19,6 +19,7 @@ import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { useAuth } from "@/context/AuthContext";
 import { getSocket } from "@/lib/socket";
 import Link from "next/link";
+import { useConfirmModal } from "@/components/common/ConfirmModal";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -48,6 +49,7 @@ export default function GroupDetailClient({
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const { user } = useAuth();
+  const { show: showConfirm, Modal } = useConfirmModal();
 
   const [group, setGroup] = React.useState<StudyGroup | null>(null);
   const [posts, setPosts] = React.useState<CommunityPost[]>([]);
@@ -278,35 +280,42 @@ export default function GroupDetailClient({
     );
   };
 
-  const handleDeleteGroup = async () => {
+  const handleDeleteGroup = () => {
     if (!currentUserId) {
       toast.error("Vui lòng đăng nhập");
       return;
     }
 
-    const confirmed = window.confirm(
-      "Bạn có chắc muốn xoá nhóm này? Mọi bài viết trong nhóm cũng sẽ bị xoá."
-    );
-    if (!confirmed) return;
-
-    setDeleting(true);
-    try {
-      const res = await fetch(`${API_BASE}/api/community/groups/${groupId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || "Không thể xoá nhóm");
+    showConfirm(
+      {
+        title: "Xác nhận xoá nhóm",
+        message: "Bạn có chắc muốn xoá nhóm này? Mọi bài viết trong nhóm cũng sẽ bị xoá. Hành động này không thể hoàn tác.",
+        icon: "warning",
+        confirmText: "Xoá nhóm",
+        cancelText: "Hủy",
+        confirmColor: "red",
+      },
+      async () => {
+        setDeleting(true);
+        try {
+          const res = await fetch(`${API_BASE}/api/community/groups/${groupId}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.message || "Không thể xoá nhóm");
+          }
+          toast.success("Đã xoá nhóm");
+          router.replace(`${basePrefix}/community/groups`);
+        } catch (e: any) {
+          toast.error(e.message || "Không thể xoá nhóm");
+          console.error("[handleDeleteGroup] ERROR", e);
+        } finally {
+          setDeleting(false);
+        }
       }
-      toast.success("Đã xoá nhóm");
-      router.replace(`${basePrefix}/community/groups`);
-    } catch (e: any) {
-      toast.error(e.message || "Không thể xoá nhóm");
-      console.error("[handleDeleteGroup] ERROR", e);
-    } finally {
-      setDeleting(false);
-    }
+    );
   };
 
   const handlePostChanged = React.useCallback(() => {
@@ -346,7 +355,9 @@ export default function GroupDetailClient({
   const showBottomPager = total > PAGE_SIZE;
 
   return (
-    <div className="space-y-6">
+    <>
+      {Modal}
+      <div className="space-y-6">
       {/* Back link */}
       <Link
         href={`${basePrefix}/community/groups`}
@@ -525,5 +536,6 @@ export default function GroupDetailClient({
         </div>
       )}
     </div>
+    </>
   );
 }

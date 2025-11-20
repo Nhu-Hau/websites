@@ -34,6 +34,8 @@ router.delete(
 /* Comments */
 router.post("/rooms/:roomName/comments", requireAuth, ctrl.postComment);
 router.get("/rooms/:roomName/comments", requireAuth, ctrl.listComments);
+router.put("/rooms/:roomName/comments/:commentId", requireAuth, ctrl.editComment);
+router.delete("/rooms/:roomName/comments/:commentId", requireAuth, ctrl.deleteComment);
 
 /* Documents */
 router.post(

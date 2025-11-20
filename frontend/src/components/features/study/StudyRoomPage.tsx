@@ -35,6 +35,7 @@ import {
   Ban,
   Heart,
   ThumbsUp,
+  MessageSquare,
 } from "lucide-react";
 import ChatPanel from "@/components/features/study/ChatPanel";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
@@ -175,14 +176,14 @@ function HostTile({ hostIdentity }: { hostIdentity: string }) {
       </div>
 
       {/* Status indicator */}
-      <div className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/80 px-2.5 py-1.5 text-white backdrop-blur-sm">
+      {/* <div className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/80 px-2.5 py-1.5 text-white backdrop-blur-sm">
         <Radio className="h-3.5 w-3.5 animate-pulse text-green-400" />
         <Signal className="h-3.5 w-3.5 text-green-400" />
         <span className="text-xs opacity-80">Đang phát</span>
-      </div>
+      </div> */}
 
       {/* Host info */}
-      <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-lg border border-white/10 bg-black/80 px-3 py-2 text-white backdrop-blur-sm">
+      {/* <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-lg border border-white/10 bg-black/80 px-3 py-2 text-white backdrop-blur-sm">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-600">
           <Crown className="h-3.5 w-3.5 text-white" />
         </div>
@@ -200,7 +201,7 @@ function HostTile({ hostIdentity }: { hostIdentity: string }) {
             <MicOff className="h-3.5 w-3.5 text-red-400" />
           )}
         </span>
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -253,22 +254,27 @@ function HostControls() {
   }, [room, localParticipant, isSharing, screenTrack]);
 
   return (
-    <div className="pointer-events-none absolute bottom-4 left-1/2 z-50 -translate-x-1/2">
-      <div className="pointer-events-auto flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+    <div className="pointer-events-none absolute left-4 bottom-4 z-40">
+      <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/15 bg-white/70 px-3 py-1.5 shadow-lg backdrop-blur-md">
+        {/* Camera */}
         <TrackToggle
           source={Track.Source.Camera}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-300 bg-white text-zinc-700 transition-colors duration-200 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-white hover:bg-white/15 transition-colors duration-200"
         />
+
+        {/* Mic */}
         <TrackToggle
           source={Track.Source.Microphone}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-300 bg-white text-zinc-700 transition-colors duration-200 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-white hover:bg-white/15 transition-colors duration-200"
         />
+
+        {/* Share screen */}
         <button
           onClick={toggleScreenShare}
-          className={`inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-colors duration-200 ${
+          className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors duration-200 ${
             isSharing
-              ? "border-red-600 bg-red-600 text-white hover:bg-red-700"
-              : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              ? "border-red-500 bg-red-600 text-white hover:bg-red-700"
+              : "border-white/20 bg-white/5 text-black hover:bg-white/15"
           }`}
           title={isSharing ? "Dừng chia sẻ màn hình" : "Chia sẻ màn hình"}
         >
@@ -288,6 +294,7 @@ function ParticipantsList({ roomName }: { roomName: string }) {
   const { user } = useAuth();
   const [showList, setShowList] = useState(false);
   const { show, Modal: ConfirmModal } = useConfirmModal();
+  const listRef = React.useRef<HTMLDivElement>(null);
 
   const handleKick = useCallback(
     async (userId: string, userName: string) => {
@@ -330,8 +337,24 @@ function ParticipantsList({ roomName }: { roomName: string }) {
     [roomName, show]
   );
 
+  // Click outside để đóng panel
+  useEffect(() => {
+    if (!showList) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (listRef.current && !listRef.current.contains(event.target as Node)) {
+        setShowList(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showList]);
+
   return (
-    <div className="absolute top-4 right-4 z-40">
+    <div ref={listRef} className="absolute top-4 right-4 z-40">
       <button
         onClick={() => setShowList(!showList)}
         className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 shadow-sm transition-colors duration-200 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
@@ -389,6 +412,7 @@ function HeartReaction() {
   const [hearts, setHearts] = useState<
     Array<{ id: string; x: number; y: number; timestamp: number }>
   >([]);
+  const [showFullscreen, setShowFullscreen] = useState(false);
 
   useEffect(() => {
     if (!room) return;
@@ -433,13 +457,20 @@ function HeartReaction() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (showFullscreen) {
+      const timer = setTimeout(() => {
+        setShowFullscreen(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [showFullscreen]);
+
   const sendHeart = useCallback(() => {
     if (!room) return;
 
     try {
-      const bytes = new TextEncoder().encode(
-        JSON.stringify({ type: "heart" })
-      );
+      const bytes = new TextEncoder().encode(JSON.stringify({ type: "heart" }));
       room.localParticipant.publishData(bytes, {
         reliable: false,
         topic: "heart",
@@ -454,6 +485,9 @@ function HeartReaction() {
           timestamp: Date.now(),
         },
       ]);
+
+      // Hiển thị icon toàn màn hình
+      setShowFullscreen(true);
     } catch (e) {
       console.error("Failed to send heart:", e);
     }
@@ -461,15 +495,26 @@ function HeartReaction() {
 
   return (
     <>
+      {/* Nút tim nằm trong cụm reaction (vị trí sẽ do wrapper ngoài quyết định) */}
       <button
         onClick={sendHeart}
-        className="absolute bottom-20 right-4 z-50 inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-colors duration-200 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-black transition-colors duration-200"
         title="Thả tim"
       >
-        <Heart className="h-6 w-6 fill-current" />
+        <Heart className="h-5 w-5 fill-current" />
       </button>
 
-      <div className="pointer-events-none absolute inset-0 z-30">
+      {/* Icon toàn màn hình rực rỡ */}
+      {showFullscreen && (
+        <div className="pointer-events-none fixed inset-0 z-[9999] flex items-center justify-center">
+          <div className="heart-fullscreen-animation">
+            <Heart className="h-64 w-64 fill-current text-red-500" />
+          </div>
+        </div>
+      )}
+
+      {/* Animation bay trên màn hình */}
+      <div className="pointer-events-none absolute inset-0 z-20">
         {hearts.map((heart) => (
           <div
             key={heart.id}
@@ -496,6 +541,41 @@ function HeartReaction() {
             transform: translateY(-120px) scale(0.4);
           }
         }
+        .heart-fullscreen-animation {
+          animation: heart-burst 1.5s ease-out forwards;
+        }
+        @keyframes heart-burst {
+          0% {
+            opacity: 0;
+            transform: scale(0.3) rotate(-10deg);
+            filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0));
+          }
+          20% {
+            opacity: 1;
+            transform: scale(1.2) rotate(5deg);
+            filter: drop-shadow(0 0 40px rgba(239, 68, 68, 0.8))
+              drop-shadow(0 0 80px rgba(239, 68, 68, 0.6))
+              drop-shadow(0 0 120px rgba(239, 68, 68, 0.4));
+          }
+          40% {
+            transform: scale(1) rotate(-2deg);
+            filter: drop-shadow(0 0 60px rgba(239, 68, 68, 0.9))
+              drop-shadow(0 0 120px rgba(239, 68, 68, 0.7))
+              drop-shadow(0 0 180px rgba(239, 68, 68, 0.5));
+          }
+          60% {
+            transform: scale(1.1) rotate(1deg);
+            filter: drop-shadow(0 0 50px rgba(239, 68, 68, 0.8))
+              drop-shadow(0 0 100px rgba(239, 68, 68, 0.6))
+              drop-shadow(0 0 150px rgba(239, 68, 68, 0.4));
+          }
+          100% {
+            opacity: 0;
+            transform: scale(1.3) rotate(0deg);
+            filter: drop-shadow(0 0 100px rgba(239, 68, 68, 0.3))
+              drop-shadow(0 0 200px rgba(239, 68, 68, 0.2));
+          }
+        }
       `}</style>
     </>
   );
@@ -506,6 +586,7 @@ function LikeReaction() {
   const [likes, setLikes] = useState<
     Array<{ id: string; x: number; y: number; timestamp: number }>
   >([]);
+  const [showFullscreen, setShowFullscreen] = useState(false);
 
   useEffect(() => {
     if (!room) return;
@@ -550,13 +631,20 @@ function LikeReaction() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (showFullscreen) {
+      const timer = setTimeout(() => {
+        setShowFullscreen(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [showFullscreen]);
+
   const sendLike = useCallback(() => {
     if (!room) return;
 
     try {
-      const bytes = new TextEncoder().encode(
-        JSON.stringify({ type: "like" })
-      );
+      const bytes = new TextEncoder().encode(JSON.stringify({ type: "like" }));
       room.localParticipant.publishData(bytes, {
         reliable: false,
         topic: "like",
@@ -571,6 +659,9 @@ function LikeReaction() {
           timestamp: Date.now(),
         },
       ]);
+
+      // Hiển thị icon toàn màn hình
+      setShowFullscreen(true);
     } catch (e) {
       console.error("Failed to send like:", e);
     }
@@ -578,15 +669,25 @@ function LikeReaction() {
 
   return (
     <>
+      {/* Nút like (cũng sẽ nằm trong cụm reaction wrapper) */}
       <button
         onClick={sendLike}
-        className="absolute bottom-32 right-4 z-50 inline-flex h-12 w-12 items-center justify-center rounded-full bg-sky-600 text-white shadow-lg transition-colors duration-200 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-black transition-colors duration-200"
         title="Thả like"
       >
-        <ThumbsUp className="h-6 w-6 fill-current" />
+        <ThumbsUp className="h-5 w-5 fill-current" />
       </button>
 
-      <div className="pointer-events-none absolute inset-0 z-30">
+      {/* Icon toàn màn hình rực rỡ */}
+      {showFullscreen && (
+        <div className="pointer-events-none fixed inset-0 z-[9999] flex items-center justify-center">
+          <div className="like-fullscreen-animation">
+            <ThumbsUp className="h-64 w-64 fill-current text-sky-500" />
+          </div>
+        </div>
+      )}
+
+      <div className="pointer-events-none absolute inset-0 z-20">
         {likes.map((like) => (
           <div
             key={like.id}
@@ -601,6 +702,44 @@ function LikeReaction() {
           </div>
         ))}
       </div>
+
+      <style jsx>{`
+        .like-fullscreen-animation {
+          animation: like-burst 1.5s ease-out forwards;
+        }
+        @keyframes like-burst {
+          0% {
+            opacity: 0;
+            transform: scale(0.3) rotate(-10deg);
+            filter: drop-shadow(0 0 0 rgba(14, 165, 233, 0));
+          }
+          20% {
+            opacity: 1;
+            transform: scale(1.2) rotate(5deg);
+            filter: drop-shadow(0 0 40px rgba(14, 165, 233, 0.8))
+              drop-shadow(0 0 80px rgba(14, 165, 233, 0.6))
+              drop-shadow(0 0 120px rgba(14, 165, 233, 0.4));
+          }
+          40% {
+            transform: scale(1) rotate(-2deg);
+            filter: drop-shadow(0 0 60px rgba(14, 165, 233, 0.9))
+              drop-shadow(0 0 120px rgba(14, 165, 233, 0.7))
+              drop-shadow(0 0 180px rgba(14, 165, 233, 0.5));
+          }
+          60% {
+            transform: scale(1.1) rotate(1deg);
+            filter: drop-shadow(0 0 50px rgba(14, 165, 233, 0.8))
+              drop-shadow(0 0 100px rgba(14, 165, 233, 0.6))
+              drop-shadow(0 0 150px rgba(14, 165, 233, 0.4));
+          }
+          100% {
+            opacity: 0;
+            transform: scale(1.3) rotate(0deg);
+            filter: drop-shadow(0 0 100px rgba(14, 165, 233, 0.3))
+              drop-shadow(0 0 200px rgba(14, 165, 233, 0.2));
+          }
+        }
+      `}</style>
     </>
   );
 }
@@ -617,6 +756,7 @@ export default function StudyRoomPage() {
   const uid = user?.id;
   const uname = user?.name;
   const urole = user?.role as JoinResp["role"] | undefined;
+  const [showChatMobile, setShowChatMobile] = useState(false);
 
   const fetchToken = useCallback(
     async (signal?: AbortSignal) => {
@@ -748,7 +888,7 @@ export default function StudyRoomPage() {
   const hostIdentity = data.hostIdentity || data.identity;
 
   return (
-    <div className="min-h-[calc(100dvh-4rem)] bg-zinc-50 pt-16 md:min-h-[calc(100dvh-5rem)] md:pt-20 dark:bg-zinc-900">
+    <div className="min-h-[100dvh] bg-black">
       <LiveKitRoom
         serverUrl={data.wsUrl}
         token={data.token}
@@ -761,28 +901,61 @@ export default function StudyRoomPage() {
       >
         <RoomAudioRenderer />
 
-        <div className="relative grid grid-cols-1 md:grid-cols-[1fr_360px]">
-          <div className="relative">
+        {/* Wrapper toàn bộ nội dung live */}
+        <div className="relative h-[100dvh] pt-16 md:pt-20">
+          <div className="relative h-full overflow-hidden">
+            {/* Video + overlay */}
             <LeaveRoomButton />
             <HostTile hostIdentity={hostIdentity} />
             {isHost && <HostControls />}
             {(user?.role === "teacher" || user?.role === "admin") && (
               <ParticipantsList roomName={room} />
             )}
-            <HeartReaction />
-            <LikeReaction />
-          </div>
+            {/* Cụm reaction gọn góc phải dưới - z-index thấp hơn panel */}
+            <div className="absolute bottom-24 right-4 z-30 flex flex-col gap-2">
+              <HeartReaction />
+              <LikeReaction />
+            </div>
 
-          <ChatPanel
-            me={{
-              id: data.identity,
-              name: data.displayName || "Guest",
-              role: data.role || "student",
-            }}
-            roomName={room}
-            isHost={isHost}
-            hostIdentity={hostIdentity}
-          />
+            {/* Nút mở chat (dùng cho cả mobile + desktop) - ẩn khi panel mở */}
+            {!showChatMobile && (
+              <button
+                type="button"
+                onClick={() => setShowChatMobile(true)}
+                className="fixed bottom-6 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/40 ring-2 ring-sky-300/80 backdrop-blur-md hover:bg-sky-700 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all md:text-base"
+              >
+                <MessageSquare className="h-4 w-4 md:h-5 md:w-5" />
+                <span>Chat phòng học</span>
+              </button>
+            )}
+
+            {/* Chat overlay cho mọi kích thước (Zoom-style) - z-index cao hơn */}
+            {showChatMobile && (
+              <div 
+                className="absolute inset-0 z-50 flex justify-end"
+                onClick={(e) => {
+                  // Đóng panel khi click ra ngoài (không phải panel)
+                  if (e.target === e.currentTarget) {
+                    setShowChatMobile(false);
+                  }
+                }}
+              >
+                <ChatPanel
+                  me={{
+                    id: data.identity,
+                    name: data.displayName || "Guest",
+                    role: data.role || "student",
+                  }}
+                  roomName={room}
+                  isHost={isHost}
+                  hostIdentity={hostIdentity}
+                  variant="overlay"
+                  onCloseOverlay={() => setShowChatMobile(false)}
+                  className="w-full md:w-[380px] h-[calc(100dvh-4rem)] md:h-[calc(100dvh-5rem)] md:mt-4 md:mr-4 md:rounded-2xl md:overflow-hidden md:shadow-2xl md:border md:border-zinc-800/60"
+                />
+              </div>
+            )}
+          </div>
         </div>
       </LiveKitRoom>
     </div>

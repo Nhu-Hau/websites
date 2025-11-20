@@ -54,19 +54,14 @@ export default function ActivityTabContent() {
       <Suspense fallback={<ActivityHeatmapSkeleton />}>
         <ActivityHeatmapServer />
       </Suspense>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Suspense fallback={<StudyScheduleSkeleton />}>
-            <StudyScheduleServer />
-          </Suspense>
-        </div>
-        <div className="lg:col-span-1">
-          <Suspense fallback={<BadgesSkeleton />}>
-            <BadgesServer />
-          </Suspense>
-        </div>
+      <Suspense fallback={<StudyScheduleSkeleton />}>
+        <StudyScheduleServer />
+      </Suspense>
+      <div className="w-full md:w-1/2">
+        <Suspense fallback={<BadgesSkeleton />}>
+          <BadgesServer />
+        </Suspense>
       </div>
     </div>
   );
 }
-

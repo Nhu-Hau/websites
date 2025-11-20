@@ -10,7 +10,6 @@ import {
   Tooltip as ChartTooltip,
   ResponsiveContainer,
   CartesianGrid,
-  Legend,
 } from "recharts";
 import { Gauge, Loader2 } from "lucide-react";
 
@@ -144,7 +143,11 @@ export default function AssessmentChart() {
       const r = r5 != null ? round5_495(Math.max(5, Math.min(495, r5))) : null;
 
       if (l == null && r == null)
-        return { l: null as number | null, r: null as number | null, overall: null as number | null };
+        return {
+          l: null as number | null,
+          r: null as number | null,
+          overall: null as number | null,
+        };
 
       const overall = (l ?? 0) + (r ?? 0);
       return {
@@ -226,9 +229,9 @@ export default function AssessmentChart() {
 
   /* ===================== Render ===================== */
   return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95">
+    <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95 sm:p-5">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-300">
             <Gauge className="h-5 w-5" />
@@ -238,18 +241,18 @@ export default function AssessmentChart() {
               Điểm TOEIC theo thời gian
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Listening, Reading & Overall (đã quy đổi thang điểm TOEIC)
+              Listening, Reading &amp; Overall (đã quy đổi thang điểm TOEIC)
             </p>
           </div>
         </div>
 
-        <span className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
+        <span className="inline-flex max-w-full items-center justify-center rounded-full bg-slate-50 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
           Assessment trend
         </span>
       </div>
 
       {/* Chart */}
-      <div className="relative h-[260px]">
+      <div className="relative h-60 sm:h-56 md:h-64 lg:h-72">
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
@@ -263,26 +266,22 @@ export default function AssessmentChart() {
               data={assessmentLineData}
               margin={{ top: 4, right: 12, left: 0, bottom: 4 }}
             >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#e2e8f0"
-                // className chỉ để tham khảo, Recharts không dùng tailwind ở đây
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 dataKey="at"
                 interval="preserveStartEnd"
-                tick={{ fill: "#6b7280", fontSize: 11 }}
+                tick={{ fill: "#6b7280", fontSize: 10 }}
                 axisLine={{ stroke: "#e5e7eb" }}
                 tickLine={{ stroke: "#e5e7eb" }}
-                minTickGap={20}
+                minTickGap={18}
               />
               <YAxis
                 domain={[0, 990]}
                 ticks={[0, 200, 400, 600, 800, 990]}
-                tick={{ fill: "#6b7280", fontSize: 11 }}
+                tick={{ fill: "#6b7280", fontSize: 10 }}
                 axisLine={{ stroke: "#e5e7eb" }}
                 tickLine={{ stroke: "#e5e7eb" }}
-                width={44}
+                width={36}
               />
               <ChartTooltip
                 contentStyle={{
@@ -312,13 +311,6 @@ export default function AssessmentChart() {
                       : "Placement Test";
                   return [`${rounded5} điểm`, `${name} • ${kind}`];
                 }}
-              />
-              <Legend
-                wrapperStyle={{
-                  fontSize: 11,
-                  paddingTop: 8,
-                }}
-                iconType="plainline"
               />
 
               {/* Listening - sky */}
@@ -390,6 +382,33 @@ export default function AssessmentChart() {
           </div>
         )}
       </div>
+
+      {/* Legend custom – responsive đẹp trên mobile */}
+      {assessmentLineData.length > 0 && (
+        <div className="mt-4 flex flex-col gap-3 text-[11px] text-slate-600 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <span className="h-0.5 w-4 rounded-full bg-[#0ea5e9]" />
+              <span>Listening</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-0.5 w-4 rounded-full bg-[#6366f1]" />
+              <span>Reading</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-0.5 w-4 rounded-full bg-[#22c55e]" />
+              <span>Overall</span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex h-1.5 w-1.5 rounded-full bg-sky-500" />
+              <span>Placement / Progress được xếp trên cùng trục 0–990</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

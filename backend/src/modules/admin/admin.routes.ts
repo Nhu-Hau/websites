@@ -49,6 +49,7 @@ import {
   adminCreateNews,
   adminUpdateNews,
   adminDeleteNews,
+  uploadNewsImage,
 } from "./admin-news.controller";
 
 const router = Router();
@@ -123,6 +124,7 @@ router.delete("/study-rooms/:roomName/documents/:docId", adminDeleteRoomDocument
 // News admin routes
 router.get("/news", adminListNews);
 router.post("/news", adminCreateNews);
+router.post("/news/upload", upload.single("file"), uploadNewsImage);
 router.get("/news/:id", adminGetNews);
 router.patch("/news/:id", adminUpdateNews);
 router.delete("/news/:id", adminDeleteNews);

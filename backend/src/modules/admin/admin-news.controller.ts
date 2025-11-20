@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { z } from "zod";
 import { News } from "../../shared/models/News";
+import { uploadBufferToS3 } from "../../shared/services/storage.service";
 
 const NEWS_CATEGORIES = [
   "education",
@@ -204,6 +205,40 @@ export async function adminDeleteNews(req: Request, res: Response) {
     }
     console.error("[adminDeleteNews] ERROR", error);
     return res.status(500).json({ message: "Không thể xóa tin tức" });
+  }
+}
+
+// POST /api/admin/news/upload - Upload news image
+export async function uploadNewsImage(req: Request, res: Response) {
+  try {
+    const f = (req as any).file as Express.Multer.File | undefined;
+    if (!f) {
+      return res.status(400).json({ message: "Thiếu file" });
+    }
+
+    // Validate file type - only images
+    if (!f.mimetype.startsWith("image/")) {
+      return res.status(400).json({ message: "Chỉ chấp nhận file ảnh (image/*)" });
+    }
+
+    // Upload to S3 with folder "news"
+    const { url, key } = await uploadBufferToS3({
+      buffer: f.buffer,
+      mime: f.mimetype,
+      originalName: f.originalname,
+      folder: "news",
+    });
+
+    return res.json({
+      url,
+      key, // For potential future deletion
+      type: "image",
+      name: f.originalname,
+      size: f.size,
+    });
+  } catch (e: any) {
+    console.error("[uploadNewsImage] ERROR", e);
+    return res.status(500).json({ message: e.message || "Upload thất bại" });
   }
 }
 

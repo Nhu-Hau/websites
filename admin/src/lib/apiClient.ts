@@ -564,6 +564,21 @@ export async function adminDeleteNews(id: string) {
   return res.json() as Promise<{ message: string }>;
 }
 
+export async function adminUploadNewsImage(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`/api/admin/news/upload`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Upload image failed");
+  }
+  return res.json() as Promise<{ url: string; key: string; type: string; name: string; size: number }>;
+}
+
 // Admin chat management
 export async function adminDeleteChatMessage(id: string) {
   const res = await fetch(`/api/admin-chat/admin/messages/${encodeURIComponent(id)}`, {

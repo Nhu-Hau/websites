@@ -227,7 +227,7 @@ export default function PartsPage() {
   if (!me || me.role !== "admin") return <div className="p-6 text-red-600">Chỉ dành cho Admin</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 space-y-6">
+    <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 space-y-6">
       <header className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">

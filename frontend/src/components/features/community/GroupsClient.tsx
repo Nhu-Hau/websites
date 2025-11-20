@@ -233,7 +233,7 @@ export default function GroupsClient() {
               Bạn chưa tham gia hoặc tạo nhóm nào. Hãy tạo nhóm đầu tiên để học
               TOEIC cùng bạn bè.
             </p>
-            <button
+            {/* <button
               onClick={() =>
                 router.push(`${basePrefix}/community/groups/create`)
               }
@@ -241,7 +241,7 @@ export default function GroupsClient() {
             >
               <Plus className="h-4 w-4" />
               Tạo nhóm đầu tiên
-            </button>
+            </button> */}
           </div>
         )}
       </div>

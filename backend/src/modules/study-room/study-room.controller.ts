@@ -316,7 +316,9 @@ export async function editComment(req: Request, res: Response) {
     if (!comment) return res.status(404).json({ message: "Comment không tồn tại" });
 
     // Chỉ cho phép user sở hữu comment hoặc teacher/admin
-    const user = await User.findById(userId).select("role").lean();
+    const user = await User.findById(userId)
+      .select("role")
+      .lean<Pick<IUserSlim, "role"> | null>();
     const isOwner = String(comment.userId) === userId;
     const isTeacherOrAdmin = user?.role === "teacher" || user?.role === "admin";
 
@@ -345,7 +347,9 @@ export async function deleteComment(req: Request, res: Response) {
     if (!comment) return res.status(404).json({ message: "Comment không tồn tại" });
 
     // Chỉ cho phép user sở hữu comment hoặc teacher/admin
-    const user = await User.findById(userId).select("role").lean();
+    const user = await User.findById(userId)
+      .select("role")
+      .lean<Pick<IUserSlim, "role"> | null>();
     const isOwner = String(comment.userId) === userId;
     const isTeacherOrAdmin = user?.role === "teacher" || user?.role === "admin";
 

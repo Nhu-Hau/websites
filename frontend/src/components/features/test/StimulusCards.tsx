@@ -28,10 +28,10 @@ function toArray<T>(val?: T | T[]): T[] {
 
 /**
  * Tính số giây bỏ qua dựa trên part
- * Part 1: 2 giây
+ * Part 1: 1.5 giây
  * Part 2: 1.5 giây
- * Part 3: 2.8 giây
- * Part 4: 2.8 giây
+ * Part 3: 2.75 giây
+ * Part 4: 2.75 giây
  * Default: 2 giây
  */
 function getSkipSecondsByPart(part?: string | null): number {
@@ -46,13 +46,13 @@ function getSkipSecondsByPart(part?: string | null): number {
 
   switch (num) {
     case 1:
-      return 2;
+      return 1.5;
     case 2:
       return 1.5;
     case 3:
-      return 2.8;
+      return 2.75;
     case 4:
-      return 2.8;
+      return 2.75;
     default:
       return 2;
   }
@@ -204,9 +204,7 @@ function ChoiceRow({
           const isPicked = picked === ch.id;
           const rawLabel = ch.text ?? ch.content ?? "";
           const label =
-            typeof rawLabel === "string"
-              ? rawLabel
-              : JSON.stringify(rawLabel);
+            typeof rawLabel === "string" ? rawLabel : JSON.stringify(rawLabel);
 
           const base = cn(
             "flex items-center gap-2.5 rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 text-left text-[13px] sm:text-sm font-medium",
@@ -233,10 +231,7 @@ function ChoiceRow({
                 "border-lime-600 bg-lime-600 text-white shadow-xs"
               );
             else if (isPicked && !isCorrect)
-              cls = cn(
-                base,
-                "border-red-600 bg-red-600 text-white shadow-xs"
-              );
+              cls = cn(base, "border-red-600 bg-red-600 text-white shadow-xs");
             else
               cls = cn(
                 base,
@@ -381,7 +376,12 @@ function CardSticky(props: BaseProps) {
             {audios.length > 0 && (
               <div className="mb-3 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-3">
                 {audios.map((src, i) => (
-                  <AudioPlayer key={i} src={src} skipSeconds={skipSeconds} />
+                  <AudioPlayer
+                    key={i}
+                    src={src}
+                    skipSeconds={skipSeconds}
+                    part={part}
+                  />
                 ))}
               </div>
             )}
@@ -458,7 +458,12 @@ function CardColumnNoSticky(props: BaseProps) {
     >
       <div className="mb-5 space-y-2.5 xs:mb-6 xs:space-y-3">
         {audios.map((src, i) => (
-          <AudioPlayer key={i} src={src} skipSeconds={skipSeconds} />
+          <AudioPlayer
+            key={i}
+            src={src}
+            skipSeconds={skipSeconds}
+            part={part}
+          />
         ))}
         {locked && showStimulusDetails && (
           <StimulusYellowPanel stimulus={stimulus} />

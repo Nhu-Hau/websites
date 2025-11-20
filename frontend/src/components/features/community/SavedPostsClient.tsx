@@ -17,7 +17,9 @@ interface SavedPostsClientProps {
   initialPage: number;
 }
 
-export default function SavedPostsClient({ initialPage }: SavedPostsClientProps) {
+export default function SavedPostsClient({
+  initialPage,
+}: SavedPostsClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -170,9 +172,7 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
       </div>
 
       {/* Danh sách bài viết */}
-      {postsList.length > 0 && (
-        <div className="space-y-4">{postsList}</div>
-      )}
+      {postsList.length > 0 && <div className="space-y-4">{postsList}</div>}
 
       {/* Loading State */}
       {loading && (
@@ -188,8 +188,7 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
 
       {/* Empty State */}
       {!loading && total === 0 && (
-        <div className="flex justify-center py-12">
-          <div className="w-full max-w-md rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-6 py-10 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-4 sm:px-6 py-12 sm:py-16 text-center shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/95">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
               <svg
                 className="h-7 w-7"
@@ -212,7 +211,6 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
               Bạn chưa lưu bài viết nào. Hãy lưu những bài viết hữu ích để xem
               lại dễ dàng hơn.
             </p>
-          </div>
         </div>
       )}
 

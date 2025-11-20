@@ -62,19 +62,72 @@ const LEVEL_COLORS = {
 
 // subtle motion variants cho card
 const cardVariants = {
-  initial: { opacity: 0, y: -12, scale: 0.98 },
+  initial: { opacity: 0, y: -10, scale: 0.98 },
   animate: {
     opacity: 1,
     y: 0,
     scale: 1,
     transition: {
       type: "spring" as const,
-      stiffness: 100,
-      damping: 15,
+      stiffness: 110,
+      damping: 16,
       mass: 0.8,
     },
   },
 };
+
+export function TestCardSkeleton() {
+  return (
+    <motion.div
+      className="h-full rounded-2xl border border-zinc-200/90 bg-white px-3.5 py-3.5 xs:px-4 xs:py-4 sm:px-5 sm:py-5 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900 animate-pulse"
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        type: "spring",
+        stiffness: 110,
+        damping: 16,
+        mass: 0.75,
+      }}
+    >
+      <div className="mb-3 h-1 w-full rounded-t-2xl bg-zinc-100 dark:bg-zinc-800" />
+      {/* Header */}
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-xl bg-zinc-100 dark:bg-zinc-800" />
+          <div className="space-y-2">
+            <div className="h-4 w-16 rounded bg-zinc-100 dark:bg-zinc-800" />
+            <div className="h-3 w-24 rounded bg-zinc-100 dark:bg-zinc-800" />
+          </div>
+        </div>
+        <div className="h-6 w-20 rounded-full bg-zinc-100 dark:bg-zinc-800" />
+      </div>
+
+      {/* Stats */}
+      <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-md bg-zinc-100 dark:bg-zinc-800" />
+            <div className="h-3 w-16 rounded bg-zinc-100 dark:bg-zinc-800" />
+          </div>
+        ))}
+      </div>
+
+      {/* Progress placeholder */}
+      <div className="mb-3 space-y-2.5">
+        <div className="h-2 w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
+        <div className="flex items-center justify-between">
+          <div className="h-3 w-20 rounded bg-zinc-100 dark:bg-zinc-800" />
+          <div className="h-4 w-10 rounded bg-zinc-100 dark:bg-zinc-800" />
+        </div>
+      </div>
+
+      {/* Footer button */}
+      <div className="border-t border-zinc-200/80 pt-2.5 dark:border-zinc-800/80">
+        <div className="h-9 w-28 rounded-xl bg-zinc-100 dark:bg-zinc-800" />
+      </div>
+    </motion.div>
+  );
+}
 
 export default function TestCard({
   locale,
@@ -119,7 +172,9 @@ export default function TestCard({
       role="button"
       title={disabled ? disabledHint : undefined}
       className={cn(
-        "group relative flex h-full flex-col rounded-xl border bg-white dark:bg-zinc-900 px-5 py-5 transition-colors duration-200",
+        "group relative flex h-full flex-col rounded-lg border bg-white dark:bg-zinc-900",
+        // padding mobile gọn, lớn dần theo breakpoint
+        "px-3.5 py-3.5 xs:px-4 xs:py-4 sm:px-5 sm:py-5",
         "border-zinc-200/90 dark:border-zinc-700/80 shadow-sm",
         disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
         !disabled && color.borderHover
@@ -127,7 +182,7 @@ export default function TestCard({
       variants={cardVariants}
       initial="initial"
       animate="animate"
-      whileHover={disabled ? undefined : { scale: 1.01, y: -4 }}
+      whileHover={disabled ? undefined : { scale: 1.01, y: -3 }}
       whileTap={disabled ? undefined : { scale: 0.99, y: 0 }}
       transition={{
         type: "spring",
@@ -136,27 +191,27 @@ export default function TestCard({
         mass: 0.7,
       }}
     >
-      {/* Thanh màu trên đỉnh card để không bị chìm vào nền */}
+      {/* Thanh màu mỏng trên đỉnh card */}
       <div
         className={cn(
-          "pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-t-2xl bg-gradient-to-r",
+          "pointer-events-none absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r",
           color.gradient
         )}
       />
 
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-50 dark:bg-zinc-800">
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-50 dark:bg-zinc-800">
             <Target className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
           </div>
 
           <div className="flex flex-col">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50">
               Test {test}
             </h3>
             {done && (
-              <span className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="mt-0.5 text-[10px] xs:text-[11px] text-zinc-500 dark:text-zinc-400">
                 Lần gần nhất: {lastAtLabel}
               </span>
             )}
@@ -164,7 +219,7 @@ export default function TestCard({
 
           {accuracy >= 90 && (
             <motion.div
-              className="ml-1 inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-semibold"
+              className="ml-1 hidden xs:inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-semibold"
               initial={{ opacity: 0, scale: 0.8, y: 4 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{
@@ -172,7 +227,7 @@ export default function TestCard({
                 stiffness: 150,
                 damping: 16,
                 mass: 0.6,
-                delay: 0.1,
+                delay: 0.05,
               }}
             >
               <Sparkles className="h-3 w-3" />
@@ -184,45 +239,45 @@ export default function TestCard({
         {/* Level chip */}
         <div
           className={cn(
-            "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium",
+            "inline-flex items-center gap-1 rounded-full",
+            "px-2.5 py-0.5 text-[10px] xs:text-[11px] font-medium",
             "border border-zinc-200 dark:border-zinc-700",
             color.chipBg,
             color.text
           )}
         >
           <span className="hidden sm:inline">{levelLabel}</span>
-          <span className="sm:hidden">Lv. {level}</span>
+          <span className="sm:hidden whitespace-nowrap">Lv. {level}</span>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="mb-4 grid grid-cols-2 gap-3 text-sm text-zinc-700 dark:text-zinc-300 sm:grid-cols-3">
-        <div className="flex items-center gap-2 whitespace-nowrap">
+      {/* Stats: 2 cột cho mobile, 3 cột cho >=sm */}
+      <div className="mb-3 grid grid-cols-2 gap-2 text-[11px] xs:text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 sm:grid-cols-3">
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-zinc-50 dark:bg-zinc-800">
-            <ListChecks className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+            <ListChecks className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
           </div>
           <span className="font-medium">{totalQuestions} câu</span>
         </div>
 
-        <div className="flex items-center gap-2 whitespace-nowrap">
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-zinc-50 dark:bg-zinc-800">
-            <Timer className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+            <Timer className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
           </div>
           <span className="font-medium">{durationMin} phút</span>
         </div>
 
         {done ? (
-          <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-zinc-50 dark:bg-zinc-800">
-              <CalendarDays className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+              <CalendarDays className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
             </div>
             <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
               {lastAtLabel}
             </span>
           </div>
         ) : (
-          <div className="hidden items-center gap-2 opacity-0 sm:flex">
-            {/* giữ layout đều hàng */}
+          <div className="hidden sm:flex items-center gap-1.5 opacity-0">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-zinc-50 dark:bg-zinc-800" />
             <span className="text-xs">—</span>
           </div>
@@ -230,10 +285,10 @@ export default function TestCard({
       </div>
 
       {/* Progress / Empty */}
-      <div className="mb-4 flex flex-1 flex-col justify-center">
+      <div className="mb-3 flex flex-1 flex-col justify-center">
         {done ? (
-          <div className="space-y-3">
-            <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+          <div className="space-y-2.5">
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
               <motion.div
                 className={cn(
                   "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r",
@@ -249,14 +304,14 @@ export default function TestCard({
                 }}
               />
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] xs:text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {attemptSummary?.correct ?? 0}/{attemptSummary?.total ?? 0} câu
                 đúng
               </span>
               <span
                 className={cn(
-                  "text-lg font-semibold",
+                  "text-sm xs:text-base font-semibold",
                   accuracy >= 80
                     ? "text-emerald-600 dark:text-emerald-400"
                     : accuracy >= 60
@@ -269,11 +324,11 @@ export default function TestCard({
             </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-zinc-300 px-4 py-3 text-center dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900">
-            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <div className="rounded-xl border border-dashed border-zinc-300 px-3 py-2.5 text-center text-xs xs:text-[13px] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900">
+            <p className="font-medium text-zinc-700 dark:text-zinc-300">
               Chưa làm bài
             </p>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
               Bắt đầu ngay để theo dõi tiến độ.
             </p>
           </div>
@@ -281,12 +336,12 @@ export default function TestCard({
       </div>
 
       {/* Footer CTA */}
-      <div className="mt-auto border-t border-zinc-200/80 pt-3 dark:border-zinc-800/80">
+      <div className="mt-auto border-t border-zinc-200/80 pt-2.5 dark:border-zinc-800/80">
         {!done ? (
           disabled ? (
             <button
               disabled
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-300 px-4 py-2.5 text-sm font-semibold text-white cursor-not-allowed"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-zinc-300 px-3 py-2 text-xs xs:text-sm font-semibold text-white cursor-not-allowed"
             >
               <Play className="h-4 w-4" />
               Làm bài ngay
@@ -295,7 +350,7 @@ export default function TestCard({
             <Link
               href={href}
               className={cn(
-                "inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white",
+                "inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs xs:text-sm font-semibold text-white",
                 "bg-gradient-to-r",
                 color.gradient,
                 "shadow-sm hover:shadow-md transition-all"
@@ -310,12 +365,10 @@ export default function TestCard({
           <Link
             href={href}
             className={cn(
-              "inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold",
-              // base: nút outline theo màu level
+              "inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs xs:text-sm font-semibold",
               "border bg-white dark:bg-zinc-900 border-current",
               color.text,
               "transition-all",
-              // hover: fill gradient cùng màu với nút "Làm bài ngay"
               "hover:text-white hover:bg-gradient-to-r hover:shadow-md",
               color.gradient
             )}
@@ -325,60 +378,6 @@ export default function TestCard({
             Làm lại
           </Link>
         )}
-      </div>
-    </motion.div>
-  );
-}
-
-/* ================== SKELETON ================== */
-export function TestCardSkeleton() {
-  return (
-    <motion.div
-      className="h-full rounded-2xl border border-zinc-200/90 bg-white px-5 py-5 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900 animate-pulse"
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        type: "spring",
-        stiffness: 110,
-        damping: 16,
-        mass: 0.75,
-      }}
-    >
-      <div className="mb-3 h-1 w-full rounded-t-2xl bg-zinc-100 dark:bg-zinc-800" />
-      {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-zinc-100 dark:bg-zinc-800" />
-          <div className="space-y-2">
-            <div className="h-4 w-20 rounded bg-zinc-100 dark:bg-zinc-800" />
-            <div className="h-3 w-28 rounded bg-zinc-100 dark:bg-zinc-800" />
-          </div>
-        </div>
-        <div className="h-6 w-20 rounded-full bg-zinc-100 dark:bg-zinc-800" />
-      </div>
-
-      {/* Stats */}
-      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-zinc-100 dark:bg-zinc-800" />
-            <div className="h-3 w-16 rounded bg-zinc-100 dark:bg-zinc-800" />
-          </div>
-        ))}
-      </div>
-
-      {/* Progress placeholder */}
-      <div className="mb-4 space-y-3">
-        <div className="h-2.5 w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-        <div className="flex items-center justify-between">
-          <div className="h-3 w-20 rounded bg-zinc-100 dark:bg-zinc-800" />
-          <div className="h-4 w-10 rounded bg-zinc-100 dark:bg-zinc-800" />
-        </div>
-      </div>
-
-      {/* Footer button */}
-      <div className="border-t border-zinc-200/80 pt-3 dark:border-zinc-800/80">
-        <div className="h-9 w-32 rounded-xl bg-zinc-100 dark:bg-zinc-800" />
       </div>
     </motion.div>
   );

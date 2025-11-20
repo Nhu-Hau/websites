@@ -739,10 +739,10 @@ export default function CreateStudyRoomPage() {
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white">
+              <h1 className="mb-1 text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                 Phòng học
               </h1>
-              <p className="mt-1 sm:mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 Theo dõi phòng đang mở, tạo phòng hoặc tham gia khi có liên kết.
               </p>
             </div>
@@ -807,39 +807,65 @@ export default function CreateStudyRoomPage() {
             </div>
           )}
 
-          {/* Teacher Register Notice */}
+          {/* Teacher Register Notice (dành cho Học viên & Giáo viên) */}
           {!canCreate && (
-            <div className="rounded-2xl border border-amber-200/80 bg-amber-50 p-5 shadow-sm dark:border-amber-800/60 dark:bg-amber-900/10">
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30">
-                  <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <section className="rounded-2xl border border-amber-200/80 bg-amber-50/90 p-4 sm:p-5 shadow-sm dark:border-amber-800/60 dark:bg-amber-950/40">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                {/* Icon */}
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/50">
+                  <Lock className="h-5 w-5 text-amber-700 dark:text-amber-300" />
                 </div>
 
-                <div className="flex-1 space-y-3">
-                  <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
-                    Bạn chỉ có thể tham gia phòng học
-                  </h3>
-
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                    Chỉ <strong>giáo viên</strong> và{" "}
-                    <strong>quản trị viên</strong>
-                    có thể tạo phòng trực tuyến. Bạn vẫn có thể tham gia phòng
-                    khi giáo viên gửi link.
-                  </p>
-
-                  {/* Teacher Register Box */}
-                  <div className="rounded-xl bg-white/80 p-4 shadow-sm ring-1 ring-amber-100 dark:bg-amber-900/10 dark:ring-amber-800/60">
-                    <p className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      Bạn là giáo viên TOEIC/IELTS?
+                {/* Nội dung */}
+                <div className="flex-1 space-y-4">
+                  {/* Phần cho học viên */}
+                  <div className="space-y-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700/90 dark:text-amber-300">
+                      Dành cho học viên
                     </p>
-                    <p className="text-sm text-zinc-700 dark:text-zinc-300 mb-3">
+                    <h3 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white">
+                      Tài khoản của bạn chỉ dùng để tham gia phòng học
+                    </h3>
+                    <p className="text-xs sm:text-sm leading-relaxed text-zinc-800 dark:text-zinc-300">
+                      Chỉ <strong>giáo viên</strong> và{" "}
+                      <strong>quản trị viên</strong> mới có thể tạo phòng trực
+                      tuyến. Khi giáo viên mở phòng, bạn có thể:
+                    </p>
+                    <ul className="mt-1 space-y-1 text-xs sm:text-sm text-zinc-800 dark:text-zinc-300">
+                      <li className="flex gap-2">
+                        <span className="mt-[5px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
+                        <span>
+                          Nhận link tham gia phòng từ giáo viên (qua chat,
+                          email,…).
+                        </span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="mt-[5px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
+                        <span>
+                          Hoặc chọn phòng trong mục <b>“Danh sách phòng”</b> bên
+                          dưới nếu đang mở.
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Divider nhỏ */}
+                  <div className="h-px w-full bg-amber-200/80 dark:bg-amber-800/70" />
+
+                  {/* Phần cho giáo viên – gom chung trong nền vàng */}
+                  <div className="space-y-2 text-xs sm:text-sm">
+                    <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                      Bạn là giáo viên TOEIC / IELTS?
+                    </p>
+                    <p className="text-[11px] sm:text-xs leading-relaxed text-zinc-800 dark:text-zinc-300">
                       Nếu bạn có kinh nghiệm giảng dạy và muốn mở lớp trên nền
-                      tảng này, hãy gửi thông tin để admin liên hệ trực tiếp.
+                      tảng này, hãy gửi thông tin để admin xem xét và cấp quyền
+                      giáo viên nếu hồ sơ phù hợp.
                     </p>
 
                     <button
                       onClick={() => setShowTeacherRegisterModal(true)}
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 hover:shadow-md dark:bg-amber-500 dark:hover:bg-amber-400"
                     >
                       <Users className="h-4 w-4" />
                       Gửi thông tin đăng ký giáo viên
@@ -847,7 +873,7 @@ export default function CreateStudyRoomPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
           )}
 
           {/* Teacher Register Modal */}

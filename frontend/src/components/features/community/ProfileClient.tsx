@@ -11,6 +11,7 @@ import {
   ImageIcon,
   Trash2,
   Trophy,
+  FileText, // ✅ icon cho empty posts
 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { toast } from "@/lib/toast";
@@ -188,11 +189,12 @@ export default function ProfileClient({
       .catch(console.error);
   }, [userId]);
 
+  // 🔄 Loading hồ sơ – đồng bộ spinner với community
   if (!profile) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+      <div className="flex items-center justify-center py-16 sm:py-20">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             Đang tải hồ sơ...
           </p>
@@ -222,10 +224,10 @@ export default function ProfileClient({
           <img
             src={coverUrl}
             alt="Cover"
-            className="h-64 w-full object-cover opacity-95"
+            className="h-48 xs:h-56 sm:h-64 w-full object-cover opacity-95"
           />
         )}
-        {!coverUrl && <div className="h-64 w-full" />}
+        {!coverUrl && <div className="h-48 xs:h-56 sm:h-64 w-full" />}
 
         {uploading && (
           <div className="pointer-events-none absolute left-4 top-4 rounded-full bg-zinc-900/70 px-3 py-1.5 text-xs font-medium text-zinc-50 backdrop-blur">
@@ -234,7 +236,7 @@ export default function ProfileClient({
         )}
 
         {isOwnProfile && (
-          <div className="absolute right-4 top-4 flex gap-2">
+          <div className="absolute right-3 top-3 flex gap-2 sm:right-4 sm:top-4">
             {profile.coverImage && (
               <button
                 onClick={() => {
@@ -305,7 +307,7 @@ export default function ProfileClient({
             <div className="relative">
               <button
                 onClick={() => setShowAvatarMenu((v) => !v)}
-                className="flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-4xl font-bold text-white ring-4 ring-white shadow-xl transition-all hover:ring-blue-300 dark:ring-zinc-950 sm:h-40 sm:w-40"
+                className="flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl transition-all hover:ring-blue-300 dark:ring-zinc-950"
               >
                 {avatarUrl ? (
                   <img
@@ -324,13 +326,9 @@ export default function ProfileClient({
                     className="fixed inset-0 z-40"
                     onClick={() => setShowAvatarMenu(false)}
                   />
-                  <div className="absolute left-0 top-full z-50 mt-2 min-w-[200px] rounded-xl border border-zinc-200 bg-white  shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+                  <div className="absolute left-0 top-full z-50 mt-2 min-w-[200px] rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
                     {/* Upload new avatar */}
-                    <label
-                      className="flex cursor-pointer items-center gap-3 px-4 py-2 text-sm 
-      text-zinc-900 transition-colors hover:bg-zinc-100 
-      dark:text-zinc-50 dark:hover:bg-zinc-800"
-                    >
+                    <label className="flex cursor-pointer items-center gap-3 px-4 py-2 text-sm text-zinc-900 transition-colors hover:bg-zinc-100 dark:text-zinc-50 dark:hover:bg-zinc-800">
                       <input
                         type="file"
                         accept="image/*"
@@ -397,9 +395,7 @@ export default function ProfileClient({
                             }
                           );
                         }}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium
-        text-red-600 transition-colors hover:bg-red-100 
-        dark:text-red-400 dark:hover:bg-red-900/30 rounded-b-xl"
+                        className="flex w-full items-center gap-3 rounded-b-xl px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30"
                       >
                         <Trash2 className="h-4 w-4" />
                         <span>Xóa ảnh</span>
@@ -410,7 +406,7 @@ export default function ProfileClient({
               )}
             </div>
           ) : (
-            <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-4xl font-bold text-white ring-4 ring-white shadow-xl dark:ring-zinc-950 sm:h-40 sm:w-40">
+            <div className="flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl dark:ring-zinc-950">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -427,7 +423,7 @@ export default function ProfileClient({
         {/* Info + actions */}
         <div className="flex flex-1 flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div className="flex-1">
-            <h1 className="mb-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <h1 className="mb-1 text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               {profile.name || "User"}
             </h1>
 
@@ -437,7 +433,7 @@ export default function ProfileClient({
               </div>
             )}
 
-            <div className="flex flex-wrap gap-4 text-sm">
+            <div className="flex flex-wrap gap-3 text-sm">
               <div>
                 <span className="font-semibold text-zinc-900 dark:text-zinc-50">
                   {profile.postsCount || 0}
@@ -631,30 +627,17 @@ export default function ProfileClient({
             ))}
           </div>
         ) : (
-          <div className="flex justify-center py-12">
-            <div className="w-full max-w-md rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-6 py-8 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-300">
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                  />
-                </svg>
-              </div>
-              <h3 className="mb-1 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                Chưa có bài viết nào
-              </h3>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                Người dùng này chưa đăng bài viết nào trong cộng đồng.
-              </p>
+          // 🔄 Empty posts state – đồng bộ 100% với community/Groups
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-4 sm:px-6 py-12 sm:py-16 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+            <div className="mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
+              <FileText className="h-7 w-7 sm:h-8 sm:w-8" />
             </div>
+            <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              Chưa có bài viết nào
+            </h3>
+            <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
+              Người dùng này chưa đăng bài viết nào trong cộng đồng.
+            </p>
           </div>
         )}
       </div>

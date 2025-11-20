@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { motion } from "framer-motion";
 
 /* =========================

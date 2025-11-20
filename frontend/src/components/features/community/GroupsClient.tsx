@@ -217,7 +217,7 @@ export default function GroupsClient() {
                       </div>
                     </div>
                   </Link>
-                </div>
+                </div >
               );
             })}
           </div>

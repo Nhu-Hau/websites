@@ -551,7 +551,12 @@ export default function PracticePart() {
 
           {loading ? (
             <motion.div
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-[300px] xs:max-w-[350px] sm:max-w-[600px] md:max-w-[700px] mx-auto lg:max-w-none"
+              className="
+      grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4
+      gap-3 xs:gap-4 sm:gap-5
+      max-w-md xs:max-w-xl sm:max-w-2xl md:max-w-3xl
+      mx-auto lg:max-w-none
+    "
               variants={gridVariants}
               initial="hidden"
               animate="visible"
@@ -591,7 +596,12 @@ export default function PracticePart() {
             </motion.div>
           ) : (
             <motion.div
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-[300px] xs:max-w-[350px] sm:max-w-[600px] md:max-w-[700px] mx-auto lg:max-w-none"
+              className="
+      grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4
+      gap-3 xs:gap-4 sm:gap-5
+      max-w-md xs:max-w-xl sm:max-w-2xl md:max-w-3xl
+      mx-auto lg:max-w-none
+    "
               variants={gridVariants}
               initial="hidden"
               animate="visible"
@@ -607,7 +617,6 @@ export default function PracticePart() {
                     className="h-full"
                     variants={itemVariants}
                     onClickCapture={(e) => {
-                      // Nếu có suggestedLevel khác level đang chọn, show modal gợi ý
                       if (suggestedLevel != null && level !== suggestedLevel) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -616,7 +625,6 @@ export default function PracticePart() {
                       }
                     }}
                     onClick={() => {
-                      // Cho vào trang test cụ thể nếu level trùng gợi ý
                       if (suggestedLevel == null || level === suggestedLevel) {
                         router.push(href);
                       }

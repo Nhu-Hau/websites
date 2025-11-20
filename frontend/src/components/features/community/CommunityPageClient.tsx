@@ -8,6 +8,7 @@ import Pagination from "@/components/features/community/Pagination";
 import type { CommunityPost } from "@/types/community.types";
 import { toast } from "@/lib/toast";
 import { getSocket } from "@/lib/socket";
+import { MessagesSquare } from "lucide-react"; // 🔧 NEW: icon cho empty state
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -87,8 +88,6 @@ export default function CommunityPageClient({
       liked?: boolean;
       userId?: string;
     }) => {
-      // Don't update if this is the current user's own like action
-      // (they already updated it optimistically)
       if (p.userId && currentUserId && p.userId === currentUserId) return;
       setPosts((prev) =>
         prev.map((post) => {
@@ -97,8 +96,6 @@ export default function CommunityPageClient({
             typeof p.likesCount === "number"
               ? p.likesCount
               : Number(post.likesCount) || 0;
-          // Only update likesCount from socket events, not liked field
-          // (liked field is user-specific and should come from API)
           return { ...post, likesCount: safeLikes };
         })
       );
@@ -174,46 +171,43 @@ export default function CommunityPageClient({
 
   return (
     <div className="space-y-8">
+      {/* Header */}
+      <div className="mb-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Bảng tin
+        </h1>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          Bạn có thể đăng câu hỏi, kinh nghiệm luyện TOEIC, hoặc chia sẻ tài
+          liệu hữu ích cho các bạn khác.
+        </p>
+      </div>
       {/* Posts List */}
-      {postsList.length > 0 ? (
-        <div className="space-y-4">{postsList}</div>
-      ) : null}
+      {postsList.length > 0 && <div className="space-y-4">{postsList}</div>}
 
-      {/* Loading State */}
+      {/* 🔧 Loading State – đồng bộ style Groups, mobile-first */}
       {loading && (
-        <div className="flex items-center justify-center py-16">
-          <div className="flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
-            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              Đang tải...
+        <div className="flex items-center justify-center py-12 sm:py-16">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Đang tải bài viết...
             </p>
           </div>
         </div>
       )}
 
-      {/* Empty State */}
+      {/* 🔧 Empty State – đồng bộ với card “Chưa có nhóm phù hợp” */}
       {!loading && total === 0 && (
-        <div className="flex flex-col items-center justify-center px-4 text-center">
-          <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
-            <svg
-              className="w-8 h-8 text-zinc-400 dark:text-zinc-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-4 sm:px-6 py-12 sm:py-16 text-center shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/95">
+          <div className="mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
+            <MessagesSquare className="h-7 w-7 sm:h-8 sm:w-8" />
           </div>
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+          <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
             Chưa có bài viết nào
           </h3>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-sm">
-            Hãy là người đầu tiên chia sẻ với cộng đồng!
+          <p className="mb-1 max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
+            Bảng tin cộng đồng đang trống. Hãy chia sẻ bài viết đầu tiên với mọi
+            người.
           </p>
         </div>
       )}

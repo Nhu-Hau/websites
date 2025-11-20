@@ -95,11 +95,11 @@ export default function LayoutClient({
         <div className="flex min-h-screen">
           <SideNav />
           <div className="flex-1 lg:ml-0">
-            <main className={`min-h-screen ${shouldShowBottomBar ? "pb-16" : ""}`}>{children}</main>
+            <main className={`min-h-screen ${shouldShowBottomBar ? "" : ""}`}>{children}</main>
           </div>
         </div>
       ) : (
-        <main className={shouldShowBottomBar ? "pb-16" : ""}>{children}</main>
+        <main className={shouldShowBottomBar ? "" : ""}>{children}</main>
       )}
 
       {/* Bottom Tab Bar - Hide when ChatSheet is open on mobile */}

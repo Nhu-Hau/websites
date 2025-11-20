@@ -429,15 +429,20 @@ export default function AdminChatContent({ isMobile = false }: { isMobile?: bool
             </p>
           </div>
         ) : (
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {messages.map((m) => (
               <motion.div
                 key={m.id}
-                layout
+                layout="position"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 220,
+                  damping: 24,
+                  mass: 0.8,
+                }}
                 className={`flex ${
                   m.role === "user" ? "justify-end" : "justify-start"
                 }`}

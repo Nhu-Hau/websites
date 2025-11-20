@@ -431,6 +431,7 @@ export default function PracticePage() {
               timeLabel={fmtTime(resp.timeSec)}
               onToggleDetails={() => setShowDetails((s: any) => !s)}
               showDetails={showDetails}
+              variant="practice"
             />
           )}
 

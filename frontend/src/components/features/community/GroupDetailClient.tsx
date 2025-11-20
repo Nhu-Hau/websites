@@ -296,24 +296,24 @@ export default function GroupDetailClient({
         confirmColor: "red",
       },
       async () => {
-        setDeleting(true);
-        try {
-          const res = await fetch(`${API_BASE}/api/community/groups/${groupId}`, {
-            method: "DELETE",
-            credentials: "include",
-          });
-          if (!res.ok) {
-            const data = await res.json().catch(() => ({}));
-            throw new Error(data.message || "Không thể xoá nhóm");
-          }
-          toast.success("Đã xoá nhóm");
-          router.replace(`${basePrefix}/community/groups`);
-        } catch (e: any) {
-          toast.error(e.message || "Không thể xoá nhóm");
-          console.error("[handleDeleteGroup] ERROR", e);
-        } finally {
-          setDeleting(false);
-        }
+    setDeleting(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/community/groups/${groupId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Không thể xoá nhóm");
+      }
+      toast.success("Đã xoá nhóm");
+      router.replace(`${basePrefix}/community/groups`);
+    } catch (e: any) {
+      toast.error(e.message || "Không thể xoá nhóm");
+      console.error("[handleDeleteGroup] ERROR", e);
+    } finally {
+      setDeleting(false);
+    }
       }
     );
   };
@@ -357,7 +357,7 @@ export default function GroupDetailClient({
   return (
     <>
       {Modal}
-      <div className="space-y-6">
+    <div className="space-y-6">
       {/* Back link */}
       <Link
         href={`${basePrefix}/community/groups`}

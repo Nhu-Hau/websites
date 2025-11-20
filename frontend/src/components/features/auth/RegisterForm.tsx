@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useTranslations } from "next-intl";
 import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
 
@@ -17,11 +16,40 @@ import { usePasswordToggle } from "@/hooks/auth/usePasswordToggle";
 import { useAuthSubmit } from "@/hooks/auth/useAuthSubmit";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
+const REGISTER_COPY = {
+  title: "Tạo tài khoản",
+  alreadyAccount: "Đã có tài khoản?",
+  login: "Đăng nhập",
+  google: "Tiếp tục với Google",
+  name: "Họ và tên",
+  placeholderName: "Nhập họ và tên của bạn",
+  email: "Email",
+  placeholderEmail: "Nhập email của bạn",
+  password: "Mật khẩu",
+  placeholderPassword: "Tối thiểu 8 ký tự",
+  confirmPassword: "Xác nhận mật khẩu",
+  confirmPlaceholder: "Nhập lại mật khẩu",
+  submitting: "Đang xử lý...",
+  submit: "Đăng ký",
+  success: "Đăng ký thành công!",
+  errorEmailRequired: "Vui lòng nhập email",
+  errorEmailInvalid: "Email không hợp lệ",
+  errorNameRequired: "Vui lòng nhập họ tên",
+  errorNameInvalid:
+    "Tên chỉ gồm chữ cái, khoảng trắng, dấu gạch nối, nháy đơn và chấm (2–50 ký tự)",
+  errorPasswordRequired: "Vui lòng nhập mật khẩu",
+  errorPasswordWeak:
+    "Mật khẩu tối thiểu 8 ký tự, có chữ và số, không khoảng trắng đầu/cuối",
+  errorConfirmRequired: "Vui lòng nhập lại mật khẩu",
+  errorConfirmMismatch: "Mật khẩu xác nhận không khớp",
+} as const;
+
 const RESEND_COOLDOWN = 30; // giây
 const RESEND_STORAGE_KEY = "auth:resend:expiresAt";
 
 export default function RegisterForm() {
-  const t = useTranslations("register");
+  const translate = (key: string) =>
+    REGISTER_COPY[key as keyof typeof REGISTER_COPY] ?? key;
   const basePrefix = useBasePrefix();
   const router = useRouter();
   const [gLoading, setGLoading] = useState(false);
@@ -33,9 +61,9 @@ export default function RegisterForm() {
   const { onSubmit, loading, errors, setErrors } = useAuthSubmit({
     kind: "register",
     url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/register`,
-    t,
+    t: translate,
     onSuccess: (data) => {
-      toast.success(t("success"));
+      toast.success(translate("success"));
       if (data.user) login(data.user);
       router.push(`${basePrefix}/home`);
     },
@@ -144,21 +172,21 @@ export default function RegisterForm() {
 
   return (
     <AuthLayout
-      title={t("title")}
+      title={translate("title")}
       subtitle={
         <>
-          {t("alreadyAccount")}{" "}
+          {translate("alreadyAccount")}{" "}
           <Link
             href={`${basePrefix}/login`}
             className="font-medium text-sky-600 dark:text-sky-400 underline underline-offset-4 decoration-dashed hover:no-underline hover:text-sky-700 dark:hover:text-sky-300 transition-colors duration-200"
           >
-            {t("login")}
+            {translate("login")}
           </Link>
         </>
       }
       below={
         <GoogleButton
-          text={t("google")}
+          text={translate("google")}
           loading={gLoading}
           onClick={onGoogle}
           className="w-full justify-center py-3 text-sm font-medium rounded-xl border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all duration-200 shadow-sm"
@@ -172,7 +200,7 @@ export default function RegisterForm() {
             htmlFor="name"
             className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
           >
-            {t("name")}
+            {translate("name")}
           </label>
           <Input
             id="name"
@@ -182,7 +210,7 @@ export default function RegisterForm() {
             autoFocus
             aria-invalid={!!errors.name}
             error={!!errors.name}
-            placeholder={t("placeholderName")}
+            placeholder={translate("placeholderName")}
             onChange={() =>
               errors.name && setErrors((e) => ({ ...e, name: undefined }))
             }
@@ -196,7 +224,7 @@ export default function RegisterForm() {
             htmlFor="email"
             className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
           >
-            {t("email")}
+            {translate("email")}
           </label>
           <Input
             id="email"
@@ -206,7 +234,7 @@ export default function RegisterForm() {
             autoComplete="email"
             aria-invalid={!!errors.email}
             error={!!errors.email}
-            placeholder={t("placeholderEmail")}
+            placeholder={translate("placeholderEmail")}
             onChange={() =>
               errors.email && setErrors((e) => ({ ...e, email: undefined }))
             }
@@ -219,9 +247,10 @@ export default function RegisterForm() {
           <PasswordField
             id="password"
             name="password"
-            label={t("password")}
+            label={translate("password")}
             placeholder={
-              t("placeholderPassword") || "Nhập mật khẩu (tối thiểu 8 ký tự)"
+              translate("placeholderPassword") ||
+              "Nhập mật khẩu (tối thiểu 8 ký tự)"
             }
             className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200"
             minLength={8}
@@ -242,8 +271,8 @@ export default function RegisterForm() {
           <PasswordField
             id="confirm"
             name="confirm"
-            label={t("confirmPassword")}
-            placeholder={t("confirmPlaceholder") || "Nhập lại mật khẩu"}
+            label={translate("confirmPassword")}
+            placeholder={translate("confirmPlaceholder") || "Nhập lại mật khẩu"}
             className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200"
             minLength={8}
             autoComplete="new-password"
@@ -305,7 +334,7 @@ export default function RegisterForm() {
           isLoading={loading}
           className="w-full"
         >
-          {loading ? t("submitting") : t("submit")}
+          {loading ? translate("submitting") : translate("submit")}
         </Button>
       </form>
     </AuthLayout>

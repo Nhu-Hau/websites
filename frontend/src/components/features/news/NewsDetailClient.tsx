@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
 import { useAuth } from "@/context/AuthContext";
 import { TranslationProvider } from "./TranslationProvider";
 import { PremiumGuard } from "./PremiumGuard";
@@ -16,12 +15,31 @@ interface NewsItem {
   viewCount: number;
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  all: "Tất cả",
+  education: "Giáo dục",
+  politics: "Chính trị",
+  travel: "Du lịch",
+  technology: "Công nghệ",
+  sports: "Thể thao",
+  entertainment: "Giải trí",
+  business: "Kinh doanh",
+  society: "Xã hội",
+  health: "Sức khỏe",
+  culture: "Văn hóa",
+};
+
+const NEWS_DETAIL_COPY = {
+  notFound: "Không tìm thấy bài viết",
+  premiumHint:
+    "Nâng cấp lên Premium để sử dụng tính năng dịch từ và luyện từ vựng!",
+};
+
 interface NewsDetailClientProps {
   newsId: string;
 }
 
 export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
-  const t = useTranslations();
   const { user } = useAuth();
   const [news, setNews] = useState<NewsItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,9 +66,8 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
     }
   };
 
-  const getCategoryLabel = (category: string) => {
-    return t(`news.category.${category}`, { default: category });
-  };
+  const getCategoryLabel = (category: string) =>
+    CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS] ?? category;
 
   const getImageUrl = (s3Url: string) => {
     return s3Url.replace(
@@ -82,7 +99,7 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="container mx-auto px-4 max-w-4xl text-center">
           <p className="text-gray-500 dark:text-gray-400 text-lg">
-            {t("news.notFound", { default: "News not found" })}
+            {NEWS_DETAIL_COPY.notFound}
           </p>
         </div>
       </div>
@@ -123,9 +140,7 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
           {!isPremium && (
             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-l-4 border-yellow-500 p-4">
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                💎 {t("news.premiumHint", { 
-                  default: "Upgrade to Premium to access word translation and vocabulary features!" 
-                })}
+                💎 {NEWS_DETAIL_COPY.premiumHint}
               </p>
             </div>
           )}

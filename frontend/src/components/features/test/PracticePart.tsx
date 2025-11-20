@@ -322,7 +322,7 @@ export default function PracticePart() {
   return (
     <div className="relative min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-hidden">
       {/* subtle grid background */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.1),_transparent_45%),radial-gradient(circle_at_bottom,_rgba(251,191,36,0.12),_transparent_50%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_#e5e7eb_0,_#fafafa_40%,_#f4f4f5_100%)]" />
 
       <div className="relative mx-auto max-w-6xl xl:max-w-7xl px-4 xs:px-6 py-10 pt-20">
         {/* ===== HEADER ===== */}

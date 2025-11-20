@@ -79,7 +79,7 @@ const cardVariants = {
 export function TestCardSkeleton() {
   return (
     <motion.div
-      className="h-full rounded-2xl border border-zinc-200/90 bg-white px-3.5 py-3.5 xs:px-4 xs:py-4 sm:px-5 sm:py-5 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900 animate-pulse"
+      className="h-full rounded-3xl border border-zinc-200/90 bg-white px-3.5 py-3.5 xs:px-4 xs:py-4 sm:px-5 sm:py-5 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900 animate-pulse"
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
@@ -172,7 +172,7 @@ export default function TestCard({
       role="button"
       title={disabled ? disabledHint : undefined}
       className={cn(
-        "group relative flex h-full flex-col rounded-lg border bg-white dark:bg-zinc-900",
+        "group relative flex h-full flex-col rounded-3xl border bg-white dark:bg-zinc-900",
         // padding mobile gọn, lớn dần theo breakpoint
         "px-3.5 py-3.5 xs:px-4 xs:py-4 sm:px-5 sm:py-5",
         "border-zinc-200/90 dark:border-zinc-700/80 shadow-sm",
@@ -192,12 +192,12 @@ export default function TestCard({
       }}
     >
       {/* Thanh màu mỏng trên đỉnh card */}
-      <div
+      {/* <div
         className={cn(
-          "pointer-events-none absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r",
+          "pointer-events-none absolute inset-x-0 top-0 h-4 rounded-t-3xl bg-gradient-to-r",
           color.gradient
         )}
-      />
+      /> */}
 
       {/* Header */}
       <div className="mb-3 flex items-start justify-between gap-2">
@@ -208,7 +208,7 @@ export default function TestCard({
 
           <div className="flex flex-col">
             <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-              Test {test}
+              TEST {test}
             </h3>
             {done && (
               <span className="mt-0.5 text-[10px] xs:text-[11px] text-zinc-500 dark:text-zinc-400">

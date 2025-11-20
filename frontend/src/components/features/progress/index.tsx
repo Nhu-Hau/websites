@@ -243,7 +243,7 @@ export default function ProgressPage() {
           label: `Progress Test • 7 phần • ${durationMin} phút`,
           dotColor: "bg-sky-500",
         }}
-        title={`Bài kiểm tra tiến bộ TOEIC${typeof version === "number" && Number.isFinite(version) && version > 0 ? ` • Test ${version}` : ""}`}
+        title={`Bài kiểm tra tiến độ`}
         description={
           <>
             Bài Progress gồm đủ{" "}

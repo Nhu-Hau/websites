@@ -12,13 +12,21 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
-import { useTranslations } from "next-intl";
 import { useAuth } from "@/context/AuthContext";
 import { postJson } from "@/lib/api/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { useChat } from "@/context/ChatContext";
+
+const CHAT_COPY = {
+  demoReply:
+    "Xin chào! Tôi là trợ lý AI chuyên về TOEIC. Tôi có thể giúp bạn luyện thi, giải thích ngữ pháp, từ vựng và chiến lược làm bài. Bạn muốn hỏi gì?",
+  empty:
+    "Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với trợ lý AI TOEIC.",
+  aiLabel: "AI",
+  placeholder: "Nhập tin nhắn...",
+};
 
 type Msg = {
   _id?: string;
@@ -344,7 +352,6 @@ function LearningInsightCard({ insightText }: { insightText: string }) {
 }
 
 export default function AIChatContent({ isMobile = false }: { isMobile?: boolean }) {
-  const t = useTranslations("chat");
   const { user } = useAuth();
   const { open, setUnreadCount } = useChat();
 
@@ -497,9 +504,9 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
     if (justOpened || (open && (hasNewMessages || isNearBottom))) {
       setTimeout(() => {
         if (el) {
-          el.scrollTop = el.scrollHeight;
+          el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
         }
-      }, 0);
+      }, 16);
     }
 
     prevMessagesLengthRef.current = messages.length;
@@ -611,7 +618,7 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
       setMessages((prev) =>
         prev.map((m) =>
           m.id === tempAssistantId
-            ? { ...m, pending: false, content: t("demoReply") }
+            ? { ...m, pending: false, content: CHAT_COPY.demoReply }
             : m
         )
       );
@@ -692,19 +699,24 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
                 ? "Vui lòng đăng nhập để bắt đầu trò chuyện"
                 : user.access !== "premium"
                 ? "Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
-                : t("empty")}
+                : CHAT_COPY.empty}
             </p>
           </div>
         ) : (
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {messages.map((m) => (
               <motion.div
                 key={m.id}
-                layout
+                layout="position"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 220,
+                  damping: 24,
+                  mass: 0.8,
+                }}
                 className={`flex ${
                   m.role === "user" ? "justify-end" : "justify-start"
                 }`}
@@ -719,7 +731,7 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
                   {m.role === "assistant" && (
                     <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-75">
                       <FaGraduationCap className="h-3.5 w-3.5" />
-                      <span className="font-medium">{t("ai")}</span>
+                      <span className="font-medium">{CHAT_COPY.aiLabel}</span>
                     </div>
                   )}
 
@@ -805,7 +817,7 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
                   ? "Đăng nhập để chat..."
                   : user.access !== "premium"
                   ? "Cần tài khoản Premium để sử dụng..."
-                  : t("placeholder")
+                  : CHAT_COPY.placeholder
               }
               disabled={!user || sending || user?.access !== "premium"}
               rows={1}

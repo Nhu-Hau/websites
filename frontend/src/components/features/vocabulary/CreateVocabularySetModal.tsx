@@ -1,128 +1,238 @@
-// frontend/src/components/features/vocabulary/CreateVocabularySetModal.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
-import { CreateVocabularySetDTO } from "@/types/vocabulary.types";
+import {
+  CreateVocabularySetDTO,
+  UpdateVocabularySetDTO,
+  VocabularySet,
+} from "@/types/vocabulary.types";
 
-interface CreateVocabularySetModalProps {
+export interface SetComposerModalProps {
+  open: boolean;
+  mode: "create" | "edit";
+  initialSet?: VocabularySet | null;
   onClose: () => void;
-  onCreate: (data: CreateVocabularySetDTO) => Promise<unknown>;
+  onSubmit: (
+    payload: CreateVocabularySetDTO | UpdateVocabularySetDTO
+  ) => Promise<void>;
 }
 
-export function CreateVocabularySetModal({
+export function SetComposerModal({
+  open,
+  mode,
+  initialSet,
   onClose,
-  onCreate,
-}: CreateVocabularySetModalProps) {
+  onSubmit,
+}: SetComposerModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (!open) return;
+
+    if (mode === "edit" && initialSet) {
+      setTitle(initialSet.title || "");
+      setDescription(initialSet.description || "");
+      setTopic(initialSet.topic || "");
+    } else {
+      setTitle("");
+      setDescription("");
+      setTopic("");
+    }
+    setError(null);
+  }, [mode, initialSet, open]);
+
+  const subtitle = useMemo(
+    () =>
+      mode === "create"
+        ? "Tạo bộ từ theo một chủ đề hoặc bối cảnh cụ thể."
+        : "Chỉnh sửa thông tin để bộ từ rõ ràng và dễ quản lý.",
+    [mode]
+  );
+
+  if (!open) return null;
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
     if (!title.trim()) {
-      setError("Tiêu đề là bắt buộc");
+      setError("Tên bộ từ vựng là bắt buộc.");
       return;
     }
 
     try {
       setLoading(true);
-      setError("");
-      await onCreate({
+      setError(null);
+
+      const payload = {
         title: title.trim(),
         description: description.trim() || undefined,
         topic: topic.trim() || undefined,
-        terms: [],
-      });
+      };
+
+      await onSubmit(payload);
       onClose();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Không thể tạo bộ từ vựng");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Không thể lưu bộ từ vựng. Hãy thử lại."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center px-3 py-6 sm:px-4">
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" />
+
+      {/* Panel */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="
+          relative z-10 w-full max-w-xl
+          overflow-hidden rounded-2xl border border-[#2E5EB8]/25
+          bg-white shadow-2xl shadow-black/25
+          dark:border-[#2E5EB8]/45 dark:bg-zinc-950
+        "
+      >
+        {/* Close */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Đóng"
+          className="
+            absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center
+            rounded-xl bg-white/80 text-zinc-500 ring-1 ring-zinc-200
+            shadow-sm transition
+            hover:bg-white hover:text-zinc-900
+            dark:bg-zinc-900/80 dark:text-zinc-300 dark:ring-zinc-700 dark:hover:bg-zinc-800
+          "
+        >
+          <X className="h-4 w-4" />
+        </button>
+
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-zinc-200 dark:border-zinc-700">
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
-            Tạo bộ từ vựng
+        <div
+          className="
+            border-b border-zinc-100/70 px-4 pb-3 pt-4 sm:px-5 sm:pt-5 sm:pb-4
+            bg-gradient-to-r from-[#2E5EB8]/10 via-white to-[#2E5EB8]/5
+            dark:border-zinc-800/70 dark:from-[#0F1A33] dark:via-zinc-950 dark:to-[#2E5EB8]/15
+          "
+        >
+          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-[#102347] dark:text-white">
+            {mode === "create" ? "Thiết lập bộ từ" : "Cập nhật bộ từ"}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
-          >
-            <X className="w-5 h-5 text-zinc-500" />
-          </button>
+          <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+            {subtitle}
+          </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto px-4 pb-4 pt-4 sm:px-5 sm:pb-5"
+        >
           {error && (
-            <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-              <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
+            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
+              {error}
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-              Tiêu đề *
+          {/* Title */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-100">
+              Tên bộ từ <span className="text-red-500">*</span>
             </label>
             <input
-              type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ví dụ: Từ vựng tiếng Anh thương mại"
-              className="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
-              required
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="VD: TOEIC – Office Communication"
+              maxLength={80}
+              className="
+                w-full rounded-xl border border-zinc-200/80 bg-white px-3 py-2.5
+                text-sm font-medium text-zinc-900 outline-none
+                transition focus:border-[#2E5EB8] focus:ring-2 focus:ring-[#2E5EB8]/15
+                dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-[#2E5EB8] dark:focus:ring-[#2E5EB8]/30
+              "
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-              Mô tả
+          {/* Topic */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-100">
+              Chủ đề / tag
+            </label>
+            <input
+              value={topic}
+              onChange={(event) => setTopic(event.target.value)}
+              placeholder="VD: Office, Meetings, Customer service"
+              className="
+                w-full rounded-xl border border-zinc-200/80 bg-white px-3 py-2.5
+                text-sm text-zinc-900 outline-none
+                transition focus:border-[#2E5EB8] focus:ring-2 focus:ring-[#2E5EB8]/15
+                dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-[#2E5EB8] dark:focus:ring-[#2E5EB8]/30
+              "
+            />
+          </div>
+
+          {/* Description */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-100">
+              Mô tả (tùy chọn)
             </label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Mô tả ngắn gọn về bộ từ vựng này"
+              onChange={(event) => setDescription(event.target.value)}
               rows={3}
-              className="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none resize-none transition-all"
+              placeholder="VD: Từ vựng thường gặp trong hội thoại văn phòng."
+              className="
+                w-full rounded-xl border border-zinc-200/80 bg-white px-3 py-2.5
+                text-sm text-zinc-900 outline-none
+                transition focus:border-[#2E5EB8] focus:ring-2 focus:ring-[#2E5EB8]/15
+                dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-[#2E5EB8] dark:focus:ring-[#2E5EB8]/30
+              "
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-              Chủ đề
-            </label>
-            <input
-              type="text"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="Ví dụ: Kinh doanh, Du lịch, Học thuật"
-              className="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
+          {/* Actions */}
+          <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+              className="
+                inline-flex w-full sm:w-auto items-center justify-center
+                rounded-xl border border-zinc-200/80 bg-white px-4 py-2.5
+                text-sm font-semibold text-zinc-600
+                transition hover:border-zinc-300 hover:text-zinc-900
+                dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-50
+              "
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="
+                inline-flex w-full sm:w-auto items-center justify-center
+                rounded-xl bg-[#2E5EB8] px-4 py-2.5 text-sm font-semibold text-white
+                shadow-sm transition hover:bg-[#244A90]
+                disabled:cursor-not-allowed disabled:opacity-70
+                dark:bg-[#2E5EB8]/90 dark:hover:bg-[#2E5EB8]
+              "
             >
-              {loading ? "Đang tạo..." : "Tạo"}
+              {loading
+                ? "Đang lưu..."
+                : mode === "create"
+                ? "Tạo bộ từ"
+                : "Lưu thay đổi"}
             </button>
           </div>
         </form>

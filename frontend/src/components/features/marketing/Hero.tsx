@@ -46,87 +46,87 @@ function Stat({
   );
 }
 
-function PlacementModal({
-  open,
-  onClose,
-  onStart,
-  loading,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onStart: () => void;
-  loading: boolean;
-}) {
-  const { user } = useAuth();
-  if (!open || (user && (user as any).lastPlacementAttemptId)) return null;
+// function PlacementModal({
+//   open,
+//   onClose,
+//   onStart,
+//   loading,
+// }: {
+//   open: boolean;
+//   onClose: () => void;
+//   onStart: () => void;
+//   loading: boolean;
+// }) {
+//   const { user } = useAuth();
+//   if (!open || (user && (user as any).lastPlacementAttemptId)) return null;
 
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in duration-200"
-    >
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in zoom-in-95 duration-200 dark:bg-zinc-800 dark:ring-white/10">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-zinc-700">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
-            Mini TOEIC – Placement Test
-          </h2>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-zinc-400 dark:hover:bg-zinc-700"
-            aria-label="Đóng"
-          >
-            ✕
-          </button>
-        </div>
+//   return (
+//     <div
+//       role="dialog"
+//       aria-modal="true"
+//       className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+//     >
+//       <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in zoom-in-95 duration-200 dark:bg-zinc-800 dark:ring-white/10">
+//         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-zinc-700">
+//           <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
+//             Mini TOEIC – Placement Test
+//           </h2>
+//           <button
+//             onClick={onClose}
+//             className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-zinc-400 dark:hover:bg-zinc-700"
+//             aria-label="Đóng"
+//           >
+//             ✕
+//           </button>
+//         </div>
 
-        <div className="space-y-4 px-6 py-5 text-sm text-slate-700 dark:text-zinc-300">
-          <p className="flex items-center gap-2.5 font-medium text-slate-800 dark:text-zinc-200">
-            <FiClock className="text-sky-600 dark:text-sky-500" />
-            <span className="font-bold">35 phút</span> •{" "}
-            <span className="font-bold">55 câu</span>
-          </p>
-          <p className="leading-relaxed">
-            Gồm cả <strong>Listening & Reading</strong> (đề rút gọn, mô phỏng
-            cấu trúc thi thật).
-          </p>
-          <p className="leading-relaxed">
-            Hoàn thành <strong>Mini TOEIC 55 câu</strong>, hệ thống sẽ ước lượng{" "}
-            <strong>điểm TOEIC (0–990)</strong> và xếp bạn vào{" "}
-            <strong>Level 1–3</strong>, kèm gợi ý{" "}
-            <strong className="text-sky-600 dark:text-sky-400">
-              lộ trình học phù hợp
-            </strong>
-            .
-          </p>
-        </div>
+//         <div className="space-y-4 px-6 py-5 text-sm text-slate-700 dark:text-zinc-300">
+//           <p className="flex items-center gap-2.5 font-medium text-slate-800 dark:text-zinc-200">
+//             <FiClock className="text-sky-600 dark:text-sky-500" />
+//             <span className="font-bold">35 phút</span> •{" "}
+//             <span className="font-bold">55 câu</span>
+//           </p>
+//           <p className="leading-relaxed">
+//             Gồm cả <strong>Listening & Reading</strong> (đề rút gọn, mô phỏng
+//             cấu trúc thi thật).
+//           </p>
+//           <p className="leading-relaxed">
+//             Hoàn thành <strong>Mini TOEIC 55 câu</strong>, hệ thống sẽ ước lượng{" "}
+//             <strong>điểm TOEIC (0–990)</strong> và xếp bạn vào{" "}
+//             <strong>Level 1–3</strong>, kèm gợi ý{" "}
+//             <strong className="text-sky-600 dark:text-sky-400">
+//               lộ trình học phù hợp
+//             </strong>
+//             .
+//           </p>
+//         </div>
 
-        <div className="grid grid-cols-2 gap-3 border-t border-slate-200 px-6 py-5 dark:border-zinc-700">
-          <button
-            onClick={onClose}
-            disabled={loading}
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-all hover:bg-slate-50 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600"
-          >
-            Để sau
-          </button>
-          <button
-            onClick={onStart}
-            disabled={loading}
-            className="flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-sky-500 disabled:opacity-70"
-          >
-            {loading ? (
-              <>
-                <FiLoader className="animate-spin" /> Đang kiểm tra...
-              </>
-            ) : (
-              "Làm ngay"
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+//         <div className="grid grid-cols-2 gap-3 border-t border-slate-200 px-6 py-5 dark:border-zinc-700">
+//           <button
+//             onClick={onClose}
+//             disabled={loading}
+//             className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-all hover:bg-slate-50 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600"
+//           >
+//             Để sau
+//           </button>
+//           <button
+//             onClick={onStart}
+//             disabled={loading}
+//             className="flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-sky-500 disabled:opacity-70"
+//           >
+//             {loading ? (
+//               <>
+//                 <FiLoader className="animate-spin" /> Đang kiểm tra...
+//               </>
+//             ) : (
+//               "Làm ngay"
+//             )}
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
 
 export default function Hero() {
   const [openPrompt, setOpenPrompt] = React.useState(false);
@@ -198,10 +198,15 @@ export default function Hero() {
           return;
         } else {
           // Nếu không kiểm tra được trạng thái, vẫn cho phép vào làm bài (fail-safe)
-          console.warn("Không kiểm tra được trạng thái placement test, cho phép vào làm bài");
-          customToast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
-            duration: 2500,
-          });
+          console.warn(
+            "Không kiểm tra được trạng thái placement test, cho phép vào làm bài"
+          );
+          customToast.info(
+            "Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt",
+            {
+              duration: 2500,
+            }
+          );
           setTimeout(() => {
             router.push(`${base}/placement`);
           }, 2600);
@@ -215,9 +220,12 @@ export default function Hero() {
       } catch (parseError) {
         // Nếu parse JSON lỗi, vẫn cho phép vào làm bài
         console.warn("Lỗi parse response, cho phép vào làm bài", parseError);
-        customToast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
-          duration: 2500,
-        });
+        customToast.info(
+          "Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt",
+          {
+            duration: 2500,
+          }
+        );
         setTimeout(() => {
           router.push(`${base}/placement`);
         }, 2600);
@@ -250,7 +258,10 @@ export default function Hero() {
       }, 2600);
     } catch (error) {
       // Nếu có lỗi network hoặc lỗi khác, vẫn cho phép vào làm bài (fail-safe)
-      console.warn("Lỗi khi kiểm tra trạng thái placement test, cho phép vào làm bài", error);
+      console.warn(
+        "Lỗi khi kiểm tra trạng thái placement test, cho phép vào làm bài",
+        error
+      );
       customToast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
         duration: 2500,
       });
@@ -265,12 +276,12 @@ export default function Hero() {
 
   return (
     <>
-      <PlacementModal
+      {/* <PlacementModal
         open={openPrompt}
         onClose={handleClose}
         onStart={handleStart}
         loading={checking}
-      />
+      /> */}
 
       {/* HERO */}
       <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white pt-20">
@@ -287,9 +298,7 @@ export default function Hero() {
         {/* MAIN CONTAINER */}
         <div className="relative mx-auto flex max-w-[1380px] flex-col px-4 xs:px-5 sm:px-6 lg:px-8">
           {/* CONTENT */}
-          <div
-            className="grid grid-cols-1 items-center gap-8 pb-20 pt-4 xs:gap-9 xs:pb-24 sm:gap-10 sm:pb-28 lg:grid-cols-3 lg:gap-12 lg:pb-32"
-          >
+          <div className="grid grid-cols-1 items-center gap-8 pb-20 pt-4 xs:gap-9 xs:pb-24 sm:gap-10 sm:pb-28 lg:grid-cols-3 lg:gap-12 lg:pb-32">
             {/* LEFT TEXT */}
             <div className="lg:col-span-2 text-center lg:text-start">
               <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-sky-400/40 bg-sky-500/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-sky-100 backdrop-blur-sm xs:text-xs lg:mx-0">
@@ -465,18 +474,26 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* WAVE — FULL WIDTH 100vw, KHÔNG BỊ MAX-W */}
+        {/* WAVE — blend được với mọi background phía dưới */}
         <div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 bottom-0 w-[100vw] -translate-x-1/2 text-slate-50 dark:text-zinc-950"
+          className="pointer-events-none absolute left-1/2 bottom-0 w-[100vw] -translate-x-1/2"
         >
           <svg
             className="block h-12 w-full xs:h-16 sm:h-20 md:h-24"
             viewBox="0 0 1440 320"
             preserveAspectRatio="none"
           >
+            <defs>
+              <linearGradient id="hero-wave" x1="0" x2="0" y1="0" y2="1">
+                {/* cùng một màu ở mọi điểm → nhìn như màu phẳng */}
+                <stop offset="0%" stopColor="#F5F7FF" stopOpacity="1" />
+                <stop offset="100%" stopColor="#F5F7FF" stopOpacity="1" />
+              </linearGradient>
+            </defs>
+
             <path
-              fill="currentColor"
+              fill="url(#hero-wave)"
               d="M0,256L60,245.3C120,235,240,213,360,197.3C480,181,600,171,720,181.3C840,192,960,224,1080,229.3C1200,235,1320,213,1380,202.7L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"
             />
           </svg>

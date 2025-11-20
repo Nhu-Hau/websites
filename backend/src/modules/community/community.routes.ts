@@ -36,7 +36,15 @@ import { createPoll, votePoll, getPoll } from "./poll.controller";
 import { addReaction, removeReaction, getReactions } from "./reaction.controller";
 import { getHashtagPosts, getTrendingHashtags } from "./hashtag.controller";
 import { getFollowingPosts } from "./following.controller";
-import { createGroup, getGroup, listGroups, joinGroup, leaveGroup, getGroupPosts } from "./groups.controller";
+import {
+  createGroup,
+  getGroup,
+  listGroups,
+  joinGroup,
+  leaveGroup,
+  getGroupPosts,
+  deleteGroup,
+} from "./groups.controller";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -100,5 +108,6 @@ router.get("/groups/:groupId", attachAuthIfPresent, getGroup);
 router.post("/groups/:groupId/join", requireAuth, joinGroup);
 router.post("/groups/:groupId/leave", requireAuth, leaveGroup);
 router.get("/groups/:groupId/posts", attachAuthIfPresent, getGroupPosts);
+router.delete("/groups/:groupId", requireAuth, deleteGroup);
 
 export default router;

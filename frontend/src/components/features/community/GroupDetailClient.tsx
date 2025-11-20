@@ -1,8 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Users, UserPlus, UserMinus, Image as ImageIcon, ArrowLeft } from "lucide-react";
+import {
+  Users,
+  UserPlus,
+  UserMinus,
+  ArrowLeft,
+  Trash2,
+} from "lucide-react";
 import PostCard from "@/components/features/community/PostCard";
 import Pagination from "@/components/features/community/Pagination";
 import NewPostForm from "@/components/features/community/NewPostForm";
@@ -12,8 +19,10 @@ import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { useAuth } from "@/context/AuthContext";
 import { getSocket } from "@/lib/socket";
 import Link from "next/link";
+import { useConfirmModal } from "@/components/common/ConfirmModal";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 const PAGE_SIZE = 10;
 
 type StudyGroup = {
@@ -34,10 +43,13 @@ interface GroupDetailClientProps {
   groupId: string;
 }
 
-export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
+export default function GroupDetailClient({
+  groupId,
+}: GroupDetailClientProps) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const { user } = useAuth();
+  const { show: showConfirm, Modal } = useConfirmModal();
 
   const [group, setGroup] = React.useState<StudyGroup | null>(null);
   const [posts, setPosts] = React.useState<CommunityPost[]>([]);
@@ -46,6 +58,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
   const [loading, setLoading] = React.useState(true);
   const [joining, setJoining] = React.useState(false);
   const [leaving, setLeaving] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
   const [isMember, setIsMember] = React.useState(false);
   const [isAdmin, setIsAdmin] = React.useState(false);
 
@@ -66,42 +79,54 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
       }
       const data = await r.json();
       setGroup(data);
-      
-      // Check if user is member or admin
-      const adminId = typeof data.adminId === "object" ? data.adminId._id : data.adminId;
-      const memberIds = (data.members || []).map((m: any) => 
+
+      // Check is admin / member
+      const adminId =
+        typeof data.adminId === "object" ? data.adminId._id : data.adminId;
+      const memberIds = (data.members || []).map((m: any) =>
         typeof m === "object" ? m._id : m
       );
-      const userIsAdmin = !!currentUserId && String(adminId) === String(currentUserId);
-      const userIsMember = !!currentUserId && (userIsAdmin || memberIds.some((id: string) => String(id) === String(currentUserId)));
+      const userIsAdmin =
+        !!currentUserId && String(adminId) === String(currentUserId);
+      const userIsMember =
+        !!currentUserId &&
+        (userIsAdmin ||
+          memberIds.some(
+            (id: string) => String(id) === String(currentUserId)
+          ));
+
       setIsAdmin(userIsAdmin);
       setIsMember(userIsMember);
     } catch (e) {
-      toast.error("Không thể tải nhóm");
+      toast.error("Không thể tải thông tin nhóm");
       console.error("[loadGroup] ERROR", e);
     }
   }, [groupId, currentUserId, basePrefix, router]);
 
-  const loadPosts = React.useCallback(async (p = 1) => {
-    try {
-      const r = await fetch(
-        `${API_BASE}/api/community/groups/${groupId}/posts?page=${p}&limit=${PAGE_SIZE}`,
-        {
-          credentials: "include",
-          cache: "no-store",
-        }
-      );
-      if (!r.ok) throw new Error("Failed to load posts");
-      const j = await r.json();
-      setTotal(j.total || 0);
-      setPosts(j.items ?? []);
-    } catch (e) {
-      toast.error("Không thể tải bài viết");
-      console.error("[loadPosts] ERROR", e);
-    } finally {
-      setLoading(false);
-    }
-  }, [groupId]);
+  const loadPosts = React.useCallback(
+    async (p = 1) => {
+      try {
+        setLoading(true);
+        const r = await fetch(
+          `${API_BASE}/api/community/groups/${groupId}/posts?page=${p}&limit=${PAGE_SIZE}`,
+          {
+            credentials: "include",
+            cache: "no-store",
+          }
+        );
+        if (!r.ok) throw new Error("Failed to load posts");
+        const j = await r.json();
+        setTotal(j.total || 0);
+        setPosts(j.items ?? []);
+      } catch (e) {
+        toast.error("Không thể tải bài viết");
+        console.error("[loadPosts] ERROR", e);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [groupId]
+  );
 
   React.useEffect(() => {
     loadGroup();
@@ -111,26 +136,25 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
     loadPosts(page);
   }, [loadPosts, page]);
 
-  // Listen to socket events for real-time updates
+  // Socket real-time
   React.useEffect(() => {
     const s = getSocket();
 
     const onNewPost = (p: any) => {
-      // Only reload if the new post belongs to this group
       if (p.groupId === groupId) {
         loadPosts(page);
-        if (group) {
-          setGroup({ ...group, postsCount: (group.postsCount || 0) + 1 });
-        }
+        setGroup((g) =>
+          g ? { ...g, postsCount: (g.postsCount || 0) + 1 } : g
+        );
       }
     };
 
     const onPostDeleted = (p: { postId: string }) => {
       setPosts((prev) => prev.filter((x) => x._id !== p.postId));
       setTotal((t) => Math.max(0, t - 1));
-      if (group) {
-        setGroup({ ...group, postsCount: Math.max(0, (group.postsCount || 0) - 1) });
-      }
+      setGroup((g) =>
+        g ? { ...g, postsCount: Math.max(0, (g.postsCount || 0) - 1) } : g
+      );
     };
 
     const onLike = (p: {
@@ -139,8 +163,6 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
       liked?: boolean;
       userId?: string;
     }) => {
-      // Don't update if this is the current user's own like action
-      // (they already updated it optimistically)
       if (p.userId && currentUserId && p.userId === currentUserId) return;
       setPosts((prev) =>
         prev.map((post) => {
@@ -149,8 +171,6 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
             typeof p.likesCount === "number"
               ? p.likesCount
               : Number(post.likesCount) || 0;
-          // Only update likesCount from socket events, not liked field
-          // (liked field is user-specific and should come from API)
           return { ...post, likesCount: safeLikes };
         })
       );
@@ -189,7 +209,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
       s.off("community:new-comment", onComment);
       s.off("community:comment-deleted", onCommentDeleted);
     };
-  }, [groupId, page, group, currentUserId, loadPosts]);
+  }, [groupId, page, currentUserId, loadPosts]);
 
   const handleJoin = async () => {
     if (!currentUserId) {
@@ -198,19 +218,22 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
     }
     setJoining(true);
     try {
-      const r = await fetch(`${API_BASE}/api/community/groups/${groupId}/join`, {
-        method: "POST",
-        credentials: "include",
-      });
+      const r = await fetch(
+        `${API_BASE}/api/community/groups/${groupId}/join`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
       if (!r.ok) {
-        const data = await r.json();
+        const data = await r.json().catch(() => ({}));
         throw new Error(data.message || "Không thể tham gia nhóm");
       }
       const data = await r.json();
       setGroup(data);
       setIsMember(true);
-      toast.success("Đã tham gia nhóm thành công");
-      loadGroup(); // Reload to update member count
+      toast.success("Đã tham gia nhóm");
+      loadGroup();
     } catch (e: any) {
       toast.error(e.message || "Không thể tham gia nhóm");
       console.error("[handleJoin] ERROR", e);
@@ -226,19 +249,22 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
     }
     setLeaving(true);
     try {
-      const r = await fetch(`${API_BASE}/api/community/groups/${groupId}/leave`, {
-        method: "POST",
-        credentials: "include",
-      });
+      const r = await fetch(
+        `${API_BASE}/api/community/groups/${groupId}/leave`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
       if (!r.ok) {
-        const data = await r.json();
+        const data = await r.json().catch(() => ({}));
         throw new Error(data.message || "Không thể rời nhóm");
       }
       const data = await r.json();
       setGroup(data);
       setIsMember(false);
-      toast.success("Đã rời nhóm thành công");
-      loadGroup(); // Reload to update member count
+      toast.success("Đã rời nhóm");
+      loadGroup();
     } catch (e: any) {
       toast.error(e.message || "Không thể rời nhóm");
       console.error("[handleLeave] ERROR", e);
@@ -249,9 +275,47 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
 
   const handlePostCreated = () => {
     loadPosts(page);
-    if (group) {
-      setGroup({ ...group, postsCount: (group.postsCount || 0) + 1 });
+    setGroup((g) =>
+      g ? { ...g, postsCount: (g.postsCount || 0) + 1 } : g
+    );
+  };
+
+  const handleDeleteGroup = () => {
+    if (!currentUserId) {
+      toast.error("Vui lòng đăng nhập");
+      return;
     }
+
+    showConfirm(
+      {
+        title: "Xác nhận xoá nhóm",
+        message: "Bạn có chắc muốn xoá nhóm này? Mọi bài viết trong nhóm cũng sẽ bị xoá. Hành động này không thể hoàn tác.",
+        icon: "warning",
+        confirmText: "Xoá nhóm",
+        cancelText: "Hủy",
+        confirmColor: "red",
+      },
+      async () => {
+        setDeleting(true);
+        try {
+          const res = await fetch(`${API_BASE}/api/community/groups/${groupId}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.message || "Không thể xoá nhóm");
+          }
+          toast.success("Đã xoá nhóm");
+          router.replace(`${basePrefix}/community/groups`);
+        } catch (e: any) {
+          toast.error(e.message || "Không thể xoá nhóm");
+          console.error("[handleDeleteGroup] ERROR", e);
+        } finally {
+          setDeleting(false);
+        }
+      }
+    );
   };
 
   const handlePostChanged = React.useCallback(() => {
@@ -266,7 +330,7 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
   if (!group) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
       </div>
     );
   }
@@ -291,135 +355,169 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
   const showBottomPager = total > PAGE_SIZE;
 
   return (
-    <div className="space-y-6">
-      {/* Back Button */}
+    <>
+      {Modal}
+      <div className="space-y-6">
+      {/* Back link */}
       <Link
         href={`${basePrefix}/community/groups`}
-        className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Groups
+        <span>Quay lại danh sách nhóm</span>
       </Link>
 
-      {/* Group Header */}
-      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        {/* Cover Image */}
+      {/* Group header card */}
+      <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900">
+        {/* Cover */}
         {coverImage ? (
-          <div className="w-full h-48 md:h-64 bg-gradient-to-br from-blue-500 to-purple-600">
+          <div className="h-48 w-full bg-zinc-200 md:h-64">
             <img
               src={coverImage}
               alt={group.name}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
           </div>
         ) : (
-          <div className="w-full h-48 md:h-64 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <Users className="h-20 w-20 text-white opacity-50" />
+          <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-sky-500 to-sky-600 md:h-64">
+            <Users className="h-20 w-20 text-white/70" />
           </div>
         )}
 
-        {/* Group Info */}
+        {/* Info */}
         <div className="p-6">
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-                {group.name}
-              </h1>
-              {group.description && (
-                <p className="text-zinc-600 dark:text-zinc-400 mb-4">
-                  {group.description}
-                </p>
-              )}
-              <div className="flex items-center gap-6 text-sm text-zinc-600 dark:text-zinc-400">
-                <span className="flex items-center gap-2">
+          <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="flex-1 space-y-3">
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+                  {group.name}
+                </h1>
+                {group.description && (
+                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    {group.description}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-4 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                <span className="inline-flex items-center gap-1.5">
                   <Users className="h-4 w-4" />
-                  {group.membersCount || 0} thành viên
+                  <span className="font-medium">
+                    {group.membersCount || 0}
+                  </span>
+                  <span>thành viên</span>
                 </span>
                 {group.postsCount !== undefined && (
                   <span>
-                    {group.postsCount} bài viết
+                    <span className="font-medium">
+                      {group.postsCount}
+                    </span>{" "}
+                    bài viết
                   </span>
                 )}
                 {admin && (
                   <span>
-                    Quản trị viên: {admin.name || "Không xác định"}
+                    Quản trị viên:&nbsp;
+                    <span className="font-medium">
+                      {admin.name || "Không xác định"}
+                    </span>
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Join/Leave Button */}
-            {currentUserId && !isAdmin && (
-              <div>
-                {isMember ? (
-                  <button
-                    onClick={handleLeave}
-                    disabled={leaving}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {leaving ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-red-700 dark:border-red-400 border-t-transparent" />
-                        Đang rời...
-                      </>
+            {/* Actions */}
+            <div className="flex flex-col items-stretch gap-2">
+              {isAdmin ? (
+                <button
+                  onClick={handleDeleteGroup}
+                  disabled={deleting}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-700/60 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40"
+                >
+                  {deleting ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent dark:border-red-400" />
+                      <span>Đang xoá nhóm...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      <span>Xoá nhóm</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                currentUserId && (
+                  <>
+                    {isMember ? (
+                      <button
+                        onClick={handleLeave}
+                        disabled={leaving}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-700/60 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40"
+                      >
+                        {leaving ? (
+                          <>
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent dark:border-red-400" />
+                            <span>Đang rời nhóm...</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserMinus className="h-4 w-4" />
+                            <span>Rời nhóm</span>
+                          </>
+                        )}
+                      </button>
                     ) : (
-                      <>
-                        <UserMinus className="h-4 w-4" />
-                        Rời nhóm
-                      </>
+                      <button
+                        onClick={handleJoin}
+                        disabled={joining}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-sky-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-400"
+                      >
+                        {joining ? (
+                          <>
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            <span>Đang tham gia...</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-4 w-4" />
+                            <span>Tham gia nhóm</span>
+                          </>
+                        )}
+                      </button>
                     )}
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleJoin}
-                    disabled={joining}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {joining ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                        Đang tham gia...
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="h-4 w-4" />
-                        Tham gia nhóm
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-            )}
+                  </>
+                )
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* New Post Form (only for members) */}
+      {/* New post (members only) */}
       {isMember && (
-        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
-            Tạo bài viết
+        <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900">
+          <h2 className="mb-4 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+            Tạo bài viết trong nhóm
           </h2>
           <NewPostForm groupId={groupId} onSuccess={handlePostCreated} />
         </div>
       )}
 
-      {/* Posts List */}
+      {/* Posts list */}
       <div className="space-y-4">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
           </div>
         ) : postsList.length > 0 ? (
           postsList
         ) : (
-          <div className="text-center py-12 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
-            <p className="text-zinc-600 dark:text-zinc-400">
-              Chưa có bài viết nào
-            </p>
+          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white py-12 text-center text-sm text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+            <p>Hiện chưa có bài viết nào trong nhóm này.</p>
             {isMember && (
-              <p className="text-sm text-zinc-500 dark:text-zinc-500 mt-2">
-                Hãy là người đầu tiên đăng bài!
+              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
+                Hãy là người đầu tiên chia sẻ bài viết cho nhóm nhé!
               </p>
             )}
           </div>
@@ -438,6 +536,6 @@ export default function GroupDetailClient({ groupId }: GroupDetailClientProps) {
         </div>
       )}
     </div>
+    </>
   );
 }
-

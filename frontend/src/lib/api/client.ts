@@ -390,6 +390,22 @@ export async function deleteStudyRoom(roomName: string, user: { id: string; name
   return res.json();
 }
 
+// ==================== Teacher Lead Methods ====================
+
+export interface TeacherLeadPayload {
+  fullName: string;
+  email: string;
+  phone: string;
+  scoreOrCert?: string;
+  experience?: string;
+  availability?: string;
+  message?: string;
+}
+
+export async function createTeacherLead(payload: TeacherLeadPayload) {
+  return postJson("/api/teacher-leads", payload);
+}
+
 // ==================== Demo/Dev Helpers ====================
 
 /** Demo headers để test nhanh auth qua x-user-* (dev) */

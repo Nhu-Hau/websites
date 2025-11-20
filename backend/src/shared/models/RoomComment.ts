@@ -9,6 +9,7 @@ export interface IRoomComment extends Document {
   userAccess: 'free' | 'premium';
   content: string;
   createdAt: Date;
+  editedAt?: Date;
 }
 
 const RoomCommentSchema = new Schema<IRoomComment>(
@@ -20,6 +21,7 @@ const RoomCommentSchema = new Schema<IRoomComment>(
     userAccess: { type: String, enum: ['free', 'premium'], required: true },
     content: { type: String, required: true },
     createdAt: { type: Date, required: true, default: () => new Date() },
+    editedAt: { type: Date },
   },
   { timestamps: true }
 );

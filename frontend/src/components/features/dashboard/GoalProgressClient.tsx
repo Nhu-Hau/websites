@@ -92,16 +92,16 @@ export default function GoalProgressClient({
   /* ===================== EMPTY / NO GOAL ===================== */
   if (!data || !data.hasGoal || !data.goal) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/90 p-5 shadow-sm ring-1 ring-black/[0.02] transition-all duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/90">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm ring-1 ring-black/[0.02] transition-shadow duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95 sm:p-5">
         {/* subtle top border accent */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-400" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-400 via-violet-500 to-indigo-500" />
 
         {/* Header */}
-        <div className="mb-5 flex items-start justify-between gap-3">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-900/30">
-              <Target className="h-5 w-5 text-amber-600 dark:text-amber-300" />
-              <div className="pointer-events-none absolute inset-0 rounded-xl bg-amber-200/40 blur-md dark:bg-amber-500/20" />
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 dark:bg-violet-900/30">
+              <Target className="h-5 w-5 text-violet-600 dark:text-violet-300" />
+              <div className="pointer-events-none absolute inset-0 rounded-xl bg-violet-200/40 blur-md dark:bg-violet-500/20" />
             </div>
             <div>
               <div className="mb-1 inline-flex items-center gap-2">
@@ -120,7 +120,7 @@ export default function GoalProgressClient({
         </div>
 
         {/* Empty state */}
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50/80 px-4 py-6 text-center dark:border-zinc-700 dark:bg-zinc-900">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/90 px-4 py-6 text-center dark:border-zinc-700 dark:bg-zinc-900">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800">
             <Target className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
           </div>
@@ -128,12 +128,12 @@ export default function GoalProgressClient({
             Bạn chưa đặt mục tiêu TOEIC
           </p>
           <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">
-            Đặt mục tiêu để hệ thống theo dõi tiến trình học và nhắc bạn đều
-            hơn.
+            Đặt mục tiêu để hệ thống theo dõi tiến trình học và nhắc bạn luyện
+            tập đều hơn.
           </p>
           <button
             onClick={() => setShowDialog(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:from-amber-400 hover:to-orange-400 hover:shadow-md"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-500 to-indigo-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:from-violet-400 hover:to-indigo-400 hover:shadow-md"
           >
             <Target className="h-4 w-4" />
             Đặt mục tiêu ngay
@@ -168,33 +168,33 @@ export default function GoalProgressClient({
       : 0;
 
   const isAchieved = progressPercent >= 100;
-  const tone = isAchieved ? "emerald" : "amber";
+  const tone = isAchieved ? "emerald" : "violet";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/90 p-5 shadow-sm ring-1 ring-black/[0.02] transition-all duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/90">
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm ring-1 ring-black/[0.02] transition-shadow duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95 sm:p-5">
       {/* top accent */}
       <div
         className={`pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${
           isAchieved
             ? "from-emerald-400 via-emerald-500 to-teal-400"
-            : "from-amber-400 via-amber-500 to-orange-400"
+            : "from-violet-400 via-violet-500 to-indigo-500"
         }`}
       />
 
       {/* Header */}
-      <div className="mb-5 flex items-start justify-between gap-3">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-3">
           <div
             className={`relative flex h-10 w-10 items-center justify-center rounded-xl ${
               isAchieved
                 ? "bg-emerald-50 dark:bg-emerald-900/30"
-                : "bg-amber-50 dark:bg-amber-900/30"
+                : "bg-violet-50 dark:bg-violet-900/30"
             }`}
           >
             {isAchieved ? (
               <Trophy className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
             ) : (
-              <Target className="h-5 w-5 text-amber-600 dark:text-amber-300" />
+              <Target className="h-5 w-5 text-violet-600 dark:text-violet-300" />
             )}
             <div className="pointer-events-none absolute inset-0 rounded-xl bg-white/50 blur-md dark:bg-white/10" />
           </div>
@@ -220,15 +220,15 @@ export default function GoalProgressClient({
             setTargetInput(goal.targetScore.toString());
             setShowDialog(true);
           }}
-          className="rounded-full border border-transparent bg-zinc-50 px-3 py-1 text-[11px] font-medium text-amber-700 shadow-sm transition-colors hover:border-amber-200 hover:bg-amber-50/70 dark:bg-zinc-800 dark:text-amber-300 dark:hover:border-amber-500/60 dark:hover:bg-zinc-800/80"
+          className="self-start rounded-full border border-transparent bg-violet-50 px-3 py-1 text-[11px] font-medium text-violet-700 shadow-sm transition-colors hover:border-violet-200 hover:bg-violet-50/70 dark:bg-zinc-800 dark:text-violet-300 dark:hover:border-violet-500/60 dark:hover:bg-zinc-800/80"
         >
           Cập nhật
         </button>
       </div>
 
       {/* Stats grid */}
-      <div className="mb-5 grid grid-cols-3 gap-3 text-center text-xs">
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50/90 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900">
+      <div className="mb-4 grid grid-cols-2 gap-3 text-center text-xs sm:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 bg-slate-50/90 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900">
           <p className="mb-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
             Mục tiêu
           </p>
@@ -236,7 +236,7 @@ export default function GoalProgressClient({
             {goal.targetScore}
           </p>
         </div>
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50/90 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900">
+        <div className="rounded-xl border border-slate-200 bg-slate-50/90 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900">
           <p className="mb-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
             Hiện tại
           </p>
@@ -244,7 +244,7 @@ export default function GoalProgressClient({
             {currentScore ?? "—"}
           </p>
         </div>
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50/90 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-900">
+        <div className="col-span-2 rounded-xl border border-slate-200 bg-slate-50/90 px-3 py-3 text-center text-xs dark:border-zinc-700 dark:bg-zinc-900 sm:col-span-1">
           <p className="mb-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
             Hoàn thành
           </p>
@@ -255,14 +255,14 @@ export default function GoalProgressClient({
       </div>
 
       {/* Progress bar + markers */}
-      <div className="mb-3 space-y-1.5">
+      <div className="space-y-1.5">
         <div className="relative h-3.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
           {/* filled bar */}
           <div
             className={`absolute inset-y-0 left-0 flex items-center justify-end rounded-full bg-gradient-to-r ${
               isAchieved
                 ? "from-emerald-500 via-emerald-500 to-teal-400"
-                : "from-amber-500 via-amber-500 to-orange-400"
+                : "from-violet-500 via-violet-500 to-indigo-400"
             } transition-all duration-700 ease-out`}
             style={{ width: `${Math.min(progressPercent, 100)}%` }}
           >
@@ -290,15 +290,15 @@ export default function GoalProgressClient({
       </div>
 
       {/* Summary line */}
-      <div className="mt-1 flex items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+      <div className="mt-2 flex items-center justify-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
         <TrendingUp
           className={`h-4 w-4 ${
             tone === "emerald"
               ? "text-emerald-500 dark:text-emerald-400"
-              : "text-amber-500 dark:text-amber-400"
+              : "text-violet-500 dark:text-violet-400"
           }`}
         />
-        <span>
+        <span className="text-center">
           Từ{" "}
           <span className="font-semibold text-zinc-900 dark:text-zinc-50">
             {goal.startScore}
@@ -353,17 +353,22 @@ function GoalDialog({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 backdrop-blur-sm"
-      onClick={() => setShowDialog(false)}
+      onClick={() => {
+        if (!isUpdating) {
+          setShowDialog(false);
+          setTargetInput("");
+        }
+      }}
     >
       <div
         className="w-full max-w-md overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/95 shadow-xl ring-1 ring-black/[0.05] dark:border-zinc-800/80 dark:bg-zinc-900/95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* top accent */}
-        <div className="h-1 w-full bg-gradient-to-r from-amber-400 via-amber-500 to-orange-400" />
+        <div className="h-1 w-full bg-gradient-to-r from-violet-400 via-violet-500 to-indigo-500" />
 
         <div className="px-5 pb-5 pt-4">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
                 {isEdit ? "Cập nhật mục tiêu" : "Đặt mục tiêu TOEIC"}
@@ -374,10 +379,13 @@ function GoalDialog({
             </div>
             <button
               onClick={() => {
-                setShowDialog(false);
-                setTargetInput("");
+                if (!isUpdating) {
+                  setShowDialog(false);
+                  setTargetInput("");
+                }
               }}
-              className="rounded-full p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+              disabled={isUpdating}
+              className="rounded-full p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 disabled:opacity-60 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
             >
               <X className="h-4 w-4" />
             </button>
@@ -391,7 +399,7 @@ function GoalDialog({
               value={targetInput}
               onChange={(e) => setTargetInput(e.target.value)}
               placeholder="Ví dụ: 750"
-              className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 shadow-sm outline-none placeholder:text-zinc-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-300/80 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-amber-500 dark:focus:ring-amber-500/40"
+              className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 shadow-sm outline-none placeholder:text-zinc-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-300/80 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-violet-500 dark:focus:ring-violet-500/40"
             />
             {currentTarget && isEdit && (
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-zinc-400">
@@ -403,8 +411,10 @@ function GoalDialog({
           <div className="flex gap-3">
             <button
               onClick={() => {
-                setShowDialog(false);
-                setTargetInput("");
+                if (!isUpdating) {
+                  setShowDialog(false);
+                  setTargetInput("");
+                }
               }}
               disabled={isUpdating}
               className="flex-1 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-xs font-semibold text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
@@ -414,7 +424,7 @@ function GoalDialog({
             <button
               onClick={handleSetGoal}
               disabled={isUpdating}
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:from-amber-400 hover:to-orange-400 hover:shadow-md disabled:opacity-60"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:from-violet-400 hover:to-indigo-400 hover:shadow-md disabled:opacity-60"
             >
               {isUpdating ? (
                 <>

@@ -11,7 +11,7 @@ const API_BASE =
 
 const MAX_FILES = 12;
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-const MAX_VIDEO_DURATION = 30; // 30 seconds (hiện tại backend tự xử lý)
+const MAX_VIDEO_DURATION = 30; // 30 seconds
 const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
   "image/jpg",
@@ -25,8 +25,8 @@ type NewPostFormProps = {
   onSuccess?: () => void;
   initialContent?: string;
   initialAttachments?: Attachment[];
-  postId?: string; // For edit mode
-  groupId?: string; // For posting in a group
+  postId?: string;
+  groupId?: string;
 };
 
 type PreviewItem = {
@@ -287,7 +287,7 @@ export default function NewPostForm({
           className="w-full min-h-[120px] max-h-[300px] resize-none rounded-2xl border border-zinc-200/80 bg-white/95 px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-xs outline-none transition-all duration-150 focus:border-sky-300 focus:ring-2 focus:ring-sky-500 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-100 dark:placeholder-zinc-400"
           rows={5}
         />
-        <div className="mt-2 flex items-center justify-between">
+        <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Nhấn <span className="font-medium">Ctrl + Enter</span> để đăng
           </p>
@@ -342,8 +342,8 @@ export default function NewPostForm({
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between gap-4 border-t border-zinc-100/80 pt-4 dark:border-zinc-800/80">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 border-t border-zinc-100/80 pt-4 dark:border-zinc-800/80">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <input
             type="file"
             multiple
@@ -358,7 +358,7 @@ export default function NewPostForm({
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading || previews.length >= MAX_FILES}
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-200/80 bg-white/95 px-4 py-2 text-sm font-medium text-zinc-700 shadow-xs transition-colors hover:bg-zinc-50 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-300 dark:hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-lg border border-zinc-200/80 bg-white/95 px-4 py-2 text-sm font-medium text-zinc-700 shadow-xs transition-colors hover:bg-zinc-50 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-300 dark:hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Upload className="h-4 w-4 text-sky-600 dark:text-sky-400" />
             <span>Thêm ảnh/video</span>
@@ -375,7 +375,7 @@ export default function NewPostForm({
           disabled={
             uploading || submitting || (!content.trim() && previews.length === 0)
           }
-          className="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-6 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-sky-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
+          className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-lg bg-sky-600 px-6 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-sky-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
         >
           {submitting || uploading ? (
             <>

@@ -246,9 +246,9 @@ export default function PracticeProgressChart() {
 
   /* ===================== Render ===================== */
   return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95">
+    <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95 sm:p-5">
       {/* Header */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300">
             <TrendingUp className="h-5 w-5" />
@@ -264,12 +264,12 @@ export default function PracticeProgressChart() {
         </div>
 
         {latest && (
-          <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 dark:bg-zinc-800 dark:text-zinc-300">
+          <div className="inline-flex max-w-full items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 dark:bg-zinc-800 dark:text-zinc-300 sm:self-auto">
             <span className="text-[10px] uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
               Gần nhất
             </span>
             <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-zinc-500" />
-            <span>
+            <span className="truncate">
               Level {latest.level}
               {latest.test != null && ` • Test ${latest.test}`}
             </span>
@@ -280,28 +280,30 @@ export default function PracticeProgressChart() {
         )}
       </div>
 
-      {/* Part Selector */}
-      <div className="mb-4 flex flex-wrap gap-2">
-        {PARTS.map((p) => {
-          const isSel = selectedPart === p;
-          return (
-            <button
-              key={p}
-              onClick={() => setSelectedPart(p)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                isSel
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-              }`}
-            >
-              {PART_SHORT_LABEL[p]}
-            </button>
-          );
-        })}
+      {/* Part Selector - kéo ngang trên mobile */}
+      <div className="mb-4 -mx-1 overflow-x-auto pb-1">
+        <div className="flex min-w-max gap-2 px-1">
+          {PARTS.map((p) => {
+            const isSel = selectedPart === p;
+            return (
+              <button
+                key={p}
+                onClick={() => setSelectedPart(p)}
+                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  isSel
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                }`}
+              >
+                {PART_SHORT_LABEL[p]}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Chart */}
-      <div className="relative h-[210px]">
+      <div className="relative h-60 sm:h-56 md:h-64 lg:h-72">
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
@@ -319,18 +321,18 @@ export default function PracticeProgressChart() {
               <XAxis
                 dataKey="at"
                 interval="preserveStartEnd"
-                tick={{ fill: "#6b7280", fontSize: 11 }}
+                tick={{ fill: "#6b7280", fontSize: 10 }}
                 axisLine={{ stroke: "#e5e7eb" }}
                 tickLine={{ stroke: "#e5e7eb" }}
-                minTickGap={20}
+                minTickGap={18}
               />
               <YAxis
                 domain={[0, 100]}
                 ticks={[0, 25, 50, 75, 100]}
-                tick={{ fill: "#6b7280", fontSize: 11 }}
+                tick={{ fill: "#6b7280", fontSize: 10 }}
                 axisLine={{ stroke: "#e5e7eb" }}
                 tickLine={{ stroke: "#e5e7eb" }}
-                width={40}
+                width={32}
               />
               <ChartTooltip
                 contentStyle={{
@@ -418,11 +420,11 @@ export default function PracticeProgressChart() {
 
       {/* Legend cho Level & đường */}
       {chartData.length > 0 && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-600 dark:text-slate-400">
-          <div className="flex flex-wrap items-center gap-4">
+        <div className="mt-4 flex flex-col gap-3 text-[11px] text-slate-600 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className="h-0.5 w-4 rounded-full bg-indigo-500" />
-              <span>Đường: Accuracy từng lần</span>
+              <span>Đường liền: Accuracy từng lần</span>
             </div>
             {chartData.some((d) => d.movingAvg != null) && (
               <div className="flex items-center gap-1.5">

@@ -35,11 +35,11 @@ export default function ActivityHeatmapClient({
   ) {
     return (
       <div className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/92 p-5 shadow-sm ring-1 ring-black/[0.03] transition-all duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/92">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-700 via-emerald-500 to-teal-700" />
 
         {/* Header */}
         <div className="mb-5 flex items-center gap-3">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-900/30">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
             <Calendar className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
             <div className="pointer-events-none absolute inset-0 rounded-xl bg-emerald-200/40 blur-md dark:bg-emerald-500/25" />
           </div>

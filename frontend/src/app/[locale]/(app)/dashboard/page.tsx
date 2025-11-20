@@ -18,7 +18,7 @@ export default async function DashboardPage() {
 
         {/* Main Content Area */}
         <main className="flex-1 min-w-0">
-          <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pt-28 lg:pt-8 pb-20 lg:pb-8 max-w-7xl mx-auto">
+          <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pt-8 pb-20 lg:pb-8 max-w-7xl mx-auto">
             <DashboardContent
               progressTab={<ProgressTabContent />}
               resultsTab={<ResultsTabContent />}

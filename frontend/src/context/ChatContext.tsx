@@ -1,19 +1,23 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  Dispatch,
+  SetStateAction,
+} from "react";
 
 type ChatTab = "admin" | "ai";
 
 interface ChatContextType {
   open: boolean;
-  setOpen: (open: boolean) => void;
+  setOpen: Dispatch<SetStateAction<boolean>>;
   activeTab: ChatTab;
-  setActiveTab: (tab: ChatTab) => void;
-  unreadCount: {
-    admin: number;
-    ai: number;
-  };
-  setUnreadCount: React.Dispatch<React.SetStateAction<{ admin: number; ai: number }>>;
+  setActiveTab: Dispatch<SetStateAction<ChatTab>>;
+  unreadCount: { admin: number; ai: number };
+  setUnreadCount: Dispatch<SetStateAction<{ admin: number; ai: number }>>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -46,6 +50,9 @@ export function useChat() {
   }
   return context;
 }
+
+
+
 
 
 

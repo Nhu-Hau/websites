@@ -11,6 +11,9 @@ import {
   ImageIcon,
   Trash2,
   Trophy,
+  FileText, // ✅ icon cho empty posts
+  Star,
+  Lock,
 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { toast } from "@/lib/toast";
@@ -188,11 +191,12 @@ export default function ProfileClient({
       .catch(console.error);
   }, [userId]);
 
+  // 🔄 Loading hồ sơ – đồng bộ spinner với community
   if (!profile) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+      <div className="flex items-center justify-center py-16 sm:py-20">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             Đang tải hồ sơ...
           </p>
@@ -213,6 +217,16 @@ export default function ProfileClient({
       ? profile.picture
       : `${API_BASE}${profile.picture}`);
 
+  const earnedBadges = profile.badges ?? [];
+  const totalBadges = Object.keys(BADGE_CONFIG).length;
+  const lockedBadgeTypes = React.useMemo(
+    () =>
+      Object.keys(BADGE_CONFIG).filter(
+        (type) => !earnedBadges.some((badge) => badge.badgeType === type)
+      ),
+    [earnedBadges]
+  );
+
   return (
     <div className="space-y-6">
       {/* Cover + uploading badge */}
@@ -222,10 +236,10 @@ export default function ProfileClient({
           <img
             src={coverUrl}
             alt="Cover"
-            className="h-64 w-full object-cover opacity-95"
+            className="h-48 xs:h-56 sm:h-64 w-full object-cover opacity-95"
           />
         )}
-        {!coverUrl && <div className="h-64 w-full" />}
+        {!coverUrl && <div className="h-48 xs:h-56 sm:h-64 w-full" />}
 
         {uploading && (
           <div className="pointer-events-none absolute left-4 top-4 rounded-full bg-zinc-900/70 px-3 py-1.5 text-xs font-medium text-zinc-50 backdrop-blur">
@@ -234,7 +248,7 @@ export default function ProfileClient({
         )}
 
         {isOwnProfile && (
-          <div className="absolute right-4 top-4 flex gap-2">
+          <div className="absolute right-3 top-3 flex gap-2 sm:right-4 sm:top-4">
             {profile.coverImage && (
               <button
                 onClick={() => {
@@ -305,7 +319,7 @@ export default function ProfileClient({
             <div className="relative">
               <button
                 onClick={() => setShowAvatarMenu((v) => !v)}
-                className="flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-4xl font-bold text-white ring-4 ring-white shadow-xl transition-all hover:ring-blue-300 dark:ring-zinc-950 sm:h-40 sm:w-40"
+                className="flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl transition-all hover:ring-blue-300 dark:ring-zinc-950"
               >
                 {avatarUrl ? (
                   <img
@@ -324,13 +338,9 @@ export default function ProfileClient({
                     className="fixed inset-0 z-40"
                     onClick={() => setShowAvatarMenu(false)}
                   />
-                  <div className="absolute left-0 top-full z-50 mt-2 min-w-[200px] rounded-xl border border-zinc-200 bg-white  shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+                  <div className="absolute left-0 top-full z-50 mt-2 min-w-[200px] rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
                     {/* Upload new avatar */}
-                    <label
-                      className="flex cursor-pointer items-center gap-3 px-4 py-2 text-sm 
-      text-zinc-900 transition-colors hover:bg-zinc-100 
-      dark:text-zinc-50 dark:hover:bg-zinc-800"
-                    >
+                    <label className="flex cursor-pointer items-center gap-3 px-4 py-2 text-sm text-zinc-900 transition-colors hover:bg-zinc-100 dark:text-zinc-50 dark:hover:bg-zinc-800">
                       <input
                         type="file"
                         accept="image/*"
@@ -397,9 +407,7 @@ export default function ProfileClient({
                             }
                           );
                         }}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium
-        text-red-600 transition-colors hover:bg-red-100 
-        dark:text-red-400 dark:hover:bg-red-900/30 rounded-b-xl"
+                        className="flex w-full items-center gap-3 rounded-b-xl px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30"
                       >
                         <Trash2 className="h-4 w-4" />
                         <span>Xóa ảnh</span>
@@ -410,7 +418,7 @@ export default function ProfileClient({
               )}
             </div>
           ) : (
-            <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-4xl font-bold text-white ring-4 ring-white shadow-xl dark:ring-zinc-950 sm:h-40 sm:w-40">
+            <div className="flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl dark:ring-zinc-950">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -427,7 +435,7 @@ export default function ProfileClient({
         {/* Info + actions */}
         <div className="flex flex-1 flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div className="flex-1">
-            <h1 className="mb-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <h1 className="mb-1 text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               {profile.name || "User"}
             </h1>
 
@@ -437,7 +445,7 @@ export default function ProfileClient({
               </div>
             )}
 
-            <div className="flex flex-wrap gap-4 text-sm">
+            <div className="flex flex-wrap gap-3 text-sm">
               <div>
                 <span className="font-semibold text-zinc-900 dark:text-zinc-50">
                   {profile.postsCount || 0}
@@ -541,77 +549,108 @@ export default function ProfileClient({
       )}
 
       {/* Badges */}
-      {profile.badges && profile.badges.length > 0 && (
-        <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
-          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-            <Trophy className="h-5 w-5 text-amber-500 dark:text-amber-400" />
-            Huy hiệu ({profile.badges.length})
-          </h2>
-          <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
-            {profile.badges.map((badge) => {
-              const config = BADGE_CONFIG[badge.badgeType as BadgeType];
-              if (!config) return null;
-
-              const Icon = config.icon;
-              const tooltipId = `badge-${badge._id || badge.badgeType}`;
-
-              let detailedDescription = config.description;
-              if (badge.metadata) {
-                if (badge.metadata.partKey) {
-                  detailedDescription += ` (${badge.metadata.partKey.replace(
-                    "part.",
-                    "Part "
-                  )})`;
-                }
-                if (badge.metadata.improvement) {
-                  detailedDescription += ` (+${badge.metadata.improvement} điểm)`;
-                }
-                if (badge.metadata.streak) {
-                  detailedDescription += ` (${badge.metadata.streak} ngày)`;
-                }
-                if (badge.metadata.progress !== undefined) {
-                  detailedDescription += ` (${Math.round(
-                    badge.metadata.progress
-                  )}%)`;
-                }
-              }
-
-              return (
-                <React.Fragment key={badge._id || badge.badgeType}>
-                  <div
-                    data-tooltip-id={tooltipId}
-                    data-tooltip-content={detailedDescription}
-                    className={`
-                      group relative flex h-12 w-12 items-center justify-center overflow-hidden
-                      rounded-xl border bg-white/95 text-xs shadow-sm
-                      ${config.borderColor}
-                      transition-all duration-150
-                      hover:-translate-y-0.5 hover:shadow-md
-                      dark:bg-zinc-900/95
-                      cursor-pointer
-                    `}
-                  >
-                    <div
-                      className={`absolute inset-0 rounded-xl bg-gradient-to-br ${config.gradient} opacity-10 group-hover:opacity-20`}
-                    />
-                    <div className="absolute inset-0 bg-white/40 group-hover:bg-white/20 dark:bg-zinc-950/40 dark:group-hover:bg-zinc-950/20" />
-                    <Icon
-                      className={`relative z-10 h-6 w-6 ${config.textColor}`}
-                    />
-                  </div>
-                  <Tooltip
-                    id={tooltipId}
-                    place="top"
-                    positionStrategy="fixed"
-                    offset={10}
-                    className="!z-50 !max-w-xs !rounded-lg !border !border-zinc-700 !bg-zinc-900/95 !px-3 !py-2 !text-xs !font-medium !text-white shadow-lg"
-                  />
-                </React.Fragment>
-              );
-            })}
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/95 p-5 shadow-sm ring-1 ring-black/[0.03] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-[#35519a] shadow-md shadow-[#35519a]/30">
+              <Trophy className="relative z-10 h-5 w-5 text-white" />
+              <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/40" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-semibold text-zinc-900 dark:text-white">
+                Bộ sưu tập huy hiệu
+              </h2>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                {earnedBadges.length} / {totalBadges} huy hiệu đã mở khóa
+              </p>
+            </div>
           </div>
+          {earnedBadges.length > 0 && (
+            <div className="mt-1 inline-flex items-center gap-1 self-start rounded-full border border-[#4063bb]/30 bg-[#4063bb]/10 px-3 py-1 text-[11px] font-semibold text-[#35519a] shadow-sm sm:mt-0 sm:self-auto">
+              <Star className="h-3.5 w-3.5" />
+              <span>{earnedBadges.length} huy hiệu</span>
+            </div>
+          )}
         </div>
-      )}
+
+        {earnedBadges.length === 0 ? (
+          <div className="py-6 text-center sm:py-8">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+              <Trophy className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
+            </div>
+            <p className="mb-1 text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+              Chưa có huy hiệu nào
+            </p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Làm bài đều đặn, giữ streak và đặt mục tiêu để mở khóa huy hiệu
+              đầu tiên.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="mb-5 flex flex-wrap gap-2.5 sm:gap-3">
+              {earnedBadges.map((badge) => {
+                const config = BADGE_CONFIG[badge.badgeType as BadgeType];
+                if (!config) return null;
+
+                const Icon = config.icon;
+                const tooltipId = `badge-${
+                  badge._id || badge.badgeType
+                }-profile`;
+
+                let detailedDescription = config.description;
+                if (badge.metadata) {
+                  if (badge.metadata.partKey) {
+                    detailedDescription += ` (${badge.metadata.partKey.replace(
+                      "part.",
+                      "Part "
+                    )})`;
+                  }
+                  if (badge.metadata.improvement) {
+                    detailedDescription += ` (+${badge.metadata.improvement} điểm)`;
+                  }
+                  if (badge.metadata.streak) {
+                    detailedDescription += ` (${badge.metadata.streak} ngày)`;
+                  }
+                  if (badge.metadata.progress !== undefined) {
+                    detailedDescription += ` (${Math.round(
+                      badge.metadata.progress
+                    )}%)`;
+                  }
+                }
+
+                return (
+                  <React.Fragment key={badge._id || badge.badgeType}>
+                    <div
+                      data-tooltip-id={tooltipId}
+                      data-tooltip-content={detailedDescription}
+                      className={`
+                        group relative flex h-10 w-10 items-center justify-center overflow-hidden
+                        rounded-2xl bg-gradient-to-br ${config.gradient}
+                        text-xs shadow-md shadow-slate-900/10
+                        transition-all duration-150
+                        hover:-translate-y-0.5 hover:shadow-lg
+                        cursor-pointer
+                        sm:h-12 sm:w-12 md:h-14 md:w-14
+                      `}
+                    >
+                      <div className="absolute inset-0 rounded-2xl ring-1 ring-white/40" />
+                      <Icon className="relative z-10 h-6 w-6 text-white drop-shadow-sm" />
+                    </div>
+                    <Tooltip
+                      id={tooltipId}
+                      place="top"
+                      positionStrategy="fixed"
+                      offset={10}
+                      className="!z-50 !max-w-xs !rounded-lg !border !border-zinc-700 !bg-zinc-900/95 !px-3 !py-2 !text-xs !font-medium !text-white shadow-lg"
+                    />
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Posts */}
       <div className="space-y-4">
@@ -631,30 +670,17 @@ export default function ProfileClient({
             ))}
           </div>
         ) : (
-          <div className="flex justify-center py-12">
-            <div className="w-full max-w-md rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-6 py-8 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-300">
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                  />
-                </svg>
-              </div>
-              <h3 className="mb-1 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                Chưa có bài viết nào
-              </h3>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                Người dùng này chưa đăng bài viết nào trong cộng đồng.
-              </p>
+          // 🔄 Empty posts state – đồng bộ 100% với community/Groups
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-4 sm:px-6 py-12 sm:py-16 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+            <div className="mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
+              <FileText className="h-7 w-7 sm:h-8 sm:w-8" />
             </div>
+            <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              Chưa có bài viết nào
+            </h3>
+            <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
+              Người dùng này chưa đăng bài viết nào trong cộng đồng.
+            </p>
           </div>
         )}
       </div>

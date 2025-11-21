@@ -40,7 +40,9 @@ export const vocabularyService = {
   },
 
   async deleteVocabularySet(setId: string): Promise<void> {
-    await apiClient.delete(`${BASE_URL}/${setId}`);
+    const response = await apiClient.delete(`${BASE_URL}/${setId}`);
+    // DELETE returns { message: ... } but we don't need it
+    return;
   },
 
   async addTerm(setId: string, term: AddTermDTO): Promise<VocabularySet> {

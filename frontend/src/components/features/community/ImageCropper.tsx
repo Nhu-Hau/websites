@@ -2,8 +2,16 @@
 
 import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
-import { X, Check, RotateCw } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { X, Check } from "lucide-react";
+
+const CROP_COPY = {
+  title: "Cắt ảnh",
+  zoom: "Phóng to",
+  rotation: "Xoay",
+  cancel: "Hủy",
+  done: "Xong",
+  processing: "Đang xử lý...",
+};
 
 interface ImageCropperProps {
   image: string;
@@ -18,7 +26,6 @@ export default function ImageCropper({
   onCropComplete,
   onCancel,
 }: ImageCropperProps) {
-  const t = useTranslations("community.imageCropper");
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -166,7 +173,7 @@ export default function ImageCropper({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            {t("title")}
+            {CROP_COPY.title}
           </h2>
           <button
             onClick={onCancel}
@@ -198,7 +205,7 @@ export default function ImageCropper({
           {/* Zoom */}
           <div>
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-              {t("zoom")}: {Math.round(zoom * 100)}%
+              {CROP_COPY.zoom}: {Math.round(zoom * 100)}%
             </label>
             <input
               type="range"
@@ -214,7 +221,7 @@ export default function ImageCropper({
           {/* Rotation */}
           <div>
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-              {t("rotation")}: {rotation}°
+              {CROP_COPY.rotation}: {rotation}°
             </label>
             <input
               type="range"
@@ -234,7 +241,7 @@ export default function ImageCropper({
               disabled={processing}
               className="px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
             >
-              {t("cancel")}
+              {CROP_COPY.cancel}
             </button>
             <button
               onClick={handleDone}
@@ -244,12 +251,12 @@ export default function ImageCropper({
               {processing ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                  {t("processing")}
+                  {CROP_COPY.processing}
                 </>
               ) : (
                 <>
                   <Check className="h-4 w-4" />
-                  {t("done")}
+                  {CROP_COPY.done}
                 </>
               )}
             </button>

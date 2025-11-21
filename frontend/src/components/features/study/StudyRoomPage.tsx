@@ -919,14 +919,14 @@ export default function StudyRoomPage() {
 
             {/* Nút mở chat (dùng cho cả mobile + desktop) - ẩn khi panel mở */}
             {!showChatMobile && (
-              <button
-                type="button"
-                onClick={() => setShowChatMobile(true)}
+            <button
+              type="button"
+              onClick={() => setShowChatMobile(true)}
                 className="fixed bottom-6 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/40 ring-2 ring-sky-300/80 backdrop-blur-md hover:bg-sky-700 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all md:text-base"
-              >
-                <MessageSquare className="h-4 w-4 md:h-5 md:w-5" />
-                <span>Chat phòng học</span>
-              </button>
+            >
+              <MessageSquare className="h-4 w-4 md:h-5 md:w-5" />
+              <span>Chat phòng học</span>
+            </button>
             )}
 
             {/* Chat overlay cho mọi kích thước (Zoom-style) - z-index cao hơn */}

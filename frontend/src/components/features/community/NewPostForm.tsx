@@ -284,13 +284,10 @@ export default function NewPostForm({
           }}
           onKeyDown={handleTextareaKeyDown}
           placeholder="Bạn đang nghĩ gì? Chia sẻ mẹo học TOEIC, câu hỏi hoặc tài nguyên..."
-          className="w-full min-h-[120px] max-h-[300px] resize-none rounded-2xl border border-zinc-200/80 bg-white/95 px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-xs outline-none transition-all duration-150 focus:border-sky-300 focus:ring-2 focus:ring-sky-500 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-100 dark:placeholder-zinc-400"
+          className="w-full min-h-[220px] max-h-[500px] resize-none rounded-2xl border border-zinc-200/80 bg-white/95 px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-xs outline-none transition-all duration-150 focus:border-sky-300 focus:ring-2 focus:ring-sky-500 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-100 dark:placeholder-zinc-400"
           rows={5}
         />
         <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Nhấn <span className="font-medium">Ctrl + Enter</span> để đăng
-          </p>
           <p
             className={`text-xs font-medium ${
               content.length > maxChars * 0.9

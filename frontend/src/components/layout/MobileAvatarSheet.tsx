@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   User as UserIcon,
@@ -24,6 +25,8 @@ import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import Flag from "react-world-flags";
+import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
 
 type Role = "user" | "admin" | "teacher";
 type Access = "free" | "premium";
@@ -135,6 +138,11 @@ export default function MobileAvatarSheet({
   const base = useBasePrefix(locale || "vi");
   const { theme, setTheme } = useTheme();
   const [me, setMe] = useState<any | null>(initialMe);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -199,243 +207,288 @@ export default function MobileAvatarSheet({
     ("picture" in (user || {}) ? user.picture : undefined) ||
     ("picture" in (ctxUser || {}) ? (ctxUser as any).picture : undefined);
 
-  if (!open) return null;
+  if (!mounted) return null;
 
-  return (
-    // Container duy nhất: fixed inset-0, flex justify-end để sheet luôn dính đáy
-    <div className="fixed inset-0 z-[10001] md:hidden flex flex-col justify-end">
-      {/* Backdrop: absolute inset-0 để phủ toàn màn hình */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Sheet: relative w-full, rounded-t-3xl, max-h với calc để tránh overflow */}
-      <div
-        className={cn(
-          "relative w-full bg-white dark:bg-zinc-900",
-          "rounded-t-3xl shadow-2xl",
-          "flex flex-col",
-          "max-h-[calc(100vh-4rem)]"
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
-            Tài khoản
-          </h2>
-          <button
+  const sheetContent = (
+    <AnimatePresence>
+      {open && (
+        // Container duy nhất: fixed inset-0, flex justify-end để sheet luôn dính đáy
+        <motion.div
+          key="mobile-avatar-sheet"
+          className="fixed inset-0 z-[10001] md:hidden flex flex-col justify-end"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {/* Backdrop: absolute inset-0 để phủ toàn màn hình */}
+          <motion.div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onClose}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            aria-label="Đóng"
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          />
+
+          {/* Sheet: relative w-full, rounded-t-3xl, max-h với calc để tránh overflow */}
+          <motion.div
+            className={cn(
+              "relative w-full bg-white dark:bg-zinc-900",
+              "rounded-t-3xl shadow-2xl",
+              "flex flex-col",
+              "max-h-[calc(100vh-4rem)]"
+            )}
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{
+              type: "spring",
+              stiffness: 280,
+              damping: 30,
+              mass: 0.9,
+            }}
+            drag="y"
+            dragDirectionLock
+            dragConstraints={{ top: 0, bottom: 140 }}
+            dragElastic={{ top: 0, bottom: 0.2 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 120) {
+                onClose();
+              }
+            }}
+            style={{ touchAction: "none" }}
           >
-            <X className="h-5 w-5 text-zinc-700 dark:text-zinc-200" />
-          </button>
-        </div>
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+              <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                Tài khoản
+              </h2>
+              <button
+                onClick={onClose}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                aria-label="Đóng"
+              >
+                <X className="h-5 w-5 text-zinc-700 dark:text-zinc-200" />
+              </button>
+            </div>
 
-        {/* Content: flex-1 overflow-y-auto để có thể scroll */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-20">
-          {ctxUser || user ? (
-            <>
-              {/* User Info */}
-              <div className="mb-3 flex items-center gap-3 border-b border-zinc-200 pb-4 dark:border-zinc-700">
-                {avatarSrc ? (
-                  <img
-                    src={avatarSrc}
-                    alt={me?.name || "avatar"}
-                    className="h-14 w-14 rounded-full border-2 border-sky-500 object-cover"
-                  />
-                ) : (
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/30 dark:to-sky-800/20">
-                    <UserIcon className="h-7 w-7 text-sky-600 dark:text-sky-400" />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <p className="text-base font-semibold text-zinc-900 dark:text-white">
-                    {me?.name || user?.name || ctxUser?.name || "Người dùng"}
-                  </p>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    {me?.email || user?.email || ctxUser?.email || "—"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Menu Items */}
-              <div className="space-y-1">
-                {/* Trang cá nhân */}
-                <Link
-                  href={`${base}/account`}
-                  onClick={onClose}
-                  className="flex items-center gap-3 rounded-xl px-4 py-2 transition-all duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30"
-                >
-                  <IdCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                    Trang cá nhân
-                  </span>
-                </Link>
-
-                {/* Quyền */}
-                <div className="flex items-center justify-between rounded-xl px-4 py-2">
-                  <div className="flex items-center gap-3">
-                    <ShieldCheck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                      Quyền
-                    </span>
-                  </div>
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold",
-                      userRole === "admin"
-                        ? "border-purple-300 bg-purple-100 text-purple-700 dark:border-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-                        : userRole === "teacher"
-                        ? "border-blue-300 bg-blue-100 text-blue-700 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                        : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300"
-                    )}
-                  >
-                    {userRole === "admin"
-                      ? "Quản trị"
-                      : userRole === "teacher"
-                      ? "Giáo viên"
-                      : "Người dùng"}
-                  </span>
-                </div>
-
-                {/* Gói */}
-                <div className="flex items-center justify-between rounded-xl px-4 py-2">
-                  <div className="flex items-center gap-3">
-                    {userAccess === "premium" ? (
-                      <Crown className="h-5 w-5 text-yellow-500" />
+            {/* Content: flex-1 overflow-y-auto để có thể scroll */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 pb-20">
+              {ctxUser || user ? (
+                <>
+                  {/* User Info */}
+                  <div className="mb-3 flex items-center gap-3 border-b border-zinc-200 pb-4 dark:border-zinc-700">
+                    {avatarSrc ? (
+                      <div className="relative h-14 w-14 overflow-hidden rounded-full border-2 border-sky-500">
+                        <Image
+                          src={avatarSrc}
+                          alt={me?.name || "avatar"}
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                        />
+                      </div>
                     ) : (
-                      <Star className="h-5 w-5 text-zinc-400" />
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/30 dark:to-sky-800/20">
+                        <UserIcon className="h-7 w-7 text-sky-600 dark:text-sky-400" />
+                      </div>
                     )}
-                    <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                      Gói
-                    </span>
+                    <div className="flex-1">
+                      <p className="text-base font-semibold text-zinc-900 dark:text-white">
+                        {me?.name ||
+                          user?.name ||
+                          ctxUser?.name ||
+                          "Người dùng"}
+                      </p>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {me?.email || user?.email || ctxUser?.email || "—"}
+                      </p>
+                    </div>
                   </div>
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold",
-                      userAccess === "premium"
-                        ? "border-yellow-300 bg-yellow-100 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
-                        : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300"
-                    )}
-                  >
-                    {userAccess === "premium" ? "Cao cấp" : "Miễn phí"}
-                  </span>
-                </div>
 
-                {/* Level từng part */}
-                <div className="pt-4 pb-5 px-4">
-                  <p className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    Level từng part
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {partRows.map((row) => {
-                      const config = row.lv ? LV_BADGE[row.lv] : null;
-                      return (
-                        <Link
-                          key={row.key}
-                          href={row.href}
-                          onClick={onClose}
-                          className={cn(
-                            "flex items-center justify-between rounded-xl px-3 py-2 transition-all duration-200",
-                            "hover:bg-sky-50 dark:hover:bg-sky-900/30",
-                            config
-                              ? `${config.bg} ${config.border} border`
-                              : "bg-zinc-50 dark:bg-zinc-800"
-                          )}
-                        >
-                          <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                            {row.label}
-                          </span>
-                          {config ? (
-                            <span
+                  {/* Menu Items */}
+                  <div className="space-y-1">
+                    {/* Trang cá nhân */}
+                    <Link
+                      href={`${base}/account`}
+                      onClick={onClose}
+                      className="flex items-center gap-3 rounded-xl px-4 py-2 transition-all duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30"
+                    >
+                      <IdCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
+                        Trang cá nhân
+                      </span>
+                    </Link>
+
+                    {/* Quyền */}
+                    <div className="flex items-center justify-between rounded-xl px-4 py-2">
+                      <div className="flex items-center gap-3">
+                        <ShieldCheck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
+                          Quyền
+                        </span>
+                      </div>
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold",
+                          userRole === "admin"
+                            ? "border-purple-300 bg-purple-100 text-purple-700 dark:border-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                            : userRole === "teacher"
+                            ? "border-blue-300 bg-blue-100 text-blue-700 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                            : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300"
+                        )}
+                      >
+                        {userRole === "admin"
+                          ? "Quản trị"
+                          : userRole === "teacher"
+                          ? "Giáo viên"
+                          : "Người dùng"}
+                      </span>
+                    </div>
+
+                    {/* Gói */}
+                    <div className="flex items-center justify-between rounded-xl px-4 py-2">
+                      <div className="flex items-center gap-3">
+                        {userAccess === "premium" ? (
+                          <Crown className="h-5 w-5 text-yellow-500" />
+                        ) : (
+                          <Star className="h-5 w-5 text-zinc-400" />
+                        )}
+                        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
+                          Gói
+                        </span>
+                      </div>
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold",
+                          userAccess === "premium"
+                            ? "border-yellow-300 bg-yellow-100 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+                            : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300"
+                        )}
+                      >
+                        {userAccess === "premium" ? "Cao cấp" : "Miễn phí"}
+                      </span>
+                    </div>
+
+                    {/* Level từng part */}
+                    <div className="pt-4 pb-5 px-4">
+                      <p className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        Level từng part
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {partRows.map((row) => {
+                          const config = row.lv ? LV_BADGE[row.lv] : null;
+                          return (
+                            <Link
+                              key={row.key}
+                              href={row.href}
+                              onClick={onClose}
                               className={cn(
-                                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold",
-                                config.text
+                                "flex items-center justify-between rounded-xl px-3 py-2 transition-all duration-200",
+                                "hover:bg-sky-50 dark:hover:bg-sky-900/30",
+                                config
+                                  ? `${config.bg} ${config.border} border`
+                                  : "bg-zinc-50 dark:bg-zinc-800"
                               )}
                             >
-                              <Zap className={cn("h-3 w-3", config.icon)} />
-                              Lv{row.lv}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-zinc-400">—</span>
-                          )}
-                        </Link>
-                      );
-                    })}
+                              <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
+                                {row.label}
+                              </span>
+                              {config ? (
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold",
+                                    config.text
+                                  )}
+                                >
+                                  <Zap className={cn("h-3 w-3", config.icon)} />
+                                  Lv{row.lv}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-zinc-400">—</span>
+                              )}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Đổi ngôn ngữ */}
+                    <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                      <Link
+                        href={hrefFor(locale === "vi" ? "en" : "vi")}
+                        onClick={onClose}
+                        className="flex items-center gap-3 rounded-xl px-4 py-2 transition-all duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30"
+                      >
+                        <Globe className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+                        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
+                          {locale === "vi" ? "English" : "Tiếng Việt"}
+                        </span>
+                        <Flag
+                          code={locale === "vi" ? "gb" : "vn"}
+                          className="ml-auto h-5 w-7 rounded-sm object-cover"
+                        />
+                      </Link>
+                    </div>
+
+                    {/* Đổi giao diện */}
+                    <button
+                      onClick={() =>
+                        setTheme(theme === "light" ? "dark" : "light")
+                      }
+                      className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-2 transition-all duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30"
+                    >
+                      {theme === "light" ? (
+                        <Moon className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+                      ) : (
+                        <Sun className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+                      )}
+                      <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
+                        {theme === "light" ? "Chế độ tối" : "Chế độ sáng"}
+                      </span>
+                    </button>
+
+                    {/* Đăng xuất */}
+                    <button
+                      onClick={handleLogout}
+                      className="mt-2 flex w-full items-center gap-3 rounded-xl px-4 py-2 text-red-600 transition-all duration-200 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      <span className="text-sm font-medium">Đăng xuất</span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="py-8 text-center">
+                  <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
+                    Vui lòng đăng nhập để xem thông tin tài khoản
+                  </p>
+                  <div className="space-y-3">
+                    <Link
+                      href={`${base}/login`}
+                      onClick={onClose}
+                      className="block w-full rounded-xl bg-sky-600 px-4 py-3 font-medium text-white transition-colors hover:bg-sky-700"
+                    >
+                      Đăng nhập
+                    </Link>
+                    <Link
+                      href={`${base}/register`}
+                      onClick={onClose}
+                      className="block w-full rounded-xl border border-zinc-300 px-4 py-3 font-medium text-zinc-800 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                      Đăng ký
+                    </Link>
                   </div>
                 </div>
-
-                {/* Đổi ngôn ngữ */}
-                <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                  <Link
-                    href={hrefFor(locale === "vi" ? "en" : "vi")}
-                    onClick={onClose}
-                    className="flex items-center gap-3 rounded-xl px-4 py-2 transition-all duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30"
-                  >
-                    <Globe className="h-5 w-5 text-sky-600 dark:text-sky-400" />
-                    <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                      {locale === "vi" ? "English" : "Tiếng Việt"}
-                    </span>
-                    <Flag
-                      code={locale === "vi" ? "gb" : "vn"}
-                      className="ml-auto h-5 w-7 rounded-sm object-cover"
-                    />
-                  </Link>
-                </div>
-
-                {/* Đổi giao diện */}
-                <button
-                  onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                  className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-2 transition-all duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30"
-                >
-                  {theme === "light" ? (
-                    <Moon className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-                  ) : (
-                    <Sun className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-                  )}
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                    {theme === "light" ? "Chế độ tối" : "Chế độ sáng"}
-                  </span>
-                </button>
-
-                {/* Đăng xuất */}
-                <button
-                  onClick={handleLogout}
-                  className="mt-2 flex w-full items-center gap-3 rounded-xl px-4 py-2 text-red-600 transition-all duration-200 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span className="text-sm font-medium">Đăng xuất</span>
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="py-8 text-center">
-              <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
-                Vui lòng đăng nhập để xem thông tin tài khoản
-              </p>
-              <div className="space-y-3">
-                <Link
-                  href={`${base}/login`}
-                  onClick={onClose}
-                  className="block w-full rounded-xl bg-sky-600 px-4 py-3 font-medium text-white transition-colors hover:bg-sky-700"
-                >
-                  Đăng nhập
-                </Link>
-                <Link
-                  href={`${base}/register`}
-                  onClick={onClose}
-                  className="block w-full rounded-xl border border-zinc-300 px-4 py-3 font-medium text-zinc-800 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                >
-                  Đăng ký
-                </Link>
-              </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
+
+  return createPortal(sheetContent, document.body);
 }

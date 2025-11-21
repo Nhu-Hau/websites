@@ -5,14 +5,17 @@ import { FiMessageSquare } from "react-icons/fi";
 import { useChat } from "@/context/ChatContext";
 
 export default function ChatFAB() {
-  const { open, setOpen, unreadCount } = useChat();
+  const { open, setOpen, unreadCount, setActiveTab } = useChat();
 
   const totalUnread = unreadCount.admin + unreadCount.ai;
 
   return (
     <div className="fixed z-[9998] right-4 bottom-20 lg:right-6 lg:bottom-6">
       <motion.button
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          setActiveTab("ai");
+          setOpen((prev) => !prev);
+        }}
         aria-label={open ? "Đóng chat" : "Mở chat"}
         className="relative flex h-14 w-14 items-center justify-center rounded-full
                    bg-gradient-to-tr from-sky-500 to-indigo-600 text-white

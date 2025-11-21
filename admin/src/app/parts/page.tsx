@@ -456,7 +456,7 @@ export default function PartsPage() {
                       <div className="bg-white rounded-lg p-4 border border-zinc-200">
                         <div className="text-sm font-semibold text-zinc-900 mb-3">Các stimuli đang dùng trong test này:</div>
                         <div className="flex flex-wrap gap-2">
-                          {Object.values(testStimuli[key]).map((stimulus) => (
+                          {Object.values(testStimuli[key]).sort((a, b) => a.id.localeCompare(b.id)).map((stimulus) => (
                             <div key={stimulus.id} className="border border-zinc-300 rounded-lg px-3 py-2 bg-zinc-50 text-xs font-mono flex items-center gap-2 shadow-sm">
                               <span className="font-semibold text-zinc-700">{stimulus.id}</span>
                               <button

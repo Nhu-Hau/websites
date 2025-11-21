@@ -736,7 +736,7 @@ export default function AssessmentChart() {
                 dataKey="Overall"
                 stroke="#22c55e"
                 strokeWidth={2.4}
-                  dot={(props: any) => {
+                  dot={((props: any) => {
                     if (props.payload?.kind === "baseline") {
                       // Use index or cx/cy combination as key for React
                       const key = props.index !== undefined 
@@ -754,8 +754,8 @@ export default function AssessmentChart() {
                         />
                       );
                     }
-                    return null;
-                  }}
+                    return false;
+                  }) as any}
                 activeDot={{
                   r: 4.5,
                   stroke: "#22c55e",

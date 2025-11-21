@@ -164,7 +164,7 @@ export async function getAssessmentBaseline(req: Request, res: Response) {
 
     const user = await User.findById(userId)
       .select("currentToeicSource currentToeicScore currentToeicExamDate")
-      .lean();
+      .lean() as any;
 
     if (!user) {
       return res.status(404).json({ message: "Không tìm thấy người dùng" });

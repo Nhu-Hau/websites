@@ -45,7 +45,7 @@ export default function LoginForm() {
   const { onSubmit, loading, errors, setErrors } = useAuthSubmit({
     kind: "login",
     url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`,
-    t,
+    t: translate,
     onSuccess: async () => {
       const res = await fetch("/api/auth/me", {
         credentials: "include",

@@ -148,11 +148,11 @@ export async function createTest(req: Request, res: Response) {
       test,
       stimulusId: item.stimulusId || null,
       stem: item.stem || null,
-      choices: item.choices 
+      choices: item.choices
         ? item.choices.map((choice: any) => ({
-            id: choice.id,
-            text: choice.text && choice.text.trim() ? choice.text : null,
-          }))
+          id: choice.id,
+          text: choice.text && choice.text.trim() ? choice.text : null,
+        }))
         : [{ id: "A" }, { id: "B" }, { id: "C" }, { id: "D" }],
       answer: item.answer,
       explain: item.explain || null,
@@ -184,7 +184,7 @@ export async function createTest(req: Request, res: Response) {
       stimuliCount = stimuliToInsert.length;
     }
 
-    return res.status(201).json({ 
+    return res.status(201).json({
       message: "Đã tạo test thành công",
       count: itemsToInsert.length,
       stimuliCount: stimuliCount,
@@ -223,13 +223,27 @@ export async function createOrUpdateItem(req: Request, res: Response) {
       options: item.options || null,
     };
 
-    await itemsCol.findOneAndUpdate(
-      { id: item.id },
-      { $set: itemData },
-      { upsert: true }
-    );
+    if (item._id) {
+      if (!mongoose.Types.ObjectId.isValid(item._id)) {
+        return res.status(400).json({ message: "ID không hợp lệ" });
+      }
 
-    return res.json({ item: itemData });
+      const updated = await itemsCol.findOneAndUpdate(
+        { _id: new mongoose.Types.ObjectId(item._id) },
+        { $set: itemData },
+        { returnDocument: "after" }
+      );
+
+      const updatedDoc = updated?.value ?? updated;
+      if (!updatedDoc) {
+        return res.status(404).json({ message: "Không tìm thấy item để cập nhật" });
+      }
+
+      return res.json({ item: updatedDoc });
+    }
+
+    const insertResult = await itemsCol.insertOne(itemData);
+    return res.status(201).json({ item: { ...itemData, _id: insertResult.insertedId } });
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ message: e.message || "Lỗi máy chủ" });
@@ -240,8 +254,11 @@ export async function createOrUpdateItem(req: Request, res: Response) {
 export async function updatePart(req: Request, res: Response) {
   try {
     const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID không hợp lệ" });
+    }
     const update: any = {};
-    
+
     const allowedFields = ['part', 'level', 'test', 'order', 'answer', 'tags', 'question', 'options', 'stimulusId', 'stem', 'choices'];
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
@@ -253,16 +270,17 @@ export async function updatePart(req: Request, res: Response) {
     const itemsCol = db.collection(PARTS_COLL);
 
     const result = await itemsCol.findOneAndUpdate(
-      { id },
+      { _id: new mongoose.Types.ObjectId(id) },
       { $set: update },
       { returnDocument: "after" }
     );
 
-    if (!result) {
+    const updatedDoc = result?.value ?? result;
+    if (!updatedDoc) {
       return res.status(404).json({ message: "Không tìm thấy item" });
     }
 
-    return res.json({ item: result });
+    return res.json({ item: updatedDoc });
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ message: e.message || "Lỗi máy chủ" });
@@ -273,11 +291,14 @@ export async function updatePart(req: Request, res: Response) {
 export async function deletePart(req: Request, res: Response) {
   try {
     const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID không hợp lệ" });
+    }
 
     const db = mongoose.connection;
     const itemsCol = db.collection(PARTS_COLL);
 
-    const result = await itemsCol.findOneAndDelete({ id });
+    const result = await itemsCol.findOneAndDelete({ _id: new mongoose.Types.ObjectId(id) });
 
     if (!result) {
       return res.status(404).json({ message: "Không tìm thấy item" });
@@ -293,24 +314,24 @@ export async function deletePart(req: Request, res: Response) {
 /** Helper function to delete all S3 files from stimulus media */
 async function deleteStimulusMediaFromS3(media: any) {
   console.log('[deleteStimulusMediaFromS3] media:', JSON.stringify(media, null, 2));
-  
+
   if (!media || typeof media !== 'object') {
     console.log('[deleteStimulusMediaFromS3] media is not an object or is null');
     return;
   }
-  
+
   // media có thể chứa: image, audio (string hoặc string[])
   const mediaFields = ['image', 'audio'];
-  
+
   for (const field of mediaFields) {
     const value = media[field];
     if (!value) {
       console.log(`[deleteStimulusMediaFromS3] No value for field: ${field}`);
       continue;
     }
-    
+
     console.log(`[deleteStimulusMediaFromS3] Processing field: ${field}, value:`, value);
-    
+
     // Nếu là array
     if (Array.isArray(value)) {
       for (const url of value) {
@@ -325,7 +346,7 @@ async function deleteStimulusMediaFromS3(media: any) {
           }
         }
       }
-    } 
+    }
     // Nếu là string
     else if (typeof value === 'string') {
       const key = extractKeyFromUrl(BUCKET, value);
@@ -362,7 +383,7 @@ export async function deleteTest(req: Request, res: Response) {
     const stimuliToDelete = await stimCol
       .find({ part: partStr, level: levelNum, test: testNum })
       .toArray();
-    
+
     // Delete S3 files for all stimuli
     for (const stimulus of stimuliToDelete) {
       if (stimulus.media) {
@@ -372,13 +393,13 @@ export async function deleteTest(req: Request, res: Response) {
 
     // Delete all items of the test
     const result = await itemsCol.deleteMany({ part: partStr, level: levelNum, test: testNum });
-    
+
     // Also delete related stimuli
     await stimCol.deleteMany({ part: partStr, level: levelNum, test: testNum });
 
-    return res.json({ 
+    return res.json({
       message: "Đã xóa test thành công",
-      deletedCount: result.deletedCount 
+      deletedCount: result.deletedCount
     });
   } catch (e: any) {
     console.error(e);
@@ -390,7 +411,7 @@ export async function deleteTest(req: Request, res: Response) {
 export async function createStimulus(req: Request, res: Response) {
   try {
     const { id, part, level, test, media } = req.body;
-    
+
     if (!id || !part || level === undefined || test === undefined) {
       return res.status(400).json({ message: "Thiếu trường bắt buộc: id, part, level, test" });
     }
@@ -430,7 +451,7 @@ export async function updateStimulus(req: Request, res: Response) {
   try {
     const { id } = req.params;
     const { media } = req.body;
-    
+
     if (!media || typeof media !== 'object') {
       return res.status(400).json({ message: "Thiếu trường media" });
     }
@@ -440,7 +461,7 @@ export async function updateStimulus(req: Request, res: Response) {
 
     // Get existing stimulus to check for old media
     const existingStimulus = await stimCol.findOne({ id });
-    
+
     if (!existingStimulus) {
       return res.status(404).json({ message: "Không tìm thấy stimulus" });
     }
@@ -449,16 +470,16 @@ export async function updateStimulus(req: Request, res: Response) {
     if (existingStimulus.media) {
       const oldMedia = existingStimulus.media;
       const mediaFields = ['image', 'audio'];
-      
+
       for (const field of mediaFields) {
         const oldValue = oldMedia[field];
         const newValue = media[field];
-        
+
         // Delete old file if it exists and is different from new value
         // Also delete if old value exists but new value is null/empty
         if (oldValue) {
           const shouldDelete = !newValue || (newValue && oldValue !== newValue);
-          
+
           if (shouldDelete) {
             console.log(`[updateStimulus] Deleting old ${field}: ${oldValue}`);
             if (Array.isArray(oldValue)) {
@@ -535,7 +556,7 @@ export async function uploadStimulusMedia(req: Request, res: Response) {
     // Validate file type
     const isImage = f.mimetype.startsWith("image/");
     const isAudio = f.mimetype.startsWith("audio/");
-    
+
     if (!isImage && !isAudio) {
       return res.status(400).json({ message: "Chỉ chấp nhận file ảnh (image/*) hoặc audio (audio/*)" });
     }
@@ -548,8 +569,8 @@ export async function uploadStimulusMedia(req: Request, res: Response) {
       folder: "Upload",
     });
 
-    return res.json({ 
-      url, 
+    return res.json({
+      url,
       key,  // For potential future deletion
       type: isImage ? "image" : "audio",
       name: f.originalname,
@@ -561,6 +582,6 @@ export async function uploadStimulusMedia(req: Request, res: Response) {
   }
 }
 
-export const listParts = async (req: Request, res: Response) => {};
-export const getPart = async (req: Request, res: Response) => {};
-export const createPart = async (req: Request, res: Response) => {};
+export const listParts = async (req: Request, res: Response) => { };
+export const getPart = async (req: Request, res: Response) => { };
+export const createPart = async (req: Request, res: Response) => { };

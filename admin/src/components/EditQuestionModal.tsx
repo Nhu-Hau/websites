@@ -48,9 +48,13 @@ export default function EditQuestionModal({ item, isOpen, onClose, onUpdate }: E
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!item) return;
+    if (!item._id) {
+      alert("Không tìm thấy mã câu hỏi (_id)");
+      return;
+    }
 
     try {
-      await adminUpdatePart(item.id, {
+      await adminUpdatePart(item._id, {
         stem: form.stem || undefined,
         answer: form.answer,
         explain: form.explain || undefined,

@@ -97,7 +97,7 @@ export default function PartsPage() {
 
   const toggleTest = async (test: AdminTest) => {
     const key = `${test.part}-${test.level}-${test.test}`;
-    
+
     if (expandedTest === key) {
       setExpandedTest(null);
     } else {
@@ -163,6 +163,10 @@ export default function PartsPage() {
   };
 
   const handleDelete = (item: AdminPart) => {
+    if (!item._id) {
+      toast.error("Không tìm thấy mã câu hỏi (_id)");
+      return;
+    }
     setConfirmDialog({
       title: "Xóa câu hỏi",
       description: `Bạn có chắc muốn xóa câu hỏi ${item.id}? Hành động này không thể hoàn tác.`,
@@ -171,12 +175,12 @@ export default function PartsPage() {
       successMessage: "Đã xóa câu hỏi thành công",
       errorMessage: "Lỗi xóa câu hỏi",
       onConfirm: async () => {
-        await adminDeletePart(item.id);
+        await adminDeletePart(item._id!);
         const key = Object.entries(testItems).find(([_, items]) =>
-          items.some(i => i.id === item.id)
+          items.some(i => i._id === item._id)
         )?.[0];
         if (key) {
-          setTestItems({ ...testItems, [key]: testItems[key].filter(i => i.id !== item.id) });
+          setTestItems({ ...testItems, [key]: testItems[key].filter(i => i._id !== item._id) });
         }
         void load();
       },
@@ -184,15 +188,19 @@ export default function PartsPage() {
   };
 
   const handleUpdate = async (item: AdminPart, newData: Partial<AdminPart>) => {
+    if (!item._id) {
+      toast.error("Không tìm thấy mã câu hỏi (_id)");
+      return;
+    }
     try {
-      await adminUpdatePart(item.id, newData);
-      const key = Object.entries(testItems).find(([_, items]) => 
-        items.some(i => i.id === item.id)
+      await adminUpdatePart(item._id, newData);
+      const key = Object.entries(testItems).find(([_, items]) =>
+        items.some(i => i._id === item._id)
       )?.[0];
       if (key) {
         setTestItems({
           ...testItems,
-          [key]: testItems[key].map(i => i.id === item.id ? { ...i, ...newData } : i),
+          [key]: testItems[key].map(i => i._id === item._id ? { ...i, ...newData } : i),
         });
       }
     } catch (e: any) {
@@ -303,7 +311,7 @@ export default function PartsPage() {
                   const testKey = `${test.part}-${test.level}-${test.test}`;
                   testCountByPart.get(test.part)!.add(testKey);
                 });
-                
+
                 // Sắp xếp các part theo thứ tự
                 const sortedParts = Array.from(testCountByPart.entries())
                   .sort((a, b) => {
@@ -312,7 +320,7 @@ export default function PartsPage() {
                     const numB = parseInt(b[0].replace('part.', '') || '0');
                     return numA - numB;
                   });
-                
+
                 return sortedParts.map(([partName, testSet]) => (
                   <div key={partName} className="flex items-center gap-2">
                     <span className="font-semibold">{partName}:</span>
@@ -490,7 +498,7 @@ export default function PartsPage() {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="bg-white rounded-lg border border-zinc-200 overflow-hidden">
                       <div className="p-4 border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-white">
                         <div className="text-sm font-semibold text-zinc-900">Chi tiết câu hỏi:</div>
@@ -551,7 +559,7 @@ export default function PartsPage() {
             </div>
           );
         })}
-        
+
         {tests.length === 0 && (
           <div className="bg-white rounded-xl shadow-lg border border-zinc-200 text-center p-12">
             <div className="flex flex-col items-center gap-3">
@@ -582,7 +590,7 @@ export default function PartsPage() {
           }
         }}
       />
-      
+
       <EditQuestionModal
         item={editQuestion}
         isOpen={editQuestion !== null}

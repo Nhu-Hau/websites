@@ -19,9 +19,9 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
   const toast = useToast();
   // Generate auto IDs
   const generateAutoIds = () => {
-    const partNum = part.split('.')[1];
-    const itemNum = String(itemsCount + 1).padStart(3, '0');
-    const questionId = `p${partNum}_${itemNum}`;
+    const partNum = part.split('.')[1] || part;
+    const questionNumber = String(itemsCount + 1).padStart(3, "0");
+    const questionId = `p${partNum}_${questionNumber}`;
     const stimulusId = `lv${level}_t${test}_p${partNum}_set${itemsCount + 1}`;
     return { questionId, stimulusId };
   };

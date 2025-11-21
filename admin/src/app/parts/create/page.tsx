@@ -24,8 +24,10 @@ export default function CreateTestPage() {
       order: number;
       stem: string;
       explain: string;
+      tags: string;
       choices: Array<{ id: string; text: string | null }>;
     }>,
+
     stimuli: [] as Array<{
       id: string;
       media: {
@@ -41,7 +43,7 @@ export default function CreateTestPage() {
     const partNum = (newPart || form.part).split('.')[1];
     const level = newLevel || form.level;
     const test = newTest || form.test || "1";
-    
+
     const updatedItems = form.items.map((item, idx) => {
       const itemNum = item.id.split('_').pop() || String(idx + 1).padStart(3, '0');
       const updatedItem = {
@@ -65,7 +67,7 @@ export default function CreateTestPage() {
 
   const handlePartChange = (newPart: string) => {
     const isPart2 = newPart === "part.2";
-    
+
     // Update items based on new part
     let updatedItems = form.items.map((item) => {
       // If switching to Part 2, remove choice D if it exists
@@ -118,18 +120,19 @@ export default function CreateTestPage() {
       order: form.items.length,
       stem: "",
       explain: "",
-      choices: isPart2 
+      tags: "",
+      choices: isPart2
         ? [
-            { id: "A", text: null },
-            { id: "B", text: null },
-            { id: "C", text: null },
-          ]
+          { id: "A", text: null },
+          { id: "B", text: null },
+          { id: "C", text: null },
+        ]
         : [
-            { id: "A", text: null },
-            { id: "B", text: null },
-            { id: "C", text: null },
-            { id: "D", text: null },
-          ],
+          { id: "A", text: null },
+          { id: "B", text: null },
+          { id: "C", text: null },
+          { id: "D", text: null },
+        ],
     };
     setForm({
       ...form,
@@ -210,7 +213,7 @@ export default function CreateTestPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!form.test) {
       toast.error("Vui lòng nhập Test Number");
       return;
@@ -235,6 +238,7 @@ export default function CreateTestPage() {
           stimulusId: item.stimulusId,
           stem: item.stem || undefined,
           explain: item.explain || undefined,
+          tags: item.tags ? item.tags.split(',').map(t => t.trim()) : [],
           answer: item.answer,
           order: idx,
           choices: item.choices.map(choice => ({
@@ -272,7 +276,7 @@ export default function CreateTestPage() {
 
   return (
     <>
-<div className="p-6 max-w-6xl mx-auto">
+      <div className="p-6 max-w-6xl mx-auto">
         <div className="mb-6 flex items-center gap-4">
           <Link href="/parts" className="flex items-center gap-2 text-zinc-600 hover:text-zinc-900">
             <ArrowLeft className="w-5 h-5" />
@@ -400,7 +404,7 @@ export default function CreateTestPage() {
                       required
                     />
                   </div>
-                  
+
                   <div className="flex flex-col mt-3">
                     <label className="text-xs text-zinc-600 mb-1">Stem (Câu hỏi)</label>
                     <textarea
@@ -423,6 +427,16 @@ export default function CreateTestPage() {
                     />
                   </div>
 
+                  <div className="flex flex-col mt-3">
+                    <label className="text-xs text-zinc-600 mb-1">Tags (Optional)</label>
+                    <input
+                      value={item.tags || ""}
+                      onChange={(e) => handleUpdateItem(idx, "tags", e.target.value)}
+                      className="border px-3 py-2 rounded text-sm"
+                      placeholder="Nhập tags, cách nhau bằng dấu phẩy (ví dụ: grammar, vocab)"
+                    />
+                  </div>
+
                   <div className="mt-3">
                     <label className="text-xs text-zinc-600 mb-2 block">Choices (Optional)</label>
                     <div className="space-y-2">
@@ -439,7 +453,7 @@ export default function CreateTestPage() {
                   </div>
                 </div>
               ))}
-              
+
               {form.items.length === 0 && (
                 <div className="text-center py-12 text-zinc-400 border-2 border-dashed rounded-lg">
                   <p className="mb-3">Chưa có items</p>
@@ -484,7 +498,7 @@ export default function CreateTestPage() {
                       className="border px-3 py-2 rounded text-sm"
                     />
                   </div>
-                  
+
                   <div className="flex flex-col mb-3">
                     <label className="text-xs text-zinc-600 mb-1">Audio (Optional)</label>
                     <div className="flex gap-2">
@@ -573,7 +587,7 @@ export default function CreateTestPage() {
                   </div>
                 </div>
               ))}
-              
+
               {form.stimuli.length === 0 && (
                 <div className="text-center py-12 text-zinc-400 border-2 border-dashed rounded-lg">
                   <p className="mb-3">Chưa có stimuli</p>

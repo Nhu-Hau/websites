@@ -33,6 +33,7 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
       stem: "",
       answer: "A",
       explain: "",
+      tags: "",
       stimulusId: autoIds.stimulusId,
       choices: [
         { id: "A", text: "" },
@@ -65,7 +66,7 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!form.id.trim()) {
       toast.error("Vui lòng nhập ID câu hỏi");
       return;
@@ -79,6 +80,8 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
         test,
         stem: form.stem || undefined,
         answer: form.answer,
+        explain: form.explain || undefined,
+        tags: form.tags ? form.tags.split(',').map(t => t.trim()) : [],
         stimulusId: form.stimulusId || undefined,
         choices: form.choices,
       } as AdminPart);
@@ -91,6 +94,7 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
         stem: "",
         answer: "A",
         explain: "",
+        tags: "",
         stimulusId: "",
         choices: [
           { id: "A", text: "" },
@@ -123,16 +127,16 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col">
-            <label className="text-sm font-medium text-zinc-600 mb-1">ID (bắt buộc) - Tự động điền</label>
-            <input
-              value={form.id}
-              onChange={(e) => handleUpdateField("id", e.target.value)}
-              className="border px-3 py-2 rounded text-sm bg-zinc-50"
-              placeholder="Tự động điền ID..."
-              required
-            />
-          </div>
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-zinc-600 mb-1">ID (bắt buộc) - Tự động điền</label>
+              <input
+                value={form.id}
+                onChange={(e) => handleUpdateField("id", e.target.value)}
+                className="border px-3 py-2 rounded text-sm bg-zinc-50"
+                placeholder="Tự động điền ID..."
+                required
+              />
+            </div>
             <div className="flex flex-col">
               <label className="text-sm font-medium text-zinc-600 mb-1">Answer</label>
               <select
@@ -178,6 +182,16 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
               className="border px-3 py-2 rounded text-sm"
               rows={3}
               placeholder="Nhập giải thích (nếu có)"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-zinc-600 mb-1">Tags (Optional)</label>
+            <input
+              value={form.tags || ""}
+              onChange={(e) => handleUpdateField("tags", e.target.value)}
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="Nhập tags, cách nhau bằng dấu phẩy (ví dụ: grammar, vocab)"
             />
           </div>
 

@@ -18,6 +18,7 @@ export default function EditQuestionModal({ item, isOpen, onClose, onUpdate }: E
     stem: "",
     answer: "A",
     explain: "",
+    tags: "",
     stimulusId: "",
     choices: [] as Array<{ id: string; text: string | null }>,
   });
@@ -30,6 +31,7 @@ export default function EditQuestionModal({ item, isOpen, onClose, onUpdate }: E
         stem: item.stem || "",
         answer: item.answer,
         explain: (item as { explain?: string }).explain || "",
+        tags: (item as { tags?: string[] }).tags?.join(", ") || "",
         stimulusId: item.stimulusId || "",
         choices: ((item as { choices?: unknown }).choices as { id: string; text: string | null }[]) || [],
       });
@@ -60,6 +62,7 @@ export default function EditQuestionModal({ item, isOpen, onClose, onUpdate }: E
         stem: form.stem || undefined,
         answer: form.answer,
         explain: form.explain || undefined,
+        tags: form.tags ? form.tags.split(',').map(t => t.trim()) : [],
         stimulusId: form.stimulusId || undefined,
         choices: form.choices,
       } as Partial<AdminPart>);
@@ -141,6 +144,17 @@ export default function EditQuestionModal({ item, isOpen, onClose, onUpdate }: E
               placeholder="Nhập giải thích (nếu có)"
             />
           </div>
+
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-zinc-600 mb-1">Tags (Optional)</label>
+            <input
+              value={form.tags}
+              onChange={(e) => handleUpdateField("tags", e.target.value)}
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="Nhập tags, cách nhau bằng dấu phẩy (ví dụ: grammar, vocab)"
+            />
+          </div>
+
 
           <div className="flex flex-col">
             <label className="text-sm font-medium text-zinc-600 mb-1">Choices (Optional)</label>

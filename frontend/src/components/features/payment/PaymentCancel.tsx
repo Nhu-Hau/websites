@@ -19,13 +19,13 @@ export default function PaymentCancel() {
         </p>
         <div className="mt-6 space-y-3">
           <Link
-            href={`${basePrefix}/home#pricing`}
+            href={`${basePrefix}#pricing`}
             className="inline-block w-full rounded-lg bg-sky-600 px-4 py-2 font-semibold text-white transition hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600"
           >
             Thử lại thanh toán
           </Link>
           <Link
-            href={`${basePrefix}/home`}
+            href={basePrefix}
             className="inline-block w-full rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-700"
           >
             Về trang chủ

@@ -38,7 +38,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
           {/* Brand */}
           <div className="col-span-3 md:col-span-3 lg:col-span-2">
-            <Link href={`${basePrefix}/home`}>
+            <Link href={basePrefix}>
               <div className="text-xl xl:text-2xl font-semibold text-zinc-900 dark:text-zinc-100 -tracking-tighter">
                 Toeic
                 <span className="text-sky-700">Prep</span>

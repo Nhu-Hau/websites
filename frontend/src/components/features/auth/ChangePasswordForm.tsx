@@ -56,7 +56,7 @@ export default function ChangePasswordForm() {
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         toast.success(data.message || "Đổi mật khẩu thành công!");
-        router.push(`${basePrefix}/home`);
+        router.push(basePrefix);
       } else {
         toast.error(data.message || "Đổi mật khẩu thất bại. Vui lòng thử lại.");
       }
@@ -172,7 +172,7 @@ export default function ChangePasswordForm() {
         {/* Back to Home */}
         <div className="flex justify-center">
           <Link
-            href={`${basePrefix}/home`}
+            href={basePrefix}
             className="inline-flex items-center gap-1.5 text-sm text-sky-600 dark:text-sky-400 
                        hover:text-sky-700 dark:hover:text-sky-300 
                        underline underline-offset-4 decoration-dashed 

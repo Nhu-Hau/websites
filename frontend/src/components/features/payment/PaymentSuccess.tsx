@@ -25,7 +25,7 @@ export default function PaymentSuccess() {
   
   // Prefetch trang đích để chuyển nhanh hơn
   useEffect(() => {
-    router.prefetch(`${basePrefix}/home`);
+    router.prefetch(basePrefix);
   }, [router, basePrefix]);
 
   // Verify thanh toán (một lần)
@@ -76,7 +76,7 @@ export default function PaymentSuccess() {
   // Khi seconds == 0 thì điều hướng (KHÔNG gọi router.push trong setState)
   useEffect(() => {
     if (success && seconds === 0) {
-      router.push(`${basePrefix}/home`);
+      router.push(basePrefix);
     }
   }, [success, seconds, router, basePrefix]);
 
@@ -111,7 +111,7 @@ export default function PaymentSuccess() {
 
           <div className="mt-6">
             <Link
-              href={`${basePrefix}/home`}
+              href={basePrefix}
               className="inline-block w-full rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-700"
             >
               Quay về trang chủ ngay
@@ -137,7 +137,7 @@ export default function PaymentSuccess() {
         </p>
         <div className="mt-6">
           <Link
-            href={`${basePrefix}/home`}
+            href={basePrefix}
             className="inline-block w-full rounded-lg bg-sky-600 px-4 py-2 font-semibold text-white transition hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600"
           >
             Quay lại trang chủ

@@ -65,7 +65,7 @@ export default function RegisterForm() {
     onSuccess: (data) => {
       toast.success(translate("success"));
       if (data.user) login(data.user);
-      router.push(`${basePrefix}/home`);
+      router.push(basePrefix);
     },
   });
 

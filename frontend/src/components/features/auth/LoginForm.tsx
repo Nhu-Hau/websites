@@ -53,7 +53,7 @@ export default function LoginForm() {
       const profile = res.ok ? await res.json() : null;
       if (profile) login(profile);
       toast.success("Đăng nhập thành công!");
-      router.push(`${basePrefix}/home`);
+      router.push(basePrefix);
     },
   });
 

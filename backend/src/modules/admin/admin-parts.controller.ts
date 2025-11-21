@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import * as XLSX from "xlsx";
+
 import { uploadBufferToS3, BUCKET, extractKeyFromUrl, safeDeleteS3 } from "../../shared/services/storage.service";
 
 const PARTS_COLL = process.env.PARTS_COLL || "parts";
@@ -259,7 +261,8 @@ export async function updatePart(req: Request, res: Response) {
     }
     const update: any = {};
 
-    const allowedFields = ['part', 'level', 'test', 'order', 'answer', 'tags', 'question', 'options', 'stimulusId', 'stem', 'choices'];
+    const allowedFields = ['part', 'level', 'test', 'order', 'answer', 'tags', 'question', 'options', 'stimulusId', 'stem', 'choices', 'explain'];
+
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
         update[field] = req.body[field];
@@ -585,3 +588,148 @@ export async function uploadStimulusMedia(req: Request, res: Response) {
 export const listParts = async (req: Request, res: Response) => { };
 export const getPart = async (req: Request, res: Response) => { };
 export const createPart = async (req: Request, res: Response) => { };
+
+// POST /api/admin/parts/import-excel - Import test from Excel
+export async function importExcel(req: Request, res: Response) {
+  try {
+    const f = (req as any).file;
+    if (!f) {
+      return res.status(400).json({ message: "Thiếu file" });
+    }
+
+    const workbook = XLSX.read(f.buffer, { type: 'buffer' });
+
+    // 1. Parse Items
+    const itemsSheetName = workbook.SheetNames.find(n => n.toLowerCase() === 'items' || n.toLowerCase() === 'questions');
+    if (!itemsSheetName) {
+      return res.status(400).json({ message: "Không tìm thấy sheet 'Items' hoặc 'Questions'" });
+    }
+    const itemsRaw: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[itemsSheetName]);
+
+    // 2. Parse Stimuli (optional)
+    const stimuliSheetName = workbook.SheetNames.find(n => n.toLowerCase() === 'stimuli');
+    const stimuliRaw: any[] = stimuliSheetName ? XLSX.utils.sheet_to_json(workbook.Sheets[stimuliSheetName]) : [];
+
+    if (itemsRaw.length === 0) {
+      return res.status(400).json({ message: "Sheet Items trống" });
+    }
+
+    const db = mongoose.connection;
+    const itemsCol = db.collection(PARTS_COLL);
+    const stimCol = db.collection(STIMULI_COLL);
+
+    // Validate and transform Items
+    const itemsToInsert: any[] = [];
+    const errors: string[] = [];
+
+    // Group by test to check for existence (optional, but good for safety)
+    // For now, we just insert/upsert. 
+    // Actually, user might want to overwrite or fail if exists.
+    // Let's assume upsert behavior or just insert. 
+    // Given the complexity, let's try to process row by row or batch.
+
+    // We need to ensure required fields: id, part, level, test, answer
+    for (const [index, row] of itemsRaw.entries()) {
+      const line = index + 2; // Excel line number (header is 1)
+
+      if (!row.id || !row.part || row.level === undefined || row.test === undefined || !row.answer) {
+        errors.push(`Dòng ${line}: Thiếu trường bắt buộc (id, part, level, test, answer)`);
+        continue;
+      }
+
+      // Choices: expect columns choiceA, choiceB, choiceC, choiceD
+      // Or choices column as JSON? Let's support columns.
+      const choices = [];
+      if (row.choiceA) choices.push({ id: "A", text: String(row.choiceA) });
+      if (row.choiceB) choices.push({ id: "B", text: String(row.choiceB) });
+      if (row.choiceC) choices.push({ id: "C", text: String(row.choiceC) });
+      if (row.choiceD) choices.push({ id: "D", text: String(row.choiceD) });
+
+      // If no specific choice columns, use default empty ones
+      if (choices.length === 0) {
+        choices.push({ id: "A" }, { id: "B" }, { id: "C" }, { id: "D" });
+      }
+
+      itemsToInsert.push({
+        id: String(row.id),
+        part: String(row.part),
+        level: Number(row.level),
+        test: Number(row.test),
+        stimulusId: row.stimulusId ? String(row.stimulusId) : null,
+        stem: row.stem ? String(row.stem) : null,
+        choices,
+        answer: String(row.answer),
+        explain: row.explain ? String(row.explain) : null,
+        order: row.order ? Number(row.order) : 0,
+        tags: row.tags ? String(row.tags).split(',').map(t => t.trim()) : [],
+        question: row.question ? String(row.question) : null,
+        options: row.options ? String(row.options) : null,
+      });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({ message: "Lỗi dữ liệu", errors: errors.slice(0, 10) }); // Return first 10 errors
+    }
+
+    // Validate and transform Stimuli
+    const stimuliToInsert: any[] = [];
+    for (const [index, row] of stimuliRaw.entries()) {
+      const line = index + 2;
+      if (!row.id || !row.part || row.level === undefined || row.test === undefined) {
+        errors.push(`Sheet Stimuli Dòng ${line}: Thiếu trường bắt buộc (id, part, level, test)`);
+        continue;
+      }
+
+      stimuliToInsert.push({
+        id: String(row.id),
+        part: String(row.part),
+        level: Number(row.level),
+        test: Number(row.test),
+        media: {
+          image: row.image ? String(row.image) : null,
+          audio: row.audio ? String(row.audio) : null,
+          script: row.script ? String(row.script) : null,
+          explain: row.explain ? String(row.explain) : null,
+        }
+      });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({ message: "Lỗi dữ liệu Stimuli", errors: errors.slice(0, 10) });
+    }
+
+    // Bulk Write
+    // Use bulkWrite to upsert (update if exists, insert if not)
+    if (itemsToInsert.length > 0) {
+      const itemOps = itemsToInsert.map(item => ({
+        updateOne: {
+          filter: { id: item.id },
+          update: { $set: item },
+          upsert: true
+        }
+      }));
+      await itemsCol.bulkWrite(itemOps);
+    }
+
+    if (stimuliToInsert.length > 0) {
+      const stimOps = stimuliToInsert.map(stim => ({
+        updateOne: {
+          filter: { id: stim.id },
+          update: { $set: stim },
+          upsert: true
+        }
+      }));
+      await stimCol.bulkWrite(stimOps);
+    }
+
+    return res.json({
+      message: "Import thành công",
+      itemsCount: itemsToInsert.length,
+      stimuliCount: stimuliToInsert.length
+    });
+
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ message: e.message || "Lỗi import Excel" });
+  }
+}

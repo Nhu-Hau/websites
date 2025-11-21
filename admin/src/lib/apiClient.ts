@@ -617,8 +617,10 @@ export type AdminPart = {
   stem?: string;
   options?: Record<string, any>;
   stimulusId?: string | null;
+  explain?: string | null;
   _id?: string;
 };
+
 
 export type AdminPartsStats = {
   total: number;
@@ -801,5 +803,20 @@ export async function adminDeleteStimulus(id: string) {
   return res.json() as Promise<{ message: string }>;
 }
 
+export async function adminImportExcel(file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
 
+  const res = await fetch(`/api/admin/parts/import-excel`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
 
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || 'Import Excel failed');
+  }
+
+  return res.json() as Promise<{ message: string; itemsCount: number; stimuliCount: number }>;
+}

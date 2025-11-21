@@ -15,8 +15,11 @@ import {
   AdminPart,
   AdminPartsStats,
   AdminStimulus,
+  adminImportExcel,
 } from "@/lib/apiClient";
-import { ChevronDown, ChevronRight, FileText, BarChart3, Plus, Edit, Trash2, Home, Filter, AlertTriangle } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText, BarChart3, Plus, Edit, Trash2, Home, Filter, AlertTriangle, Upload, Download } from "lucide-react";
+
+
 import Link from "next/link";
 import EditStimulusModal from "@/components/parts/EditStimulusModal";
 import EditQuestionModal from "@/components/parts/EditQuestionModal";
@@ -68,6 +71,27 @@ export default function PartsPage() {
   // Filters
   const [part, setPart] = React.useState("");
   const [level, setLevel] = React.useState("");
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setBusy(true);
+      const res = await adminImportExcel(file);
+      toast.success(`Import thành công: ${res.itemsCount} items, ${res.stimuliCount} stimuli`);
+      void load();
+      void loadStats();
+    } catch (error: any) {
+      toast.error(error.message || "Lỗi import Excel");
+    } finally {
+      setBusy(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   const load = React.useCallback(async () => {
     setBusy(true);
@@ -254,6 +278,29 @@ export default function PartsPage() {
             >
               <Plus className="h-4 w-4" /> Thêm Test
             </Link>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={busy}
+              className="px-5 py-2.5 rounded-lg bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-700 transition-all shadow-sm flex items-center gap-2 font-medium"
+            >
+              <Upload className="h-4 w-4" /> Import Excel
+            </button>
+            <a
+              href="/sample_import.xlsx"
+              download
+              className="px-5 py-2.5 rounded-lg bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-700 transition-all shadow-sm flex items-center gap-2 font-medium"
+            >
+              <Download className="h-4 w-4" /> File Mẫu
+            </a>
+            <input
+              type="file"
+
+              ref={fileInputRef}
+              onChange={handleImportExcel}
+              className="hidden"
+              accept=".xlsx, .xls"
+            />
+
             <Link
               href="/"
               className="px-4 py-2.5 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors flex items-center gap-2 text-sm font-medium"
@@ -511,7 +558,9 @@ export default function PartsPage() {
                               <th className="p-3 font-semibold text-zinc-700">Stem</th>
                               <th className="p-3 font-semibold text-zinc-700">StimulusId</th>
                               <th className="p-3 font-semibold text-zinc-700">Answer</th>
+                              <th className="p-3 font-semibold text-zinc-700">Explain</th>
                               <th className="p-3 font-semibold text-zinc-700 w-32">Hành động</th>
+
                             </tr>
                           </thead>
                           <tbody>
@@ -525,7 +574,11 @@ export default function PartsPage() {
                                   {item.stimulusId || "—"}
                                 </td>
                                 <td className="p-3 font-semibold text-zinc-900">{item.answer}</td>
+                                <td className="p-3 text-xs max-w-xs truncate text-zinc-600">
+                                  {item.explain || "—"}
+                                </td>
                                 <td className="p-3">
+
                                   <div className="flex gap-2">
                                     <button
                                       onClick={(e) => {

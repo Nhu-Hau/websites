@@ -26,8 +26,11 @@ import {
   createStimulus,
   updateStimulus,
   deleteStimulus,
-  uploadStimulusMedia
+  uploadStimulusMedia,
+  importExcel
 } from "./admin-parts.controller";
+
+
 import {
   listPromoCodes,
   getPromoCode,
@@ -98,6 +101,8 @@ router.post("/parts/test", createTest);
 router.delete("/parts/test", deleteTest);
 router.post("/parts/item", createOrUpdateItem);
 router.post("/parts/upload", upload.single("file"), uploadStimulusMedia);
+router.post("/parts/import-excel", upload.single("file"), importExcel);
+
 router.post("/parts/stimulus", createStimulus);
 router.patch("/parts/stimulus/:id", updateStimulus);
 router.delete("/parts/stimulus/:id", deleteStimulus);

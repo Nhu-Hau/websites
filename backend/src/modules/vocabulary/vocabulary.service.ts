@@ -10,9 +10,24 @@ import {
   UpdateTermDTO,
 } from "./vocabulary.types";
 
+function resolveOwnerId(userId: string): ObjectId | string {
+  return ObjectId.isValid(userId) ? new ObjectId(userId) : userId;
+}
+
+function ownerIdMatches(
+  ownerFromDb: ObjectId | string,
+  incomingOwner: ObjectId | string
+) {
+  const dbValue =
+    ownerFromDb instanceof ObjectId ? ownerFromDb.toHexString() : ownerFromDb;
+  const incomingValue =
+    incomingOwner instanceof ObjectId ? incomingOwner.toHexString() : incomingOwner;
+  return dbValue === incomingValue;
+}
+
 export class VocabularyService {
   async getVocabularySets(userId: string): Promise<VocabularySet[]> {
-    const ownerId = new ObjectId(userId);
+    const ownerId = resolveOwnerId(userId);
     return VocabularyModel.findAll(ownerId);
   }
 
@@ -24,7 +39,8 @@ export class VocabularyService {
     }
 
     // Check ownership
-    if (set.ownerId.toString() !== userId) {
+    const ownerId = resolveOwnerId(userId);
+    if (!ownerIdMatches(set.ownerId, ownerId)) {
       throw new Error("Unauthorized access to vocabulary set");
     }
 
@@ -35,7 +51,7 @@ export class VocabularyService {
     userId: string,
     data: CreateVocabularySetDTO
   ): Promise<VocabularySet> {
-    const ownerId = new ObjectId(userId);
+    const ownerId = resolveOwnerId(userId);
     
     const vocabularySet: Omit<VocabularySet, "_id"> = {
       title: data.title,
@@ -54,7 +70,7 @@ export class VocabularyService {
     userId: string,
     data: UpdateVocabularySetDTO
   ): Promise<VocabularySet> {
-    const ownerId = new ObjectId(userId);
+    const ownerId = resolveOwnerId(userId);
     const updated = await VocabularyModel.update(
       new ObjectId(setId),
       ownerId,
@@ -69,7 +85,7 @@ export class VocabularyService {
   }
 
   async deleteVocabularySet(setId: string, userId: string): Promise<void> {
-    const ownerId = new ObjectId(userId);
+    const ownerId = resolveOwnerId(userId);
     const deleted = await VocabularyModel.delete(new ObjectId(setId), ownerId);
 
     if (!deleted) {
@@ -78,15 +94,11 @@ export class VocabularyService {
   }
 
   async addTerm(setId: string, userId: string, termData: AddTermDTO): Promise<VocabularySet> {
-    // Validate ObjectId format
     if (!ObjectId.isValid(setId)) {
       throw new Error("Invalid vocabulary set ID");
     }
-    if (!ObjectId.isValid(userId)) {
-      throw new Error("Invalid user ID");
-    }
 
-    const ownerId = new ObjectId(userId);
+    const ownerId = resolveOwnerId(userId);
     const setObjectId = new ObjectId(setId);
     
     // First check if the set exists and belongs to the user
@@ -95,7 +107,7 @@ export class VocabularyService {
       throw new Error("Vocabulary set not found");
     }
     
-    if (existingSet.ownerId.toString() !== userId) {
+    if (!ownerIdMatches(existingSet.ownerId, ownerId)) {
       throw new Error("Unauthorized access to vocabulary set");
     }
     
@@ -133,7 +145,7 @@ export class VocabularyService {
     userId: string,
     termData: UpdateTermDTO
   ): Promise<VocabularySet> {
-    const ownerId = new ObjectId(userId);
+    const ownerId = resolveOwnerId(userId);
     const updated = await VocabularyModel.updateTerm(
       new ObjectId(setId),
       ownerId,
@@ -149,7 +161,7 @@ export class VocabularyService {
   }
 
   async deleteTerm(setId: string, termId: string, userId: string): Promise<VocabularySet> {
-    const ownerId = new ObjectId(userId);
+    const ownerId = resolveOwnerId(userId);
     const updated = await VocabularyModel.deleteTerm(
       new ObjectId(setId),
       ownerId,

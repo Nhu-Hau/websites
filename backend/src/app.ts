@@ -28,6 +28,7 @@ import {
   newsRoutes,
   vocabularyRoutes,
   teacherLeadRoutes,
+  profileRoutes,
 } from "./modules";
 
 import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
@@ -108,6 +109,9 @@ app.use("/api/progress", progressRoutes);
 
 // Dashboard
 app.use("/api/dashboard", dashboardRoutes);
+
+// Profile
+app.use("/api/profile", profileRoutes);
 
 // Badges
 app.use("/api/badges", badgeRoutes);

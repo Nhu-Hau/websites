@@ -114,7 +114,10 @@ export function NewsListClient() {
     // Convert s3://project.toeic/news/...jpg to public URL
     return s3Url.replace(
       "s3://project.toeic/",
-      `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL || "https://project.toeic.s3.ap-southeast-2.amazonaws.com"}/`
+      `${
+        process.env.NEXT_PUBLIC_S3_PUBLIC_URL ||
+        "https://project.toeic.s3.ap-southeast-2.amazonaws.com"
+      }/`
     );
   };
 
@@ -246,9 +249,7 @@ export function NewsListClient() {
           </div>
         )}
 
-        <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-4 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/90">
-          <div className="flex flex-wrap gap-2">{categoryChips}</div>
-        </div>
+        <div className="flex flex-wrap gap-2">{categoryChips}</div>
 
         {renderCards()}
 
@@ -283,6 +284,3 @@ export function NewsListClient() {
     </section>
   );
 }
-
-
-

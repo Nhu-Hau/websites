@@ -8,6 +8,7 @@ import {
   Layers,
   Plus,
   Search,
+  Sparkles,
   Tag,
 } from "lucide-react";
 import { useVocabulary } from "@/hooks/vocabulary/useVocabulary";
@@ -24,7 +25,6 @@ import { VocabularySetSkeleton } from "./VocabularySetSkeleton";
 import { VocabularySetCard } from "./VocabularySetCard";
 import { SetComposerModal } from "./CreateVocabularySetModal";
 import { TermComposerModal } from "./AddTermModal";
-import { VocabularySetDetailSheet } from "./VocabularySetDetailSheet";
 import { StudyModal } from "./StudyModal";
 import { QuizModal } from "./QuizModal";
 import { EmptyState } from "./EmptyState";
@@ -32,6 +32,7 @@ import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 /* ------------------------------- HEADER UI ------------------------------- */
 
@@ -45,59 +46,71 @@ function VocabularyHeader({
   onCreate: () => void;
 }) {
   return (
-    <header
-      className="
-        rounded-3xl border border-[#2E5EB8]/20
-        bg-gradient-to-br from-[#2E5EB8]/12 via-white to-[#2E5EB8]/5
-        px-4 sm:px-6 py-6 sm:py-7 shadow-sm
-        dark:border-[#2E5EB8]/40 dark:from-[#0F1A33] dark:via-zinc-900 dark:to-zinc-900/70
-      "
-    >
-      {/* Title + Description */}
-      <div className="mb-5 flex items-start gap-3">
-        <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-[#2E5EB8]/15 text-[#2E5EB8] dark:bg-[#2E5EB8]/25 dark:text-[#86A7F5] shadow-inner">
-          <BookOpenCheck className="h-7 w-7" />
+    <header className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/90 px-4 py-5 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5 backdrop-blur-xl xs:px-6 sm:px-8 sm:py-7 dark:border-zinc-800/60 dark:bg-zinc-900/90 dark:shadow-black/20">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#4063bb0f] via-sky-200/30 to-emerald-100/20 dark:from-[#4063bb22] dark:via-sky-500/5 dark:to-emerald-500/5" />
+      <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#4063bb26] blur-[120px] dark:bg-[#4063bb33]" />
+
+      <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-5">
+          <div className="inline-flex items-center gap-3 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/80">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-sky-500 shadow-lg shadow-[#4063bb4d]">
+              <BookOpenCheck className="h-5 w-5 text-white" />
+            </div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-zinc-400">
+              Vocabulary lab
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
+              Tạo lộ trình từ vựng chuẩn TOEIC
+            </h1>
+            <p className="max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-zinc-300">
+              Quản lý bộ từ, luyện flashcard theo cấp độ và quiz nhanh để khóa
+              kiến thức mỗi ngày. Thiết kế mới đồng bộ phong cách bài test nên
+              bạn sẽ thấy quen thuộc ngay.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <MiniStat
+              icon={<Layers className="h-3.5 w-3.5" />}
+              label="Bộ từ"
+              value={totalSets}
+            />
+            <MiniStat
+              icon={<Tag className="h-3.5 w-3.5" />}
+              label="Tổng từ"
+              value={totalTerms}
+            />
+            <MiniStat
+              icon={<Sparkles className="h-3.5 w-3.5" />}
+              label="Độ phủ trung bình"
+              value={
+                totalSets === 0
+                  ? "—"
+                  : `${Math.max(1, Math.round(totalTerms / totalSets))} từ/bộ`
+              }
+            />
+          </div>
         </div>
 
-        <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-            Bộ từ vựng
-          </h1>
-          <p className="text-sm text-zinc-600/80 dark:text-zinc-400 max-w-xl leading-relaxed">
-            Tự tạo bộ từ, luyện flashcard và quiz nhanh — tối ưu cho TOEIC và
-            lộ trình riêng của bạn.
+        <div className="flex w-full flex-col gap-3 rounded-2xl border border-white/70 bg-white/80 p-4 shadow-md sm:max-w-xs dark:border-zinc-800/80 dark:bg-zinc-900/80">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400">
+            Hành động nhanh
+          </span>
+          <p className="text-sm text-slate-600 dark:text-zinc-300">
+            Dành 3 phút tạo bộ từ mới, sau đó chuyển ngay sang flashcard hoặc
+            quiz để ghi nhớ.
           </p>
+          <button
+            onClick={onCreate}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Tạo bộ từ mới</span>
+          </button>
         </div>
-      </div>
-
-      {/* Stats + CTA */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-2">
-          <MiniStat
-            icon={<Layers className="h-3.5 w-3.5" />}
-            label="Bộ từ"
-            value={totalSets}
-          />
-          <MiniStat
-            icon={<Tag className="h-3.5 w-3.5" />}
-            label="Tổng từ"
-            value={totalTerms}
-          />
-        </div>
-
-        <button
-          onClick={onCreate}
-          className="
-            inline-flex items-center justify-center gap-2
-            rounded-xl bg-[#2E5EB8] px-5 py-2.5 text-sm font-semibold text-white
-            shadow-sm transition
-            hover:-translate-y-0.5 hover:bg-[#244A90]
-            dark:bg-[#2E5EB8]/90 dark:hover:bg-[#2E5EB8]
-          "
-        >
-          <Plus className="h-4 w-4" />
-          Tạo bộ từ mới
-        </button>
       </div>
     </header>
   );
@@ -115,13 +128,13 @@ function MiniStat({
   value: string | number;
 }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-[#2E5EB8]/25 bg-white/95 px-3 py-1.5 text-xs text-[#102347] shadow-sm dark:border-[#2E5EB8]/50 dark:bg-zinc-900 dark:text-zinc-100">
-      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#2E5EB8]/12 text-[#2E5EB8] dark:bg-[#2E5EB8]/30">
+    <div className="inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-[11px] font-medium text-slate-600 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-900/80 dark:text-zinc-200">
+      <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4063bb]/10 text-[#4063bb] dark:bg-[#4063bb]/20 dark:text-sky-200">
         {icon}
       </span>
-      <span className="font-medium">
-        {label}:{" "}
-        <span className="font-semibold text-[#102347] dark:text-white">
+      <span className="flex items-center gap-1">
+        {label}
+        <span className="font-semibold text-slate-900 dark:text-white">
           {value}
         </span>
       </span>
@@ -147,14 +160,14 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition",
+        "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4063bb]/40",
         active
-          ? "border-[#2E5EB8] bg-[#2E5EB8]/10 text-[#2E5EB8] dark:border-[#2E5EB8]/70 dark:bg-[#2E5EB8]/25 dark:text-[#E3ECFF]"
-          : "border-zinc-200 text-zinc-600 hover:border-[#2E5EB8]/40 hover:text-[#2E5EB8] dark:border-zinc-700 dark:text-zinc-200 dark:hover:border-[#2E5EB8]/60 dark:hover:text-[#E3ECFF]"
+          ? "border-transparent bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] text-white shadow-md shadow-[#2d4c9b33]"
+          : "border-slate-200 bg-white/90 text-slate-600 hover:border-[#4063bb66] hover:text-[#4063bb] dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-200"
       )}
     >
       {icon}
-      {label}
+      <span className="whitespace-nowrap">{label}</span>
     </button>
   );
 }
@@ -163,6 +176,7 @@ function FilterChip({
 
 export function VocabularyPageClient() {
   const router = useRouter();
+  const basePrefix = useBasePrefix();
 
   const {
     sets,
@@ -191,8 +205,6 @@ export function VocabularyPageClient() {
     set?: VocabularySet | null;
   }>({ open: false, mode: "create" });
 
-  const [detailSet, setDetailSet] = React.useState<VocabularySet | null>(null);
-  const [detailLoading, setDetailLoading] = React.useState(false);
   const [studySet, setStudySet] = React.useState<VocabularySet | null>(null);
   const [quizSet, setQuizSet] = React.useState<VocabularySet | null>(null);
 
@@ -211,6 +223,13 @@ export function VocabularyPageClient() {
     set: VocabularySet;
     term: VocabularyTerm;
   } | null>(null);
+
+  const handleQuickAdd = React.useCallback(
+    async (setId: string, payload: AddTermDTO) => {
+      await addTerm(setId, payload);
+    },
+    [addTerm]
+  );
 
   /* ---------------------------- FILTER + SORT ---------------------------- */
 
@@ -246,24 +265,33 @@ export function VocabularyPageClient() {
 
   /* --------------------------- ACTION HANDLERS --------------------------- */
 
-  const openDetail = async (set: VocabularySet) => {
-    setDetailLoading(true);
-    try {
-      const latest = await refreshSet(set._id);
-      setDetailSet(latest);
-    } catch {
-      setDetailSet(set);
-    } finally {
-      setDetailLoading(false);
-    }
-  };
+  const handleOpenSet = React.useCallback(
+    (set: VocabularySet) => {
+      router.push(`${basePrefix}/vocabulary/${set._id}`);
+    },
+    [router, basePrefix]
+  );
+
+  const handleOpenPractice = React.useCallback(
+    async (set: VocabularySet, mode: "flashcard" | "quiz" = "flashcard") => {
+      const open = mode === "flashcard" ? setStudySet : setQuizSet;
+      open(set);
+      try {
+        const latest = await refreshSet(set._id);
+        open(latest);
+      } catch {
+        // ignore refresh errors, keep optimistic data
+      }
+    },
+    [refreshSet]
+  );
 
   /* ------------------------------ RENDER UI ------------------------------ */
 
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="py-10 sm:py-12">
+        <div className="py-8 sm:py-10">
           <VocabularySetSkeleton />
         </div>
       );
@@ -271,24 +299,25 @@ export function VocabularyPageClient() {
 
     if (!filteredSets.length) {
       return (
-        <EmptyState
-          title="Chưa có bộ từ nào"
-          description="Tạo bộ từ đầu tiên hoặc import danh sách từ để bắt đầu học giống Quizlet nhưng tối ưu cho TOEIC."
-        />
+        <div className="py-8 sm:py-10">
+          <EmptyState
+            title="Chưa có bộ từ nào"
+            description="Tạo bộ từ đầu tiên hoặc import danh sách từ để bắt đầu học giống Quizlet nhưng tối ưu cho TOEIC."
+          />
+        </div>
       );
     }
 
     return (
-      <div className="grid gap-4 grid-cols-1 xs:grid-cols-2 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredSets.map((set, index) => (
           <VocabularySetCard
             key={set._id}
             set={set}
             progress={getProgressForSet(set._id, set.terms.length)}
-            highlight={index === 0}
-            onOpen={() => openDetail(set)}
-            onStudy={() => setStudySet(set)}
-            onQuickQuiz={() => setQuizSet(set)}
+            onOpen={() => handleOpenSet(set)}
+            onStudy={() => handleOpenPractice(set, "flashcard")}
+            onQuickQuiz={() => handleOpenPractice(set, "quiz")}
             onEdit={() => setComposer({ open: true, mode: "edit", set })}
             onDuplicate={async () => {
               await createSet({
@@ -309,77 +338,69 @@ export function VocabularyPageClient() {
   /* ---------------------------- MAIN RETURN ---------------------------- */
 
   return (
-    <section className="min-h-screen bg-zinc-50 px-4 pb-16 pt-20 dark:bg-zinc-950">
-      <div className="mx-auto max-w-5xl space-y-6">
-        {/* 🔙 Back row – nằm ngoài header, chuẩn mobile + desktop */}
-        {/* <div className="flex items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="
-              inline-flex items-center gap-2 rounded-xl
-              border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-medium text-zinc-700
-              shadow-sm hover:bg-zinc-50 active:scale-95 transition
-              dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800
-            "
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden xs:inline">Quay lại</span>
-          </button>
-
-          <span className="hidden sm:inline text-[11px] text-zinc-500 dark:text-zinc-400">
-            Học từ vựng là kỹ năng bổ trợ cho toàn bộ lộ trình TOEIC của bạn.
-          </span>
-        </div> */}
-
+    <section className="relative min-h-screen overflow-hidden bg-slate-50 pb-16 pt-16 dark:bg-zinc-950 sm:pt-20">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(64,99,187,0.16),_rgba(15,23,42,0)_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(64,99,187,0.24),_rgba(3,7,18,0)_65%)]" />
+      <div className="relative mx-auto max-w-6xl space-y-6 px-4 xs:px-6">
+        {/* (Back button nếu cần sau này) */}
         {/* HEADER */}
         <VocabularyHeader
           totalSets={sets.length}
           totalTerms={totalTerms}
           onCreate={() => setComposer({ open: true, mode: "create" })}
         />
-
         {/* Error */}
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
             {error}
           </div>
         )}
 
         {/* Filter Bar */}
-        <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-4 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/90">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-              <input
-                value={filters.query}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, query: e.target.value }))
-                }
-                placeholder="Tìm theo tên bộ, chủ đề hoặc mô tả..."
-                className="w-full rounded-xl border border-zinc-200/80 bg-white pl-10 pr-3 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-[#2E5EB8] focus:ring-2 focus:ring-[#2E5EB8]/15 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
-              />
+        <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl xs:p-5 dark:border-zinc-800/60 dark:bg-zinc-900/90">
+          <div className="grid gap-4 lg:grid-cols-[2fr,1fr]">
+            {/* Search */}
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400">
+                Tìm kiếm nhanh
+              </label>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
+                <input
+                  value={filters.query}
+                  onChange={(e) =>
+                    setFilters((prev) => ({ ...prev, query: e.target.value }))
+                  }
+                  placeholder="Nhập từ khóa, chủ đề hoặc ghi chú..."
+                  className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                />
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <FilterChip
-                icon={<Filter className="h-3.5 w-3.5" />}
-                label="Mới nhất"
-                active={filters.sort === "recent"}
-                onClick={() => setFilters((p) => ({ ...p, sort: "recent" }))}
-              />
-              <FilterChip
-                label="A–Z"
-                active={filters.sort === "alphabetical"}
-                onClick={() =>
-                  setFilters((p) => ({ ...p, sort: "alphabetical" }))
-                }
-              />
-              <FilterChip
-                label="Nhiều từ"
-                active={filters.sort === "terms"}
-                onClick={() => setFilters((p) => ({ ...p, sort: "terms" }))}
-              />
+            {/* Chips */}
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400">
+                Sắp xếp & lọc
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <FilterChip
+                  icon={<Filter className="h-3.5 w-3.5" />}
+                  label="Mới cập nhật"
+                  active={filters.sort === "recent"}
+                  onClick={() => setFilters((p) => ({ ...p, sort: "recent" }))}
+                />
+                <FilterChip
+                  label="Theo A–Z"
+                  active={filters.sort === "alphabetical"}
+                  onClick={() =>
+                    setFilters((p) => ({ ...p, sort: "alphabetical" }))
+                  }
+                />
+                <FilterChip
+                  label="Nhiều từ nhất"
+                  active={filters.sort === "terms"}
+                  onClick={() => setFilters((p) => ({ ...p, sort: "terms" }))}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -429,29 +450,6 @@ export function VocabularyPageClient() {
         }}
       />
 
-      <VocabularySetDetailSheet
-        open={!!detailSet}
-        loading={detailLoading}
-        set={detailSet}
-        onClose={() => setDetailSet(null)}
-        onStudy={(s) => setStudySet(s)}
-        onQuiz={(s) => setQuizSet(s)}
-        onAddTerm={(set) =>
-          setTermModal({ open: true, mode: "create", setId: set._id })
-        }
-        onEditSet={(set) => setComposer({ open: true, mode: "edit", set })}
-        onEditTerm={(term, set) =>
-          setTermModal({
-            open: true,
-            mode: "edit",
-            setId: set._id,
-            term,
-          })
-        }
-        onDeleteSet={(s) => setDeleteTarget(s)}
-        onDeleteTerm={(term, set) => setDeleteTermTarget({ term, set })}
-      />
-
       <StudyModal
         open={!!studySet}
         set={studySet}
@@ -460,6 +458,10 @@ export function VocabularyPageClient() {
           if (studySet) setQuizSet(studySet);
           setStudySet(null);
         }}
+        onAddTerm={(set) =>
+          setTermModal({ open: true, mode: "create", setId: set._id })
+        }
+        onEditSet={(set) => setComposer({ open: true, mode: "edit", set })}
         onTermRemembered={(term) => {
           if (studySet && term._id) markRemembered(studySet._id, term._id);
         }}

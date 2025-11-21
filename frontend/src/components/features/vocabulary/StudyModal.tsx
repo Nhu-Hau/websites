@@ -17,6 +17,8 @@ interface StudyModalProps {
   onSwitchToQuiz?: () => void;
   onTermRemembered?: (term: VocabularyTerm) => void;
   onTermForgotten?: (term: VocabularyTerm) => void;
+  onAddTerm?: (set: VocabularySet) => void;
+  onEditSet?: (set: VocabularySet) => void;
 }
 
 export function StudyModal({
@@ -27,6 +29,8 @@ export function StudyModal({
   onSwitchToQuiz,
   onTermRemembered,
   onTermForgotten,
+  onAddTerm,
+  onEditSet,
 }: StudyModalProps) {
   const flashcard = useFlashcardMode({
     terms: set?.terms ?? [],
@@ -74,7 +78,23 @@ export function StudyModal({
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {onAddTerm && (
+              <button
+                onClick={() => onAddTerm(set)}
+                className="inline-flex items-center justify-center rounded-2xl border border-zinc-200/70 px-4 py-2 text-sm font-semibold text-zinc-600 transition hover:border-emerald-200 hover:text-emerald-600 dark:border-zinc-700 dark:text-zinc-200"
+              >
+                Thêm từ mới
+              </button>
+            )}
+            {onEditSet && (
+              <button
+                onClick={() => onEditSet(set)}
+                className="inline-flex items-center justify-center rounded-2xl border border-zinc-200/70 px-4 py-2 text-sm font-semibold text-zinc-600 transition hover:border-sky-200 hover:text-sky-600 dark:border-zinc-700 dark:text-zinc-200"
+              >
+                Chỉnh sửa bộ
+              </button>
+            )}
             {onSwitchToQuiz && (
               <button
                 onClick={onSwitchToQuiz}

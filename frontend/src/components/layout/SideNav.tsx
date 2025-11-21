@@ -126,7 +126,7 @@ export default function SideNav() {
                       "relative flex h-9 w-9 items-center justify-center rounded-xl border text-[13px] font-semibold transition-all",
                       active
                         ? "bg-sky-500 border-sky-300 text-white shadow-sm dark:border-sky-600 dark:bg-sky-500"
-                        : "bg-white border-zinc-200 text-zinc-500 shadow-sm group-hover:border-sky-300 group-hover:text-sky-600 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:group-hover:border-sky-600 dark:group-hover:text-sky-300"
+                        : "bg-white border-zinc-200 text-slate-600 shadow-sm group-hover:border-sky-300 group-hover:text-sky-600 dark:bg-zinc-900 dark:border-zinc-700 dark:text-slate-200 dark:group-hover:border-sky-600 dark:group-hover:text-sky-300"
                     )}
                   >
                     <Icon className="h-4 w-4" />

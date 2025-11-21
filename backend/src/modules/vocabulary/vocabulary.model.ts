@@ -4,6 +4,21 @@ import { ObjectId } from "mongodb";
 import { VocabularySet, VocabularyTerm } from "./vocabulary.types";
 
 const COLLECTION_NAME = "vocabulary_sets";
+type OwnerId = ObjectId | string;
+
+function ownerIdFilter(ownerId: OwnerId) {
+  if (ownerId instanceof ObjectId) {
+    const hex = ownerId.toHexString();
+    return { $in: [ownerId, hex] };
+  }
+
+  if (ObjectId.isValid(ownerId)) {
+    const normalized = new ObjectId(ownerId);
+    return { $in: [normalized, ownerId] };
+  }
+
+  return ownerId;
+}
 
 export class VocabularyModel {
   static async getCollection() {
@@ -11,9 +26,12 @@ export class VocabularyModel {
     return db.collection<VocabularySet>(COLLECTION_NAME);
   }
 
-  static async findAll(ownerId: ObjectId): Promise<VocabularySet[]> {
+  static async findAll(ownerId: OwnerId): Promise<VocabularySet[]> {
     const collection = await this.getCollection();
-    return collection.find({ ownerId }).sort({ createdAt: -1 }).toArray();
+    return collection
+      .find({ ownerId: ownerIdFilter(ownerId) as any })
+      .sort({ createdAt: -1 })
+      .toArray();
   }
 
   static async findById(id: ObjectId): Promise<VocabularySet | null> {
@@ -38,33 +56,36 @@ export class VocabularyModel {
 
   static async update(
     id: ObjectId,
-    ownerId: ObjectId,
+    ownerId: OwnerId,
     data: Partial<VocabularySet>
   ): Promise<VocabularySet | null> {
     const collection = await this.getCollection();
     const result = await collection.findOneAndUpdate(
-      { _id: id, ownerId },
+      { _id: id, ownerId: ownerIdFilter(ownerId) as any },
       { $set: { ...data, updatedAt: new Date() } },
       { returnDocument: "after" }
     );
     return (result as any)?.value || null;
   }
 
-  static async delete(id: ObjectId, ownerId: ObjectId): Promise<boolean> {
+  static async delete(id: ObjectId, ownerId: OwnerId): Promise<boolean> {
     const collection = await this.getCollection();
-    const result = await collection.deleteOne({ _id: id, ownerId });
+    const result = await collection.deleteOne({
+      _id: id,
+      ownerId: ownerIdFilter(ownerId) as any,
+    });
     return result.deletedCount > 0;
   }
 
   static async addTerm(
     setId: ObjectId,
-    ownerId: ObjectId,
+    ownerId: OwnerId,
     term: VocabularyTerm
   ): Promise<VocabularySet | null> {
     const collection = await this.getCollection();
     const termWithId = { ...term, _id: new ObjectId() };
     const result = await collection.findOneAndUpdate(
-      { _id: setId, ownerId },
+      { _id: setId, ownerId: ownerIdFilter(ownerId) as any },
       { 
         $push: { terms: termWithId },
         $set: { updatedAt: new Date() }
@@ -76,7 +97,7 @@ export class VocabularyModel {
 
   static async updateTerm(
     setId: ObjectId,
-    ownerId: ObjectId,
+    ownerId: OwnerId,
     termId: ObjectId,
     termData: Partial<VocabularyTerm>
   ): Promise<VocabularySet | null> {
@@ -91,7 +112,7 @@ export class VocabularyModel {
     });
 
     const result = await collection.findOneAndUpdate(
-      { _id: setId, ownerId, "terms._id": termId },
+      { _id: setId, ownerId: ownerIdFilter(ownerId) as any, "terms._id": termId },
       { $set: updateFields },
       { returnDocument: "after" }
     );
@@ -100,12 +121,12 @@ export class VocabularyModel {
 
   static async deleteTerm(
     setId: ObjectId,
-    ownerId: ObjectId,
+    ownerId: OwnerId,
     termId: ObjectId
   ): Promise<VocabularySet | null> {
     const collection = await this.getCollection();
     const result = await collection.findOneAndUpdate(
-      { _id: setId, ownerId },
+      { _id: setId, ownerId: ownerIdFilter(ownerId) as any },
       { 
         $pull: { terms: { _id: termId } as any },
         $set: { updatedAt: new Date() }

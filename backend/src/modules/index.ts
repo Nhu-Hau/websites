@@ -21,6 +21,7 @@ import studyScheduleRoutes from "./study-schedule/study-schedule.routes";
 import { newsRoutes } from "./news/news.routes";
 import vocabularyRoutes from "./vocabulary/vocabulary.routes";
 import teacherLeadRoutes from "./teacher-lead/teacher-lead.routes";
+import profileRoutes from "./profile/profile.routes";
 
 export {
   authRoutes,
@@ -43,5 +44,6 @@ export {
   newsRoutes,
   vocabularyRoutes,
   teacherLeadRoutes,
+  profileRoutes,
 };
 

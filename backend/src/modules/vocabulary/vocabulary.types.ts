@@ -19,7 +19,7 @@ export interface VocabularySet {
   title: string;
   description?: string;
   topic?: string;
-  ownerId: ObjectId;
+  ownerId: ObjectId | string;
   terms: VocabularyTerm[];
   createdAt: Date;
   updatedAt?: Date;

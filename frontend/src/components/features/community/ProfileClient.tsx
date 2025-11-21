@@ -12,6 +12,8 @@ import {
   Trash2,
   Trophy,
   FileText, // ✅ icon cho empty posts
+  Star,
+  Lock,
 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { toast } from "@/lib/toast";
@@ -214,6 +216,16 @@ export default function ProfileClient({
     (profile.picture.startsWith("http")
       ? profile.picture
       : `${API_BASE}${profile.picture}`);
+
+  const earnedBadges = profile.badges ?? [];
+  const totalBadges = Object.keys(BADGE_CONFIG).length;
+  const lockedBadgeTypes = React.useMemo(
+    () =>
+      Object.keys(BADGE_CONFIG).filter(
+        (type) => !earnedBadges.some((badge) => badge.badgeType === type)
+      ),
+    [earnedBadges]
+  );
 
   return (
     <div className="space-y-6">
@@ -537,77 +549,108 @@ export default function ProfileClient({
       )}
 
       {/* Badges */}
-      {profile.badges && profile.badges.length > 0 && (
-        <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
-          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-            <Trophy className="h-5 w-5 text-amber-500 dark:text-amber-400" />
-            Huy hiệu ({profile.badges.length})
-          </h2>
-          <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
-            {profile.badges.map((badge) => {
-              const config = BADGE_CONFIG[badge.badgeType as BadgeType];
-              if (!config) return null;
-
-              const Icon = config.icon;
-              const tooltipId = `badge-${badge._id || badge.badgeType}`;
-
-              let detailedDescription = config.description;
-              if (badge.metadata) {
-                if (badge.metadata.partKey) {
-                  detailedDescription += ` (${badge.metadata.partKey.replace(
-                    "part.",
-                    "Part "
-                  )})`;
-                }
-                if (badge.metadata.improvement) {
-                  detailedDescription += ` (+${badge.metadata.improvement} điểm)`;
-                }
-                if (badge.metadata.streak) {
-                  detailedDescription += ` (${badge.metadata.streak} ngày)`;
-                }
-                if (badge.metadata.progress !== undefined) {
-                  detailedDescription += ` (${Math.round(
-                    badge.metadata.progress
-                  )}%)`;
-                }
-              }
-
-              return (
-                <React.Fragment key={badge._id || badge.badgeType}>
-                  <div
-                    data-tooltip-id={tooltipId}
-                    data-tooltip-content={detailedDescription}
-                    className={`
-                      group relative flex h-12 w-12 items-center justify-center overflow-hidden
-                      rounded-xl border bg-white/95 text-xs shadow-sm
-                      ${config.borderColor}
-                      transition-all duration-150
-                      hover:-translate-y-0.5 hover:shadow-md
-                      dark:bg-zinc-900/95
-                      cursor-pointer
-                    `}
-                  >
-                    <div
-                      className={`absolute inset-0 rounded-xl bg-gradient-to-br ${config.gradient} opacity-10 group-hover:opacity-20`}
-                    />
-                    <div className="absolute inset-0 bg-white/40 group-hover:bg-white/20 dark:bg-zinc-950/40 dark:group-hover:bg-zinc-950/20" />
-                    <Icon
-                      className={`relative z-10 h-6 w-6 ${config.textColor}`}
-                    />
-                  </div>
-                  <Tooltip
-                    id={tooltipId}
-                    place="top"
-                    positionStrategy="fixed"
-                    offset={10}
-                    className="!z-50 !max-w-xs !rounded-lg !border !border-zinc-700 !bg-zinc-900/95 !px-3 !py-2 !text-xs !font-medium !text-white shadow-lg"
-                  />
-                </React.Fragment>
-              );
-            })}
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/95 p-5 shadow-sm ring-1 ring-black/[0.03] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-[#35519a] shadow-md shadow-[#35519a]/30">
+              <Trophy className="relative z-10 h-5 w-5 text-white" />
+              <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/40" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-semibold text-zinc-900 dark:text-white">
+                Bộ sưu tập huy hiệu
+              </h2>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                {earnedBadges.length} / {totalBadges} huy hiệu đã mở khóa
+              </p>
+            </div>
           </div>
+          {earnedBadges.length > 0 && (
+            <div className="mt-1 inline-flex items-center gap-1 self-start rounded-full border border-[#4063bb]/30 bg-[#4063bb]/10 px-3 py-1 text-[11px] font-semibold text-[#35519a] shadow-sm sm:mt-0 sm:self-auto">
+              <Star className="h-3.5 w-3.5" />
+              <span>{earnedBadges.length} huy hiệu</span>
+            </div>
+          )}
         </div>
-      )}
+
+        {earnedBadges.length === 0 ? (
+          <div className="py-6 text-center sm:py-8">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+              <Trophy className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
+            </div>
+            <p className="mb-1 text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+              Chưa có huy hiệu nào
+            </p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Làm bài đều đặn, giữ streak và đặt mục tiêu để mở khóa huy hiệu
+              đầu tiên.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="mb-5 flex flex-wrap gap-2.5 sm:gap-3">
+              {earnedBadges.map((badge) => {
+                const config = BADGE_CONFIG[badge.badgeType as BadgeType];
+                if (!config) return null;
+
+                const Icon = config.icon;
+                const tooltipId = `badge-${
+                  badge._id || badge.badgeType
+                }-profile`;
+
+                let detailedDescription = config.description;
+                if (badge.metadata) {
+                  if (badge.metadata.partKey) {
+                    detailedDescription += ` (${badge.metadata.partKey.replace(
+                      "part.",
+                      "Part "
+                    )})`;
+                  }
+                  if (badge.metadata.improvement) {
+                    detailedDescription += ` (+${badge.metadata.improvement} điểm)`;
+                  }
+                  if (badge.metadata.streak) {
+                    detailedDescription += ` (${badge.metadata.streak} ngày)`;
+                  }
+                  if (badge.metadata.progress !== undefined) {
+                    detailedDescription += ` (${Math.round(
+                      badge.metadata.progress
+                    )}%)`;
+                  }
+                }
+
+                return (
+                  <React.Fragment key={badge._id || badge.badgeType}>
+                    <div
+                      data-tooltip-id={tooltipId}
+                      data-tooltip-content={detailedDescription}
+                      className={`
+                        group relative flex h-10 w-10 items-center justify-center overflow-hidden
+                        rounded-2xl bg-gradient-to-br ${config.gradient}
+                        text-xs shadow-md shadow-slate-900/10
+                        transition-all duration-150
+                        hover:-translate-y-0.5 hover:shadow-lg
+                        cursor-pointer
+                        sm:h-12 sm:w-12 md:h-14 md:w-14
+                      `}
+                    >
+                      <div className="absolute inset-0 rounded-2xl ring-1 ring-white/40" />
+                      <Icon className="relative z-10 h-6 w-6 text-white drop-shadow-sm" />
+                    </div>
+                    <Tooltip
+                      id={tooltipId}
+                      place="top"
+                      positionStrategy="fixed"
+                      offset={10}
+                      className="!z-50 !max-w-xs !rounded-lg !border !border-zinc-700 !bg-zinc-900/95 !px-3 !py-2 !text-xs !font-medium !text-white shadow-lg"
+                    />
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Posts */}
       <div className="space-y-4">

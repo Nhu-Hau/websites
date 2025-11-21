@@ -32,7 +32,18 @@ export class VocabularyService {
   }
 
   async getVocabularySetById(setId: string, userId: string): Promise<VocabularySet> {
-    const set = await VocabularyModel.findById(new ObjectId(setId));
+    if (!setId || typeof setId !== 'string' || !ObjectId.isValid(setId)) {
+      throw new Error("Invalid vocabulary set ID");
+    }
+
+    let setObjectId: ObjectId;
+    try {
+      setObjectId = new ObjectId(setId);
+    } catch (error) {
+      throw new Error("Invalid vocabulary set ID");
+    }
+
+    const set = await VocabularyModel.findById(setObjectId);
     
     if (!set) {
       throw new Error("Vocabulary set not found");
@@ -70,23 +81,60 @@ export class VocabularyService {
     userId: string,
     data: UpdateVocabularySetDTO
   ): Promise<VocabularySet> {
+    console.log("[VocabularyService.updateVocabularySet] Request:", {
+      setId,
+      userId,
+      dataKeys: Object.keys(data),
+    });
+
+    if (!setId || typeof setId !== 'string' || !ObjectId.isValid(setId)) {
+      console.log("[VocabularyService.updateVocabularySet] Invalid setId:", setId);
+      throw new Error("Invalid vocabulary set ID");
+    }
+
+    let setObjectId: ObjectId;
+    try {
+      setObjectId = new ObjectId(setId);
+    } catch (error) {
+      console.log("[VocabularyService.updateVocabularySet] ObjectId creation failed:", error);
+      throw new Error("Invalid vocabulary set ID");
+    }
+
     const ownerId = resolveOwnerId(userId);
+    console.log("[VocabularyService.updateVocabularySet] Resolved ownerId:", {
+      originalUserId: userId,
+      resolvedOwnerId: ownerId instanceof ObjectId ? ownerId.toHexString() : String(ownerId),
+    });
+
     const updated = await VocabularyModel.update(
-      new ObjectId(setId),
+      setObjectId,
       ownerId,
       data
     );
 
     if (!updated) {
+      console.log("[VocabularyService.updateVocabularySet] Update returned null");
       throw new Error("Vocabulary set not found or unauthorized");
     }
 
+    console.log("[VocabularyService.updateVocabularySet] Update successful");
     return updated;
   }
 
   async deleteVocabularySet(setId: string, userId: string): Promise<void> {
+    if (!setId || typeof setId !== 'string' || !ObjectId.isValid(setId)) {
+      throw new Error("Invalid vocabulary set ID");
+    }
+
+    let setObjectId: ObjectId;
+    try {
+      setObjectId = new ObjectId(setId);
+    } catch (error) {
+      throw new Error("Invalid vocabulary set ID");
+    }
+
     const ownerId = resolveOwnerId(userId);
-    const deleted = await VocabularyModel.delete(new ObjectId(setId), ownerId);
+    const deleted = await VocabularyModel.delete(setObjectId, ownerId);
 
     if (!deleted) {
       throw new Error("Vocabulary set not found or unauthorized");
@@ -94,20 +142,54 @@ export class VocabularyService {
   }
 
   async addTerm(setId: string, userId: string, termData: AddTermDTO): Promise<VocabularySet> {
-    if (!ObjectId.isValid(setId)) {
+    console.log("[VocabularyService.addTerm] Request:", {
+      setId,
+      userId,
+      termDataKeys: Object.keys(termData),
+      termWord: termData.word,
+    });
+
+    if (!setId || typeof setId !== 'string' || !ObjectId.isValid(setId)) {
+      console.log("[VocabularyService.addTerm] Invalid setId:", setId);
+      throw new Error("Invalid vocabulary set ID");
+    }
+
+    let setObjectId: ObjectId;
+    try {
+      setObjectId = new ObjectId(setId);
+    } catch (error) {
+      console.log("[VocabularyService.addTerm] ObjectId creation failed:", error);
       throw new Error("Invalid vocabulary set ID");
     }
 
     const ownerId = resolveOwnerId(userId);
-    const setObjectId = new ObjectId(setId);
+    console.log("[VocabularyService.addTerm] Resolved ownerId:", {
+      originalUserId: userId,
+      resolvedOwnerId: ownerId instanceof ObjectId ? ownerId.toHexString() : String(ownerId),
+    });
     
     // First check if the set exists and belongs to the user
     const existingSet = await VocabularyModel.findById(setObjectId);
     if (!existingSet) {
+      console.log("[VocabularyService.addTerm] Set not found:", setObjectId.toHexString());
       throw new Error("Vocabulary set not found");
     }
     
+    const existingOwnerId = existingSet.ownerId instanceof ObjectId 
+      ? existingSet.ownerId.toHexString() 
+      : String(existingSet.ownerId);
+    const incomingOwnerId = ownerId instanceof ObjectId 
+      ? ownerId.toHexString() 
+      : String(ownerId);
+    
+    console.log("[VocabularyService.addTerm] OwnerId comparison:", {
+      existingOwnerId,
+      incomingOwnerId,
+      match: existingOwnerId === incomingOwnerId,
+    });
+    
     if (!ownerIdMatches(existingSet.ownerId, ownerId)) {
+      console.log("[VocabularyService.addTerm] OwnerId mismatch - unauthorized");
       throw new Error("Unauthorized access to vocabulary set");
     }
     
@@ -117,6 +199,7 @@ export class VocabularyService {
       meaning: termData.meaning,
     };
     
+    if (termData.phonetic) termDataClean.phonetic = termData.phonetic;
     if (termData.englishMeaning) termDataClean.englishMeaning = termData.englishMeaning;
     if (termData.partOfSpeech) termDataClean.partOfSpeech = termData.partOfSpeech;
     if (termData.example) termDataClean.example = termData.example;
@@ -126,6 +209,13 @@ export class VocabularyService {
     
     termDataClean.addedAt = new Date();
     
+    console.log("[VocabularyService.addTerm] Calling VocabularyModel.addTerm with:", {
+      setId: setObjectId.toHexString(),
+      ownerId: ownerId instanceof ObjectId ? ownerId.toHexString() : String(ownerId),
+      termWord: termDataClean.word,
+      termKeys: Object.keys(termDataClean),
+    });
+    
     const updated = await VocabularyModel.addTerm(
       setObjectId,
       ownerId,
@@ -133,9 +223,17 @@ export class VocabularyService {
     );
 
     if (!updated) {
-      throw new Error("Failed to add term");
+      console.error("[VocabularyService.addTerm] VocabularyModel.addTerm returned null", {
+        setId: setObjectId.toHexString(),
+        ownerId: ownerId instanceof ObjectId ? ownerId.toHexString() : String(ownerId),
+        termWord: termDataClean.word,
+      });
+      // This should not happen since we already checked authorization above
+      // But if it does, it means the database operation failed or there's a race condition
+      throw new Error("Failed to add term: Database operation returned no result. This may indicate a permission issue or database error.");
     }
 
+    console.log("[VocabularyService.addTerm] Successfully added term, set now has", updated.terms?.length || 0, "terms");
     return updated;
   }
 
@@ -145,11 +243,27 @@ export class VocabularyService {
     userId: string,
     termData: UpdateTermDTO
   ): Promise<VocabularySet> {
+    if (!setId || typeof setId !== 'string' || !ObjectId.isValid(setId)) {
+      throw new Error("Invalid vocabulary set ID");
+    }
+    if (!termId || typeof termId !== 'string' || !ObjectId.isValid(termId)) {
+      throw new Error("Invalid term ID");
+    }
+
+    let setObjectId: ObjectId;
+    let termObjectId: ObjectId;
+    try {
+      setObjectId = new ObjectId(setId);
+      termObjectId = new ObjectId(termId);
+    } catch (error) {
+      throw new Error("Invalid ID format");
+    }
+
     const ownerId = resolveOwnerId(userId);
     const updated = await VocabularyModel.updateTerm(
-      new ObjectId(setId),
+      setObjectId,
       ownerId,
-      new ObjectId(termId),
+      termObjectId,
       termData
     );
 
@@ -161,11 +275,27 @@ export class VocabularyService {
   }
 
   async deleteTerm(setId: string, termId: string, userId: string): Promise<VocabularySet> {
+    if (!setId || typeof setId !== 'string' || !ObjectId.isValid(setId)) {
+      throw new Error("Invalid vocabulary set ID");
+    }
+    if (!termId || typeof termId !== 'string' || !ObjectId.isValid(termId)) {
+      throw new Error("Invalid term ID");
+    }
+
+    let setObjectId: ObjectId;
+    let termObjectId: ObjectId;
+    try {
+      setObjectId = new ObjectId(setId);
+      termObjectId = new ObjectId(termId);
+    } catch (error) {
+      throw new Error("Invalid ID format");
+    }
+
     const ownerId = resolveOwnerId(userId);
     const updated = await VocabularyModel.deleteTerm(
-      new ObjectId(setId),
+      setObjectId,
       ownerId,
-      new ObjectId(termId)
+      termObjectId
     );
 
     if (!updated) {

@@ -2,7 +2,8 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { BookOpenCheck, Search } from "lucide-react";
+import { BookOpenCheck, Search, Plus, Tag, Layers, ArrowLeft, Filter } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   VocabularySet,
   VocabularyTerm,
@@ -50,7 +51,10 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
     set?: VocabularySet;
     term?: VocabularyTerm;
   } | null>(null);
-  const [query, setQuery] = React.useState("");
+  const [filters, setFilters] = React.useState({
+    query: "",
+    sort: "recent" as "recent" | "alphabetical" | "partOfSpeech",
+  });
   const termModalRef = React.useRef(termModal);
 
   React.useEffect(() => {
@@ -77,17 +81,52 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
   }, [fetchSet]);
 
   const handleUpdateSet = async (payload: UpdateVocabularySetDTO) => {
-    if (!setData) return;
+    // Use setId from props instead of setData._id to ensure consistency
+    const targetSetId = setId || setData?._id;
+    if (!targetSetId) {
+      toast.error("Không xác định được bộ từ để cập nhật");
+      throw new Error("Missing setId when updating vocabulary set");
+    }
+    
     try {
+      console.log("Updating vocabulary set:", { 
+        setId: targetSetId, 
+        setDataId: setData?._id,
+        propsSetId: setId,
+        payload 
+      });
+      
       const updated = await vocabularyService.updateVocabularySet(
-        setData._id,
+        targetSetId,
         payload
       );
       setSetData(updated);
       toast.success("Đã cập nhật bộ từ");
-    } catch (err) {
-      toast.error("Không thể cập nhật bộ từ");
-      throw (err instanceof Error ? err : new Error("Không thể cập nhật bộ từ"));
+    } catch (err: any) {
+      console.error("Error updating vocabulary set:", {
+        error: err,
+        status: err?.status,
+        message: err?.message,
+        response: err?.response,
+        targetSetId,
+        setDataId: setData?._id,
+        propsSetId: setId,
+      });
+      
+      // If "not found" error, try to refresh data
+      if (err?.status === 404 || err?.message?.includes("not found")) {
+        console.log("Set not found, refreshing data...");
+        await fetchSet();
+      }
+      
+      const message = err instanceof Error ? err.message : "Không thể cập nhật bộ từ";
+      // Only show error if it's a real error
+      if (err?.status && err.status >= 400) {
+        toast.error(message);
+      } else if (!err?.message?.includes("Network error")) {
+        toast.error(message);
+      }
+      throw err; // Re-throw để modal có thể xử lý
     }
   };
 
@@ -99,6 +138,13 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
       throw new Error("Missing setId when saving vocabulary term");
     }
     try {
+      console.log("Saving vocabulary term:", {
+        mode: context.mode,
+        setId: targetSetId,
+        termId: context.term?._id,
+        payload,
+      });
+      
       let updated: VocabularySet;
       if (context.mode === "edit" && context.term?._id) {
         updated = await vocabularyService.updateTerm(
@@ -116,25 +162,102 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
       toast.success(
         context.mode === "edit" ? "Đã cập nhật từ vựng" : "Đã thêm từ mới"
       );
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Không thể lưu từ vựng";
-      toast.error(message);
-      throw (err instanceof Error ? err : new Error(message));
+    } catch (err: any) {
+      // Better error logging - extract all possible error information
+      const errorInfo = {
+        name: err?.name,
+        message: err?.message,
+        status: err?.status,
+        code: err?.code,
+        stack: err?.stack,
+        response: err?.response,
+        // Try to extract message from response if available
+        responseMessage: err?.response?.message || err?.response?.raw || err?.response,
+      };
+      
+      console.error("Error saving vocabulary term:", errorInfo);
+      console.error("Full error object:", err);
+      
+      // If "not found" error, try to refresh data
+      if (err?.status === 404 || err?.message?.includes("not found")) {
+        console.log("Set or term not found, refreshing data...");
+        await fetchSet();
+      }
+      
+      // Extract error message from various possible sources
+      let message = "Không thể lưu từ vựng";
+      if (err instanceof Error) {
+        message = err.message || message;
+      } else if (err?.message) {
+        message = err.message;
+      } else if (err?.response?.message) {
+        message = err.response.message;
+      } else if (typeof err === 'string') {
+        message = err;
+      }
+      
+      // Translate common error messages to Vietnamese
+      const errorTranslations: Record<string, string> = {
+        "Failed to add term": "Không thể thêm từ vựng. Vui lòng thử lại.",
+        "Failed to add term: Database operation returned no result. This may indicate a permission issue or database error.": "Không thể thêm từ vựng. Có thể do lỗi quyền truy cập hoặc lỗi cơ sở dữ liệu.",
+        "Vocabulary set not found": "Không tìm thấy bộ từ vựng",
+        "Unauthorized access to vocabulary set": "Bạn không có quyền truy cập bộ từ vựng này",
+        "Invalid vocabulary set ID": "ID bộ từ vựng không hợp lệ",
+        "Word and meaning are required": "Từ tiếng Anh và nghĩa tiếng Việt là bắt buộc",
+      };
+      
+      // Apply translation if available
+      if (errorTranslations[message]) {
+        message = errorTranslations[message];
+      }
+      
+      // Only show error if it's not a network error that might have succeeded
+      if (err?.status && err.status >= 400) {
+        toast.error(message);
+      } else if (!err?.message?.includes("Network error")) {
+        toast.error(message);
+      }
+      throw err; // Re-throw để modal có thể xử lý
     }
   };
 
   const handleDeleteTerm = async () => {
     if (!deleteTermTarget?.set || !deleteTermTarget.term?._id) return;
     try {
+      console.log("Deleting vocabulary term:", {
+        setId: deleteTermTarget.set._id,
+        termId: deleteTermTarget.term._id,
+      });
+      
       const updated = await vocabularyService.deleteTerm(
         deleteTermTarget.set._id,
         deleteTermTarget.term._id
       );
       setSetData(updated);
       toast.success("Đã xóa từ");
-    } catch {
-      toast.error("Không thể xóa từ");
+    } catch (err: any) {
+      console.error("Error deleting vocabulary term:", {
+        error: err,
+        status: err?.status,
+        message: err?.message,
+        response: err?.response,
+        setId: deleteTermTarget?.set?._id,
+        termId: deleteTermTarget?.term?._id,
+      });
+      
+      // If "not found" error, try to refresh data
+      if (err?.status === 404 || err?.message?.includes("not found")) {
+        console.log("Set or term not found, refreshing data...");
+        await fetchSet();
+      }
+      
+      const message = err instanceof Error ? err.message : "Không thể xóa từ";
+      // Only show error if it's a real error (not network timeout that might have succeeded)
+      if (err?.status && err.status >= 400) {
+        toast.error(message);
+      } else if (!err?.message?.includes("Network error")) {
+        toast.error(message);
+      }
     } finally {
       setDeleteTermTarget(null);
     }
@@ -146,8 +269,15 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
       await vocabularyService.deleteVocabularySet(setData._id);
       toast.success("Đã xóa bộ từ");
       router.push(`${basePrefix}/vocabulary`);
-    } catch {
-      toast.error("Không thể xóa bộ từ");
+    } catch (err: any) {
+      console.error("Error deleting vocabulary set:", err);
+      const message = err instanceof Error ? err.message : "Không thể xóa bộ từ";
+      // Only show error if it's a real error
+      if (err?.status && err.status >= 400) {
+        toast.error(message);
+      } else if (!err?.message?.includes("Network error")) {
+        toast.error(message);
+      }
     } finally {
       setDeleteSetTarget(false);
     }
@@ -165,16 +295,47 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
 
   const filteredTerms = React.useMemo(() => {
     if (!setData) return [];
-    const keyword = query.trim().toLowerCase();
-    if (!keyword) return setData.terms;
-    return setData.terms.filter((term) => {
-      const text = [term.word, term.meaning, term.englishMeaning]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return text.includes(keyword);
+    const keyword = filters.query.trim().toLowerCase();
+    
+    let filtered = setData.terms;
+    
+    // Filter by search query
+    if (keyword) {
+      filtered = filtered.filter((term) => {
+        const text = [
+          term.word,
+          term.meaning,
+          term.phonetic,
+          term.englishMeaning,
+          term.example,
+          term.translatedExample,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return text.includes(keyword);
+      });
+    }
+    
+    // Sort
+    const sorted = [...filtered].sort((a, b) => {
+      if (filters.sort === "alphabetical") {
+        return a.word.localeCompare(b.word);
+      }
+      if (filters.sort === "partOfSpeech") {
+        const aPos = a.partOfSpeech || "";
+        const bPos = b.partOfSpeech || "";
+        if (aPos !== bPos) {
+          return aPos.localeCompare(bPos);
+        }
+        return a.word.localeCompare(b.word);
+      }
+      // recent - keep original order (newest first based on addedAt or index)
+      return 0;
     });
-  }, [query, setData]);
+    
+    return sorted;
+  }, [filters, setData]);
 
   if (loading) {
     return (
@@ -210,118 +371,180 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 pb-16 pt-16 dark:bg-zinc-950">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(64,99,187,0.18),_rgba(15,23,42,0)_60%)] dark:bg-[radial-gradient(circle_at_top,_rgba(64,99,187,0.3),_rgba(3,7,18,0)_65%)]" />
-      <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 sm:px-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <button
-            onClick={() => router.push(`${basePrefix}/vocabulary`)}
-            className="inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition hover:text-[#4063bb] dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-200"
-          >
-            <span className="text-lg">←</span>
-            Trở về danh sách
-          </button>
-          <div className="inline-flex flex-wrap gap-2">
-            <button
-              onClick={() => setComposerOpen(true)}
-              className="rounded-2xl border border-white/70 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:text-[#4063bb] dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100"
-            >
-              Chỉnh sửa bộ
-            </button>
-            <button
-              onClick={() => setDeleteSetTarget(true)}
-              className="rounded-2xl border border-red-200/70 bg-white/90 px-4 py-2 text-sm font-semibold text-red-600 shadow-sm transition hover:border-red-300 dark:border-red-900/40 dark:bg-zinc-900/80 dark:text-red-300"
-            >
-              Xóa bộ
-            </button>
-          </div>
-        </div>
+    <section className="relative min-h-screen overflow-hidden bg-slate-50 pb-16 dark:bg-zinc-950 pt-20">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(64,99,187,0.16),_rgba(15,23,42,0)_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(64,99,187,0.24),_rgba(3,7,18,0)_65%)]" />
+      <div className="relative mx-auto max-w-6xl space-y-5 px-4 xs:px-5">
+        {/* HEADER */}
+        <header className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/90 px-4 py-4 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5 backdrop-blur-xl xs:px-5 xs:py-5 sm:px-6 sm:py-6 dark:border-zinc-800/60 dark:bg-zinc-900/90 dark:shadow-black/20">
+          {/* background soft gradient */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#4063bb0f] via-sky-200/30 to-emerald-100/20 dark:from-[#4063bb22] dark:via-sky-500/5 dark:to-emerald-500/5" />
+          <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[#4063bb26] blur-[120px] dark:bg-[#4063bb33]" />
 
-        <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-gradient-to-br from-[#1f2a42] via-[#2c3e73] to-[#0f172a] p-6 text-white shadow-2xl shadow-[#0f172a66] sm:p-8 dark:border-zinc-800/70">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.18),_transparent_55%)]" />
           <div className="relative z-10 space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
-              <BookOpenCheck className="h-4 w-4" />
-              Vocabulary set
+            {/* Back button + Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <button
+                onClick={() => router.push(`${basePrefix}/vocabulary`)}
+                className="inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-[#4063bb] xs:px-4 xs:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-200"
+              >
+                <ArrowLeft className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
+                <span>Trở về danh sách</span>
+              </button>
+              <div className="inline-flex flex-wrap gap-2">
+                <button
+                  onClick={() => setComposerOpen(true)}
+                  className="rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-[#4063bb] xs:px-4 xs:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100"
+                >
+                  Chỉnh sửa bộ
+                </button>
+                <button
+                  onClick={() => setDeleteSetTarget(true)}
+                  className="rounded-2xl border border-red-200/70 bg-white/90 px-3 py-2 text-xs font-semibold text-red-600 shadow-sm transition hover:border-red-300 xs:px-4 xs:text-sm dark:border-red-900/40 dark:bg-zinc-900/80 dark:text-red-300"
+                >
+                  Xóa bộ
+                </button>
+              </div>
             </div>
+
+            {/* Title + desc */}
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight">{setData.title}</h1>
-              <p className="text-sm text-white/80">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 xs:text-3xl sm:text-[32px] sm:leading-tight dark:text-white">
+                {setData.title}
+              </h1>
+              <p className="max-w-2xl text-[13px] leading-relaxed text-slate-600 xs:text-sm dark:text-zinc-300">
                 {setData.description || "Chưa có mô tả cho bộ từ này."}
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2 text-[13px] font-medium text-white/80">
-              <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-1">
-                {setData.terms.length} từ
-              </span>
-              {setData.topic && (
-                <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-1">
-                  #{setData.topic}
-                </span>
-              )}
-              <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-1">
-                Tạo ngày{" "}
-                {new Intl.DateTimeFormat("vi-VN", {
-                  dateStyle: "medium",
-                }).format(new Date(setData.createdAt))}
-              </span>
+            {/* Stats + Actions – mobile first */}
+            <div className="flex flex-col gap-3 xs:flex-row xs:items-center xs:justify-between">
+              {/* Stats row */}
+              <div className="flex w-full gap-2 overflow-x-auto pb-1 xs:w-auto">
+                <div className="inline-flex min-w-[140px] flex-1 items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-[11px] font-medium text-slate-600 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-900/80 dark:text-zinc-200">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4063bb]/10 text-[#4063bb] dark:bg-[#4063bb]/20 dark:text-sky-200">
+                    <Tag className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="flex items-center gap-1">
+                    Tổng từ
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {setData.terms.length}
+                    </span>
+                  </span>
+                </div>
+                {setData.topic && (
+                  <div className="inline-flex min-w-[140px] flex-1 items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-[11px] font-medium text-slate-600 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-900/80 dark:text-zinc-200">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4063bb]/10 text-[#4063bb] dark:bg-[#4063bb]/20 dark:text-sky-200">
+                      <Layers className="h-3.5 w-3.5" />
+                    </span>
+                    <span className="flex items-center gap-1">
+                      Chủ đề
+                      <span className="font-semibold text-slate-900 dark:text-white">
+                        {setData.topic}
+                      </span>
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() =>
+                    setTermModal({
+                      open: true,
+                      mode: "create",
+                      setId: setData._id,
+                    })
+                  }
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-[#4063bb] xs:w-auto xs:px-4 xs:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100"
+                >
+                  <Plus className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
+                  <span>Thêm từ mới</span>
+                </button>
+                <button
+                  onClick={() => handleStartPractice("flashcard")}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 xs:w-auto xs:px-4 xs:text-sm"
+                >
+                  Luyện flashcard
+                </button>
+                <button
+                  onClick={() => handleStartPractice("quiz")}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-[#4063bb] xs:w-auto xs:px-4 xs:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100"
+                >
+                  Quiz nhanh
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Filter Bar – mobile friendly */}
+        <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl xs:p-5 dark:border-zinc-800/60 dark:bg-zinc-900/90">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            {/* Search */}
+            <div className="w-full md:max-w-md">
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
+                Tìm kiếm nhanh
+              </label>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
+                <input
+                  value={filters.query}
+                  onChange={(event) =>
+                    setFilters((prev) => ({ ...prev, query: event.target.value }))
+                  }
+                  placeholder="Nhập từ khóa, nghĩa, phiên âm hoặc ví dụ..."
+                  className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                />
+              </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() =>
-                  setTermModal({
-                    open: true,
-                    mode: "create",
-                    setId: setData._id,
-                  })
-                }
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20 sm:flex-none"
-              >
-                Thêm từ mới
-              </button>
-              <button
-                onClick={() => handleStartPractice("flashcard")}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-[#1f2a42] shadow-sm transition hover:opacity-95 sm:flex-none"
-              >
-                Luyện flashcard
-              </button>
-              <button
-                onClick={() => handleStartPractice("quiz")}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/30 bg-transparent px-4 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/10 sm:flex-none"
-              >
-                Quiz nhanh
-              </button>
+            {/* Chips */}
+            <div className="w-full md:w-auto">
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
+                Sắp xếp & lọc
+              </label>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                <FilterChip
+                  icon={<Filter className="h-3.5 w-3.5" />}
+                  label="Mới thêm"
+                  active={filters.sort === "recent"}
+                  onClick={() => setFilters((p) => ({ ...p, sort: "recent" }))}
+                />
+                <FilterChip
+                  label="Theo A–Z"
+                  active={filters.sort === "alphabetical"}
+                  onClick={() =>
+                    setFilters((p) => ({ ...p, sort: "alphabetical" }))
+                  }
+                />
+                <FilterChip
+                  label="Theo từ loại"
+                  active={filters.sort === "partOfSpeech"}
+                  onClick={() =>
+                    setFilters((p) => ({ ...p, sort: "partOfSpeech" }))
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/80 bg-white/95 p-5 shadow-lg shadow-slate-900/5 backdrop-blur-xl dark:border-zinc-800/70 dark:bg-zinc-900/90">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400">
-                Study deck
-              </p>
-              <h2 className="text-2xl font-semibold text-slate-900 dark:text-zinc-50">
-                Danh sách từ
-              </h2>
-            </div>
-            <div className="relative w-full sm:w-72">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Tìm theo từ, nghĩa hoặc ví dụ..."
-                className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-              />
-            </div>
+        {/* Terms List */}
+        <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl xs:p-5 dark:border-zinc-800/60 dark:bg-zinc-900/90">
+          <div className="mb-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
+              Study deck
+            </p>
+            <h2 className="text-xl font-semibold text-slate-900 xs:text-2xl dark:text-zinc-50">
+              Danh sách từ
+            </h2>
           </div>
 
-          <div className="mt-6 space-y-3.5">
+          <div className="space-y-3.5">
             {filteredTerms.length === 0 && (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-white/70 px-4 py-10 text-center text-sm text-slate-500 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-400">
-                Không có từ nào khớp với tìm kiếm.
+                {filters.query.trim() ? "Không có từ nào khớp với tìm kiếm." : "Chưa có từ vựng nào trong bộ này."}
               </div>
             )}
 
@@ -345,6 +568,11 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                     <h3 className="text-xl font-semibold text-slate-900 dark:text-zinc-50">
                       {term.word}
                     </h3>
+                    {term.phonetic && (
+                      <span className="text-sm text-slate-500 dark:text-zinc-400">
+                        {term.phonetic}
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm font-medium text-slate-800 dark:text-zinc-200">
                     {term.meaning}
@@ -361,7 +589,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                           <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400">
                             EN
                           </span>
-                          <span className="italic">“{term.example}”</span>
+                          <span className="italic">"{term.example}"</span>
                         </p>
                       )}
                       {term.translatedExample && (
@@ -369,7 +597,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                           <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400">
                             VI
                           </span>
-                          <span className="italic">“{term.translatedExample}”</span>
+                          <span className="italic">"{term.translatedExample}"</span>
                         </p>
                       )}
                     </div>
@@ -386,7 +614,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                         term,
                       })
                     }
-                    className="inline-flex items-center justify-center rounded-2xl border border-slate-200/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#4063bb66] hover:text-[#4063bb] dark:border-zinc-700 dark:text-zinc-100"
+                    className="inline-flex items-center justify-center rounded-2xl border border-slate-200/80 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-[#4063bb66] hover:text-[#4063bb] xs:px-4 xs:text-sm dark:border-zinc-700 dark:text-zinc-100"
                   >
                     Chỉnh sửa
                   </button>
@@ -397,7 +625,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                         term,
                       })
                     }
-                    className="inline-flex items-center justify-center rounded-2xl border border-red-200/70 px-4 py-2 text-sm font-semibold text-red-600 transition hover:border-red-300 dark:border-red-900/40 dark:text-red-300"
+                    className="inline-flex items-center justify-center rounded-2xl border border-red-200/70 px-3 py-2 text-xs font-semibold text-red-600 transition hover:border-red-300 xs:px-4 xs:text-sm dark:border-red-900/40 dark:text-red-300"
                   >
                     Xóa
                   </button>
@@ -472,7 +700,36 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         icon="warning"
         confirmText="Xóa từ"
         confirmColor="red"
-          />
-        </div>
-      );
-    }
+      />
+    </section>
+  );
+}
+
+/* ------------------------------- FILTER CHIP ------------------------------- */
+
+function FilterChip({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-2xl border px-3 py-1.5 text-[11px] font-semibold transition xs:text-xs",
+        active
+          ? "border-[#4063bb] bg-[#4063bb]/10 text-[#4063bb] dark:border-sky-400 dark:bg-sky-500/10 dark:text-sky-300"
+          : "border-slate-200/80 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600"
+      )}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}

@@ -52,7 +52,11 @@ function MessageContent({
   return <div className="whitespace-pre-wrap">{content}</div>;
 }
 
-export default function AdminChatContent({ isMobile = false }: { isMobile?: boolean }) {
+export default function AdminChatContent({
+  isMobile = false,
+}: {
+  isMobile?: boolean;
+}) {
   const { user } = useAuth();
   const { socket } = useSocket();
   const { open, setUnreadCount } = useChat();
@@ -485,9 +489,7 @@ export default function AdminChatContent({ isMobile = false }: { isMobile?: bool
 
                   {m.role === "admin" && !m.pending && (
                     <button
-                      onClick={() =>
-                        navigator.clipboard.writeText(m.content)
-                      }
+                      onClick={() => navigator.clipboard.writeText(m.content)}
                       className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow-md transition hover:scale-110 focus:outline-none focus:ring-2 focus:ring-orange-400"
                       aria-label="Sao chép tin nhắn"
                     >
@@ -527,38 +529,37 @@ export default function AdminChatContent({ isMobile = false }: { isMobile?: bool
 
       {/* Input */}
       <div className="border-t border-gray-200/60 dark:border-zinc-700/60 p-3 sm:p-4 bg-white/70 dark:bg-zinc-900/70 flex-shrink-0">
-        <div className="flex items-end gap-3">
-          <div className="flex-1 relative">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value.slice(0, maxLen))}
-              onKeyDown={onKeyDown}
-              placeholder={
-                !user
-                  ? "Đăng nhập để chat..."
-                  : user.access !== "premium"
-                  ? "Cần tài khoản Premium để sử dụng..."
-                  : "Nhập tin nhắn cho admin..."
-              }
-              disabled={!user || sending || user?.access !== "premium"}
-              rows={1}
-              maxLength={maxLen}
-              className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 outline-none dark:border-zinc-600 dark:bg-zinc-800/70 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-orange-400"
-              style={{ minHeight: "52px", maxHeight: "120px" }}
-            />
-            <div className="absolute right-3 bottom-3 text-xs text-gray-400">
-              {input.length}/{maxLen}
+        <div className="flex w-full justify-center gap-3">
+          <div className="flex w-full max-w-2xl items-center">
+            <div className="relative flex-1">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value.slice(0, maxLen))}
+                onKeyDown={onKeyDown}
+                placeholder={
+                  !user
+                    ? "Đăng nhập để chat..."
+                    : user.access !== "premium"
+                    ? "Cần tài khoản Premium để sử dụng..."
+                    : "Nhập tin nhắn cho admin..."
+                }
+                disabled={!user || sending || user?.access !== "premium"}
+                rows={1}
+                maxLength={maxLen}
+                className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 outline-none dark:border-zinc-600 dark:bg-zinc-800/70 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-orange-400"
+                style={{ minHeight: "52px", maxHeight: "120px" }}
+              />
+              <div className="absolute right-3 bottom-3 text-xs text-gray-400">
+                {input.length}/{maxLen}
+              </div>
             </div>
           </div>
 
           <button
             onClick={send}
             disabled={
-              sending ||
-              !input.trim() ||
-              !user ||
-              user?.access !== "premium"
+              sending || !input.trim() || !user || user?.access !== "premium"
             }
             className="group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-600 to-orange-500 text-white shadow-lg shadow-orange-500/30 transition-all enabled:hover:scale-110 enabled:hover:shadow-xl enabled:focus:outline-none enabled:focus:ring-4 enabled:focus:ring-orange-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -590,4 +591,3 @@ export default function AdminChatContent({ isMobile = false }: { isMobile?: bool
     </div>
   );
 }
-

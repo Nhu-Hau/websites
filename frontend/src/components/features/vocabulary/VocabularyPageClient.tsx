@@ -8,7 +8,6 @@ import {
   Layers,
   Plus,
   Search,
-  Sparkles,
   Tag,
 } from "lucide-react";
 import { useVocabulary } from "@/hooks/vocabulary/useVocabulary";
@@ -46,33 +45,38 @@ function VocabularyHeader({
   onCreate: () => void;
 }) {
   return (
-    <header className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/90 px-4 py-5 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5 backdrop-blur-xl xs:px-6 sm:px-8 sm:py-7 dark:border-zinc-800/60 dark:bg-zinc-900/90 dark:shadow-black/20">
+    <header className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/90 px-4 py-4 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5 backdrop-blur-xl xs:px-5 xs:py-5 sm:px-6 sm:py-6 dark:border-zinc-800/60 dark:bg-zinc-900/90 dark:shadow-black/20">
+      {/* background soft gradient */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#4063bb0f] via-sky-200/30 to-emerald-100/20 dark:from-[#4063bb22] dark:via-sky-500/5 dark:to-emerald-500/5" />
-      <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#4063bb26] blur-[120px] dark:bg-[#4063bb33]" />
+      <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[#4063bb26] blur-[120px] dark:bg-[#4063bb33]" />
 
-      <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-5">
-          <div className="inline-flex items-center gap-3 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/80">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-sky-500 shadow-lg shadow-[#4063bb4d]">
-              <BookOpenCheck className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-zinc-400">
-              Vocabulary lab
-            </div>
+      <div className="relative z-10 space-y-5">
+        {/* Pill + icon */}
+        <div className="inline-flex items-center gap-3 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/80">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-sky-500 shadow-lg shadow-[#4063bb4d] xs:h-10 xs:w-10">
+            <BookOpenCheck className="h-4 w-4 text-white xs:h-5 xs:w-5" />
           </div>
-
-          <div className="space-y-3">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
-              Tạo lộ trình từ vựng chuẩn TOEIC
-            </h1>
-            <p className="max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-zinc-300">
-              Quản lý bộ từ, luyện flashcard theo cấp độ và quiz nhanh để khóa
-              kiến thức mỗi ngày. Thiết kế mới đồng bộ phong cách bài test nên
-              bạn sẽ thấy quen thuộc ngay.
-            </p>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
+            Vocabulary lab
           </div>
+        </div>
 
-          <div className="flex flex-wrap gap-3">
+        {/* Title + desc */}
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 xs:text-3xl sm:text-[32px] sm:leading-tight dark:text-white">
+            Tạo lộ trình từ vựng chuẩn TOEIC
+          </h1>
+          <p className="max-w-2xl text-[13px] leading-relaxed text-slate-600 xs:text-sm dark:text-zinc-300">
+            Quản lý bộ từ, luyện flashcard theo cấp độ và quiz nhanh để khóa
+            kiến thức mỗi ngày. Thiết kế tối ưu cho trải nghiệm giống Quizlet
+            nhưng theo lộ trình TOEIC.
+          </p>
+        </div>
+
+        {/* Stats + CTA – mobile first */}
+        <div className="flex flex-col gap-3 xs:flex-row xs:items-center xs:justify-between">
+          {/* Stats row – scroll ngang nếu chật */}
+          <div className="flex w-full gap-2 overflow-x-auto pb-1 xs:w-auto">
             <MiniStat
               icon={<Layers className="h-3.5 w-3.5" />}
               label="Bộ từ"
@@ -83,32 +87,15 @@ function VocabularyHeader({
               label="Tổng từ"
               value={totalTerms}
             />
-            <MiniStat
-              icon={<Sparkles className="h-3.5 w-3.5" />}
-              label="Độ phủ trung bình"
-              value={
-                totalSets === 0
-                  ? "—"
-                  : `${Math.max(1, Math.round(totalTerms / totalSets))} từ/bộ`
-              }
-            />
           </div>
-        </div>
 
-        <div className="flex w-full flex-col gap-3 rounded-2xl border border-white/70 bg-white/80 p-4 shadow-md sm:max-w-xs dark:border-zinc-800/80 dark:bg-zinc-900/80">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400">
-            Hành động nhanh
-          </span>
-          <p className="text-sm text-slate-600 dark:text-zinc-300">
-            Dành 3 phút tạo bộ từ mới, sau đó chuyển ngay sang flashcard hoặc
-            quiz để ghi nhớ.
-          </p>
+          {/* CTA */}
           <button
             onClick={onCreate}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 xs:w-auto"
           >
             <Plus className="h-4 w-4" />
-            <span>Tạo bộ từ mới</span>
+            <span className="whitespace-nowrap">Tạo bộ từ mới</span>
           </button>
         </div>
       </div>
@@ -128,7 +115,7 @@ function MiniStat({
   value: string | number;
 }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-[11px] font-medium text-slate-600 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-900/80 dark:text-zinc-200">
+    <div className="inline-flex min-w-[140px] flex-1 items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-[11px] font-medium text-slate-600 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-900/80 dark:text-zinc-200">
       <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4063bb]/10 text-[#4063bb] dark:bg-[#4063bb]/20 dark:text-sky-200">
         {icon}
       </span>
@@ -160,7 +147,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4063bb]/40",
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4063bb]/40",
         active
           ? "border-transparent bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] text-white shadow-md shadow-[#2d4c9b33]"
           : "border-slate-200 bg-white/90 text-slate-600 hover:border-[#4063bb66] hover:text-[#4063bb] dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-200"
@@ -234,9 +221,11 @@ export function VocabularyPageClient() {
   /* ---------------------------- FILTER + SORT ---------------------------- */
 
   const filteredSets = React.useMemo(() => {
+    // Ensure sets is always an array
+    const safeSets = Array.isArray(sets) ? sets : [];
     const query = filters.query.trim().toLowerCase();
 
-    return [...sets]
+    return [...safeSets]
       .filter((set) => {
         if (!query) return true;
         return [set.title, set.description, set.topic]
@@ -258,10 +247,10 @@ export function VocabularyPageClient() {
       });
   }, [sets, filters]);
 
-  const totalTerms = React.useMemo(
-    () => sets.reduce((sum, s) => sum + s.terms.length, 0),
-    [sets]
-  );
+  const totalTerms = React.useMemo(() => {
+    const safeSets = Array.isArray(sets) ? sets : [];
+    return safeSets.reduce((sum, s) => sum + (s.terms?.length || 0), 0);
+  }, [sets]);
 
   /* --------------------------- ACTION HANDLERS --------------------------- */
 
@@ -274,11 +263,20 @@ export function VocabularyPageClient() {
 
   const handleOpenPractice = React.useCallback(
     async (set: VocabularySet, mode: "flashcard" | "quiz" = "flashcard") => {
-      const open = mode === "flashcard" ? setStudySet : setQuizSet;
-      open(set);
+      if (mode === "flashcard") {
+        setStudySet(set);
+      } else {
+        setQuizSet(set);
+      }
+
       try {
         const latest = await refreshSet(set._id);
-        open(latest);
+        if (!latest) return;
+        if (mode === "flashcard") {
+          setStudySet(latest);
+        } else {
+          setQuizSet(latest);
+        }
       } catch {
         // ignore refresh errors, keep optimistic data
       }
@@ -291,7 +289,7 @@ export function VocabularyPageClient() {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="py-8 sm:py-10">
+        <div className="py-6 xs:py-8 sm:py-10">
           <VocabularySetSkeleton />
         </div>
       );
@@ -299,7 +297,7 @@ export function VocabularyPageClient() {
 
     if (!filteredSets.length) {
       return (
-        <div className="py-8 sm:py-10">
+        <div className="py-6 xs:py-8 sm:py-10">
           <EmptyState
             title="Chưa có bộ từ nào"
             description="Tạo bộ từ đầu tiên hoặc import danh sách từ để bắt đầu học giống Quizlet nhưng tối ưu cho TOEIC."
@@ -309,8 +307,8 @@ export function VocabularyPageClient() {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredSets.map((set, index) => (
+      <div className="grid grid-cols-2 gap-4 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {filteredSets.map((set) => (
           <VocabularySetCard
             key={set._id}
             set={set}
@@ -338,29 +336,29 @@ export function VocabularyPageClient() {
   /* ---------------------------- MAIN RETURN ---------------------------- */
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-slate-50 pb-16 pt-16 dark:bg-zinc-950 sm:pt-20">
+    <section className="relative min-h-screen overflow-hidden bg-slate-50 pb-16 dark:bg-zinc-950 pt-20">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(64,99,187,0.16),_rgba(15,23,42,0)_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(64,99,187,0.24),_rgba(3,7,18,0)_65%)]" />
-      <div className="relative mx-auto max-w-6xl space-y-6 px-4 xs:px-6">
-        {/* (Back button nếu cần sau này) */}
+      <div className="relative mx-auto max-w-6xl space-y-5 px-4 xs:px-5">
         {/* HEADER */}
         <VocabularyHeader
-          totalSets={sets.length}
+          totalSets={Array.isArray(sets) ? sets.length : 0}
           totalTerms={totalTerms}
           onCreate={() => setComposer({ open: true, mode: "create" })}
         />
+
         {/* Error */}
         {error && (
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700 shadow-sm sm:text-sm dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
             {error}
           </div>
         )}
 
-        {/* Filter Bar */}
+        {/* Filter Bar – mobile friendly */}
         <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl xs:p-5 dark:border-zinc-800/60 dark:bg-zinc-900/90">
-          <div className="grid gap-4 lg:grid-cols-[2fr,1fr]">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             {/* Search */}
-            <div>
-              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400">
+            <div className="w-full md:max-w-md">
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
                 Tìm kiếm nhanh
               </label>
               <div className="relative">
@@ -377,11 +375,11 @@ export function VocabularyPageClient() {
             </div>
 
             {/* Chips */}
-            <div>
-              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400">
+            <div className="w-full md:w-auto">
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
                 Sắp xếp & lọc
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex gap-2 overflow-x-auto pb-1">
                 <FilterChip
                   icon={<Filter className="h-3.5 w-3.5" />}
                   label="Mới cập nhật"
@@ -416,15 +414,27 @@ export function VocabularyPageClient() {
         initialSet={composer.set ?? undefined}
         onClose={() => setComposer({ open: false, mode: "create" })}
         onSubmit={async (payload) => {
-          if (composer.mode === "edit" && composer.set) {
-            await updateSet(
-              composer.set._id,
-              payload as UpdateVocabularySetDTO
-            );
-            toast.success("Đã cập nhật bộ từ");
-          } else {
-            await createSet(payload as CreateVocabularySetDTO);
-            toast.success("Đã tạo bộ từ mới");
+          try {
+            if (composer.mode === "edit" && composer.set) {
+              await updateSet(
+                composer.set._id,
+                payload as UpdateVocabularySetDTO
+              );
+              toast.success("Đã cập nhật bộ từ");
+            } else {
+              await createSet(payload as CreateVocabularySetDTO);
+              toast.success("Đã tạo bộ từ mới");
+            }
+          } catch (err: any) {
+            console.error("Error saving vocabulary set:", err);
+            const message = err instanceof Error ? err.message : "Không thể lưu bộ từ";
+            // Only show error if it's a real error
+            if (err?.status && err.status >= 400) {
+              toast.error(message);
+            } else if (!err?.message?.includes("Network error")) {
+              toast.error(message);
+            }
+            throw err; // Re-throw để modal có thể xử lý
           }
         }}
       />
@@ -436,16 +446,28 @@ export function VocabularyPageClient() {
         onClose={() => setTermModal({ open: false, mode: "create" })}
         onSubmit={async (data) => {
           if (!termModal.setId) return;
-          if (termModal.mode === "edit" && termModal.term) {
-            await updateTerm(
-              termModal.setId,
-              termModal.term._id!,
-              data as UpdateTermDTO
-            );
-            toast.success("Đã cập nhật từ");
-          } else {
-            await addTerm(termModal.setId, data as AddTermDTO);
-            toast.success("Đã thêm từ");
+          try {
+            if (termModal.mode === "edit" && termModal.term) {
+              await updateTerm(
+                termModal.setId,
+                termModal.term._id!,
+                data as UpdateTermDTO
+              );
+              toast.success("Đã cập nhật từ");
+            } else {
+              await addTerm(termModal.setId, data as AddTermDTO);
+              toast.success("Đã thêm từ");
+            }
+          } catch (err: any) {
+            console.error("Error saving vocabulary term:", err);
+            const message = err instanceof Error ? err.message : "Không thể lưu từ vựng";
+            // Only show error if it's a real error
+            if (err?.status && err.status >= 400) {
+              toast.error(message);
+            } else if (!err?.message?.includes("Network error")) {
+              toast.error(message);
+            }
+            throw err; // Re-throw để modal có thể xử lý
           }
         }}
       />
@@ -486,9 +508,20 @@ export function VocabularyPageClient() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={async () => {
           if (!deleteTarget) return;
-          await deleteSet(deleteTarget._id);
-          toast.success("Đã xóa bộ từ");
-          setDeleteTarget(null);
+          try {
+            await deleteSet(deleteTarget._id);
+            toast.success("Đã xóa bộ từ");
+            setDeleteTarget(null);
+          } catch (err: any) {
+            console.error("Error deleting vocabulary set:", err);
+            const message = err instanceof Error ? err.message : "Không thể xóa bộ từ";
+            // Only show error if it's a real error
+            if (err?.status && err.status >= 400) {
+              toast.error(message);
+            } else if (!err?.message?.includes("Network error")) {
+              toast.error(message);
+            }
+          }
         }}
         title="Xóa bộ từ vựng?"
         message="Thao tác này không thể hoàn tác."
@@ -502,12 +535,23 @@ export function VocabularyPageClient() {
         onClose={() => setDeleteTermTarget(null)}
         onConfirm={async () => {
           if (!deleteTermTarget) return;
-          await deleteTerm(
-            deleteTermTarget.set._id,
-            deleteTermTarget.term._id!
-          );
-          toast.success("Đã xóa từ");
-          setDeleteTermTarget(null);
+          try {
+            await deleteTerm(
+              deleteTermTarget.set._id,
+              deleteTermTarget.term._id!
+            );
+            toast.success("Đã xóa từ");
+            setDeleteTermTarget(null);
+          } catch (err: any) {
+            console.error("Error deleting vocabulary term:", err);
+            const message = err instanceof Error ? err.message : "Không thể xóa từ";
+            // Only show error if it's a real error
+            if (err?.status && err.status >= 400) {
+              toast.error(message);
+            } else if (!err?.message?.includes("Network error")) {
+              toast.error(message);
+            }
+          }
         }}
         title="Xóa từ?"
         message="Bạn chắc chắn muốn xóa từ khỏi bộ?"

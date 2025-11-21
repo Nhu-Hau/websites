@@ -738,8 +738,13 @@ export default function AssessmentChart() {
                 strokeWidth={2.4}
                   dot={(props: any) => {
                     if (props.payload?.kind === "baseline") {
+                      // Use index or cx/cy combination as key for React
+                      const key = props.index !== undefined 
+                        ? `baseline-dot-${props.index}` 
+                        : `baseline-dot-${props.cx}-${props.cy}`;
                       return (
                         <circle
+                          key={key}
                           cx={props.cx}
                           cy={props.cy}
                           r={6}
@@ -749,7 +754,7 @@ export default function AssessmentChart() {
                         />
                       );
                     }
-                    return <></>;
+                    return null;
                   }}
                 activeDot={{
                   r: 4.5,
@@ -780,13 +785,6 @@ export default function AssessmentChart() {
         )}
       </div>
       </div>
-
-      {assessmentData?.selfReportedScore != null && (
-        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-          Điểm khai báo chỉ có tổng Overall nên không tách được
-          Listening/Reading — đường Overall sẽ thể hiện giá trị bạn nhập.
-        </p>
-      )}
 
       {/* Legend */}
       {assessmentLineData.length > 0 && (

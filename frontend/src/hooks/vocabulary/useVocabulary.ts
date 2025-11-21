@@ -21,11 +21,14 @@ export function useVocabulary() {
       setLoading(true);
       setError(null);
       const data = await vocabularyService.getVocabularySets();
-      setSets(data);
+      // Ensure data is always an array
+      setSets(Array.isArray(data) ? data : []);
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch vocabulary sets"
       );
+      // On error, ensure sets remains an array (keep existing sets or empty array)
+      setSets((prev) => (Array.isArray(prev) ? prev : []));
     } finally {
       setLoading(false);
     }

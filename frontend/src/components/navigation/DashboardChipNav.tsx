@@ -2,11 +2,11 @@
 
 import React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { TrendingUp, BarChart3, Calendar } from "lucide-react";
+import { TrendingUp, BarChart3, Calendar, Trophy } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import HorizontalChipNav, { ChipItem } from "./HorizontalChipNav";
 
-type TabId = "progress" | "results" | "activity";
+type TabId = "progress" | "results" | "activity" | "badges";
 
 export default function DashboardChipNav() {
   const searchParams = useSearchParams();
@@ -29,6 +29,11 @@ export default function DashboardChipNav() {
       id: "activity",
       label: "Hoạt động",
       icon: Calendar,
+    },
+    {
+      id: "badges",
+      label: "Huy hiệu",
+      icon: Trophy,
     },
   ];
 

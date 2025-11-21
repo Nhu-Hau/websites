@@ -51,8 +51,7 @@ export function TermComposerModal({
       setForm({
         word: initialTerm.word || "",
         meaning: initialTerm.meaning || "",
-        // nếu VocabularyTerm chưa có field phonetic thì bạn bổ sung ở types
-        phonetic: (initialTerm as any).phonetic || "",
+        phonetic: initialTerm.phonetic || "",
         partOfSpeech: initialTerm.partOfSpeech || "",
         example: initialTerm.example || "",
       });
@@ -97,7 +96,7 @@ export function TermComposerModal({
         phonetic: form.phonetic.trim() || undefined,
         partOfSpeech: form.partOfSpeech.trim() || undefined,
         example: form.example.trim() || undefined,
-      } as any);
+      });
       onClose();
     } catch (err) {
       setError(

@@ -81,18 +81,29 @@ function LeaveRoomButton() {
   return (
     <button
       onClick={leave}
-      className="absolute top-4 left-4 z-40 inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 shadow-sm transition-colors duration-200 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+      className="
+        absolute top-4 left-4 z-40
+        inline-flex h-10 w-10 items-center justify-center
+        rounded-full border border-zinc-300 bg-white
+        text-sm font-medium text-zinc-700 shadow-sm
+        transition-colors duration-200 hover:bg-zinc-50
+        focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2
+        dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800
+
+        md:h-auto md:w-auto md:gap-2 md:rounded-lg md:px-3 md:py-2
+      "
       aria-label="Rời phòng"
     >
       <LogOut className="h-4 w-4 text-red-600 dark:text-red-400" />
-      <span>Rời phòng</span>
-      <span className="ml-1 text-xs text-zinc-500 dark:text-zinc-500">
+      {/* text ẩn trên mobile, hiện từ md trở lên */}
+      <span className="hidden md:inline">Rời phòng</span>
+      {/* (Esc) chỉ hiện trên màn hình lớn hơn (lg) */}
+      <span className="ml-1 hidden text-xs text-zinc-500 dark:text-zinc-500 lg:inline">
         (Esc)
       </span>
     </button>
   );
 }
-
 function HostTile({ hostIdentity }: { hostIdentity: string }) {
   const { localParticipant } = useLocalParticipant();
   const participants = useParticipants();
@@ -125,7 +136,7 @@ function HostTile({ hostIdentity }: { hostIdentity: string }) {
 
   if (!hostP) {
     return (
-      <div className="flex h-[calc(100dvh-6rem)] items-center justify-center bg-zinc-900 text-white">
+      <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-white">
         <div className="space-y-4 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-sky-600">
             <Crown className="h-8 w-8 text-white" />
@@ -142,66 +153,34 @@ function HostTile({ hostIdentity }: { hostIdentity: string }) {
   }
 
   const nameLabel = hostP.name || hostP.identity || "Host";
-  const hasCam = !!camRef;
-  const hasMic = !!micRef;
 
   return (
-    <div className="relative w-full min-h-[calc(100dvh-6rem)] overflow-hidden bg-black">
-      <div className="relative h-[calc(100dvh-6rem)] w-full">
-        {screenRef ? (
-          <VideoTrack
-            trackRef={screenRef}
-            className="h-full w-full [&_video]:object-contain"
-          />
-        ) : camRef ? (
-          <VideoTrack
-            trackRef={camRef}
-            className="h-full w-full [&_video]:object-contain"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-white">
-            <div className="space-y-3 text-center">
-              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl bg-zinc-800">
-                <span className="text-2xl font-semibold text-zinc-300">
-                  {initials(nameLabel)}
-                </span>
-              </div>
-              <p className="text-base font-semibold">{nameLabel}</p>
-              <p className="flex items-center justify-center gap-1.5 text-sm text-zinc-400">
-                <VideoOff className="h-4 w-4" /> Camera chưa bật
-              </p>
+    <div className="relative h-full w-full overflow-hidden bg-black">
+      {screenRef ? (
+        <VideoTrack
+          trackRef={screenRef || camRef}
+          className="h-full w-full [&_video]:h-full [&_video]:w-full [&_video]:object-cover [&_video]:scale-[1.03]"
+        />
+      ) : camRef ? (
+        <VideoTrack
+          trackRef={camRef}
+          className="h-full w-full [&_video]:h-full [&_video]:w-full [&_video]:object-cover"
+        />
+      ) : (
+        <div className="flex h-full items-center justify-center text-white">
+          <div className="space-y-3 text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl bg-zinc-800">
+              <span className="text-2xl font-semibold text-zinc-300">
+                {initials(nameLabel)}
+              </span>
             </div>
+            <p className="text-base font-semibold">{nameLabel}</p>
+            <p className="flex items-center justify-center gap-1.5 text-sm text-zinc-400">
+              <VideoOff className="h-4 w-4" /> Camera chưa bật
+            </p>
           </div>
-        )}
-      </div>
-
-      {/* Status indicator */}
-      {/* <div className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/80 px-2.5 py-1.5 text-white backdrop-blur-sm">
-        <Radio className="h-3.5 w-3.5 animate-pulse text-green-400" />
-        <Signal className="h-3.5 w-3.5 text-green-400" />
-        <span className="text-xs opacity-80">Đang phát</span>
-      </div> */}
-
-      {/* Host info */}
-      {/* <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-lg border border-white/10 bg-black/80 px-3 py-2 text-white backdrop-blur-sm">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-600">
-          <Crown className="h-3.5 w-3.5 text-white" />
         </div>
-        <span className="text-sm font-medium">{nameLabel}</span>
-        <span className="mx-1 opacity-60">•</span>
-        <span className="flex items-center gap-2 text-xs">
-          {hasCam ? (
-            <Video className="h-3.5 w-3.5 text-green-400" />
-          ) : (
-            <VideoOff className="h-3.5 w-3.5 text-red-400" />
-          )}
-          {hasMic ? (
-            <Mic className="h-3.5 w-3.5 text-green-400" />
-          ) : (
-            <MicOff className="h-3.5 w-3.5 text-red-400" />
-          )}
-        </span>
-      </div> */}
+      )}
     </div>
   );
 }
@@ -255,7 +234,7 @@ function HostControls() {
 
   return (
     <div className="pointer-events-none absolute left-4 bottom-4 z-40">
-      <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/15 bg-white/70 px-3 py-1.5 shadow-lg backdrop-blur-md">
+      <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/15 bg-white/70 px-3 shadow-lg backdrop-blur-md">
         {/* Camera */}
         <TrackToggle
           source={Track.Source.Camera}
@@ -836,7 +815,7 @@ export default function StudyRoomPage() {
 
   if (err) {
     return (
-      <div className="min-h-[60vh] bg-zinc-50 pt-16 md:pt-20 dark:bg-zinc-900">
+      <div className="min-h-[60vh] bg-zinc-50 dark:bg-zinc-900">
         <div className="mx-4 flex items-center justify-center">
           <div className="max-w-md rounded-2xl border border-red-200 bg-white p-6 shadow-sm dark:border-red-800/50 dark:bg-zinc-900">
             <div className="flex items-start gap-4">
@@ -888,7 +867,7 @@ export default function StudyRoomPage() {
   const hostIdentity = data.hostIdentity || data.identity;
 
   return (
-    <div className="min-h-[100dvh] bg-black">
+    <div className="h-[100dvh] bg-black">
       <LiveKitRoom
         serverUrl={data.wsUrl}
         token={data.token}
@@ -902,8 +881,8 @@ export default function StudyRoomPage() {
         <RoomAudioRenderer />
 
         {/* Wrapper toàn bộ nội dung live */}
-        <div className="relative h-[100dvh] pt-16 md:pt-20">
-          <div className="relative h-full overflow-hidden">
+        <div className="absolute top-14 left-0 right-0 bottom-0">
+          <div className="relative h-full w-full overflow-hidden">
             {/* Video + overlay */}
             <LeaveRoomButton />
             <HostTile hostIdentity={hostIdentity} />
@@ -912,26 +891,39 @@ export default function StudyRoomPage() {
               <ParticipantsList roomName={room} />
             )}
             {/* Cụm reaction gọn góc phải dưới - z-index thấp hơn panel */}
-            <div className="absolute bottom-24 right-4 z-30 flex flex-col gap-2">
+            <div className="absolute bottom-20 right-4 z-30 flex flex-col gap-2">
               <HeartReaction />
               <LikeReaction />
             </div>
 
-            {/* Nút mở chat (dùng cho cả mobile + desktop) - ẩn khi panel mở - ĐÃ ẨN THEO YÊU CẦU */}
-            {/* {!showChatMobile && (
-            <button
-              type="button"
-              onClick={() => setShowChatMobile(true)}
-                className="fixed bottom-6 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/40 ring-2 ring-sky-300/80 backdrop-blur-md hover:bg-sky-700 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all md:text-base"
-            >
-              <MessageSquare className="h-4 w-4 md:h-5 md:w-5" />
-              <span>Chat phòng học</span>
-            </button>
-            )} */}
+            {/* Nút mở chat (dùng cho cả mobile + desktop) - ẩn khi panel mở */}
+            {!showChatMobile && (
+              <button
+                type="button"
+                onClick={() => setShowChatMobile(true)}
+                className="
+      fixed bottom-5 right-4 z-40
+      inline-flex h-11 w-11 items-center justify-center
+      rounded-full bg-sky-600
+      text-sm font-semibold text-white
+      shadow-lg shadow-sky-500/40 ring-2 ring-sky-300/80
+      backdrop-blur-md
+      hover:bg-sky-700 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0
+      transition-all
+
+      md:h-auto md:w-auto md:px-5 md:py-1.5 md:gap-2 md:text-base
+    "
+                aria-label="Chat phòng học"
+              >
+                <MessageSquare className="h-5 w-5" />
+                {/* ẩn text trên mobile, hiện từ md trở lên */}
+                <span className="hidden md:inline">Chat phòng học</span>
+              </button>
+            )}
 
             {/* Chat overlay cho mọi kích thước (Zoom-style) - z-index cao hơn */}
             {showChatMobile && (
-              <div 
+              <div
                 className="absolute inset-0 z-50 flex justify-end"
                 onClick={(e) => {
                   // Đóng panel khi click ra ngoài (không phải panel)

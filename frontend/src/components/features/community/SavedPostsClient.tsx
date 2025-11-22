@@ -160,13 +160,13 @@ export default function SavedPostsClient({
   const showBottomPager = total >= PAGE_SIZE;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="mb-2">
-        <h1 className="mb-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Bài viết đã lưu
         </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Những bài viết bạn đã lưu để xem lại sau.
         </p>
       </div>
@@ -176,10 +176,10 @@ export default function SavedPostsClient({
 
       {/* Loading State */}
       {loading && (
-        <div className="flex items-center justify-center py-16">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
-            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+        <div className="flex items-center justify-center py-12 sm:py-16">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
               Đang tải bài viết đã lưu...
             </p>
           </div>
@@ -216,7 +216,7 @@ export default function SavedPostsClient({
 
       {/* Pagination */}
       {showBottomPager && (
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center pt-4">
           <Pagination
             page={page}
             total={total}

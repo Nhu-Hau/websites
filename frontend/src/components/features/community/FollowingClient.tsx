@@ -163,10 +163,10 @@ export default function FollowingClient({ initialPosts }: FollowingClientProps) 
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="mb-2">
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Đang theo dõi
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">

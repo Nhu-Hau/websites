@@ -124,12 +124,13 @@ export async function uploadBufferToS3(opts: {
 
   const url = s3PublicUrl(BUCKET, key);
   let type: "image" | "video" | "file" = "file";
-  if (opts.mime.startsWith("image/")) {
+  const normalizedMime = opts.mime.toLowerCase().trim();
+  if (normalizedMime.startsWith("image/")) {
     type = "image";
-  } else if (opts.mime.startsWith("video/")) {
+  } else if (normalizedMime.startsWith("video/")) {
     type = "video";
   }
-  console.log(`[uploadBufferToS3] Uploaded: ${key}, URL: ${url}, type: ${type}`);
+  console.log(`[uploadBufferToS3] Uploaded: ${key}, URL: ${url}, type: ${type}, mime: ${opts.mime}`);
   return { url, type, name: opts.originalName, key };
 }
 

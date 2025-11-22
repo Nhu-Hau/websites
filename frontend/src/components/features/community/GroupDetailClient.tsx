@@ -329,8 +329,13 @@ export default function GroupDetailClient({
 
   if (!group) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+      <div className="flex items-center justify-center py-12 sm:py-16">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Đang tải thông tin nhóm...
+          </p>
+        </div>
       </div>
     );
   }
@@ -357,7 +362,7 @@ export default function GroupDetailClient({
   return (
     <>
       {Modal}
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Back link */}
       <Link
         href={`${basePrefix}/community/groups`}
@@ -507,19 +512,29 @@ export default function GroupDetailClient({
       {/* Posts list */}
       <div className="space-y-4">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+          <div className="flex items-center justify-center py-12 sm:py-16">
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                Đang tải bài viết...
+              </p>
+            </div>
           </div>
         ) : postsList.length > 0 ? (
           postsList
         ) : (
-          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white py-12 text-center text-sm text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-            <p>Hiện chưa có bài viết nào trong nhóm này.</p>
-            {isMember && (
-              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
-                Hãy là người đầu tiên chia sẻ bài viết cho nhóm nhé!
-              </p>
-            )}
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-4 sm:px-6 py-12 sm:py-16 text-center shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/95">
+            <div className="mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
+              <Users className="h-7 w-7 sm:h-8 sm:w-8" />
+            </div>
+            <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              Chưa có bài viết nào
+            </h3>
+            <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
+              {isMember
+                ? "Hãy là người đầu tiên chia sẻ bài viết cho nhóm nhé!"
+                : "Hiện chưa có bài viết nào trong nhóm này."}
+            </p>
           </div>
         )}
       </div>

@@ -18,6 +18,9 @@ const ACCEPTED_IMAGE_TYPES = [
   "image/png",
   "image/webp",
   "image/gif",
+  // Safari iOS sometimes returns these
+  "image/heic",
+  "image/heif",
 ];
 const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
@@ -34,9 +37,16 @@ function isValidFileType(file: File): { isImage: boolean; isVideo: boolean } {
   const isImageByExt = ACCEPTED_IMAGE_EXTENSIONS.includes(fileExtension);
   const isVideoByExt = ACCEPTED_VIDEO_EXTENSIONS.includes(fileExtension);
   
-  // Check by mime type
-  const isImageByMime = ACCEPTED_IMAGE_TYPES.includes(file.type);
-  const isVideoByMime = ACCEPTED_VIDEO_TYPES.includes(file.type);
+  // Normalize MIME type for Safari iOS (handles image/jpeg vs image/jpg)
+  const normalizedMime = file.type.toLowerCase().trim();
+  const isImageByMime = ACCEPTED_IMAGE_TYPES.some(mime => 
+    normalizedMime === mime.toLowerCase() || 
+    normalizedMime.startsWith("image/")
+  );
+  const isVideoByMime = ACCEPTED_VIDEO_TYPES.some(mime => 
+    normalizedMime === mime.toLowerCase() || 
+    normalizedMime.startsWith("video/")
+  );
   
   // Accept if either extension or mime type matches
   return {
@@ -107,12 +117,26 @@ export default function NewPostForm({
     const newPreviews: PreviewItem[] = [];
 
     for (const file of fileArray) {
+      // Safari iOS fix: Log file info for debugging
+      console.log("[handleFileSelect] File:", {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: file.lastModified,
+      });
+
       const { isImage, isVideo } = isValidFileType(file);
 
       if (!isImage && !isVideo) {
+        console.warn("[handleFileSelect] Invalid file type:", file.name, file.type);
         toast.error(
           `${file.name} không phải là tệp hình ảnh hoặc video được hỗ trợ.`
         );
+        continue;
+      }
+
+      if (file.size === 0) {
+        toast.error(`${file.name} là tệp rỗng.`);
         continue;
       }
 
@@ -122,7 +146,14 @@ export default function NewPostForm({
       }
 
       const type = isVideo ? "video" : "image";
-      const preview = type === "image" ? URL.createObjectURL(file) : "";
+      let preview = "";
+      try {
+        preview = type === "image" ? URL.createObjectURL(file) : "";
+      } catch (error) {
+        console.error("[handleFileSelect] Error creating preview:", error);
+        toast.error(`Không thể tạo preview cho ${file.name}`);
+        continue;
+      }
 
       newPreviews.push({
         file,
@@ -151,17 +182,29 @@ export default function NewPostForm({
     index: number
   ): Promise<Attachment | null> => {
     const formData = new FormData();
-    formData.append("file", file);
+    // Safari iOS fix: Ensure file is properly appended
+    // Some Safari versions need the filename explicitly
+    formData.append("file", file, file.name);
 
     try {
       const res = await fetch(`${API_BASE}/api/community/upload`, {
         method: "POST",
         credentials: "include",
+        // Safari iOS fix: Don't set Content-Type header, let browser set it with boundary
         body: formData,
       });
 
       if (!res.ok) {
-        throw new Error("Upload failed");
+        const errorText = await res.text();
+        let errorMessage = "Upload failed";
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        console.error("[uploadFile] Upload failed:", res.status, errorMessage);
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();
@@ -175,8 +218,9 @@ export default function NewPostForm({
         thumbnail: data.thumbnail,
       };
     } catch (error) {
-      console.error("[uploadFile] ERROR", error);
-      toast.error(`Không thể tải lên ${file.name}`);
+      console.error("[uploadFile] ERROR", error, "File:", file.name, "Type:", file.type, "Size:", file.size);
+      const errorMessage = error instanceof Error ? error.message : "Lỗi không xác định";
+      toast.error(`Không thể tải lên ${file.name}: ${errorMessage}`);
       return null;
     }
   };
@@ -306,7 +350,7 @@ export default function NewPostForm({
             el.style.height = Math.min(el.scrollHeight, 300) + "px";
           }}
           onKeyDown={handleTextareaKeyDown}
-          placeholder="Bạn đang nghĩ gì? Chia sẻ mẹo học TOEIC, câu hỏi hoặc tài nguyên..."
+          placeholder="Chia sẻ mẹo học TOEIC, câu hỏi hoặc tài nguyên..."
           className="w-full min-h-[220px] max-h-[500px] resize-none rounded-2xl border border-zinc-200/80 bg-white/95 px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-xs outline-none transition-all duration-150 focus:border-sky-300 focus:ring-2 focus:ring-sky-500 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-100 dark:placeholder-zinc-400"
           rows={5}
         />
@@ -383,13 +427,13 @@ export default function NewPostForm({
             }}
             // Safari iOS fix: use opacity and position instead of display:none
             // This ensures the input is accessible to Safari's file picker
+            // Note: pointerEvents must be "auto" or removed for Safari iOS to work
             style={{ 
               position: "absolute",
               width: "1px",
               height: "1px",
               opacity: 0,
-              overflow: "hidden",
-              pointerEvents: "none"
+              overflow: "hidden"
             }}
           />
           <button

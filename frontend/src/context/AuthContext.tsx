@@ -221,6 +221,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     } catch {}
+    
+    // Clear user-specific data from localStorage
+    if (typeof window !== "undefined") {
+      const { clearUserData } = await import("@/lib/utils");
+      clearUserData();
+      
+      // Disconnect socket
+      const { disconnectSocket } = await import("@/lib/socket");
+      disconnectSocket();
+    }
+    
     setUser(null);
     announceUserChanged();
   }, []);

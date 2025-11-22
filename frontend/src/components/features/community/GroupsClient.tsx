@@ -89,14 +89,14 @@ export default function GroupsClient() {
   return (
     <>
       {Modal}
-      <div className="space-y-5 sm:space-y-6">
+      <div className="space-y-8">
         {/* Header + Actions */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="mb-1 text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <div className="mb-2">
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               Nhóm học
             </h1>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
               Tham gia các nhóm học TOEIC để luyện tập cùng mọi người.
             </p>
           </div>

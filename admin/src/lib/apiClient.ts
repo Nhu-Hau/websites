@@ -818,45 +818,15 @@ export async function adminImportExcel(file: File, preview: boolean = false) {
     throw new Error(e.message || 'Import Excel failed');
   }
 
-
-  export async function adminImportExcel(file: File, preview: boolean = false) {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const res = await fetch(`/api/admin/parts/import-excel?preview=${preview}`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
-
-    if (!res.ok) {
-      const e = await res.json().catch(() => ({}));
-      throw new Error(e.message || 'Import Excel failed');
-    }
-
-    return res.json() as Promise<{
-      message: string;
-      itemsCount: number;
-      stimuliCount: number;
-      preview?: boolean;
-      summary?: Array<{
-        part: string,
-        level: number,
-        test: number,
-        itemsCount: number,
-        stimuliCount: number,
-        items: Array<{
-          id: string;
-          status: 'new' | 'update';
-          question: string;
-          answer: string;
-          choices: number;
-        }>;
-        stimuli: Array<{
-          id: string;
-          status: 'new' | 'update';
-          media: string;
-        }>;
-      }>;
-    }>;
-  }
+  return res.json() as Promise<{
+    message: string;
+    itemsCount: number;
+    stimuliCount: number;
+    preview?: boolean;
+    summary?: {
+      test: string;
+      items: any[];
+      stimuli: any[];
+    }[];
+  }>;
+}

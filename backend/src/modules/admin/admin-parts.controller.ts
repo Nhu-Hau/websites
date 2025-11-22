@@ -701,14 +701,26 @@ export async function importExcel(req: Request, res: Response) {
 
     if (isPreview) {
       // Analyze what will be imported
-      const allItemIds = itemsToInsert.map(i => i.id);
-      const allStimuliIds = stimuliToInsert.map(s => s.id);
+      // We need to check existence based on composite key: part-level-test-id
+      const testsToCheck = new Set<string>();
+      itemsToInsert.forEach(i => testsToCheck.add(`${i.part}-${i.level}-${i.test}`));
+      stimuliToInsert.forEach(s => testsToCheck.add(`${s.part}-${s.level}-${s.test}`));
 
-      const existingItems = await itemsCol.find({ id: { $in: allItemIds } }).toArray();
-      const existingStimuli = await stimCol.find({ id: { $in: allStimuliIds } }).toArray();
+      const orQuery = Array.from(testsToCheck).map(t => {
+        const [p, l, te] = t.split('-');
+        return { part: p, level: Number(l), test: Number(te) };
+      });
 
-      const existingItemIds = new Set(existingItems.map(i => i.id));
-      const existingStimuliIds = new Set(existingStimuli.map(s => s.id));
+      let existingItems: any[] = [];
+      let existingStimuli: any[] = [];
+
+      if (orQuery.length > 0) {
+        existingItems = await itemsCol.find({ $or: orQuery }).toArray();
+        existingStimuli = await stimCol.find({ $or: orQuery }).toArray();
+      }
+
+      const existingItemKeys = new Set(existingItems.map(i => `${i.part}-${i.level}-${i.test}-${i.id}`));
+      const existingStimuliKeys = new Set(existingStimuli.map(s => `${s.part}-${s.level}-${s.test}-${s.id}`));
 
       // Group by test to show summary
       const testSummary = new Map<string, {
@@ -735,10 +747,11 @@ export async function importExcel(req: Request, res: Response) {
           });
         }
         const entry = testSummary.get(key)!;
+        const itemKey = `${item.part}-${item.level}-${item.test}-${item.id}`;
         entry.itemsCount++;
         entry.items.push({
           id: item.id,
-          status: existingItemIds.has(item.id) ? 'update' : 'new',
+          status: existingItemKeys.has(itemKey) ? 'update' : 'new',
           question: item.question || item.stem,
           answer: item.answer,
           choices: item.choices?.length || 0
@@ -759,10 +772,11 @@ export async function importExcel(req: Request, res: Response) {
           });
         }
         const entry = testSummary.get(key)!;
+        const stimKey = `${stim.part}-${stim.level}-${stim.test}-${stim.id}`;
         entry.stimuliCount++;
         entry.stimuli.push({
           id: stim.id,
-          status: existingStimuliIds.has(stim.id) ? 'update' : 'new',
+          status: existingStimuliKeys.has(stimKey) ? 'update' : 'new',
           media: Object.keys(stim.media || {}).filter(k => stim.media[k]).join(', ')
         });
       });

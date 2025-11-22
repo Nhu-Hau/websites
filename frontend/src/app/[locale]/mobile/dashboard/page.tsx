@@ -5,6 +5,8 @@ import ResultsTabContent from "@/components/features/dashboard/ResultsTabContent
 import ActivityTabContent from "@/components/features/dashboard/ActivityTabContent";
 import BadgesTabContent from "@/components/features/dashboard/BadgesTabContent";
 
+export const dynamic = 'force-dynamic';
+
 export default async function MobileDashboardPage() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 pt-20 pb-20">

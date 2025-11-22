@@ -477,7 +477,7 @@ export function googleCallback(
         if (user) {
           const { access, refresh } = await issueAndStoreTokens(user);
           setAuthCookies(res, access, refresh);
-          return res.redirect(`${CLIENT_URL}/auth=login_success`);
+          return res.redirect(`${CLIENT_URL}?auth=login_success`);
         }
 
         const signupToken = signGoogleSignupToken({

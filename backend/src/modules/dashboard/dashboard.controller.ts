@@ -265,3 +265,60 @@ export async function setGoal(req: Request, res: Response) {
   }
 }
 
+/**
+ * GET /api/dashboard/assessment
+ * Lấy dữ liệu assessment bao gồm baseline, placement, progress scores
+ */
+export async function getAssessmentData(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+    }
+
+    const user = await User.findById(userId)
+      .select("currentToeicSource currentToeicScore currentToeicExamDate lastPlacementAttemptId toeicPred")
+      .lean() as any;
+
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    // Lấy placement score
+    let placementScore: number | null = null;
+    if (user.lastPlacementAttemptId) {
+      const placementAttempt = await PlacementAttempt.findById(user.lastPlacementAttemptId)
+        .select("predicted")
+        .lean() as any;
+      if (placementAttempt?.predicted?.overall != null) {
+        placementScore = placementAttempt.predicted.overall;
+      }
+    }
+
+    // Lấy latest progress score
+    let latestProgressScore: number | null = null;
+    const latestProgress = await ProgressAttempt.findOne({ userId })
+      .sort({ submittedAt: -1 })
+      .select("predicted")
+      .lean() as any;
+    if (latestProgress?.predicted?.overall != null) {
+      latestProgressScore = latestProgress.predicted.overall;
+    }
+
+    const selfReportedScore = user.currentToeicSource === "self_report_official" ? user.currentToeicScore : null;
+    const hasBaseline = user.currentToeicSource === "self_report_official" && user.currentToeicScore != null;
+
+    return res.json({
+      selfReportedScore,
+      placementScore,
+      latestProgressScore,
+      hasBaseline,
+      currentToeicSource: user.currentToeicSource ?? null,
+      currentToeicExamDate: user.currentToeicExamDate ?? null,
+    });
+  } catch (e) {
+    console.error("[getAssessmentData] ERROR", e);
+    return res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+}
+

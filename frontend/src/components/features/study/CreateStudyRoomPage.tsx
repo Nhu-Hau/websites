@@ -8,7 +8,6 @@ import {
   listStudyRooms,
   deleteStudyRoom,
   createRoom,
-  createTeacherLead,
 } from "@/lib/api/client";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
@@ -47,263 +46,6 @@ type AuthUser = ReturnType<typeof useAuth>["user"];
 interface CreateStudyRoomProps {
   onCreated?: () => void;
   onCancel?: () => void;
-}
-
-interface TeacherLeadFormValues {
-  fullName: string;
-  email: string;
-  phone: string;
-  scoreOrCert: string;
-  experience: string;
-  availability: string;
-  message: string;
-}
-
-interface TeacherRegisterModalProps {
-  user: AuthUser | null;
-  onClose: () => void;
-  onSuccess: () => void;
-}
-
-function TeacherRegisterModal({
-  user,
-  onClose,
-  onSuccess,
-}: TeacherRegisterModalProps) {
-  const [form, setForm] = useState<TeacherLeadFormValues>({
-    fullName: user?.name || "",
-    email: user?.email || "",
-    phone: "",
-    scoreOrCert: "",
-    experience: "",
-    availability: "",
-    message: "",
-  });
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    setForm((prev) => ({
-      ...prev,
-      fullName: prev.fullName || user?.name || "",
-      email: prev.email || user?.email || "",
-    }));
-  }, [user?.name, user?.email]);
-
-  const updateField = useCallback(
-    (field: keyof TeacherLeadFormValues) =>
-      (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const value = e.target.value;
-        setForm((prev) => ({ ...prev, [field]: value }));
-      },
-    []
-  );
-
-  const handleSubmit = useCallback(async () => {
-    if (!form.fullName.trim() || !form.email.trim() || !form.phone.trim()) {
-      toast.error("Vui lòng điền đầy đủ họ tên, email và số điện thoại.");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await createTeacherLead({
-        fullName: form.fullName.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        scoreOrCert: form.scoreOrCert.trim(),
-        experience: form.experience.trim(),
-        availability: form.availability.trim(),
-        message: form.message.trim(),
-      });
-      toast.success(
-        "Đã gửi thông tin đăng ký giáo viên! Admin sẽ liên hệ với bạn nếu hồ sơ phù hợp."
-      );
-      onSuccess();
-    } catch (error: any) {
-      const message =
-        error?.message || "Gửi thông tin thất bại. Vui lòng thử lại sau.";
-      toast.error(message);
-    } finally {
-      setSubmitting(false);
-    }
-  }, [form, onSuccess]);
-
-  return (
-    <div
-      className="w-full max-w-2xl rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-2xl ring-1 ring-black/5 dark:border-zinc-800/80 dark:bg-zinc-900/95"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="flex flex-col gap-2">
-        <div>
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
-            Gửi thông tin đăng ký giảng dạy
-          </h2>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Vui lòng để lại thông tin cơ bản. Admin sẽ xem xét và liên hệ trực
-            tiếp với bạn nếu hồ sơ phù hợp.
-          </p>
-        </div>
-      </div>
-
-      <form
-        className="mt-6 space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!submitting) handleSubmit();
-        }}
-      >
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <label
-              htmlFor="teacher-full-name"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Họ và tên *
-            </label>
-            <input
-              id="teacher-full-name"
-              value={form.fullName}
-              onChange={updateField("fullName")}
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-              placeholder="Nguyễn Văn A"
-              disabled={submitting}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="teacher-email"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Email *
-            </label>
-            <input
-              id="teacher-email"
-              type="email"
-              value={form.email}
-              onChange={updateField("email")}
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-              placeholder="teacher@example.com"
-              disabled={submitting}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="teacher-phone"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Số điện thoại *
-            </label>
-            <input
-              id="teacher-phone"
-              type="tel"
-              value={form.phone}
-              onChange={updateField("phone")}
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-              placeholder="0123 456 789"
-              disabled={submitting}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="teacher-score"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Điểm số / Chứng chỉ
-            </label>
-            <input
-              id="teacher-score"
-              value={form.scoreOrCert}
-              onChange={updateField("scoreOrCert")}
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-              placeholder="TOEIC 900+, IELTS 8.0..."
-              disabled={submitting}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label
-            htmlFor="teacher-experience"
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
-            Kinh nghiệm giảng dạy
-          </label>
-          <textarea
-            id="teacher-experience"
-            value={form.experience}
-            onChange={updateField("experience")}
-            className="min-h-[96px] w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-            placeholder="Ví dụ: 3 năm dạy TOEIC tại trung tâm XYZ..."
-            disabled={submitting}
-          />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <label
-              htmlFor="teacher-availability"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Thời gian có thể giảng dạy
-            </label>
-            <input
-              id="teacher-availability"
-              value={form.availability}
-              onChange={updateField("availability")}
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-              placeholder="Tối thứ 2-4-6, cuối tuần..."
-              disabled={submitting}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="teacher-message"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Ghi chú thêm
-            </label>
-            <textarea
-              id="teacher-message"
-              value={form.message}
-              onChange={updateField("message")}
-              className="min-h-[96px] w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-              placeholder="Link portfolio, mong muốn hợp tác..."
-              disabled={submitting}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={submitting}
-            className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Hủy
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="inline-flex items-center justify-center rounded-xl bg-amber-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:bg-amber-500 dark:hover:bg-amber-400"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Đang gửi...
-              </>
-            ) : (
-              "Gửi thông tin"
-            )}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
 }
 
 function slugifyRoom(input: string): string {
@@ -610,8 +352,6 @@ export default function CreateStudyRoomPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showTeacherRegisterModal, setShowTeacherRegisterModal] =
-    useState(false);
 
   const basePrefix = useBasePrefix();
 
@@ -733,16 +473,16 @@ export default function CreateStudyRoomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <main className="mx-auto max-w-4xl px-4 pb-24 pt-24 sm:pb-12 sm:pt-28">
+    <div className="relative min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <main className="mx-auto max-w-4xl px-4 py-6 lg:py-8 pt-20 lg:pt-28 pb-20 lg:pb-8">
         {/* Page Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white">
+              <h1 className="mb-1 text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                 Phòng học
               </h1>
-              <p className="mt-1 sm:mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 Theo dõi phòng đang mở, tạo phòng hoặc tham gia khi có liên kết.
               </p>
             </div>
@@ -807,64 +547,73 @@ export default function CreateStudyRoomPage() {
             </div>
           )}
 
-          {/* Teacher Register Notice */}
+          {/* Teacher Register Notice (dành cho Học viên & Giáo viên) */}
           {!canCreate && (
-            <div className="rounded-2xl border border-amber-200/80 bg-amber-50 p-5 shadow-sm dark:border-amber-800/60 dark:bg-amber-900/10">
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30">
-                  <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <section className="rounded-2xl border border-amber-200/80 bg-amber-50/90 p-4 sm:p-5 shadow-sm dark:border-amber-800/60 dark:bg-amber-950/40">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                {/* Icon */}
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/50">
+                  <Lock className="h-5 w-5 text-amber-700 dark:text-amber-300" />
                 </div>
 
-                <div className="flex-1 space-y-3">
-                  <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
-                    Bạn chỉ có thể tham gia phòng học
-                  </h3>
-
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                    Chỉ <strong>giáo viên</strong> và{" "}
-                    <strong>quản trị viên</strong>
-                    có thể tạo phòng trực tuyến. Bạn vẫn có thể tham gia phòng
-                    khi giáo viên gửi link.
-                  </p>
-
-                  {/* Teacher Register Box */}
-                  <div className="rounded-xl bg-white/80 p-4 shadow-sm ring-1 ring-amber-100 dark:bg-amber-900/10 dark:ring-amber-800/60">
-                    <p className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      Bạn là giáo viên TOEIC/IELTS?
+                {/* Nội dung */}
+                <div className="flex-1 space-y-4">
+                  {/* Phần cho học viên */}
+                  <div className="space-y-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700/90 dark:text-amber-300">
+                      Dành cho học viên
                     </p>
-                    <p className="text-sm text-zinc-700 dark:text-zinc-300 mb-3">
+                    <h3 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white">
+                      Tài khoản của bạn chỉ dùng để tham gia phòng học
+                    </h3>
+                    <p className="text-xs sm:text-sm leading-relaxed text-zinc-800 dark:text-zinc-300">
+                      Chỉ <strong>giáo viên</strong> và{" "}
+                      <strong>quản trị viên</strong> mới có thể tạo phòng trực
+                      tuyến. Khi giáo viên mở phòng, bạn có thể:
+                    </p>
+                    <ul className="mt-1 space-y-1 text-xs sm:text-sm text-zinc-800 dark:text-zinc-300">
+                      <li className="flex gap-2">
+                        <span className="mt-[5px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
+                        <span>
+                          Nhận link tham gia phòng từ giáo viên (qua chat,
+                          email,…).
+                        </span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="mt-[5px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
+                        <span>
+                          Hoặc chọn phòng trong mục <b>“Danh sách phòng”</b> bên
+                          dưới nếu đang mở.
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Divider nhỏ */}
+                  <div className="h-px w-full bg-amber-200/80 dark:bg-amber-800/70" />
+
+                  {/* Phần cho giáo viên – gom chung trong nền vàng */}
+                  <div className="space-y-2 text-xs sm:text-sm">
+                    <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                      Bạn là giáo viên TOEIC / IELTS?
+                    </p>
+                    <p className="text-[11px] sm:text-xs leading-relaxed text-zinc-800 dark:text-zinc-300">
                       Nếu bạn có kinh nghiệm giảng dạy và muốn mở lớp trên nền
-                      tảng này, hãy gửi thông tin để admin liên hệ trực tiếp.
+                      tảng này, hãy gửi thông tin để admin xem xét và cấp quyền
+                      giáo viên nếu hồ sơ phù hợp.
                     </p>
 
-                    <button
-                      onClick={() => setShowTeacherRegisterModal(true)}
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400"
+                    <Link
+                      href={`${basePrefix}/study/teacher-register`}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 hover:shadow-md dark:bg-amber-500 dark:hover:bg-amber-400"
                     >
                       <Users className="h-4 w-4" />
                       Gửi thông tin đăng ký giáo viên
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Teacher Register Modal */}
-          {showTeacherRegisterModal && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm"
-              onClick={(e) =>
-                e.target === e.currentTarget &&
-                setShowTeacherRegisterModal(false)
-              }
-            >
-              <TeacherRegisterModal
-                user={user}
-                onClose={() => setShowTeacherRegisterModal(false)}
-                onSuccess={() => setShowTeacherRegisterModal(false)}
-              />
-            </div>
+            </section>
           )}
 
           {/* Error Alert */}
@@ -889,8 +638,9 @@ export default function CreateStudyRoomPage() {
 
           {/* Room List */}
           <section className="space-y-4">
+            {/* Header */}
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+              <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
                 Danh sách phòng
               </h2>
               <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
@@ -898,38 +648,50 @@ export default function CreateStudyRoomPage() {
               </span>
             </div>
 
-            {/* Empty */}
+            {/* Empty state */}
             {rooms.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-10 text-center shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 text-sky-500 dark:bg-sky-900/30">
-                  <Users className="h-7 w-7" />
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-4 sm:px-6 py-12 sm:py-16 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+                <div className="mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
+                  <Users className="h-7 w-7 sm:h-8 sm:w-8" />
                 </div>
+
+                <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                  Chưa có phòng nào
+                </h3>
+
                 {canCreate ? (
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300">
-                    Chưa có phòng nào.{" "}
-                    <button
+                  <>
+                    <p className="mb-4 max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
+                      Bạn chưa tạo phòng học nào. Hãy mở phòng đầu tiên để học
+                      TOEIC cùng học viên.
+                    </p>
+                    {/* <button
                       onClick={() => setShowCreateModal(true)}
-                      className="text-sky-600 dark:text-sky-400 underline-offset-2 hover:underline font-medium"
+                      className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-md dark:bg-sky-500 dark:hover:bg-sky-400"
                     >
-                      Tạo phòng đầu tiên!
-                    </button>
-                  </p>
+                      <ExternalLink className="h-4 w-4" />
+                      Tạo phòng đầu tiên
+                    </button> */}
+                  </>
                 ) : (
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                    Hiện chưa có phòng học nào được mở.
+                  <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
+                    Hiện chưa có phòng học nào được mở. Hãy quay lại sau hoặc
+                    liên hệ giáo viên/quản trị viên.
                   </p>
                 )}
               </div>
             ) : (
+              // List rooms
               <div className="grid grid-cols-1 gap-3">
                 {rooms.map((r) => (
                   <div
                     key={r.roomName}
-                    className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm hover:border-sky-300 hover:shadow-md transition dark:border-zinc-800 dark:bg-zinc-900"
+                    className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-sky-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      {/* Left: info */}
                       <div className="flex-1 space-y-1">
-                        <div className="flex flex-wrap items-center justify-between sm:justify-start gap-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-start">
                           <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
                             {r.roomName}
                           </h3>
@@ -945,10 +707,11 @@ export default function CreateStudyRoomPage() {
                         </div>
                       </div>
 
-                      <div className="flex gap-2">
+                      {/* Right: actions */}
+                      <div className="flex flex-col gap-2 sm:flex-row">
                         <Link
                           href={`${basePrefix}/study/${r.roomName}`}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400 sm:w-auto"
                         >
                           <ExternalLink className="h-4 w-4" />
                           Vào phòng
@@ -959,7 +722,7 @@ export default function CreateStudyRoomPage() {
                             onClick={() => handleDelete(r.roomName)}
                             disabled={deleting === r.roomName}
                             className={cn(
-                              "w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition focus:ring-2 focus:ring-red-500",
+                              "inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition focus:ring-2 focus:ring-red-500 sm:w-auto",
                               deleting === r.roomName
                                 ? "cursor-not-allowed border-red-300 text-red-600 opacity-60 dark:border-red-700 dark:text-red-400"
                                 : "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20"

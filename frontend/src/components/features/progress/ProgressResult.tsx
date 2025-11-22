@@ -346,7 +346,7 @@ export default function ProgressResult() {
           label: `Progress Test${typeof attempt.version === "number" ? ` • Test ${attempt.version}` : ""}`,
           dotColor: "bg-sky-500",
         }}
-        title="Kết quả bài kiểm tra tiến bộ TOEIC"
+        title="Kết quả bài kiểm tra tiến độ TOEIC"
         description={
           <>
             Hoàn thành lúc{" "}

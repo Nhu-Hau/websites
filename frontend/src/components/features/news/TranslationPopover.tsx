@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { WordTranslation } from "./hooks/useWordTranslation";
-import { useSpeech } from "./hooks/useSpeech";
+import { WordTranslation } from "../../../hooks/news/useWordTranslation";
+import { useSpeech } from "../../../hooks/news/useSpeech";
 import { SaveVocabularyButton } from "./SaveVocabularyButton";
 
 interface TranslationPopoverProps {
@@ -63,7 +63,10 @@ export function TranslationPopover({
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target as Node)
+      ) {
         onClose();
       }
     };
@@ -140,7 +143,9 @@ export function TranslationPopover({
           {/* Meaning */}
           <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <p className="text-sm text-gray-800 dark:text-gray-200">
-              {showMeaning === "vietnamese" ? data.vietnameseMeaning : data.englishMeaning}
+              {showMeaning === "vietnamese"
+                ? data.vietnameseMeaning
+                : data.englishMeaning}
             </p>
           </div>
 
@@ -177,6 +182,3 @@ export function TranslationPopover({
     </div>
   );
 }
-
-
-

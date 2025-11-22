@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SelectionTranslation } from "./hooks/useSelectionTranslation";
-import { useSpeech } from "./hooks/useSpeech";
+import { SelectionTranslation } from "../../../hooks/news/useSelectionTranslation";
+import { useSpeech } from "../../../hooks/news/useSpeech";
 import { SaveVocabularyButton } from "./SaveVocabularyButton";
 
 interface SelectionPopoverProps {
@@ -55,7 +55,10 @@ export function SelectionPopover({
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target as Node)
+      ) {
         onClose();
       }
     };
@@ -166,6 +169,3 @@ export function SelectionPopover({
     </div>
   );
 }
-
-
-

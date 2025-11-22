@@ -8,6 +8,7 @@ import {
   getPracticeAttemptById,
   getPracticeInactivity,
   ackPracticeInactivity,
+  getMonthlyPracticeTestLimit,
 } from "./practice.controller";
 
 const router = Router();
@@ -18,5 +19,6 @@ router.get("/progress", requireAuth, getPracticeProgress);
 router.get("/attempts/:id", requireAuth, getPracticeAttemptById);
 router.get("/inactivity", requireAuth, getPracticeInactivity);
 router.post("/inactivity/ack", requireAuth, ackPracticeInactivity);
+router.get("/monthly-limit", requireAuth, getMonthlyPracticeTestLimit);
 
 export default router;

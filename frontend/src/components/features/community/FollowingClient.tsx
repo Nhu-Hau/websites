@@ -5,6 +5,7 @@ import PostCard from "./PostCard";
 import { useAuth } from "@/context/AuthContext";
 import { useInfiniteScroll } from "@/hooks/community/useInfiniteScroll";
 import type { CommunityPost } from "@/types/community.types";
+import { Users } from "lucide-react"; // ✅ icon cho empty state
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -109,7 +110,7 @@ export default function FollowingClient({ initialPosts }: FollowingClientProps) 
           setPage(nextPage);
           setHasMore(
             data.items.length > 0 &&
-              posts.length + data.items.length < data.total
+              prevLengthPlus(data.items.length, posts.length) < data.total
           );
         } else if (res.status === 401) {
           setPosts([]);
@@ -123,6 +124,11 @@ export default function FollowingClient({ initialPosts }: FollowingClientProps) 
     },
     [page, loading, hasMore, posts.length, user]
   );
+
+  // nhỏ gọn: tách logic tính length để không phụ thuộc closure sai
+  function prevLengthPlus(added: number, prevLen: number) {
+    return prevLen + added;
+  }
 
   const { elementRef } = useInfiniteScroll({
     hasMore,
@@ -157,7 +163,7 @@ export default function FollowingClient({ initialPosts }: FollowingClientProps) 
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="mb-2">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
@@ -170,9 +176,10 @@ export default function FollowingClient({ initialPosts }: FollowingClientProps) 
 
       {/* List / states */}
       {loading && posts.length === 0 ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+        // ✅ Loading state đồng bộ style với CommunityPageClient & Groups
+        <div className="flex items-center justify-center py-12 sm:py-16">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
               Đang tải bài viết...
             </p>
@@ -203,12 +210,17 @@ export default function FollowingClient({ initialPosts }: FollowingClientProps) 
           )}
         </>
       ) : (
-        <div className="rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 py-12 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
-          <p className="mb-2 text-sm font-medium text-zinc-800 dark:text-zinc-100">
+        // ✅ Empty state đồng bộ với “Chưa có nhóm phù hợp”
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-4 sm:px-6 py-12 sm:py-16 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+          <div className="mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
+            <Users className="h-7 w-7 sm:h-8 sm:w-8" />
+          </div>
+          <p className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
             Chưa có bài viết nào từ những người bạn đang theo dõi
           </p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Hãy theo dõi thêm một số người dùng để xem bài viết của họ tại đây.
+          <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
+            Hãy theo dõi thêm một số người dùng để xem bài viết của họ xuất hiện
+            tại đây.
           </p>
         </div>
       )}

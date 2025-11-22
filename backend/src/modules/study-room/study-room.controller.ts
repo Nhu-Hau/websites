@@ -318,7 +318,7 @@ export async function editComment(req: Request, res: Response) {
     // Chỉ cho phép user sở hữu comment hoặc teacher/admin
     const user = await User.findById(userId)
       .select("role")
-      .lean<{ role: "student" | "teacher" | "admin" } | null>();
+      .lean<Pick<IUserSlim, "role"> | null>();
     const isOwner = String(comment.userId) === userId;
     const isTeacherOrAdmin = user?.role === "teacher" || user?.role === "admin";
 
@@ -349,7 +349,7 @@ export async function deleteComment(req: Request, res: Response) {
     // Chỉ cho phép user sở hữu comment hoặc teacher/admin
     const user = await User.findById(userId)
       .select("role")
-      .lean<{ role: "student" | "teacher" | "admin" } | null>();
+      .lean<Pick<IUserSlim, "role"> | null>();
     const isOwner = String(comment.userId) === userId;
     const isTeacherOrAdmin = user?.role === "teacher" || user?.role === "admin";
 

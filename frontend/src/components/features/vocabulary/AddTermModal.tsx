@@ -1,184 +1,256 @@
-// frontend/src/components/features/vocabulary/AddTermModal.tsx
 "use client";
 
-import { useState } from "react";
-import { X } from "lucide-react";
-import { AddTermDTO } from "@/types/vocabulary.types";
+import { useEffect, useMemo, useState } from "react";
+import { BookMarked, PenSquare, X } from "lucide-react";
+import {
+  AddTermDTO,
+  UpdateTermDTO,
+  VocabularyTerm,
+} from "@/types/vocabulary.types";
+import { cn } from "@/lib/utils";
 
-interface AddTermModalProps {
+const PART_OF_SPEECH = [
+  "noun",
+  "verb",
+  "adjective",
+  "adverb",
+  "preposition",
+  "conjunction",
+  "pronoun",
+  "interjection",
+];
+
+export interface TermComposerModalProps {
+  open: boolean;
+  mode: "create" | "edit";
+  initialTerm?: VocabularyTerm | null;
   onClose: () => void;
-  onAdd: (data: AddTermDTO) => Promise<unknown>;
+  onSubmit: (payload: AddTermDTO | UpdateTermDTO) => Promise<void>;
 }
 
-export function AddTermModal({ onClose, onAdd }: AddTermModalProps) {
-  const [word, setWord] = useState("");
-  const [meaning, setMeaning] = useState("");
-  const [englishMeaning, setEnglishMeaning] = useState("");
-  const [partOfSpeech, setPartOfSpeech] = useState("");
-  const [example, setExample] = useState("");
-  const [translatedExample, setTranslatedExample] = useState("");
+export function TermComposerModal({
+  open,
+  mode,
+  initialTerm,
+  onClose,
+  onSubmit,
+}: TermComposerModalProps) {
+  const [form, setForm] = useState({
+    word: "",
+    meaning: "",
+    phonetic: "",
+    partOfSpeech: "",
+    example: "",
+  });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (!open) return;
+    if (mode === "edit" && initialTerm) {
+      setForm({
+        word: initialTerm.word || "",
+        meaning: initialTerm.meaning || "",
+        phonetic: initialTerm.phonetic || "",
+        partOfSpeech: initialTerm.partOfSpeech || "",
+        example: initialTerm.example || "",
+      });
+    } else {
+      setForm({
+        word: "",
+        meaning: "",
+        phonetic: "",
+        partOfSpeech: "",
+        example: "",
+      });
+    }
+    setError(null);
+  }, [mode, initialTerm, open]);
 
-    if (!word.trim() || !meaning.trim()) {
-      setError("Từ và nghĩa tiếng Việt là bắt buộc");
+  const header = useMemo(
+    () =>
+      mode === "edit"
+        ? { title: "Cập nhật từ vựng", badge: "Chỉnh sửa" }
+        : { title: "Thêm từ mới", badge: "Từ vựng" },
+    [mode]
+  );
+
+  if (!open) return null;
+
+  const handleChange = (field: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!form.word.trim() || !form.meaning.trim()) {
+      setError("Từ tiếng Anh và nghĩa tiếng Việt là bắt buộc.");
       return;
     }
-
     try {
       setLoading(true);
-      setError("");
-      await onAdd({
-        word: word.trim(),
-        meaning: meaning.trim(),
-        englishMeaning: englishMeaning.trim() || undefined,
-        partOfSpeech: partOfSpeech.trim() || undefined,
-        example: example.trim() || undefined,
-        translatedExample: translatedExample.trim() || undefined,
+      setError(null);
+      await onSubmit({
+        word: form.word.trim(),
+        meaning: form.meaning.trim(),
+        phonetic: form.phonetic.trim() || undefined,
+        partOfSpeech: form.partOfSpeech.trim() || undefined,
+        example: form.example.trim() || undefined,
       });
       onClose();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Không thể thêm từ");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Không thể lưu từ vựng. Thử lại sau."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-2xl bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[130] flex items-center justify-center px-3 py-6 md:px-6">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="relative w-full max-w-4xl overflow-hidden rounded-[32px] border border-zinc-200/80 bg-white/95 shadow-2xl shadow-black/30 dark:border-zinc-800/80 dark:bg-zinc-900/95">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          aria-label="Đóng"
+          className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-zinc-500 shadow-sm ring-1 ring-zinc-200 transition hover:text-zinc-900 dark:bg-zinc-900/70 dark:text-zinc-300 dark:ring-zinc-800"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-zinc-200 dark:border-zinc-700">
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
-            Thêm từ mới
+        <div className="bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-6 pb-6 pt-10 dark:from-zinc-900 dark:via-zinc-900 dark:to-sky-950/40">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/70 px-4 py-1 text-xs font-semibold text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/10 dark:text-emerald-300">
+            <BookMarked className="h-4 w-4" />
+            {header.badge}
+          </div>
+          <h2 className="mt-4 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+            {header.title}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
-          >
-            <X className="w-5 h-5 text-zinc-500" />
-          </button>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            Chỉ giữ lại những thông tin quan trọng: từ, nghĩa, phiên âm, từ loại
+            và một ví dụ để dễ học trên mobile.
+          </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="flex max-h-[80vh] flex-col gap-4 overflow-y-auto px-6 pb-8 pt-6"
+        >
           {error && (
-            <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-              <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
+            <div className="rounded-2xl border border-red-200 bg-red-50/80 px-4 py-3 text-sm text-red-600 dark:border-red-900/40 dark:bg-red-900/10 dark:text-red-300">
+              {error}
             </div>
           )}
 
-          {/* Word */}
-          <div>
-            <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-              Từ (Tiếng Anh) *
+          {/* Word + Meaning */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                Từ tiếng Anh *
+              </span>
+              <input
+                value={form.word}
+                onChange={(event) => handleChange("word", event.target.value)}
+                placeholder="Ví dụ: accomplish"
+                className="w-full rounded-2xl border border-zinc-200/80 bg-white px-4 py-3 text-sm font-medium text-zinc-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-sky-500 dark:focus:ring-sky-900/40"
+              />
             </label>
-            <input
-              type="text"
-              value={word}
-              onChange={(e) => setWord(e.target.value)}
-              placeholder="Ví dụ: accomplish"
-              className="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
-              required
-            />
+
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                Nghĩa tiếng Việt *
+              </span>
+              <input
+                value={form.meaning}
+                onChange={(event) => handleChange("meaning", event.target.value)}
+                placeholder="Ví dụ: hoàn thành, đạt được"
+                className="w-full rounded-2xl border border-zinc-200/80 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40"
+              />
+            </label>
           </div>
 
-          {/* Part of Speech */}
-          <div>
-            <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-              Loại từ
+          {/* Phonetic + Part of speech */}
+          <div className="grid gap-4 md:grid-cols-[1.2fr_1fr]">
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                Phiên âm
+              </span>
+              <input
+                value={form.phonetic}
+                onChange={(event) =>
+                  handleChange("phonetic", event.target.value)
+                }
+                placeholder="Ví dụ: /əˈkʌmplɪʃ/"
+                className="w-full rounded-2xl border border-zinc-200/80 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-sky-500 dark:focus:ring-sky-900/40"
+              />
             </label>
-            <select
-              value={partOfSpeech}
-              onChange={(e) => setPartOfSpeech(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
-            >
-              <option value="">Chọn...</option>
-              <option value="noun">Danh từ</option>
-              <option value="verb">Động từ</option>
-              <option value="adjective">Tính từ</option>
-              <option value="adverb">Trạng từ</option>
-              <option value="preposition">Giới từ</option>
-              <option value="conjunction">Liên từ</option>
-              <option value="pronoun">Đại từ</option>
-              <option value="interjection">Thán từ</option>
-            </select>
+
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                Từ loại
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {PART_OF_SPEECH.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => handleChange("partOfSpeech", item)}
+                    className={cn(
+                      "rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition",
+                      form.partOfSpeech === item
+                        ? "bg-sky-500/10 text-sky-600 ring-1 ring-sky-500/30 dark:text-sky-200"
+                        : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
+                    )}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </label>
           </div>
 
-          {/* Vietnamese Meaning */}
+          {/* Example */}
           <div>
-            <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-              Nghĩa tiếng Việt (Vietnamese Meaning) *
+            <label className="space-y-2">
+              <span className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                <PenSquare className="h-4 w-4 text-zinc-400" />
+                Ví dụ
+              </span>
+              <textarea
+                rows={3}
+                value={form.example}
+                onChange={(event) => handleChange("example", event.target.value)}
+                placeholder='Ví dụ: "She accomplished her goal of learning English." hoặc câu tiếng Việt tương đương.'
+                className="w-full rounded-2xl border border-zinc-200/80 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-sky-500 dark:focus:ring-sky-900/40"
+              />
             </label>
-            <input
-              type="text"
-              value={meaning}
-              onChange={(e) => setMeaning(e.target.value)}
-              placeholder="e.g., hoàn thành, đạt được"
-              className="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
-              required
-            />
           </div>
 
-          {/* English Meaning */}
-          <div>
-            <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-              Nghĩa tiếng Anh (Tùy chọn)
-            </label>
-            <input
-              type="text"
-              value={englishMeaning}
-              onChange={(e) => setEnglishMeaning(e.target.value)}
-              placeholder="Ví dụ: to achieve or complete successfully"
-              className="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
-            />
-          </div>
-
-          {/* Example (English) */}
-          <div>
-            <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-              Ví dụ (Tiếng Anh)
-            </label>
-            <textarea
-              value={example}
-              onChange={(e) => setExample(e.target.value)}
-              placeholder="Ví dụ: She accomplished her goal of learning English."
-              rows={2}
-              className="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none resize-none transition-all"
-            />
-          </div>
-
-          {/* Translated Example (Vietnamese) */}
-          <div>
-            <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-              Ví dụ tiếng Việt (Vietnamese Example)
-            </label>
-            <textarea
-              value={translatedExample}
-              onChange={(e) => setTranslatedExample(e.target.value)}
-              placeholder="e.g., Cô ấy đã hoàn thành mục tiêu học tiếng Anh."
-              rows={2}
-              className="w-full px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none resize-none transition-all"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
+          {/* Actions */}
+          <div className="mt-2 grid gap-3 sm:grid-cols-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+              className="rounded-2xl border border-zinc-200/80 bg-white px-4 py-3 text-sm font-semibold text-zinc-600 transition hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-2xl bg-zinc-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
             >
-              {loading ? "Đang thêm..." : "Thêm từ"}
+              {loading
+                ? "Đang lưu..."
+                : mode === "create"
+                ? "Thêm từ"
+                : "Lưu thay đổi"}
             </button>
           </div>
         </form>

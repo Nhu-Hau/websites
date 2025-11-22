@@ -2,16 +2,20 @@
 
 import { Globe } from "lucide-react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
 import { useLocaleSwitch } from "@/hooks/routing/useLocaleSwitch";
 
+const LANGUAGE_COPY = {
+  label: "Ngôn ngữ",
+  vietnamese: "Tiếng Việt",
+  english: "English",
+};
+
 export default function FooterLanguageSwitcher() {
-  const t = useTranslations("footer");
   const { locale, hrefFor, switchLocale } = useLocaleSwitch();
 
   return (
     <div>
-      <h3 className="text-sm font-semibold">{t("language")}</h3>
+      <h3 className="text-sm font-semibold">{LANGUAGE_COPY.label}</h3>
       <ul className="mt-3 space-y-2 text-sm">
         <li>
           <Link
@@ -23,7 +27,7 @@ export default function FooterLanguageSwitcher() {
               switchLocale("vi");
             }}
           >
-            <Globe size={14} /> {t("vietnamese")}
+            <Globe size={14} /> {LANGUAGE_COPY.vietnamese}
           </Link>
         </li>
         <li>
@@ -36,13 +40,15 @@ export default function FooterLanguageSwitcher() {
               switchLocale("en");
             }}
           >
-            <Globe size={14} /> {t("english")}
+            <Globe size={14} /> {LANGUAGE_COPY.english}
           </Link>
         </li>
       </ul>
     </div>
   );
 }
+
+
 
 
 

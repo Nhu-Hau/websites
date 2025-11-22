@@ -4,6 +4,7 @@ export interface VocabularyTerm {
   _id?: string;
   word: string;
   meaning: string; // Nghĩa tiếng Việt (Vietnamese meaning)
+  phonetic?: string; // Phiên âm
   englishMeaning?: string; // Nghĩa tiếng Anh (English meaning)
   partOfSpeech?: string; // noun, verb, adjective...
   example?: string; // Câu ví dụ tiếng Anh (English example)
@@ -39,6 +40,7 @@ export interface UpdateVocabularySetDTO {
 export interface AddTermDTO {
   word: string;
   meaning: string; // Nghĩa tiếng Việt
+  phonetic?: string; // Phiên âm
   englishMeaning?: string; // Nghĩa tiếng Anh
   partOfSpeech?: string;
   example?: string; // Câu ví dụ tiếng Anh
@@ -50,6 +52,7 @@ export interface AddTermDTO {
 export interface UpdateTermDTO {
   word?: string;
   meaning?: string; // Nghĩa tiếng Việt
+  phonetic?: string; // Phiên âm
   englishMeaning?: string; // Nghĩa tiếng Anh
   partOfSpeech?: string;
   example?: string; // Câu ví dụ tiếng Anh

@@ -232,39 +232,39 @@ export default function ChatPanel({
       _enc?: Encryption_Type
     ) => {
       if (topic === "chat") {
-        if (participant && "isLocal" in participant && participant.isLocal)
-          return;
+      if (participant && "isLocal" in participant && participant.isLocal)
+        return;
 
-        try {
-          const text = new TextDecoder().decode(payload);
-          const obj = JSON.parse(text) as Partial<ChatMsg>;
-          if (!obj || !obj.fromId || (!obj.text && obj.kind !== "doc")) return;
+      try {
+        const text = new TextDecoder().decode(payload);
+        const obj = JSON.parse(text) as Partial<ChatMsg>;
+        if (!obj || !obj.fromId || (!obj.text && obj.kind !== "doc")) return;
 
-          const id = obj.id || crypto.randomUUID();
-          if (seenIdsRef.current.has(id)) return;
-          seenIdsRef.current.add(id);
+        const id = obj.id || crypto.randomUUID();
+        if (seenIdsRef.current.has(id)) return;
+        seenIdsRef.current.add(id);
 
-          const msg: ChatMsg = {
-            id,
-            kind: (obj.kind as ChatMsgKind) || "text",
-            room: obj.room || roomName,
-            fromId: obj.fromId!,
-            fromName: obj.fromName || participant?.name || "Guest",
-            role: (obj.role as Role) || "student",
-            text: obj.text,
-            docId: obj.docId,
-            docName: obj.docName,
-            ts: obj.ts || Date.now(),
+        const msg: ChatMsg = {
+          id,
+          kind: (obj.kind as ChatMsgKind) || "text",
+          room: obj.room || roomName,
+          fromId: obj.fromId!,
+          fromName: obj.fromName || participant?.name || "Guest",
+          role: (obj.role as Role) || "student",
+          text: obj.text,
+          docId: obj.docId,
+          docName: obj.docName,
+          ts: obj.ts || Date.now(),
             editedAt: obj.editedAt,
             commentId: obj.commentId,
-          };
+        };
 
-          setMsgs((prev) => {
-            const next = [...prev, msg];
-            saveToLS(next);
-            return next;
-          });
-        } catch {}
+        setMsgs((prev) => {
+          const next = [...prev, msg];
+          saveToLS(next);
+          return next;
+        });
+      } catch {}
       } else if (topic === "chat-edit") {
         try {
           const text = new TextDecoder().decode(payload);
@@ -583,30 +583,30 @@ export default function ChatPanel({
         return;
       }
 
-      show(
-        {
+    show(
+      {
           title: "Xóa bình luận?",
           message: "Bạn có chắc chắn muốn xóa bình luận này?",
-          icon: "warning",
-          confirmText: "Xóa",
-          cancelText: "Hủy",
-          confirmColor: "red",
-        },
-        async () => {
-          try {
-            const res = await fetch(
+        icon: "warning",
+        confirmText: "Xóa",
+        cancelText: "Hủy",
+        confirmColor: "red",
+      },
+      async () => {
+        try {
+          const res = await fetch(
               `/api/rooms/${encodeURIComponent(roomName)}/comments/${msg.commentId}`,
-              {
-                method: "DELETE",
-                credentials: "include",
-              }
-            );
+            {
+              method: "DELETE",
+              credentials: "include",
+            }
+          );
 
-            if (!res.ok) {
+          if (!res.ok) {
               const err = await res.json().catch(() => ({}));
               toast.error(err.message || "Xóa thất bại");
-              return;
-            }
+            return;
+          }
 
             setMsgs((prev) => {
               const next = prev.filter((m) => m.id !== msgId);
@@ -632,9 +632,9 @@ export default function ChatPanel({
           } catch (e) {
             console.error("Delete comment error:", e);
             toast.error("Xóa thất bại");
-          }
         }
-      );
+      }
+    );
     },
     [msgs, roomName, room, show, saveToLS]
   );

@@ -17,12 +17,36 @@ const VALID_PARTS = new Set([
   "part.7",
 ]);
 
+const FREE_MONTHLY_PRACTICE_TEST_LIMIT = 20;
 
-/** Tính level “thô” để fallback lần đầu (1..3) */
+
+/** Tính level "thô" để fallback lần đầu (1..3) */
 function levelFromAcc(acc: number): 1 | 2 | 3 {
   if (acc >= 0.75) return 3;
   if (acc >= 0.6) return 2;
   return 1;
+}
+
+/**
+ * Đếm số practice test (test !== null) trong tháng hiện tại của user
+ * @param userId - ID của user
+ * @returns Số lượng practice test trong tháng hiện tại
+ */
+async function countMonthlyPracticeTests(userId: Types.ObjectId): Promise<number> {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  const count = await PracticeAttempt.countDocuments({
+    userId,
+    test: { $ne: null }, // Chỉ đếm practice test, không đếm practice thường
+    createdAt: {
+      $gte: startOfMonth,
+      $lte: endOfMonth,
+    },
+  });
+
+  return count;
 }
 
 /* ========= NEW: type lý do ========= */
@@ -141,6 +165,26 @@ export async function submitPracticePart(req: Request, res: Response) {
       return res.status(400).json({ message: "level không hợp lệ (1..3)" });
     if (!answers || typeof answers !== "object")
       return res.status(400).json({ message: "Thiếu answers" });
+
+    // Kiểm tra giới hạn practice test cho free user (chỉ khi test !== null)
+    const isPracticeTest = Number.isInteger(Number(test));
+    if (isPracticeTest) {
+      const user = await User.findById(userId).select("access").lean<{ access?: string }>();
+      if (user?.access === "free") {
+        const monthlyCount = await countMonthlyPracticeTests(new Types.ObjectId(String(userId)));
+        if (monthlyCount >= FREE_MONTHLY_PRACTICE_TEST_LIMIT) {
+          const now = new Date();
+          const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+          return res.status(403).json({
+            message: `Bạn đã đạt giới hạn ${FREE_MONTHLY_PRACTICE_TEST_LIMIT} practice test/tháng. Vui lòng nâng cấp lên Premium để làm không giới hạn.`,
+            code: "MONTHLY_LIMIT_EXCEEDED",
+            limit: FREE_MONTHLY_PRACTICE_TEST_LIMIT,
+            currentCount: monthlyCount,
+            resetAt: startOfNextMonth.toISOString(),
+          });
+        }
+      }
+    }
 
     const db = mongoose.connection;
     const itemsCol = db.collection(PARTS_COLL);
@@ -531,6 +575,50 @@ export async function ackPracticeInactivity(req: Request, res: Response) {
     return res.json({ ok: true });
   } catch (e) {
     console.error("[ackPracticeInactivity] ERROR", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
+/** GET /api/practice/monthly-limit — kiểm tra số practice test còn lại trong tháng */
+export async function getMonthlyPracticeTestLimit(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+
+    const user = await User.findById(userId).select("access").lean<{ access?: string }>();
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isPremium = user.access === "premium";
+    const monthlyCount = await countMonthlyPracticeTests(new Types.ObjectId(String(userId)));
+
+    const now = new Date();
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    if (isPremium) {
+      return res.json({
+        isPremium: true,
+        limit: null,
+        currentCount: monthlyCount,
+        remaining: null,
+        resetAt: startOfNextMonth.toISOString(),
+      });
+    }
+
+    const remaining = Math.max(0, FREE_MONTHLY_PRACTICE_TEST_LIMIT - monthlyCount);
+    const canSubmit = remaining > 0;
+
+    return res.json({
+      isPremium: false,
+      limit: FREE_MONTHLY_PRACTICE_TEST_LIMIT,
+      currentCount: monthlyCount,
+      remaining,
+      canSubmit,
+      resetAt: startOfNextMonth.toISOString(),
+    });
+  } catch (e) {
+    console.error("[getMonthlyPracticeTestLimit] ERROR", e);
     return res.status(500).json({ message: "Server error" });
   }
 }

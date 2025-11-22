@@ -13,13 +13,21 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
-import { useTranslations } from "next-intl";
 import { useAuth } from "@/context/AuthContext";
 import { postJson } from "@/lib/api/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { useChat } from "@/context/ChatContext";
+
+const CHAT_COPY = {
+  demoReply:
+    "Xin chào! Tôi là trợ lý AI chuyên về TOEIC. Tôi có thể giúp bạn luyện thi, giải thích ngữ pháp, từ vựng và chiến lược làm bài. Bạn muốn hỏi gì?",
+  empty:
+    "Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với trợ lý AI TOEIC.",
+  aiLabel: "AI",
+  placeholder: "Nhập tin nhắn...",
+};
 
 type Msg = {
   _id?: string;
@@ -344,8 +352,11 @@ function LearningInsightCard({ insightText }: { insightText: string }) {
   );
 }
 
-export default function AIChatContent({ isMobile = false }: { isMobile?: boolean }) {
-  const t = useTranslations("chat");
+export default function AIChatContent({
+  isMobile = false,
+}: {
+  isMobile?: boolean;
+}) {
   const { user } = useAuth();
   const { open, setUnreadCount } = useChat();
 
@@ -480,7 +491,10 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
     window.addEventListener("chatbox:open-and-refresh", handleOpenAndRefresh);
     return () => {
       window.removeEventListener("test-submitted", handleTestSubmitted);
-      window.removeEventListener("chatbox:open-and-refresh", handleOpenAndRefresh);
+      window.removeEventListener(
+        "chatbox:open-and-refresh",
+        handleOpenAndRefresh
+      );
     };
   }, [user, loadChatHistory]);
 
@@ -498,9 +512,9 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
     if (justOpened || (open && (hasNewMessages || isNearBottom))) {
       setTimeout(() => {
         if (el) {
-          el.scrollTop = el.scrollHeight;
+          el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
         }
-      }, 0);
+      }, 16);
     }
 
     prevMessagesLengthRef.current = messages.length;
@@ -612,7 +626,7 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
       setMessages((prev) =>
         prev.map((m) =>
           m.id === tempAssistantId
-            ? { ...m, pending: false, content: t("demoReply") }
+            ? { ...m, pending: false, content: CHAT_COPY.demoReply }
             : m
         )
       );
@@ -693,19 +707,24 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
                 ? "Vui lòng đăng nhập để bắt đầu trò chuyện"
                 : user.access !== "premium"
                 ? "Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
-                : t("empty")}
+                : CHAT_COPY.empty}
             </p>
           </div>
         ) : (
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {messages.map((m) => (
               <motion.div
                 key={m.id}
-                layout
+                layout="position"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 220,
+                  damping: 24,
+                  mass: 0.8,
+                }}
                 className={`flex ${
                   m.role === "user" ? "justify-end" : "justify-start"
                 }`}
@@ -720,7 +739,7 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
                   {m.role === "assistant" && (
                     <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-75">
                       <FaGraduationCap className="h-3.5 w-3.5" />
-                      <span className="font-medium">{t("ai")}</span>
+                      <span className="font-medium">{CHAT_COPY.aiLabel}</span>
                     </div>
                   )}
 
@@ -752,9 +771,7 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
 
                   {m.role === "assistant" && !m.pending && (
                     <button
-                      onClick={() =>
-                        navigator.clipboard.writeText(m.content)
-                      }
+                      onClick={() => navigator.clipboard.writeText(m.content)}
                       className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow-md transition hover:scale-110 focus:outline-none focus:ring-2 focus:ring-sky-400"
                       aria-label="Sao chép"
                     >
@@ -794,37 +811,36 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
 
       {/* Input */}
       <div className="border-t border-gray-200/60 dark:border-zinc-700/60 p-4 bg-white/70 dark:bg-zinc-900/70 flex-shrink-0">
-        <div className="flex items-end gap-3">
-          <div className="flex-1 relative">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={onKeyDown}
-              placeholder={
-                !user
-                  ? "Đăng nhập để chat..."
-                  : user.access !== "premium"
-                  ? "Cần tài khoản Premium để sử dụng..."
-                  : t("placeholder")
-              }
-              disabled={!user || sending || user?.access !== "premium"}
-              rows={1}
-              className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 outline-none dark:border-zinc-600 dark:bg-zinc-800/70 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-sky-400"
-              style={{ minHeight: "52px", maxHeight: "120px" }}
-            />
-            <div className="absolute right-3 bottom-3 text-xs text-gray-400">
-              {input.length}/2000
+        <div className="flex w-full justify-center gap-3">
+          <div className="flex w-full max-w-2xl items-center">
+            <div className="relative flex-1">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={onKeyDown}
+                placeholder={
+                  !user
+                    ? "Đăng nhập để chat..."
+                    : user.access !== "premium"
+                    ? "Cần tài khoản Premium để sử dụng..."
+                    : CHAT_COPY.placeholder
+                }
+                disabled={!user || sending || user?.access !== "premium"}
+                rows={1}
+                className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 outline-none dark:border-zinc-600 dark:bg-zinc-800/70 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-sky-400"
+                style={{ minHeight: "52px", maxHeight: "120px" }}
+              />
+              <div className="absolute right-3 bottom-3 text-xs text-gray-400">
+                {input.length}/2000
+              </div>
             </div>
           </div>
 
           <button
             onClick={send}
             disabled={
-              sending ||
-              !input.trim() ||
-              !user ||
-              user?.access !== "premium"
+              sending || !input.trim() || !user || user?.access !== "premium"
             }
             className="group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-500/30 transition-all enabled:hover:scale-110 enabled:hover:shadow-xl enabled:focus:outline-none enabled:focus:ring-4 enabled:focus:ring-sky-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -856,4 +872,3 @@ export default function AIChatContent({ isMobile = false }: { isMobile?: boolean
     </div>
   );
 }
-

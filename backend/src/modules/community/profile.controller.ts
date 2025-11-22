@@ -154,5 +154,92 @@ export async function updateUserProfile(req: Request, res: Response) {
   }
 }
 
+/** Get assessment baseline */
+export async function getAssessmentBaseline(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+    }
+
+    const user = await User.findById(userId)
+      .select("currentToeicSource currentToeicScore currentToeicExamDate")
+      .lean() as any;
+
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    return res.json({
+      currentToeicSource: user.currentToeicSource ?? null,
+      currentToeicScore: user.currentToeicScore ?? null,
+      currentToeicExamDate: user.currentToeicExamDate ?? null,
+    });
+  } catch (e) {
+    console.error("[getAssessmentBaseline] ERROR", e);
+    return res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+}
+
+/** Update assessment baseline */
+export async function updateAssessmentBaseline(req: Request, res: Response) {
+  try {
+    const userId = (req as any).auth?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Bạn chưa đăng nhập" });
+    }
+
+    const { currentToeicSource, currentToeicScore, currentToeicExamDate } = req.body;
+
+    if (!currentToeicSource || !["unknown", "self_report_official"].includes(currentToeicSource)) {
+      return res.status(400).json({
+        message: "currentToeicSource phải là 'unknown' hoặc 'self_report_official'",
+      });
+    }
+
+    const updateData: any = {
+      currentToeicSource,
+    };
+
+    if (currentToeicSource === "unknown") {
+      updateData.currentToeicScore = null;
+      updateData.currentToeicExamDate = null;
+    } else if (currentToeicSource === "self_report_official") {
+      if (currentToeicScore !== undefined && currentToeicScore !== null) {
+        const score = Number(currentToeicScore);
+        if (isNaN(score) || score < 10 || score > 990) {
+          return res.status(400).json({
+            message: "currentToeicScore phải là số từ 10 đến 990",
+          });
+        }
+        updateData.currentToeicScore = score;
+      }
+
+      if (currentToeicExamDate !== undefined) {
+        updateData.currentToeicExamDate = currentToeicExamDate === null || currentToeicExamDate === "" ? null : String(currentToeicExamDate);
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true }
+    ).select("currentToeicSource currentToeicScore currentToeicExamDate");
+
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    return res.json({
+      currentToeicSource: user.currentToeicSource ?? null,
+      currentToeicScore: user.currentToeicScore ?? null,
+      currentToeicExamDate: user.currentToeicExamDate ?? null,
+    });
+  } catch (e) {
+    console.error("[updateAssessmentBaseline] ERROR", e);
+    return res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+}
+
 
 

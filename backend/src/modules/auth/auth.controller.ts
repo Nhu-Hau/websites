@@ -34,7 +34,10 @@ import {
 import { ResetTokenModel } from "../../shared/models/ResetToken";
 import { sendMail } from "../../shared/services/email.service";
 import { PasswordCodeModel } from "../../shared/models/PasswordCode";
-import { EmailVerificationCodeModel, IEmailVerificationCode } from "../../shared/models/EmailVerificationCode";
+import {
+  EmailVerificationCodeModel,
+  IEmailVerificationCode,
+} from "../../shared/models/EmailVerificationCode";
 
 const RESET_SECRET = process.env.RESET_SECRET!;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
@@ -58,11 +61,47 @@ export async function uploadAvatar(req: Request, res: Response) {
     const f = (req as any).file as Express.Multer.File | undefined;
     if (!f) return res.status(400).json({ message: "Thiếu file" });
 
+    // Normalize MIME type for Safari iOS compatibility
+    // Safari sometimes sends empty or incorrect MIME types, especially for HEIC/HEIF
+    let normalizedMime = f.mimetype || "";
+    if (!normalizedMime || normalizedMime === "application/octet-stream") {
+      // Try to infer from file extension
+      const ext = f.originalname.toLowerCase().substring(f.originalname.lastIndexOf("."));
+      const mimeMap: Record<string, string> = {
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".webp": "image/webp",
+        ".gif": "image/gif",
+        ".heic": "image/heic",
+        ".heif": "image/heif",
+      };
+      normalizedMime = mimeMap[ext] || normalizedMime || "image/jpeg";
+    }
+
+    // Normalize image/jpg to image/jpeg (Safari iOS sometimes sends image/jpg)
+    if (normalizedMime === "image/jpg") {
+      normalizedMime = "image/jpeg";
+    }
+
+    // For HEIC/HEIF from iOS, convert to JPEG for better compatibility
+    // But first try to upload as-is, S3 can handle it
+    let finalMime = normalizedMime;
+    let finalName = f.originalname;
+    
+    // If it's HEIC/HEIF, change extension to .jpg for better browser compatibility
+    if (normalizedMime === "image/heic" || normalizedMime === "image/heif") {
+      const baseName = f.originalname.substring(0, f.originalname.lastIndexOf("."));
+      finalName = `${baseName}.jpg`;
+      // Keep HEIC mime type for S3, but browser will see .jpg extension
+      // The actual conversion should happen on frontend if needed
+    }
+
     // 1) Upload ảnh mới lên S3 (gợi ý: lib/s3 đã phân loại type= image/file)
     const { url, key } = await uploadBufferToS3({
       buffer: f.buffer,
-      mime: f.mimetype,
-      originalName: f.originalname,
+      mime: finalMime,
+      originalName: finalName,
       folder: "avatar", // ⟵ lưu vào s3://project.toeic/avatar/
     });
 
@@ -152,11 +191,11 @@ export async function refresh(req: Request, res: Response) {
   try {
     // Support both cookie (web) and body/header (mobile) for refresh token
     let rt: string | undefined;
-    
+
     // Try from request body first (for mobile apps)
     if (req.body?.refreshToken) {
       rt = req.body.refreshToken;
-    } 
+    }
     // Try from Authorization header (Bearer token)
     else if (req.headers.authorization?.startsWith("Bearer ")) {
       rt = req.headers.authorization.substring(7);
@@ -196,11 +235,11 @@ export async function refresh(req: Request, res: Response) {
     // Set lại cookie access (và refresh nếu có xoay vòng) - for web
     setAuthCookies(res, access, nextRefresh);
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "Cấp mới access token thành công",
       // Always return tokens in response body for mobile apps compatibility
       // Web clients can ignore these and use cookies instead
-      accessToken: access, 
+      accessToken: access,
       refreshToken: nextRefresh || rt,
     });
   } catch {
@@ -474,7 +513,7 @@ export function googleCallback(
         if (user) {
           const { access, refresh } = await issueAndStoreTokens(user);
           setAuthCookies(res, access, refresh);
-          return res.redirect(`${CLIENT_URL}/vi/home?auth=login_success`);
+          return res.redirect(`${CLIENT_URL}?auth=login_success`);
         }
 
         const signupToken = signGoogleSignupToken({

@@ -31,7 +31,7 @@ export default function Header() {
           <div className="flex h-16 items-center justify-between">
             {/* LEFT: Logo */}
             <Link
-              href={`${base}/home`}
+              href={base}
               aria-label="Về trang chủ ToeicPrep"
               className={cn(
                 "group flex items-center gap-2.5 rounded-xl",

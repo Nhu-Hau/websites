@@ -378,11 +378,12 @@ export default function PostDetail({ postId }: { postId: string }) {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-48" />
-          <div className="h-32 bg-zinc-200 dark:bg-zinc-700 rounded" />
-          <div className="h-24 bg-zinc-200 dark:bg-zinc-700 rounded" />
+      <div className="flex items-center justify-center py-12 sm:py-16">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Đang tải bài viết...
+          </p>
         </div>
       </div>
     );

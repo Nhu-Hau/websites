@@ -17,9 +17,9 @@ export interface BadgeCheckResult {
  */
 async function checkStreakBadge(
   userId: Types.ObjectId,
-  days: number = 7
+  badgeType: BadgeType,
+  days: number
 ): Promise<BadgeCheckResult | null> {
-  const badgeType: BadgeType = days === 7 ? "streak_7_days" : "streak_30_days";
 
   // Kiểm tra xem đã có badge chưa
   const existing = await Badge.findOne({ userId, badgeType });
@@ -100,22 +100,22 @@ async function checkStreakBadge(
 }
 
 /**
- * Kiểm tra và cấp badge "Hoàn thành 10 bài Practice Test"
+ * Kiểm tra và cấp badge milestone cho số lượng Practice Test
  */
-async function checkPractice10TestsBadge(
-  userId: Types.ObjectId
+async function checkPracticeMilestoneBadge(
+  userId: Types.ObjectId,
+  badgeType: BadgeType,
+  targetCount: number
 ): Promise<BadgeCheckResult | null> {
-  const badgeType: BadgeType = "practice_10_tests";
-
   const existing = await Badge.findOne({ userId, badgeType });
   if (existing) return null;
 
   const count = await PracticeAttempt.countDocuments({ userId });
-  if (count >= 10) {
+  if (count >= targetCount) {
     return {
       earned: true,
       badgeType,
-      metadata: { count },
+      metadata: { count, target: targetCount },
     };
   }
 
@@ -123,19 +123,42 @@ async function checkPractice10TestsBadge(
 }
 
 /**
- * Kiểm tra và cấp badge "Đạt tiến độ mục tiêu TOEIC trên 50%"
+ * Kiểm tra badge dựa trên số lượng Progress Test
  */
-async function checkGoal50PercentBadge(
-  userId: Types.ObjectId
+async function checkProgressTestsBadge(
+  userId: Types.ObjectId,
+  badgeType: BadgeType,
+  targetCount: number
 ): Promise<BadgeCheckResult | null> {
-  const badgeType: BadgeType = "goal_50_percent";
+  const existing = await Badge.findOne({ userId, badgeType });
+  if (existing) return null;
 
+  const count = await ProgressAttempt.countDocuments({ userId });
+  if (count >= targetCount) {
+    return {
+      earned: true,
+      badgeType,
+      metadata: { count, target: targetCount },
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Kiểm tra và cấp badge dựa trên % tiến độ mục tiêu
+ */
+async function checkGoalProgressBadge(
+  userId: Types.ObjectId,
+  badgeType: BadgeType,
+  thresholdPercent: number
+): Promise<BadgeCheckResult | null> {
   const existing = await Badge.findOne({ userId, badgeType });
   if (existing) return null;
 
   const user = await User.findById(userId).select("toeicGoal toeicPred").lean();
   if (!user || Array.isArray(user)) return null;
-  
+
   const goal = user.toeicGoal;
   const currentScore = user.toeicPred?.overall ?? null;
 
@@ -147,7 +170,7 @@ async function checkGoal50PercentBadge(
   if (diff <= 0) return null;
 
   const progress = ((currentScore - goal.startScore) / diff) * 100;
-  if (progress >= 50) {
+  if (progress >= thresholdPercent) {
     return {
       earned: true,
       badgeType,
@@ -394,6 +417,54 @@ async function checkNightOwlBadge(userId: Types.ObjectId): Promise<BadgeCheckRes
 }
 
 /**
+ * Kiểm tra badge "Weekend Warrior" - học tích cực cuối tuần
+ */
+async function checkWeekendWarriorBadge(userId: Types.ObjectId): Promise<BadgeCheckResult | null> {
+  const badgeType: BadgeType = "weekend_warrior";
+  const existing = await Badge.findOne({ userId, badgeType });
+  if (existing) return null;
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const [practiceAttempts, progressAttempts] = await Promise.all([
+    PracticeAttempt.find({
+      userId,
+      createdAt: { $gte: thirtyDaysAgo },
+    })
+      .select("createdAt submittedAt")
+      .lean(),
+    ProgressAttempt.find({
+      userId,
+      createdAt: { $gte: thirtyDaysAgo },
+    })
+      .select("createdAt submittedAt")
+      .lean(),
+  ]);
+
+  const weekendAttempts = [...practiceAttempts, ...progressAttempts].filter((attempt) => {
+    const timestamp = attempt.submittedAt || attempt.createdAt;
+    if (!timestamp) return false;
+    const day = new Date(timestamp).getDay();
+    return day === 0 || day === 6;
+  });
+
+  if (weekendAttempts.length >= 3) {
+    const recentDates = weekendAttempts.slice(0, 5).map((attempt) =>
+      new Date((attempt.submittedAt || attempt.createdAt) as Date).toISOString()
+    );
+
+    return {
+      earned: true,
+      badgeType,
+      metadata: { count: weekendAttempts.length, recentDates },
+    };
+  }
+
+  return null;
+}
+
+/**
  * Kiểm tra badge "Marathon" - hoàn thành 5+ bài test trong một ngày
  */
 async function checkMarathonBadge(userId: Types.ObjectId): Promise<BadgeCheckResult | null> {
@@ -507,10 +578,16 @@ export async function checkAndAwardBadges(
 
   // Kiểm tra các badges
   const checks = await Promise.all([
-    checkStreakBadge(userId, 7),
-    checkStreakBadge(userId, 30),
-    checkPractice10TestsBadge(userId),
-    checkGoal50PercentBadge(userId),
+    checkStreakBadge(userId, "streak_7_days", 7),
+    checkStreakBadge(userId, "streak_14_days", 14),
+    checkStreakBadge(userId, "streak_30_days", 30),
+    checkPracticeMilestoneBadge(userId, "practice_10_tests", 10),
+    checkPracticeMilestoneBadge(userId, "practice_25_tests", 25),
+    checkPracticeMilestoneBadge(userId, "practice_50_tests", 50),
+    checkGoalProgressBadge(userId, "goal_50_percent", 50),
+    checkGoalProgressBadge(userId, "goal_75_percent", 75),
+    checkGoalProgressBadge(userId, "goal_100_percent", 100),
+    checkProgressTestsBadge(userId, "progress_5_tests", 5),
     checkPartImprovementBadge(userId),
     checkFirstBadges(userId),
     checkPerfectScoreBadge(userId),
@@ -518,6 +595,7 @@ export async function checkAndAwardBadges(
     checkNightOwlBadge(userId),
     checkMarathonBadge(userId),
     checkConsistencyKingBadge(userId),
+    checkWeekendWarriorBadge(userId),
   ]);
 
   // Xử lý kết quả

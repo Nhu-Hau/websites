@@ -27,9 +27,9 @@ import {
   User,
   Settings,
 } from "lucide-react";
-import Cropper from "react-easy-crop";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
+import ImageCropper from "@/components/features/community/ImageCropper";
 
 /* ================= Types ================= */
 type Role = "user" | "admin" | "teacher";
@@ -223,16 +223,8 @@ export default function Account() {
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const [cropOpen, setCropOpen] = useState(false);
-  const [rawImage, setRawImage] = useState<string | null>(null);
-  const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const [cropperImage, setCropperImage] = useState<string | null>(null);
 
   const levelsByPart = useMemo(
     () => normalizePartLevels((user as any)?.partLevels),
@@ -242,10 +234,6 @@ export default function Account() {
     () => round5_990(user?.toeicPred?.overall ?? latest?.predicted?.overall),
     [user?.toeicPred?.overall, latest?.predicted?.overall]
   );
-
-  const onCropComplete = useCallback((_area: any, areaPixels: any) => {
-    setCroppedAreaPixels(areaPixels);
-  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -319,46 +307,25 @@ export default function Account() {
   async function onPickAvatar(files: FileList | null) {
     if (!files || !files[0]) return;
     const f = files[0];
-    if (!/^image\//.test(f.type)) {
-      toast.error("Vui lòng chọn file ảnh");
+    
+    // iOS Safari fix: Check file type by extension if MIME type is missing
+    const fileName = f.name.toLowerCase();
+    const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+    const isImage = f.type.startsWith("image/") || 
+      [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"].includes(fileExtension);
+    
+    if (!isImage) {
+      toast.error("Vui lòng chọn file ảnh hợp lệ");
       return;
     }
-    const dataUrl = await fileToDataURL(f);
-    setRawImage(dataUrl);
-    setZoom(1);
-    setCrop({ x: 0, y: 0 });
-    setCropOpen(true);
-  }
-
-  async function handleSaveCrop() {
-    if (!rawImage || !croppedAreaPixels) return;
+    
     try {
-      setUploading(true);
-
-      const blob = await getCroppedBlob(rawImage, croppedAreaPixels, 512);
-      const fd = new FormData();
-      fd.append("avatar", blob, "avatar.jpg");
-
-      const r = await fetch("/api/account/avatar", {
-        method: "POST",
-        credentials: "include",
-        body: fd,
-      });
-      if (!r.ok) throw new Error("Upload avatar thất bại");
-      const j = await r.json();
-      const newPic = j.picture as string;
-
-      setUser((prev) => (prev ? { ...prev, picture: newPic } : prev));
-      if (setCtxUser)
-        setCtxUser((prev: any) => (prev ? { ...prev, picture: newPic } : prev));
-
-      toast.success("Đã cập nhật ảnh đại diện");
-      setCropOpen(false);
-      setRawImage(null);
-    } catch {
-      toast.error("Lỗi khi cập nhật avatar");
-    } finally {
-      setUploading(false);
+      const dataUrl = await fileToDataURL(f);
+      setCropperImage(dataUrl);
+      setShowCropper(true);
+    } catch (error) {
+      console.error("[onPickAvatar] Error:", error);
+      toast.error("Không thể đọc file ảnh");
     }
   }
 
@@ -460,9 +427,14 @@ export default function Account() {
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept="image/*,image/heic,image/heif,.heic,.heif"
               hidden
-              onChange={(e) => onPickAvatar(e.currentTarget.files)}
+              onChange={(e) => {
+                const files = e.currentTarget.files;
+                // iOS fix: Reset value to allow selecting same file again
+                e.currentTarget.value = "";
+                onPickAvatar(files);
+              }}
             />
           </div>
 
@@ -650,58 +622,71 @@ export default function Account() {
         </section>
       )}
 
-      {/* ===== Crop Modal ===== */}
-      {cropOpen && rawImage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-lg rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 shadow-2xl">
-            <div className="flex items-center justify-between px-4 py-3 border-b dark:border-zinc-800">
-              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
-                Cắt ảnh đại diện
-              </h3>
-              <button
-                onClick={() => setCropOpen(false)}
-                className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                aria-label="Đóng"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* Image Cropper Modal */}
+      {showCropper && cropperImage && (
+        <ImageCropper
+          image={cropperImage}
+          aspect={1}
+          onCropComplete={async (croppedImage) => {
+            setShowCropper(false);
+            setUploading(true);
+            try {
+              // iOS fix: Convert dataURL to blob properly
+              const response = await fetch(croppedImage);
+              const blob = await response.blob();
+              
+              // Ensure proper MIME type for iOS
+              const finalBlob = blob.type === "image/png" || blob.type === "image/jpeg" 
+                ? blob 
+                : new Blob([blob], { type: "image/jpeg" });
 
-            <div className="relative h-[60vh] max-h-[520px] bg-zinc-900/5 dark:bg-zinc-800">
-              <Cropper
-                image={rawImage}
-                crop={crop}
-                zoom={zoom}
-                aspect={1}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-                restrictPosition={false}
-                cropShape="rect"
-                showGrid
-              />
-            </div>
+              const formData = new FormData();
+              // iOS fix: Explicitly set filename with .jpg extension
+              formData.append("avatar", finalBlob, "avatar.jpg");
 
-            <div className="flex items-center gap-3 px-4 py-4 border-t dark:border-zinc-800">
-              <input
-                type="range"
-                min={1}
-                max={3}
-                step={0.01}
-                value={zoom}
-                onChange={(e) => setZoom(parseFloat(e.currentTarget.value))}
-                className="flex-1"
-              />
-              <button
-                onClick={handleSaveCrop}
-                disabled={uploading}
-                className="inline-flex items-center rounded-full bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-500 disabled:opacity-60"
-              >
-                {uploading ? "Đang lưu…" : "Lưu"}
-              </button>
-            </div>
-          </div>
-        </div>
+              const uploadRes = await fetch("/api/account/avatar", {
+                method: "POST",
+                credentials: "include",
+                // iOS fix: Don't set Content-Type header, let browser set it with boundary
+                body: formData,
+              });
+
+              if (!uploadRes.ok) {
+                const errorData = await uploadRes.json().catch(() => ({}));
+                throw new Error(
+                  errorData.message || "Upload avatar thất bại"
+                );
+              }
+
+              const uploadData = await uploadRes.json();
+              const newPicture = uploadData.picture || uploadData.url;
+
+              setUser((prev) => (prev ? { ...prev, picture: newPicture } : prev));
+              if (setCtxUser)
+                setCtxUser((prev: any) => (prev ? { ...prev, picture: newPicture } : prev));
+
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(
+                  new CustomEvent("auth:avatar-changed", {
+                    detail: newPicture,
+                  })
+                );
+              }
+
+              toast.success("Đã cập nhật ảnh đại diện");
+            } catch (error: any) {
+              console.error("[Account] Upload error:", error);
+              toast.error(error?.message || "Lỗi khi cập nhật ảnh đại diện");
+            } finally {
+              setUploading(false);
+              setCropperImage(null);
+            }
+          }}
+          onCancel={() => {
+            setShowCropper(false);
+            setCropperImage(null);
+          }}
+        />
       )}
 
       {ConfirmModal}

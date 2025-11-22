@@ -17,7 +17,9 @@ interface SavedPostsClientProps {
   initialPage: number;
 }
 
-export default function SavedPostsClient({ initialPage }: SavedPostsClientProps) {
+export default function SavedPostsClient({
+  initialPage,
+}: SavedPostsClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -158,28 +160,26 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
   const showBottomPager = total >= PAGE_SIZE;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="mb-2">
-        <h1 className="mb-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Bài viết đã lưu
         </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Những bài viết bạn đã lưu để xem lại sau.
         </p>
       </div>
 
       {/* Danh sách bài viết */}
-      {postsList.length > 0 && (
-        <div className="space-y-4">{postsList}</div>
-      )}
+      {postsList.length > 0 && <div className="space-y-4">{postsList}</div>}
 
       {/* Loading State */}
       {loading && (
-        <div className="flex items-center justify-center py-16">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
-            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+        <div className="flex items-center justify-center py-12 sm:py-16">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
               Đang tải bài viết đã lưu...
             </p>
           </div>
@@ -188,8 +188,7 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
 
       {/* Empty State */}
       {!loading && total === 0 && (
-        <div className="flex justify-center py-12">
-          <div className="w-full max-w-md rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-6 py-10 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-4 sm:px-6 py-12 sm:py-16 text-center shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/95">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
               <svg
                 className="h-7 w-7"
@@ -212,13 +211,12 @@ export default function SavedPostsClient({ initialPage }: SavedPostsClientProps)
               Bạn chưa lưu bài viết nào. Hãy lưu những bài viết hữu ích để xem
               lại dễ dàng hơn.
             </p>
-          </div>
         </div>
       )}
 
       {/* Pagination */}
       {showBottomPager && (
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center pt-4">
           <Pagination
             page={page}
             total={total}

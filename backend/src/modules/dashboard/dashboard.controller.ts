@@ -313,7 +313,7 @@ export async function getAssessmentData(req: Request, res: Response) {
       placementScore,
       latestProgressScore,
       hasBaseline,
-      currentToeicSource: user.currentToeicSource || "unknown",
+      currentToeicSource: user.currentToeicSource ?? null,
       currentToeicExamDate: user.currentToeicExamDate ?? null,
     });
   } catch (e) {

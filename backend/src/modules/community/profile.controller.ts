@@ -171,7 +171,7 @@ export async function getAssessmentBaseline(req: Request, res: Response) {
     }
 
     return res.json({
-      currentToeicSource: user.currentToeicSource || "unknown",
+      currentToeicSource: user.currentToeicSource ?? null,
       currentToeicScore: user.currentToeicScore ?? null,
       currentToeicExamDate: user.currentToeicExamDate ?? null,
     });
@@ -231,7 +231,7 @@ export async function updateAssessmentBaseline(req: Request, res: Response) {
     }
 
     return res.json({
-      currentToeicSource: user.currentToeicSource || "unknown",
+      currentToeicSource: user.currentToeicSource ?? null,
       currentToeicScore: user.currentToeicScore ?? null,
       currentToeicExamDate: user.currentToeicExamDate ?? null,
     });

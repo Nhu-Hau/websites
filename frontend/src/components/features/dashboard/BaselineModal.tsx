@@ -2,28 +2,30 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Loader2, Target } from "lucide-react";
+import { Loader2, Target } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 interface BaselineModalProps {
   open: boolean;
   onClose: () => void;
+  onSave?: () => void;
   initialData?: {
-    currentToeicSource: "unknown" | "self_report_official";
+    currentToeicSource: "unknown" | "self_report_official" | null;
     currentToeicScore: number | null;
-    currentToeicExamDate: string | null; // vẫn giữ type cho tương thích, nhưng không dùng nữa
+    currentToeicExamDate: string | null;
   } | null;
 }
 
 export default function BaselineModal({
   open,
   onClose,
+  onSave,
   initialData,
 }: BaselineModalProps) {
   const { refresh } = useAuth();
 
   const [source, setSource] = useState<"unknown" | "self_report_official">(
-    initialData?.currentToeicSource || "unknown"
+    initialData?.currentToeicSource ?? "unknown"
   );
   const [score, setScore] = useState<string>(
     initialData?.currentToeicScore?.toString() || ""
@@ -32,8 +34,12 @@ export default function BaselineModal({
 
   useEffect(() => {
     if (initialData) {
-      setSource(initialData.currentToeicSource || "unknown");
+      setSource(initialData.currentToeicSource ?? "unknown");
       setScore(initialData.currentToeicScore?.toString() || "");
+    } else {
+      // Reset về default khi không có initialData
+      setSource("unknown");
+      setScore("");
     }
   }, [initialData]);
 
@@ -44,22 +50,18 @@ export default function BaselineModal({
     try {
       const body: any = {
         currentToeicSource: source,
+        currentToeicScore:
+          source === "self_report_official" ? Number(score) : null,
+        currentToeicExamDate: null, // bỏ ngày thi
       };
 
       if (source === "self_report_official") {
-        const scoreNum = parseInt(score, 10);
-        if (isNaN(scoreNum) || scoreNum < 10 || scoreNum > 990) {
-          alert("Điểm TOEIC phải là số từ 10 đến 990");
+        const value = Number(score);
+        if (isNaN(value) || value < 10 || value > 990) {
+          alert("Điểm TOEIC phải từ 10 đến 990");
           setIsSaving(false);
           return;
         }
-        body.currentToeicScore = scoreNum;
-        // bỏ chọn ngày -> luôn clear exam date (hoặc backend ignore field)
-        body.currentToeicExamDate = null;
-      } else {
-        // nếu chọn "chưa thi", clear score & date
-        body.currentToeicScore = null;
-        body.currentToeicExamDate = null;
       }
 
       const res = await fetch("/api/profile/assessment-baseline", {
@@ -77,6 +79,7 @@ export default function BaselineModal({
       }
 
       await refresh();
+      onSave?.();
       onClose();
     } catch (e) {
       console.error("Failed to save baseline", e);
@@ -86,169 +89,177 @@ export default function BaselineModal({
     }
   };
 
-  const canSubmit =
-    source === "unknown" ||
-    (source === "self_report_official" && score.trim().length > 0);
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 backdrop-blur-sm"
-      onClick={() => {
-        if (!isSaving) onClose();
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-3 py-6 backdrop-blur-sm"
+      // Không cho phép đóng bằng click outside - bắt buộc phải điền
     >
       <div
-        className="w-full max-w-md overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/95 shadow-2xl ring-1 ring-black/[0.06] dark:border-zinc-800/80 dark:bg-zinc-900/95"
+        className="
+          w-full max-w-sm rounded-2xl 
+          bg-white/95 dark:bg-zinc-900/95 
+          border border-zinc-200 dark:border-zinc-800
+          shadow-xl ring-1 ring-black/5
+          overflow-hidden
+        "
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 border-b border-zinc-100 px-5 pb-3 pt-4 dark:border-zinc-800">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">
-              <Target className="h-4 w-4" />
+        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center gap-2">
+            <div className="h-9 w-9 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+              <Target className="h-4 w-4 text-amber-600 dark:text-amber-300" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                Thiết lập điểm TOEIC hiện tại
+                Thiết lập baseline TOEIC
               </h3>
-              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                Giúp hệ thống so sánh với kết quả placement test và progress
-                test, từ đó gợi ý lộ trình chính xác hơn.
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                Giúp hệ thống cá nhân hóa lộ trình học
               </p>
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              if (!isSaving) onClose();
-            }}
-            disabled={isSaving}
-            className="rounded-full p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 disabled:opacity-60 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          {/* Bỏ nút X - không cho phép đóng nếu chưa lưu */}
         </div>
 
-        {/* Body */}
-        <div className="px-5 pb-5 pt-4">
-          <div className="space-y-3">
-            {/* Option 1: Unknown */}
-            <button
-              type="button"
-              onClick={() => setSource("unknown")}
-              className={`flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-all ${
+        {/* BODY */}
+        <div className="px-4 py-4 space-y-3">
+          {/* OPTION 1 */}
+          <button
+            onClick={() => setSource("unknown")}
+            className={`
+              w-full flex gap-3 p-3 rounded-xl border text-left transition-all 
+              ${
                 source === "unknown"
-                  ? "border-amber-400 bg-amber-50/60 shadow-sm dark:border-amber-400/80 dark:bg-amber-500/10"
-                  : "border-zinc-200 hover:border-amber-200 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:border-amber-300/60 dark:hover:bg-zinc-800"
-              }`}
-            >
-              <div className="mt-0.5">
-                <span
-                  className={`inline-flex h-4 w-4 items-center justify-center rounded-full border ${
+                  ? "border-amber-400/60 bg-amber-50 shadow-sm dark:bg-amber-500/10"
+                  : "border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+              }
+            `}
+          >
+            <div className="pt-0.5">
+              <span
+                className={`
+                  h-4 w-4 rounded-full border flex items-center justify-center
+                  ${
                     source === "unknown"
                       ? "border-amber-500 bg-amber-500"
                       : "border-zinc-400 bg-white dark:bg-zinc-900"
-                  }`}
-                >
-                  {source === "unknown" && (
-                    <span className="h-2 w-2 rounded-full bg-white" />
-                  )}
-                </span>
-              </div>
-              <div className="flex-1">
-                <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">
-                  Tôi chưa thi TOEIC / chưa xác định
-                </div>
-                <div className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
-                  Hệ thống sẽ dùng điểm placement test làm mốc ban đầu để theo
-                  dõi tiến bộ của bạn.
-                </div>
-              </div>
-            </button>
+                  }
+                `}
+              >
+                {source === "unknown" && (
+                  <span className="h-2 w-2 bg-white rounded-full" />
+                )}
+              </span>
+            </div>
 
-            {/* Option 2: Self reported */}
-            <button
-              type="button"
-              onClick={() => setSource("self_report_official")}
-              className={`flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-all ${
+            <div>
+              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">
+                Tôi chưa thi TOEIC / chưa xác định
+              </p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-4">
+                Hệ thống sẽ dùng điểm placement test làm baseline.
+              </p>
+            </div>
+          </button>
+
+          {/* OPTION 2 */}
+          <button
+            onClick={() => setSource("self_report_official")}
+            className={`
+              w-full flex gap-3 p-3 rounded-xl border text-left transition-all 
+              ${
                 source === "self_report_official"
-                  ? "border-amber-400 bg-amber-50/60 shadow-sm dark:border-amber-400/80 dark:bg-amber-500/10"
-                  : "border-zinc-200 hover:border-amber-200 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:border-amber-300/60 dark:hover:bg-zinc-800"
-              }`}
-            >
-              <div className="mt-0.5">
-                <span
-                  className={`inline-flex h-4 w-4 items-center justify-center rounded-full border ${
+                  ? "border-amber-400/60 bg-amber-50 shadow-sm dark:bg-amber-500/10"
+                  : "border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+              }
+            `}
+          >
+            <div className="pt-0.5">
+              <span
+                className={`
+                  h-4 w-4 rounded-full border flex items-center justify-center
+                  ${
                     source === "self_report_official"
                       ? "border-amber-500 bg-amber-500"
                       : "border-zinc-400 bg-white dark:bg-zinc-900"
-                  }`}
-                >
-                  {source === "self_report_official" && (
-                    <span className="h-2 w-2 rounded-full bg-white" />
-                  )}
-                </span>
-              </div>
-              <div className="flex-1">
-                <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">
-                  Tôi đã thi TOEIC và nhớ điểm
-                </div>
-                <div className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
-                  Nhập điểm TOEIC chính thức gần nhất của bạn để hệ thống dùng
-                  làm baseline.
-                </div>
-              </div>
-            </button>
+                  }
+                `}
+              >
+                {source === "self_report_official" && (
+                  <span className="h-2 w-2 bg-white rounded-full" />
+                )}
+              </span>
+            </div>
 
-            {/* Input fields khi chọn self_report_official (không còn chọn ngày) */}
-            {source === "self_report_official" && (
-              <div className="mt-1 rounded-xl border border-amber-100 bg-amber-50/60 p-3 dark:border-amber-500/40 dark:bg-amber-500/5">
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
-                  Điểm TOEIC của bạn (10–990) *
-                </label>
-                <input
-                  type="number"
-                  min={10}
-                  max={990}
-                  value={score}
-                  onChange={(e) => setScore(e.target.value)}
-                  placeholder="Ví dụ: 650"
-                  className="w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 shadow-sm outline-none placeholder:text-zinc-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-300/80 dark:border-amber-500/60 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-amber-400 dark:focus:ring-amber-500/40"
-                />
-                <p className="mt-1 text-[11px] text-amber-700/80 dark:text-amber-200/80">
-                  Hệ thống hiểu đây là điểm từ bài thi TOEIC chính thức (hoặc
-                  tương đương).
-                </p>
-              </div>
+            <div>
+              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">
+                Tôi đã thi TOEIC và nhớ điểm
+              </p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-4">
+                Nhập điểm thi chính thức gần nhất của bạn.
+              </p>
+            </div>
+          </button>
+
+          {/* INPUT CHO SELF REPORT */}
+          {source === "self_report_official" && (
+            <div
+              className="
+                rounded-xl border border-amber-200/70 bg-amber-50/40 
+                p-3 dark:border-amber-500/40 dark:bg-amber-500/5
+              "
+            >
+              <label className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                Điểm TOEIC của bạn *
+              </label>
+
+              <input
+                type="number"
+                min={10}
+                max={990}
+                value={score}
+                onChange={(e) => setScore(e.target.value)}
+                placeholder="VD: 650"
+                className="
+                  mt-1 w-full rounded-lg border border-amber-200 bg-white px-3 py-2 
+                  text-sm font-medium text-zinc-900 shadow-sm 
+                  placeholder:text-zinc-400 outline-none
+                  focus:border-amber-400 focus:ring-2 focus:ring-amber-300/70
+                  dark:bg-zinc-900 dark:text-zinc-50 dark:border-amber-500/60
+                "
+              />
+            </div>
+          )}
+        </div>
+
+        {/* FOOTER BUTTONS */}
+        <div className="px-4 pb-4 pt-1">
+          <button
+            onClick={handleSave}
+            disabled={isSaving || (source === "self_report_official" && (!score || isNaN(Number(score)) || Number(score) < 10 || Number(score) > 990))}
+            className="
+              w-full py-2.5 rounded-xl
+              bg-gradient-to-r from-amber-500 to-amber-600
+              text-xs font-semibold text-white shadow-sm
+              hover:from-amber-400 hover:to-amber-500
+              disabled:opacity-60 disabled:cursor-not-allowed
+              flex items-center justify-center gap-2
+            "
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Đang lưu...
+              </>
+            ) : (
+              "Lưu baseline"
             )}
-          </div>
-
-          {/* Footer buttons */}
-          <div className="mt-5 flex gap-3">
-            <button
-              onClick={() => {
-                if (!isSaving) onClose();
-              }}
-              disabled={isSaving}
-              className="flex-1 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-xs font-semibold text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >
-              Để sau
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving || !canSubmit}
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-all hover:from-amber-400 hover:to-amber-500 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Đang lưu...
-                </>
-              ) : (
-                "Lưu baseline"
-              )}
-            </button>
-          </div>
+          </button>
+          <p className="mt-2 text-center text-[10px] text-zinc-500 dark:text-zinc-400">
+            Vui lòng điền thông tin để tiếp tục sử dụng dashboard
+          </p>
         </div>
       </div>
     </div>

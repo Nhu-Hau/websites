@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import type { VocabularyTerm } from "@/types/vocabulary.types";
@@ -156,23 +157,24 @@ export function SaveVocabularyModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-3 py-6 backdrop-blur-sm">
+      <div className="absolute inset-0" onClick={onClose} />
       
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+      <div className="relative w-full max-w-sm rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 shadow-xl ring-1 ring-black/5 overflow-hidden max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-4 py-3">
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
             Lưu từ vựng
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="h-8 w-8 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-300"
           >
-            ✕
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {/* Word Preview */}
           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <div className="font-bold text-gray-900 dark:text-white mb-1">

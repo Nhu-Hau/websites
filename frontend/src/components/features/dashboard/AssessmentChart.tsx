@@ -74,12 +74,15 @@ type ProgressEligibilityInfo = {
     | "waiting_window"
     | "no_practice_yet"
     | "no_practice_after_progress"
+    | "insufficient_practice_tests"
     | string;
   nextEligibleAt?: string | null;
   remainingMs?: number | null;
   windowMinutes?: number | null;
   since?: string | null;
   suggestedAt?: string | null;
+  practiceTestCount?: number;
+  requiredPracticeTests?: number;
 };
 
 /* ===================== Helper: so sánh điểm ===================== */
@@ -188,16 +191,22 @@ function formatDateTime(iso?: string | null) {
 
 function formatRemainingMs(ms?: number | null) {
   if (ms == null || ms <= 0) return "ít phút nữa";
-  const minutes = Math.ceil(ms / 60000);
-  if (minutes >= 60 * 24) {
-    const days = Math.ceil(minutes / (60 * 24));
-    return `${days} ngày`;
+  const totalSeconds = Math.ceil(ms / 1000);
+  const days = Math.floor(totalSeconds / (60 * 60 * 24));
+  const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
+  const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (days > 0) {
+    return `${days} ngày ${hours} giờ`;
   }
-  if (minutes >= 60) {
-    const hours = Math.ceil(minutes / 60);
-    return `${hours} giờ`;
+  if (hours > 0) {
+    return `${hours} giờ ${minutes} phút`;
   }
-  return `${Math.max(1, minutes)} phút`;
+  if (minutes > 0) {
+    return `${minutes} phút ${seconds} giây`;
+  }
+  return `${seconds} giây`;
 }
 
 function describeEligibilityReason(info: ProgressEligibilityInfo | null) {
@@ -205,6 +214,11 @@ function describeEligibilityReason(info: ProgressEligibilityInfo | null) {
   switch (info.reason) {
     case "no_practice_yet":
       return "Hãy làm ít nhất 1 bài Practice để mở Progress Test.";
+    case "insufficient_practice_tests":
+      const current = info.practiceTestCount ?? 0;
+      const required = info.requiredPracticeTests ?? 3;
+      const remaining = required - current;
+      return `Bạn cần hoàn thành ${remaining} bài Practice Test nữa (đã làm ${current}/${required} bài).`;
     case "no_practice_after_progress":
       return "Bạn cần hoàn thành một bài Practice sau lần Progress Test gần nhất.";
     case "waiting_window":
@@ -431,9 +445,35 @@ export default function AssessmentChart() {
     if (!progressEligibility?.nextEligibleAt) return null;
     const eta = formatDateTime(progressEligibility.nextEligibleAt);
     if (!eta) return null;
-    const remaining = formatRemainingMs(progressEligibility.remainingMs);
-    return `${eta} (${remaining})`;
+    return eta;
   }, [progressEligibility]);
+
+  // Real-time countdown cho thời gian còn lại
+  const [remainingTime, setRemainingTime] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    if (!progressEligibility?.remainingMs || progressEligibility.remainingMs <= 0) {
+      setRemainingTime(null);
+      return;
+    }
+
+    const updateRemaining = () => {
+      const now = Date.now();
+      const nextEligibleAt = progressEligibility.nextEligibleAt
+        ? new Date(progressEligibility.nextEligibleAt).getTime()
+        : null;
+      if (!nextEligibleAt) {
+        setRemainingTime(null);
+        return;
+      }
+      const remaining = Math.max(0, nextEligibleAt - now);
+      setRemainingTime(formatRemainingMs(remaining));
+    };
+
+    updateRemaining();
+    const interval = setInterval(updateRemaining, 1000); // Update mỗi giây
+
+    return () => clearInterval(interval);
+  }, [progressEligibility?.remainingMs, progressEligibility?.nextEligibleAt]);
 
   const anchorPracticeText = React.useMemo(() => {
     return formatDateTime(progressEligibility?.since ?? null);
@@ -551,15 +591,30 @@ export default function AssessmentChart() {
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                   {progressEligibility.eligible
                     ? "Đã đủ điều kiện làm Progress Test"
+                    : progressEligibility.reason === "insufficient_practice_tests"
+                    ? "Chưa đủ điều kiện làm Progress Test"
                     : nextEligibleText
                     ? `Sẽ mở lại vào ${nextEligibleText}`
                     : "Đang chờ mở Progress Test"}
                 </p>
+                {remainingTime && !progressEligibility.eligible && (
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                    ⏱️ Còn lại: {remainingTime}
+                  </p>
+                )}
                 <p className="text-[11px] text-slate-600 dark:text-slate-400">
                   {progressEligibility.eligible
                     ? "Bạn có thể làm bài để cập nhật điểm dự đoán mới nhất."
                     : describeEligibilityReason(progressEligibility)}
                 </p>
+                {!progressEligibility.eligible &&
+                  progressEligibility.reason === "waiting_window" &&
+                  progressEligibility.remainingMs != null &&
+                  progressEligibility.remainingMs > 0 && (
+                    <p className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                      ⏱️ Còn lại: {formatRemainingMs(progressEligibility.remainingMs)}
+                    </p>
+                  )}
                 {!progressEligibility.eligible && anchorPracticeText && (
                   <p className="text-[11px] text-slate-500 dark:text-slate-500">
                     Mốc tính từ {anchorPracticeText}

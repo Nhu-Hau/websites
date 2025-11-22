@@ -3,14 +3,37 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMessageSquare } from "react-icons/fi";
 import { useChat } from "@/context/ChatContext";
+import { useEffect, useState } from "react";
 
 export default function ChatFAB() {
   const { open, setOpen, unreadCount, setActiveTab } = useChat();
+  const [isCropping, setIsCropping] = useState(false);
 
   const totalUnread = unreadCount.admin + unreadCount.ai;
 
+  // Check if image cropper is open
+  useEffect(() => {
+    const checkCropping = () => {
+      setIsCropping(document.body.hasAttribute("data-cropping"));
+    };
+
+    // Check initially
+    checkCropping();
+
+    // Watch for changes using MutationObserver
+    const observer = new MutationObserver(checkCropping);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-cropping"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  if (isCropping) return null;
+
   return (
-    <div className="fixed z-[110] right-4 bottom-20 lg:right-6 lg:bottom-6 [body[data-cropping]>&]:hidden">
+    <div className="fixed z-[110] right-4 bottom-20 lg:right-6 lg:bottom-6">
       <motion.button
         onClick={() => {
           setActiveTab("ai");

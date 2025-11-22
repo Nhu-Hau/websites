@@ -41,7 +41,7 @@ export default function ChatPanel() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 16, scale: 0.95 }}
           transition={{ type: "spring", stiffness: 320, damping: 32 }}
-          className="hidden md:block fixed lg:bottom-24 md:bottom-36 right-6 z-[9999] w-full max-w-md pointer-events-auto"
+          className="hidden md:block fixed lg:bottom-24 md:bottom-36 right-6 z-[9999] w-full max-w-md pointer-events-auto [body[data-cropping]>&]:hidden"
         >
           {/* Khung panel: chiều cao cố định + giới hạn theo viewport */}
           <div className="flex flex-col h-[460px] max-h-[calc(100vh-7rem)] bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-zinc-700 overflow-hidden">

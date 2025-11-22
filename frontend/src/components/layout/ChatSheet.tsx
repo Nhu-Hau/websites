@@ -31,7 +31,7 @@ export default function ChatSheet() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[9999] md:hidden bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] md:hidden bg-black/50 backdrop-blur-sm [body[data-cropping]>&]:hidden"
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
@@ -48,7 +48,8 @@ export default function ChatSheet() {
               "w-full bg-white dark:bg-zinc-900",
               "rounded-t-3xl shadow-2xl",
               "flex flex-col",
-              "h-[620px] max-h-[calc(100vh-4rem)]" // 👈 cố định chiều cao
+              "h-[620px] max-h-[calc(100vh-4rem)]", // 👈 cố định chiều cao
+              "[body[data-cropping]>&]:hidden"
             )}
             onClick={(e) => e.stopPropagation()}
           >

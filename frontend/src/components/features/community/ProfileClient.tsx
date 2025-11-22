@@ -295,6 +295,8 @@ export default function ProfileClient({
                 className="hidden"
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
+                  // iOS fix: Reset value to allow selecting same file again
+                  e.currentTarget.value = "";
                   if (!file) return;
                   
                   // iOS Safari fix: Check file type by extension if MIME type is missing
@@ -362,6 +364,8 @@ export default function ProfileClient({
                         className="hidden"
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
+                          // iOS fix: Reset value to allow selecting same file again
+                          e.currentTarget.value = "";
                           if (!file) return;
                           
                           // iOS Safari fix: Check file type by extension if MIME type is missing
@@ -579,41 +583,43 @@ export default function ProfileClient({
       )}
 
       {/* Badges */}
-      <div className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/95 p-5 shadow-sm ring-1 ring-black/[0.03] dark:border-zinc-800/80 dark:bg-zinc-900/95">
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="min-w-0">
-              <h2 className="truncate text-lg font-semibold text-zinc-900 dark:text-white">
-                Bộ sưu tập huy hiệu
-              </h2>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                {earnedBadges.length} / {totalBadges} huy hiệu đã mở khóa
-              </p>
-            </div>
+      <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-4 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/95 sm:p-5">
+        {/* Header */}
+        <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h2 className="truncate text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+              Bộ sưu tập huy hiệu
+            </h2>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              {earnedBadges.length} / {totalBadges} huy hiệu đã mở khóa
+            </p>
           </div>
+
           {earnedBadges.length > 0 && (
-            <div className="mt-1 inline-flex items-center gap-1 self-start rounded-full border border-[#4063bb]/30 bg-[#4063bb]/10 px-3 py-1 text-[11px] font-semibold text-[#35519a] shadow-sm sm:mt-0 sm:self-auto">
+            <div className="mt-1 inline-flex items-center gap-1 self-start rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 sm:mt-0 sm:self-auto">
               <Star className="h-3.5 w-3.5" />
               <span>{earnedBadges.length} huy hiệu</span>
             </div>
           )}
         </div>
 
+        {/* Body */}
         {earnedBadges.length === 0 ? (
-          <div className="py-6 text-center sm:py-8">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-              <Trophy className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300 sm:h-16 sm:w-16">
+              <Trophy className="h-7 w-7 sm:h-8 sm:w-8" />
             </div>
-            <p className="mb-1 text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+            <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
               Chưa có huy hiệu nào
-            </p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Làm bài đều đặn, giữ streak và đặt mục tiêu để mở khóa huy hiệu
-              đầu tiên.
+            </h3>
+            <p className="mb-1 max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
+              Làm bài đều đặn, giữ streak và đặt mục tiêu để mở khóa huy hiệu đầu
+              tiên.
             </p>
           </div>
         ) : (
           <>
+            {/* Earned badges */}
             <div className="mb-5 flex flex-wrap gap-2.5 sm:gap-3">
               {earnedBadges.map((badge) => {
                 const config = BADGE_CONFIG[badge.badgeType as BadgeType];
@@ -668,12 +674,61 @@ export default function ProfileClient({
                       place="top"
                       positionStrategy="fixed"
                       offset={10}
-                      className="!z-50 !max-w-xs !rounded-lg !border !border-zinc-700 !bg-zinc-900/95 !px-3 !py-2 !text-xs !font-medium !text-white shadow-lg"
+                      className="!z-50 !max-w-xs !rounded-lg !border !border-slate-700 !bg-slate-900/95 !px-3 !py-2 !text-xs !font-medium !text-white shadow-lg"
                     />
                   </React.Fragment>
                 );
               })}
             </div>
+
+            {/* Locked badges */}
+            {lockedBadgeTypes.length > 0 && (
+              <div className="border-t border-zinc-200/80 pt-4 dark:border-zinc-800/80">
+                <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  Huy hiệu chưa mở khóa
+                </p>
+                <div className="flex flex-wrap gap-2.5 sm:gap-3">
+                  {lockedBadgeTypes.map((type) => {
+                    const config = BADGE_CONFIG[type as BadgeType];
+                    if (!config) return null;
+
+                    const Icon = config.icon;
+                    const tooltipId = `badge-locked-${type}-profile`;
+
+                    return (
+                      <React.Fragment key={type}>
+                        <div
+                          data-tooltip-id={tooltipId}
+                          data-tooltip-content={`Chưa đạt: ${config.description}`}
+                          className={`
+                            group relative flex h-10 w-10 items-center justify-center overflow-hidden
+                            rounded-2xl bg-gradient-to-br from-slate-200 to-slate-400
+                            text-xs shadow-md shadow-slate-900/10
+                            transition-all duration-150
+                            hover:-translate-y-0.5 hover:shadow-lg
+                            cursor-not-allowed
+                            sm:h-12 sm:w-12 md:h-14 md:w-14
+                          `}
+                        >
+                          <div className="absolute inset-0 rounded-2xl ring-1 ring-white/40 opacity-70" />
+                          <Icon className="relative z-10 h-6 w-6 text-slate-600 dark:text-slate-300" />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Lock className="h-4 w-4 text-slate-700/85 dark:text-slate-200/90 drop-shadow-sm" />
+                          </div>
+                        </div>
+                        <Tooltip
+                          id={tooltipId}
+                          place="top"
+                          positionStrategy="fixed"
+                          offset={10}
+                          className="!z-50 !max-w-xs !rounded-lg !border !border-slate-700 !bg-slate-900/95 !px-3 !py-2 !text-xs !font-medium !text-white shadow-lg"
+                        />
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -724,15 +779,23 @@ export default function ProfileClient({
             setUploading(true);
             try {
               if (cropperType === "avatar") {
+                // iOS fix: Convert dataURL to blob properly
                 const response = await fetch(croppedImage);
                 const blob = await response.blob();
+                
+                // Ensure proper MIME type for iOS
+                const finalBlob = blob.type === "image/png" || blob.type === "image/jpeg" 
+                  ? blob 
+                  : new Blob([blob], { type: "image/jpeg" });
 
                 const formData = new FormData();
-                formData.append("avatar", blob, "avatar.jpg");
+                // iOS fix: Explicitly set filename with .jpg extension
+                formData.append("avatar", finalBlob, "avatar.jpg");
 
                 const uploadRes = await fetch(`${API_BASE}/api/auth/avatar`, {
                   method: "POST",
                   credentials: "include",
+                  // iOS fix: Don't set Content-Type header, let browser set it with boundary
                   body: formData,
                 });
 
@@ -758,17 +821,25 @@ export default function ProfileClient({
                 refresh();
                 toast.success("Đã cập nhật ảnh đại diện");
               } else {
+                // iOS fix: Convert dataURL to blob properly
                 const response = await fetch(croppedImage);
                 const blob = await response.blob();
+                
+                // Ensure proper MIME type for iOS
+                const finalBlob = blob.type === "image/png" || blob.type === "image/jpeg" 
+                  ? blob 
+                  : new Blob([blob], { type: "image/jpeg" });
 
                 const formData = new FormData();
-                formData.append("file", blob, "cover.jpg");
+                // iOS fix: Explicitly set filename with .jpg extension
+                formData.append("file", finalBlob, "cover.jpg");
 
                 const uploadRes = await fetch(
                   `${API_BASE}/api/community/upload`,
                   {
                     method: "POST",
                     credentials: "include",
+                    // iOS fix: Don't set Content-Type header, let browser set it with boundary
                     body: formData,
                   }
                 );

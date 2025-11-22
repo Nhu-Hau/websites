@@ -13,7 +13,6 @@ import {
   XCircle,
   Sparkles,
   MessageSquare,
-  MessageCircle,
   PlayCircle,
   Layers,
   BarChart3,
@@ -26,7 +25,11 @@ import {
   X,
   Star,
   Zap,
-  Underline,
+  FileDown,
+  Upload,
+  MessageCircle,
+  Brain,
+  Users,
 } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 
@@ -45,36 +48,30 @@ type PromoPreview = {
 type FeatureRow = {
   key: string;
   label: string;
+  description?: string;
   icon?: React.ReactNode;
   free: React.ReactNode;
   pro: React.ReactNode;
 };
 
-/* ==== Motion variants ==== */
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4 },
-  },
+/* ================== Motion ================== */
+
+const sectionFade: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
 };
 
-const staggerCards: Variants = {
+const cardsStagger: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.12 },
+    transition: { staggerChildren: 0.1 },
   },
 };
 
-const cardItem: Variants = {
+const cardFade: Variants = {
   hidden: { opacity: 0, y: 18 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.35 },
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
 
 export default function Pricing() {
@@ -85,7 +82,7 @@ export default function Pricing() {
 
   const [loading, setLoading] = useState(false);
 
-  // ---- Mã khuyến mãi ----
+  // promo code
   const [code, setCode] = useState("");
   const [checking, setChecking] = useState(false);
   const [promo, setPromo] = useState<PromoPreview | null>(null);
@@ -94,7 +91,7 @@ export default function Pricing() {
   const priceDisplay = useMemo(() => {
     const base = 129_000;
     if (promo) return { base, final: promo.amountAfter };
-    return { base, final: 129_000 };
+    return { base, final: base };
   }, [promo]);
 
   async function onApplyCode() {
@@ -117,6 +114,7 @@ export default function Pricing() {
       const j = await r.json();
       if (!r.ok)
         throw new Error(j?.message || "Mã không hợp lệ hoặc đã hết hạn");
+
       setPromo({
         code: j.data.code,
         amountBefore: j.data.amountBefore,
@@ -126,7 +124,7 @@ export default function Pricing() {
       });
     } catch (e: any) {
       setPromo(null);
-      setPromoErr(e?.message || "Không thể kiểm tra mã");
+      setPromoErr(e?.message || "Không thể kiểm tra mã, vui lòng thử lại");
     } finally {
       setChecking(false);
     }
@@ -159,7 +157,7 @@ export default function Pricing() {
           (json as any)?.message || "Không thể tạo link thanh toán"
         );
       const url = json?.data?.checkoutUrl;
-      if (!url) throw new Error("Thiếu checkoutUrl");
+      if (!url) throw new Error("Thiếu checkoutUrl từ hệ thống thanh toán");
       window.location.href = url;
     } catch (e: any) {
       alert(e?.message || "Có lỗi xảy ra khi tạo link thanh toán");
@@ -169,180 +167,208 @@ export default function Pricing() {
     }
   };
 
-  // Bảng so sánh tính năng
+  // ========= BẢNG SO SÁNH TÍNH NĂNG =========
   const rows: FeatureRow[] = useMemo(
     () => [
       {
         key: "practice",
-        label: "Luyện đề",
+        label: "Practice Tests",
+        description: "Luyện đề theo Part & Level",
         icon: <Layers className="h-4 w-4" />,
         free: <>20 bài/tháng</>,
         pro: (
-          <>
-            <InfinityIcon className="mr-1 inline h-4 w-4 text-sky-600 dark:text-sky-400" />
-            <span className="font-semibold text-sky-700 dark:text-sky-400">
-              Không giới hạn
-            </span>
-          </>
-        ),
-      },
-      {
-        key: "fulltest",
-        label: "Full Test & giải chi tiết",
-        icon: <PlayCircle className="h-4 w-4" />,
-        free: (
-          <span className="inline-flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-            <XCircle className="h-4 w-4" /> Không hỗ trợ
-          </span>
-        ),
-        pro: (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" /> Có
+          <span className="inline-flex items-center gap-1">
+            <InfinityIcon className="h-4 w-4 text-indigo-600" />
+            <span>Không giới hạn</span>
           </span>
         ),
       },
       {
-        key: "ai",
-        label: "Chat với AI (gia sư TOEIC)",
+        key: "ai-chat",
+        label: "AI Chat (Gia sư TOEIC)",
+        description: "Trao đổi với AI về ngữ pháp, từ vựng, chiến lược làm bài",
         icon: <Bot className="h-4 w-4" />,
         free: (
-          <span className="inline-flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-            <XCircle className="h-4 w-4" /> Bị khóa
+          <span className="inline-flex items-center gap-1 text-slate-500">
+            <XCircle className="h-4 w-4" />
+            <span>Bị khóa</span>
           </span>
         ),
         pro: (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" /> Mở khóa
+          <span className="inline-flex items-center gap-1 text-emerald-600">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Mở khóa</span>
           </span>
         ),
       },
       {
-        key: "adminchat",
-        label: "Chat với Admin/Giảng viên",
+        key: "admin-chat",
+        label: "Admin / Teacher Chat",
+        description: "Hỏi đáp trực tiếp với admin hoặc giảng viên",
         icon: <MessageSquare className="h-4 w-4" />,
         free: (
-          <span className="inline-flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-            <XCircle className="h-4 w-4" /> Bị khóa
+          <span className="inline-flex items-center gap-1 text-slate-500">
+            <XCircle className="h-4 w-4" />
+            <span>Bị khóa</span>
           </span>
         ),
         pro: (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" /> Mở khóa
+          <span className="inline-flex items-center gap-1 text-emerald-600">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Mở khóa</span>
           </span>
         ),
       },
       {
-        key: "livestream",
-        label: "Bình luận trong livestream",
-        icon: <MessageCircle className="h-4 w-4" />,
-        free: (
-          <>
-            Giới hạn{" "}
-            <span className="text-zinc-400 dark:text-zinc-500">
-              (lượt/buổi)
-            </span>
-          </>
-        ),
-        pro: (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" /> Không giới hạn
-          </span>
-        ),
-      },
-      {
-        key: "download",
-        label: "Tải file giảng viên gửi",
-        icon: <Underline className="h-4 w-4" />,
-        free: (
-          <span className="inline-flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-            <XCircle className="h-4 w-4" /> Không hỗ trợ
-          </span>
-        ),
-        pro: (
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" /> Có
-          </span>
-        ),
-      },
-      {
-        key: "roadmap",
-        label: "Lộ trình học cá nhân hoá",
+        key: "vocab-translate",
+        label: "Dịch từ vựng trên bài báo",
+        description: "Dịch & lưu từ vựng trực tiếp khi đọc news",
         icon: <Sparkles className="h-4 w-4" />,
         free: (
-          <>
-            Bản cơ bản{" "}
-            <span className="text-zinc-400 dark:text-zinc-500">
-              (theo level)
-            </span>
-          </>
+          <span className="inline-flex items-center gap-1 text-slate-500">
+            <XCircle className="h-4 w-4" />
+            <span>Bị khóa</span>
+          </span>
         ),
         pro: (
-          <>
-            Bản nâng cao{" "}
-            <span className="text-zinc-400 dark:text-zinc-500">
-              (theo tiến độ)
-            </span>
-          </>
+          <span className="inline-flex items-center gap-1 text-emerald-600">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Mở khóa</span>
+          </span>
         ),
       },
       {
-        key: "analytics",
-        label: "Phân tích lỗi & báo cáo",
-        icon: <BarChart3 className="h-4 w-4" />,
-        free: <>Báo cáo cơ bản</>,
-        pro: <>Phân tích lỗi nâng cao</>,
+        key: "livestream-comments",
+        label: "Livestream Comments",
+        description: "Chat trong phòng học livestream",
+        icon: <MessageCircle className="h-4 w-4" />,
+        free: (
+          <span>
+            5 comment/buổi{" "}
+            <span className="text-xs text-slate-500">(giới hạn)</span>
+          </span>
+        ),
+        pro: (
+          <span className="inline-flex items-center gap-1 text-emerald-600">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Không giới hạn</span>
+          </span>
+        ),
       },
       {
-        key: "support",
-        label: "Hỗ trợ & ưu tiên",
-        icon: <ShieldCheck className="h-4 w-4" />,
-        free: <>Chuẩn</>,
-        pro: <>Ưu tiên</>,
+        key: "download-files",
+        label: "Tải file giảng viên",
+        description: "Download tài liệu được gửi trong phòng học",
+        icon: <FileDown className="h-4 w-4" />,
+        free: (
+          <span className="inline-flex items-center gap-1 text-slate-500">
+            <XCircle className="h-4 w-4" />
+            <span>Bị khóa</span>
+          </span>
+        ),
+        pro: (
+          <span className="inline-flex items-center gap-1 text-emerald-600">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Mở khóa</span>
+          </span>
+        ),
+      },
+      {
+        key: "upload-files",
+        label: "Upload file trong livestream",
+        description: "Upload tài liệu hỗ trợ buổi học trực tuyến",
+        icon: <Upload className="h-4 w-4" />,
+        free: (
+          <span className="inline-flex items-center gap-1 text-slate-500">
+            <XCircle className="h-4 w-4" />
+            <span>Bị khóa</span>
+          </span>
+        ),
+        pro: (
+          <span className="inline-flex items-center gap-1 text-emerald-600">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Mở khóa</span>
+          </span>
+        ),
+      },
+      {
+        key: "learning-insight",
+        label: "Learning Insight",
+        description: "AI phân tích kết quả làm bài & thói quen học",
+        icon: <Brain className="h-4 w-4" />,
+        free: (
+          <span className="inline-flex items-center gap-1 text-slate-500">
+            <XCircle className="h-4 w-4" />
+            <span>Bị khóa</span>
+          </span>
+        ),
+        pro: (
+          <span className="inline-flex items-center gap-1 text-emerald-600">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Mở khóa</span>
+          </span>
+        ),
+      },
+      {
+        key: "groups",
+        label: "Tạo Groups học chung",
+        description: "Tạo nhóm học, mời bạn bè vào học chung",
+        icon: <Users className="h-4 w-4" />,
+        free: (
+          <span className="inline-flex items-center gap-1 text-slate-500">
+            <XCircle className="h-4 w-4" />
+            <span>Bị khóa</span>
+          </span>
+        ),
+        pro: (
+          <span className="inline-flex items-center gap-1 text-emerald-600">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Mở khóa</span>
+          </span>
+        ),
       },
     ],
     []
   );
 
   return (
-    <section className="relative border-y border-zinc-200 bg-white py-16 dark:border-zinc-900 dark:bg-zinc-950">
-      {/* Soft gradient sky trên nền */}
+    <section className="relative bg-slate-50 py-12 dark:bg-slate-950 sm:py-16">
+      {/* subtle background accent */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(900px_260px_at_50%_0,rgba(56,189,248,0.12),transparent)] dark:bg-[radial-gradient(900px_260px_at_50%_0,rgba(56,189,248,0.22),transparent)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(700px_200px_at_50%_0px,rgba(79,70,229,0.12),transparent)] dark:bg-[radial-gradient(700px_200px_at_50%_0px,rgba(129,140,248,0.24),transparent)]"
       />
 
-      <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
-          variants={fadeUp}
+          variants={sectionFade}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.35 }}
+          viewport={{ once: true, amount: 0.4 }}
         >
           <SectionHeader
-            eyebrow="Bảng giá"
+            eyebrow="Pricing"
             title="Chọn gói phù hợp với hành trình TOEIC của bạn"
-            desc="Bắt đầu hoàn toàn miễn phí. Khi cần tăng tốc để đạt mục tiêu điểm số, bạn chỉ cần nâng cấp lên Premium."
+            desc="Bắt đầu với gói Free để làm quen hệ thống. Khi muốn bứt tốc và mở khóa toàn bộ tính năng AI, bạn chỉ cần nâng cấp lên Premium."
             align="center"
           />
         </motion.div>
 
-        {/* 2 thẻ pricing */}
+        {/* Cards */}
         <motion.div
-          className="mt-14 grid gap-6 md:grid-cols-2"
-          variants={staggerCards}
+          className="grid gap-6 md:grid-cols-2"
+          variants={cardsStagger}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.25 }}
+          viewport={{ once: true, amount: 0.3 }}
         >
-          {/* PREMIUM – thẻ chính */}
+          {/* PREMIUM */}
           <motion.article
-            variants={cardItem}
-            className="relative flex h-full flex-col rounded-[32px] bg-white/95 p-8 shadow-[0_22px_45px_rgba(15,23,42,0.12)] ring-1 ring-zinc-100 
-                       transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_60px_rgba(15,23,42,0.16)]
-                       dark:bg-zinc-900/95 dark:ring-zinc-800"
+            variants={cardFade}
+            className="relative flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 sm:p-7"
           >
-            <div className="absolute -top-3 right-7 inline-flex items-center gap-1.5 rounded-full bg-sky-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+            <div className="absolute -top-3 right-4 inline-flex items-center gap-1 rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">
               {isPremium ? (
                 <>
                   <Crown className="h-3.5 w-3.5" />
@@ -351,67 +377,64 @@ export default function Pricing() {
               ) : (
                 <>
                   <Zap className="h-3.5 w-3.5" />
-                  Gói khuyên dùng
+                  Gói được khuyến nghị
                 </>
               )}
             </div>
 
-            <header className="mb-7 space-y-2">
-              <p className="text-sm font-semibold text-sky-600 dark:text-sky-400">
+            <header className="mb-6 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-300">
                 Premium
               </p>
               <div className="flex items-baseline gap-2">
-                <div className="flex items-baseline gap-1">
-                  {promo ? (
-                    <>
-                      <span className="text-xl font-normal text-zinc-400 line-through dark:text-zinc-500">
-                        {Math.round(priceDisplay.base / 1000)}k
-                      </span>
-                      <span className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                        {Math.round(priceDisplay.final / 1000)}k
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                      129k
+                {promo ? (
+                  <>
+                    <span className="text-lg font-normal text-slate-400 line-through dark:text-slate-500">
+                      {Math.round(priceDisplay.base / 1000)}k
                     </span>
-                  )}
-                  <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                    / tháng
+                    <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                      {Math.round(priceDisplay.final / 1000)}k
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                    129k
                   </span>
-                </div>
+                )}
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                  / tháng
+                </span>
               </div>
-              <p className="max-w-md text-sm text-zinc-500 dark:text-zinc-400">
-                Toàn bộ chức năng luyện đề, phân tích lỗi, chat AI & giáo viên –
-                dành cho bạn khi muốn bứt tốc điểm TOEIC.
+              <p className="max-w-md text-sm text-slate-600 dark:text-slate-300">
+                Mở khóa toàn bộ Practice Tests, AI Chat, livestream, tải tài
+                liệu và Learning Insight để tối ưu lộ trình luyện thi TOEIC.
               </p>
+
               {promo && (
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
-                  <BadgePercent className="h-3.5 w-3.5" />
+                <div className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+                  <BadgePercent className="h-3 w-3" />
                   Đã áp dụng mã: {promo.code}
                 </div>
               )}
             </header>
 
             {/* Promo input */}
-            <div className="mb-6 flex flex-col gap-2 sm:flex-row">
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row">
               <div className="relative flex-1">
                 <input
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   placeholder="Nhập mã khuyến mãi (nếu có)"
-                  className="w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm font-medium text-zinc-700 placeholder:text-zinc-400 
-                             focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/15
-                             dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder:text-zinc-500"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
                   disabled={!!promo || isPremium}
                 />
                 {promo && (
                   <button
                     type="button"
                     onClick={clearCode}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
-                    <X className="h-4 w-4 text-zinc-500" />
+                    <X className="h-4 w-4 text-slate-500" />
                   </button>
                 )}
               </div>
@@ -419,8 +442,7 @@ export default function Pricing() {
                 type="button"
                 onClick={onApplyCode}
                 disabled={!!promo || !code.trim() || checking || isPremium}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all 
-                           hover:bg-sky-500 disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500 disabled:opacity-60"
               >
                 {checking ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -432,34 +454,44 @@ export default function Pricing() {
             </div>
 
             {promoErr && (
-              <p className="mb-3 text-xs font-medium text-red-600 dark:text-red-400">
+              <p className="mb-2 text-xs font-medium text-red-600 dark:text-red-400">
                 {promoErr}
               </p>
             )}
             {promo && (
               <p className="mb-3 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                 Giá sau giảm:{" "}
-                <strong className="text-sm">
+                <span className="text-sm">
                   {Math.round(priceDisplay.final / 1000)}.000đ
-                </strong>
+                </span>
               </p>
             )}
 
-            <ul className="mb-8 space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
-              {[
-                "Không giới hạn số bài luyện",
-                "Full Test + giải chi tiết từng câu",
-                "Chat AI & Admin/Giảng viên hỗ trợ",
-                "Phân tích lỗi nâng cao & tải file",
-                "Lộ trình học tối ưu theo tiến độ",
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-950/50">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
-                  </div>
-                  <span className="font-medium leading-snug">{item}</span>
-                </li>
-              ))}
+            <ul className="mb-6 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-950/40">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
+                </span>
+                <span>Không giới hạn Practice Tests & mini tests</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-950/40">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
+                </span>
+                <span>Chat AI & Admin/Giảng viên bất cứ lúc nào</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-950/40">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
+                </span>
+                <span>Livestream không giới hạn bình luận & tài liệu</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-950/40">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
+                </span>
+                <span>Learning Insight cá nhân hoá theo kết quả học</span>
+              </li>
             </ul>
 
             <div className="mt-auto pt-1">
@@ -467,11 +499,11 @@ export default function Pricing() {
                 type="button"
                 onClick={handleUpgrade}
                 disabled={isPremium || loading}
-                className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all disabled:opacity-60 ${
+                className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors ${
                   isPremium
-                    ? "bg-gradient-to-r from-green-600 to-green-500"
-                    : "bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400"
-                }`}
+                    ? "bg-emerald-600 hover:bg-emerald-600"
+                    : "bg-indigo-600 hover:bg-indigo-500"
+                } disabled:opacity-60`}
               >
                 {loading ? (
                   <>
@@ -490,66 +522,70 @@ export default function Pricing() {
                   </>
                 )}
               </button>
-              <p className="mt-3 text-center text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-center text-[11px] text-slate-500 dark:text-slate-400">
                 Thanh toán qua{" "}
-                <span className="font-semibold text-sky-600 dark:text-sky-400">
+                <span className="font-semibold text-indigo-600 dark:text-indigo-300">
                   PayOS
                 </span>
-                . Có thể huỷ bất kỳ lúc nào.
+                . Bạn có thể dừng gia hạn bất kỳ lúc nào.
               </p>
             </div>
           </motion.article>
 
-          {/* FREE – thẻ phụ */}
+          {/* FREE */}
           <motion.article
-            variants={cardItem}
-            className="flex h-full flex-col rounded-[32px] border border-zinc-200 bg-white/95 p-8 shadow-[0_18px_35px_rgba(15,23,42,0.06)] 
-                       transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_45px_rgba(15,23,42,0.10)]
-                       dark:border-zinc-800 dark:bg-zinc-900/95"
+            variants={cardFade}
+            className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-md shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 sm:p-7"
           >
-            <header className="mb-7 space-y-2">
-              <p className="text-sm font-semibold text-sky-600 dark:text-sky-400">
+            <header className="mb-6 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Free
               </p>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
                   0đ
                 </span>
-                <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   / tháng
                 </span>
               </div>
+              <p className="max-w-md text-sm text-slate-600 dark:text-slate-300">
+                Làm placement test, luyện tập cơ bản và trải nghiệm giao diện
+                học thử trước khi nâng cấp.
+              </p>
             </header>
 
-            <p className="mb-6 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
-              Thử trải nghiệm giao diện, làm placement test, luyện tập cơ bản
-              trước khi quyết định nâng cấp.
-            </p>
-
-            <ul className="mb-8 space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
-              {[
-                "20 bài luyện/tháng",
-                "Mini test theo từng Part",
-                "Lộ trình gợi ý cơ bản",
-                "Báo cáo điểm tổng quan",
-                "Cập nhật nội dung thường xuyên",
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800/70">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-300" />
-                  </div>
-                  <span className="font-medium leading-snug">{item}</span>
-                </li>
-              ))}
+            <ul className="mb-6 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
+                </span>
+                <span>20 Practice Tests mỗi tháng</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
+                </span>
+                <span>Lộ trình gợi ý cơ bản theo level</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
+                </span>
+                <span>Báo cáo điểm tổng quan sau mỗi bài</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
+                </span>
+                <span>Cập nhật nội dung đề & bài đọc thường xuyên</span>
+              </li>
             </ul>
 
             <div className="mt-auto pt-1">
               <Link
                 href={`${basePrefix}/register`}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-700 
-                           shadow-sm transition-all hover:border-zinc-400 hover:bg-zinc-50
-                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2
-                           dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800 dark:focus-visible:ring-offset-zinc-950"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-950"
               >
                 <Star className="h-4 w-4" />
                 Bắt đầu với gói Free
@@ -558,88 +594,106 @@ export default function Pricing() {
           </motion.article>
         </motion.div>
 
-        {/* Bảng so sánh */}
+        {/* So sánh chi tiết */}
         <motion.div
-          className="mt-16 rounded-3xl border border-zinc-200/90 bg-zinc-50/80 p-6 shadow-sm ring-1 ring-zinc-100/80 
-                     dark:border-zinc-800/80 dark:bg-zinc-900/95 dark:ring-zinc-900/80 sm:p-8"
-          variants={fadeUp}
+          variants={sectionFade}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.25 }}
+          viewport={{ once: true, amount: 0.2 }}
+          className="rounded-3xl border border-slate-200 bg-white px-4 py-6 shadow-sm shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 sm:px-6 sm:py-7"
         >
-          <div className="mb-6 flex flex-col gap-3 border-b border-zinc-200 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-zinc-800">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-sky-400">
-                <Sparkles className="h-4 w-4 text-white" />
+          <div className="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600/90 text-white">
+                <BarChart3 className="h-4 w-4" />
               </div>
-              <h4 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-lg">
-                So sánh chi tiết giữa Free và Premium
-              </h4>
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-50 sm:text-base">
+                  So sánh chi tiết tính năng Free vs Premium
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Dựa trên các module thật của hệ thống (Practice, AI Chat,
+                  Livestream, Learning Insight, Groups).
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Nhìn nhanh để xem gói nào phù hợp với nhu cầu luyện thi TOEIC của
-              bạn.
-            </p>
           </div>
 
           {/* Desktop table */}
-          <div className="hidden gap-4 text-sm text-zinc-700 md:grid md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)] dark:text-zinc-300">
-            <div className="pb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <div className="hidden text-sm text-slate-700 md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)] md:gap-x-4 dark:text-slate-200">
+            <div className="pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Tính năng
             </div>
-            <div className="pb-2 text-center text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <div className="pb-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Free
             </div>
-            <div className="pb-2 text-center text-xs font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-400">
+            <div className="pb-2 text-center text-xs font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-300">
               Premium
             </div>
 
-            {rows.map((r) => (
-              <React.Fragment key={r.key}>
-                <div className="flex items-center gap-2.5 border-t border-zinc-200 py-3 dark:border-zinc-800">
-                  {r.icon}
-                  <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                    {r.label}
-                  </span>
+            {rows.map((row) => (
+              <React.Fragment key={row.key}>
+                <div className="border-t border-slate-200 py-3 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    {row.icon}
+                    <span className="font-medium text-slate-900 dark:text-slate-50">
+                      {row.label}
+                    </span>
+                  </div>
+                  {row.description && (
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      {row.description}
+                    </p>
+                  )}
                 </div>
-                <div className="flex items-center justify-center border-t border-zinc-200 py-3 text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
-                  {r.free}
+                <div className="flex items-center justify-center border-t border-slate-200 py-3 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-300">
+                  {row.free}
                 </div>
-                <div className="flex items-center justify-center border-t border-zinc-200 py-3 font-semibold text-sky-700 dark:border-zinc-800 dark:text-sky-400">
-                  {r.pro}
+                <div className="flex items-center justify-center border-t border-slate-200 py-3 text-xs font-semibold text-indigo-700 dark:border-slate-800 dark:text-indigo-300">
+                  {row.pro}
                 </div>
               </React.Fragment>
             ))}
           </div>
 
-          {/* Mobile list */}
-          <div className="space-y-4 text-sm text-zinc-700 md:hidden dark:text-zinc-300">
-            {rows.map((r) => (
+          {/* Mobile cards */}
+          <div className="space-y-4 text-sm text-slate-700 md:hidden dark:text-slate-200">
+            {rows.map((row) => (
               <div
-                key={r.key}
-                className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+                key={row.key}
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
               >
-                <div className="mb-3 flex items-center gap-2.5">
-                  {r.icon}
-                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                    {r.label}
-                  </span>
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600/90 text-white">
+                    {row.icon}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                      {row.label}
+                    </p>
+                    {row.description && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {row.description}
+                      </p>
+                    )}
+                  </div>
                 </div>
+
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900/60">
-                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  <div className="rounded-xl bg-white p-3 shadow-sm shadow-slate-900/5 dark:bg-slate-900">
+                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                       Free
                     </p>
-                    <div className="text-[13px] text-zinc-700 dark:text-zinc-300">
-                      {r.free}
+                    <div className="text-[13px] text-slate-700 dark:text-slate-200">
+                      {row.free}
                     </div>
                   </div>
-                  <div className="rounded-xl bg-sky-50 p-3 dark:bg-sky-900/40">
-                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-300">
+                  <div className="rounded-xl bg-indigo-50 p-3 shadow-sm shadow-slate-900/5 dark:bg-indigo-950/40">
+                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
                       Premium
                     </p>
-                    <div className="text-[13px] font-semibold text-sky-800 dark:text-sky-50">
-                      {r.pro}
+                    <div className="text-[13px] font-semibold text-indigo-800 dark:text-indigo-100">
+                      {row.pro}
                     </div>
                   </div>
                 </div>
@@ -650,29 +704,28 @@ export default function Pricing() {
 
         {/* CTA cuối */}
         <motion.div
-          className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row"
-          variants={fadeUp}
+          variants={sectionFade}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0.15 }}
+          className="flex flex-col items-center justify-center gap-3 sm:flex-row"
         >
           <Link
             href={`${basePrefix}/practice`}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-700 
-                       shadow-sm transition-all hover:border-zinc-400 hover:bg-zinc-50
-                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2
-                       dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800 dark:focus-visible:ring-offset-zinc-950"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-950"
           >
-            Khám phá bài luyện miễn phí
+            <PlayCircle className="h-4 w-4" />
+            Làm thử bài luyện miễn phí
           </Link>
+
           <button
             type="button"
             onClick={handleUpgrade}
             disabled={isPremium || loading}
-            className={`inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all disabled:opacity-60 ${
+            className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors disabled:opacity-60 ${
               isPremium
-                ? "bg-gradient-to-r from-green-600 to-green-500"
-                : "bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400"
+                ? "bg-emerald-600 hover:bg-emerald-600"
+                : "bg-indigo-600 hover:bg-indigo-500"
             }`}
           >
             {loading ? (

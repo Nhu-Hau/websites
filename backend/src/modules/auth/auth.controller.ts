@@ -61,11 +61,47 @@ export async function uploadAvatar(req: Request, res: Response) {
     const f = (req as any).file as Express.Multer.File | undefined;
     if (!f) return res.status(400).json({ message: "Thiếu file" });
 
+    // Normalize MIME type for Safari iOS compatibility
+    // Safari sometimes sends empty or incorrect MIME types, especially for HEIC/HEIF
+    let normalizedMime = f.mimetype || "";
+    if (!normalizedMime || normalizedMime === "application/octet-stream") {
+      // Try to infer from file extension
+      const ext = f.originalname.toLowerCase().substring(f.originalname.lastIndexOf("."));
+      const mimeMap: Record<string, string> = {
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".webp": "image/webp",
+        ".gif": "image/gif",
+        ".heic": "image/heic",
+        ".heif": "image/heif",
+      };
+      normalizedMime = mimeMap[ext] || normalizedMime || "image/jpeg";
+    }
+
+    // Normalize image/jpg to image/jpeg (Safari iOS sometimes sends image/jpg)
+    if (normalizedMime === "image/jpg") {
+      normalizedMime = "image/jpeg";
+    }
+
+    // For HEIC/HEIF from iOS, convert to JPEG for better compatibility
+    // But first try to upload as-is, S3 can handle it
+    let finalMime = normalizedMime;
+    let finalName = f.originalname;
+    
+    // If it's HEIC/HEIF, change extension to .jpg for better browser compatibility
+    if (normalizedMime === "image/heic" || normalizedMime === "image/heif") {
+      const baseName = f.originalname.substring(0, f.originalname.lastIndexOf("."));
+      finalName = `${baseName}.jpg`;
+      // Keep HEIC mime type for S3, but browser will see .jpg extension
+      // The actual conversion should happen on frontend if needed
+    }
+
     // 1) Upload ảnh mới lên S3 (gợi ý: lib/s3 đã phân loại type= image/file)
     const { url, key } = await uploadBufferToS3({
       buffer: f.buffer,
-      mime: f.mimetype,
-      originalName: f.originalname,
+      mime: finalMime,
+      originalName: finalName,
       folder: "avatar", // ⟵ lưu vào s3://project.toeic/avatar/
     });
 

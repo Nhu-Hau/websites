@@ -168,24 +168,24 @@ export default function ImageCropper({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-zinc-200 dark:border-zinc-800">
+          <h2 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             {CROP_COPY.title}
           </h2>
           <button
             onClick={onCancel}
-            className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           >
-            <X className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+            <X className="h-4 w-4 sm:h-5 sm:w-5 text-zinc-600 dark:text-zinc-400" />
           </button>
         </div>
 
         {/* Cropper Container */}
         <div className="relative flex-1 min-h-0">
-          <div className="relative w-full h-full" style={{ minHeight: "400px" }}>
+          <div className="relative w-full h-full" style={{ minHeight: "300px" }}>
             <Cropper
               image={image}
               crop={crop}
@@ -201,10 +201,10 @@ export default function ImageCropper({
         </div>
 
         {/* Controls */}
-        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 space-y-4">
+        <div className="p-3 sm:p-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3 sm:space-y-4">
           {/* Zoom */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5 sm:mb-2">
               {CROP_COPY.zoom}: {Math.round(zoom * 100)}%
             </label>
             <input
@@ -220,7 +220,7 @@ export default function ImageCropper({
 
           {/* Rotation */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5 sm:mb-2">
               {CROP_COPY.rotation}: {rotation}°
             </label>
             <input
@@ -235,27 +235,28 @@ export default function ImageCropper({
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 justify-end">
+          <div className="flex gap-2 sm:gap-3 justify-end">
             <button
               onClick={onCancel}
               disabled={processing}
-              className="px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+              className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 text-sm sm:text-base font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
             >
               {CROP_COPY.cancel}
             </button>
             <button
               onClick={handleDone}
               disabled={processing || !croppedAreaPixels}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-blue-600 text-white text-sm sm:text-base font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2"
             >
               {processing ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                  {CROP_COPY.processing}
+                  <div className="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 border-2 border-white border-t-transparent" />
+                  <span className="hidden sm:inline">{CROP_COPY.processing}</span>
+                  <span className="sm:hidden">...</span>
                 </>
               ) : (
                 <>
-                  <Check className="h-4 w-4" />
+                  <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   {CROP_COPY.done}
                 </>
               )}

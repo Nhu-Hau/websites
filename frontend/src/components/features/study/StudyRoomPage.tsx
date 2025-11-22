@@ -867,7 +867,7 @@ export default function StudyRoomPage() {
   const hostIdentity = data.hostIdentity || data.identity;
 
   return (
-    <div className="h-[100dvh] bg-black">
+    <div className="fixed inset-0 z-10 bg-black overflow-hidden">
       <LiveKitRoom
         serverUrl={data.wsUrl}
         token={data.token}
@@ -881,7 +881,7 @@ export default function StudyRoomPage() {
         <RoomAudioRenderer />
 
         {/* Wrapper toàn bộ nội dung live */}
-        <div className="absolute top-14 left-0 right-0 bottom-0">
+        <div className="absolute inset-0 pt-14">
           <div className="relative h-full w-full overflow-hidden">
             {/* Video + overlay */}
             <LeaveRoomButton />

@@ -8,7 +8,6 @@ import {
   listStudyRooms,
   deleteStudyRoom,
   createRoom,
-  createTeacherLead,
 } from "@/lib/api/client";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
@@ -25,9 +24,6 @@ import {
   RefreshCw,
   Hash,
   CheckCircle,
-  UploadCloud,
-  Paperclip,
-  GraduationCap,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
@@ -50,343 +46,6 @@ type AuthUser = ReturnType<typeof useAuth>["user"];
 interface CreateStudyRoomProps {
   onCreated?: () => void;
   onCancel?: () => void;
-}
-
-interface TeacherLeadFormValues {
-  fullName: string;
-  email: string;
-  phone: string;
-  scoreOrCert: string;
-  experience: string;
-  availability: string;
-  message: string;
-}
-
-interface TeacherRegisterModalProps {
-  user: AuthUser | null;
-  onClose: () => void;
-  onSuccess: () => void;
-}
-
-function TeacherRegisterModal({
-  user,
-  onClose,
-  onSuccess,
-}: TeacherRegisterModalProps) {
-  const [form, setForm] = useState<TeacherLeadFormValues>({
-    fullName: user?.name || "",
-    email: user?.email || "",
-    phone: "",
-    scoreOrCert: "",
-    experience: "",
-    availability: "",
-    message: "",
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [attachments, setAttachments] = React.useState<File[]>([]);
-
-  useEffect(() => {
-    setForm((prev) => ({
-      ...prev,
-      fullName: prev.fullName || user?.name || "",
-      email: prev.email || user?.email || "",
-    }));
-  }, [user?.name, user?.email]);
-
-  const updateField = useCallback(
-    (field: keyof TeacherLeadFormValues) =>
-      (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const value = e.target.value;
-        setForm((prev) => ({ ...prev, [field]: value }));
-      },
-    []
-  );
-
-  const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    const next = [...attachments, ...files].slice(0, 5); // tối đa 5 file
-    setAttachments(next);
-  };
-
-  const handleRemoveFile = (index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = useCallback(async () => {
-    const { fullName, email, phone, scoreOrCert, experience, availability } =
-      form;
-
-    if (
-      !fullName.trim() ||
-      !email.trim() ||
-      !phone.trim() ||
-      !scoreOrCert.trim() ||
-      !experience.trim() ||
-      !availability.trim()
-    ) {
-      toast.error("Vui lòng điền đầy đủ tất cả các trường bắt buộc.");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await createTeacherLead({
-        fullName: fullName.trim(),
-        email: email.trim(),
-        phone: phone.trim(),
-        scoreOrCert: scoreOrCert.trim(),
-        experience: experience.trim(),
-        availability: availability.trim(),
-        message: form.message.trim(),
-        // nếu sau này bạn muốn gửi attachments lên backend thì xử lý thêm ở đây
-      });
-      toast.success(
-        "Đã gửi thông tin đăng ký giáo viên. Admin sẽ liên hệ nếu hồ sơ phù hợp."
-      );
-      onSuccess();
-    } catch (error: any) {
-      const message =
-        error?.message || "Gửi thông tin thất bại. Vui lòng thử lại sau.";
-      toast.error(message);
-    } finally {
-      setSubmitting(false);
-    }
-  }, [form, onSuccess]);
-
-  return (
-    <div
-      className="w-full max-w-sm sm:max-w-lg mx-auto rounded-2xl border border-zinc-200/80 bg-white/95 px-3.5 py-4 sm:px-5 sm:py-5 shadow-xl ring-1 ring-black/5 dark:border-zinc-800/80 dark:bg-zinc-900/95
-      max-h-[85vh] overflow-y-auto"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Header */}
-      <div className="flex items-start gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300">
-          <GraduationCap className="h-4 w-4" />
-        </div>
-        <div className="flex-1 space-y-1">
-          <h2 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white">
-            Đăng ký trở thành giáo viên
-          </h2>
-          <p className="text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-400">
-            Điền thông tin liên hệ và năng lực giảng dạy để ban quản trị xem xét
-            hồ sơ của bạn.
-          </p>
-        </div>
-      </div>
-
-      {/* Body */}
-      <form
-        className="mt-3 space-y-3 sm:mt-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!submitting) handleSubmit();
-        }}
-      >
-        {/* Họ tên / Email */}
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
-            <label
-              htmlFor="teacher-full-name"
-              className="text-[11px] sm:text-xs font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Họ và tên <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="teacher-full-name"
-              value={form.fullName}
-              onChange={updateField("fullName")}
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-xs sm:text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-              placeholder="Nguyễn Văn A"
-              disabled={submitting}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label
-              htmlFor="teacher-email"
-              className="text-[11px] sm:text-xs font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Email <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="teacher-email"
-              type="email"
-              value={form.email}
-              onChange={updateField("email")}
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-xs sm:text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-              placeholder="giaovien@example.com"
-              disabled={submitting}
-            />
-          </div>
-        </div>
-
-        {/* SĐT / Điểm số */}
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
-            <label
-              htmlFor="teacher-phone"
-              className="text-[11px] sm:text-xs font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Số điện thoại <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="teacher-phone"
-              type="tel"
-              value={form.phone}
-              onChange={updateField("phone")}
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-xs sm:text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-              placeholder="Ví dụ: 0912 345 678"
-              disabled={submitting}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label
-              htmlFor="teacher-score"
-              className="text-[11px] sm:text-xs font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Điểm số / Chứng chỉ <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="teacher-score"
-              value={form.scoreOrCert}
-              onChange={updateField("scoreOrCert")}
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-xs sm:text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-              placeholder="TOEIC 900, IELTS 7.5..."
-              disabled={submitting}
-            />
-          </div>
-        </div>
-
-        {/* Kinh nghiệm */}
-        <div className="space-y-1">
-          <label
-            htmlFor="teacher-experience"
-            className="text-[11px] sm:text-xs font-medium text-zinc-700 dark:text-zinc-300"
-          >
-            Kinh nghiệm giảng dạy <span className="text-rose-500">*</span>
-          </label>
-          <textarea
-            id="teacher-experience"
-            value={form.experience}
-            onChange={updateField("experience")}
-            className="min-h-[60px] w-full rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-xs sm:text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-            placeholder="Tóm tắt ngắn gọn kinh nghiệm giảng dạy của bạn."
-            disabled={submitting}
-          />
-        </div>
-
-        {/* Upload chứng chỉ / bằng cấp */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <label className="text-[11px] sm:text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Tệp / Ảnh chứng chỉ, bằng cấp
-            </label>
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              PDF, JPG, PNG · tối đa 5
-            </span>
-          </div>
-
-          <label className="group flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-3 py-2.5 text-center text-[11px] text-zinc-500 transition hover:border-amber-400 hover:bg-amber-50/60 sm:px-4 sm:py-3 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-amber-500 dark:hover:bg-zinc-900/80">
-            <div className="flex items-center gap-2 text-[11px] sm:text-xs font-medium text-zinc-700 dark:text-zinc-100">
-              <UploadCloud className="h-4 w-4 text-amber-500 dark:text-amber-400" />
-              <span>Nhấn để chọn tệp</span>
-            </div>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              Bảng điểm, chứng chỉ hoặc giấy tờ liên quan (nếu có).
-            </p>
-            <input
-              type="file"
-              multiple
-              accept=".pdf,image/*"
-              className="hidden"
-              onChange={handleFilesChange}
-              disabled={submitting}
-            />
-          </label>
-
-          {attachments.length > 0 && (
-            <div className="space-y-1 rounded-xl bg-zinc-50/80 p-2.5 text-xs dark:bg-zinc-900/80">
-              <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Tệp đã chọn ({attachments.length})
-              </p>
-              <ul className="space-y-1">
-                {attachments.map((file, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center justify-between gap-2 rounded-lg bg-white px-2 py-1.5 text-[11px] shadow-sm ring-1 ring-zinc-200/80 dark:bg-zinc-950/60 dark:ring-zinc-800"
-                  >
-                    <div className="flex min-w-0 items-center gap-2">
-                      <Paperclip className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
-                      <span className="truncate text-[11px] text-zinc-700 dark:text-zinc-200">
-                        {file.name}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFile(index)}
-                      className="text-[10px] font-medium text-zinc-500 hover:text-rose-500 dark:text-zinc-400 dark:hover:text-rose-400"
-                    >
-                      Xóa
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Thời gian / Ghi chú */}
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
-            <label
-              htmlFor="teacher-availability"
-              className="text-[11px] sm:text-xs font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Thời gian có thể giảng dạy{" "}
-              <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="teacher-availability"
-              value={form.availability}
-              onChange={updateField("availability")}
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-xs sm:text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-              placeholder="Ví dụ: tối 2–4–6, cuối tuần."
-              disabled={submitting}
-            />
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="mt-3 flex flex-col gap-2 pt-1 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={submitting}
-            className="inline-flex w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-2 text-xs sm:text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 sm:w-auto"
-          >
-            Hủy
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="inline-flex w-full items-center justify-center rounded-xl bg-amber-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-50 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-amber-500 dark:hover:bg-amber-400 dark:focus:ring-offset-zinc-900 sm:w-auto"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Đang gửi...
-              </>
-            ) : (
-              "Gửi thông tin"
-            )}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
 }
 
 function slugifyRoom(input: string): string {
@@ -693,8 +352,6 @@ export default function CreateStudyRoomPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showTeacherRegisterModal, setShowTeacherRegisterModal] =
-    useState(false);
 
   const basePrefix = useBasePrefix();
 
@@ -946,34 +603,17 @@ export default function CreateStudyRoomPage() {
                       giáo viên nếu hồ sơ phù hợp.
                     </p>
 
-                    <button
-                      onClick={() => setShowTeacherRegisterModal(true)}
+                    <Link
+                      href={`${basePrefix}/study/teacher-register`}
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 hover:shadow-md dark:bg-amber-500 dark:hover:bg-amber-400"
                     >
                       <Users className="h-4 w-4" />
                       Gửi thông tin đăng ký giáo viên
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
             </section>
-          )}
-
-          {/* Teacher Register Modal */}
-          {showTeacherRegisterModal && (
-            <div
-              className="fixed inset-x-0 bottom-0 top-8 z-[60] flex items-start justify-center bg-black/45 backdrop-blur-sm px-3 sm:px-4 py-4"
-              onClick={(e) =>
-                e.target === e.currentTarget &&
-                setShowTeacherRegisterModal(false)
-              }
-            >
-              <TeacherRegisterModal
-                user={user}
-                onClose={() => setShowTeacherRegisterModal(false)}
-                onSuccess={() => setShowTeacherRegisterModal(false)}
-              />
-            </div>
           )}
 
           {/* Error Alert */}

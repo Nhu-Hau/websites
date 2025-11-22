@@ -403,7 +403,7 @@ export default function StudyScheduleClient({
   return (
     <div className="space-y-6">
       {/* ===== PLANNER CARD ===== */}
-      <div className="relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md sm:p-5">
+      <div className="relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md sm:p-5 dark:border-zinc-800/80 dark:bg-zinc-900/95">
         {/* accent line brand */}
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#3B8561] to-[#31694E]" />
 
@@ -412,19 +412,16 @@ export default function StudyScheduleClient({
           <div className="flex items-center gap-3">
             {/* icon style theo mẫu, tối ưu mobile */}
             <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
-              {/* Glow layer */}
-              <div className="absolute inset-0 rounded-2xl" />
-
-              {/* Icon container */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#3B8561]/60 via-[#31694E]/40 to-[#3B8561]/40 blur-xl" />
               <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#3B8561] to-[#31694E] shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
                 <Calendar className="h-5 w-5 text-white" />
               </div>
             </div>
             <div className="min-w-0">
-              <h2 className="text-lg font-semibold tracking-tight text-gray-900 sm:text-xl">
+              <h2 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-slate-50 sm:text-xl">
                 Lên lịch học thông minh
               </h2>
-              <p className="mt-0.5 text-xs text-gray-500 sm:text-[13px]">
+              <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400 sm:text-[13px]">
                 Đặt lịch luyện tập cố định để giữ nhịp học TOEIC bạn nhé.
               </p>
             </div>
@@ -680,20 +677,20 @@ export default function StudyScheduleClient({
 
       {/* ===== UPCOMING CARD ===== */}
       {loadingUpcoming ? (
-        <div className="rounded-2xl border border-gray-200/70 bg-white/95 p-6 text-center shadow-sm backdrop-blur-xl">
-          <Loader2 className="mx-auto h-6 w-6 animate-spin text-gray-400" />
+        <div className="rounded-2xl border border-gray-200/70 bg-white/95 p-6 text-center shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-900/95">
+          <Loader2 className="mx-auto h-6 w-6 animate-spin text-gray-400 dark:text-zinc-500" />
         </div>
       ) : !upcoming ? (
-        <div className="rounded-2xl border border-dashed border-gray-200/80 bg-white/90 p-6 shadow-sm backdrop-blur-xl">
+        <div className="rounded-2xl border border-dashed border-gray-200/80 bg-white/90 p-6 shadow-sm backdrop-blur-xl dark:border-zinc-800/70 dark:bg-zinc-900/60">
           <div className="flex items-center gap-4">
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gray-100">
               <AlarmClock className="h-5 w-5 text-gray-400" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-900">
+              <p className="text-sm font-semibold text-gray-900 dark:text-slate-50">
                 Chưa có lịch sắp tới
               </p>
-              <p className="mt-1 text-xs text-gray-500 sm:text-sm">
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
                 Hãy tạo một lịch học ở trên, hệ thống sẽ nhắc bạn đúng giờ như
                 các app edtech pro.
               </p>
@@ -701,7 +698,7 @@ export default function StudyScheduleClient({
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-gray-200/70 bg-white/95 p-5 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md">
+        <div className="rounded-2xl border border-gray-200/70 bg-white/95 p-5 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95">
           {/* header */}
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* LEFT */}
@@ -713,10 +710,10 @@ export default function StudyScheduleClient({
 
               {/* Text */}
               <div className="min-w-0 flex flex-col justify-center">
-                <h3 className="text-sm font-semibold tracking-tight text-gray-900">
+                <h3 className="text-sm font-semibold tracking-tight text-gray-900 dark:text-slate-50">
                   Lịch học sắp tới
                 </h3>
-                <p className="text-xs text-gray-500 sm:text-sm">
+                <p className="text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
                   {upcoming.status === "completed"
                     ? "Buổi học gần nhất đã hoàn thành."
                     : upcoming.status === "missed"

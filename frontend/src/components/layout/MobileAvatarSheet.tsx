@@ -349,7 +349,11 @@ export default function MobileAvatarSheet({
                     </div>
 
                     {/* Gói */}
-                    <div className="flex items-center justify-between rounded-xl px-4 py-2">
+                    <Link
+                      href={`${base}/pricing`}
+                      onClick={onClose}
+                      className="flex items-center justify-between rounded-xl px-4 py-2 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200 group"
+                    >
                       <div className="flex items-center gap-3">
                         {userAccess === "premium" ? (
                           <Crown className="h-5 w-5 text-yellow-500" />
@@ -360,17 +364,19 @@ export default function MobileAvatarSheet({
                           Gói
                         </span>
                       </div>
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold",
-                          userAccess === "premium"
-                            ? "border-yellow-300 bg-yellow-100 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
-                            : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300"
-                        )}
-                      >
-                        {userAccess === "premium" ? "Cao cấp" : "Miễn phí"}
-                      </span>
-                    </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold",
+                            userAccess === "premium"
+                              ? "border-yellow-300 bg-yellow-100 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+                              : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300"
+                          )}
+                        >
+                          {userAccess === "premium" ? "Cao cấp" : "Miễn phí"}
+                        </span>
+                      </div>
+                    </Link>
 
                     {/* Level từng part */}
                     <div className="pt-4 pb-5 px-4">

@@ -652,22 +652,22 @@ export default function Account() {
 
       {/* ===== Crop Modal ===== */}
       {cropOpen && rawImage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-lg rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 shadow-2xl">
-            <div className="flex items-center justify-between px-4 py-3 border-b dark:border-zinc-800">
-              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-2 sm:p-4">
+          <div className="w-full max-w-lg rounded-xl sm:rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 shadow-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 border-b dark:border-zinc-800">
+              <h3 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-zinc-100">
                 Cắt ảnh đại diện
               </h3>
               <button
                 onClick={() => setCropOpen(false)}
-                className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="p-1.5 sm:p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 aria-label="Đóng"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <div className="relative h-[60vh] max-h-[520px] bg-zinc-900/5 dark:bg-zinc-800">
+            <div className="relative flex-1 min-h-0 bg-zinc-900/5 dark:bg-zinc-800" style={{ minHeight: "300px" }}>
               <Cropper
                 image={rawImage}
                 crop={crop}
@@ -682,7 +682,7 @@ export default function Account() {
               />
             </div>
 
-            <div className="flex items-center gap-3 px-4 py-4 border-t dark:border-zinc-800">
+            <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 border-t dark:border-zinc-800">
               <input
                 type="range"
                 min={1}
@@ -690,12 +690,12 @@ export default function Account() {
                 step={0.01}
                 value={zoom}
                 onChange={(e) => setZoom(parseFloat(e.currentTarget.value))}
-                className="flex-1"
+                className="flex-1 h-2"
               />
               <button
                 onClick={handleSaveCrop}
                 disabled={uploading}
-                className="inline-flex items-center rounded-full bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-500 disabled:opacity-60"
+                className="inline-flex items-center rounded-full bg-indigo-600 px-3 py-1.5 sm:px-4 sm:py-2 text-white text-sm sm:text-base font-medium hover:bg-indigo-500 disabled:opacity-60 whitespace-nowrap"
               >
                 {uploading ? "Đang lưu…" : "Lưu"}
               </button>

@@ -382,7 +382,7 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
   const totalCount = Object.keys(BADGE_CONFIG).length;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-3 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md sm:p-5 dark:border-slate-800/80 dark:bg-slate-950/92">
+    <div className="relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95 sm:p-5">
       {/* accent line brand giống StudySchedule */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#4063bb] to-[#35519a]" />
 
@@ -390,12 +390,14 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
       <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           {/* icon style theo mẫu lên lịch học */}
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-[#35519a] shadow-md shadow-[#35519a]/30 sm:h-10 sm:w-10">
-            <Trophy className="relative z-10 h-5 w-5 text-white" />
-            <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/40" />
+          <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#4063bb]/60 via-[#35519a]/40 to-[#4063bb]/40 blur-xl" />
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-[#35519a] shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
+              <Trophy className="h-5 w-5 text-white" />
+            </div>
           </div>
           <div className="min-w-0">
-            <h2 className="truncate font-semibold text-slate-900 dark:text-white text-lg xs:text-xl">
+            <h2 className="truncate text-lg font-semibold tracking-tight text-slate-900 dark:text-white xs:text-xl">
               Bộ sưu tập huy hiệu
             </h2>
             <p className="text-xs text-slate-600 dark:text-slate-400 sm:text-[13px]">

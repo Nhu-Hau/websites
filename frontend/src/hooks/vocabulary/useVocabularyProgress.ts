@@ -18,9 +18,36 @@ export function useVocabularyProgress() {
   const [progressMap, setProgressMap] = useState<StoredProgress>({});
   const [hydrated, setHydrated] = useState(false);
 
+  // Reset state when user changes (auth:updated or auth:changed event)
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setProgressMap({});
+      // Re-hydrate after clearing
+      if (typeof window !== "undefined") {
+        try {
+          const raw = window.localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw) as StoredProgress;
+            setProgressMap(parsed);
+          }
+        } catch (error) {
+          console.warn("[useVocabularyProgress] unable to parse progress after auth change", error);
+        }
+      }
+    };
+
+    window.addEventListener("auth:updated", handleAuthChange);
+    window.addEventListener("auth:changed", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("auth:updated", handleAuthChange);
+      window.removeEventListener("auth:changed", handleAuthChange);
+    };
+  }, []);
+
   // Hydrate from localStorage once on client
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || hydrated) return;
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {

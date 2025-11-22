@@ -229,7 +229,7 @@ function describeEligibilityReason(info: ProgressEligibilityInfo | null) {
 }
 
 const CARD_BASE =
-  "relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl dark:border-gray-800/80 dark:bg-gray-950/90 dark:ring-white/5 sm:p-5";
+  "relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md sm:p-5 dark:border-zinc-800/80 dark:bg-zinc-900/95";
 
 const SECTION_LABEL_CLASS =
   "text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400";
@@ -643,7 +643,7 @@ export default function AssessmentChart() {
       )}
 
       {/* Chart */}
-      <div className={cn(CARD_BASE, "pt-6 sm:p-6")}>
+      <div className={CARD_BASE}>
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-500" />
       {/* Header */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -659,8 +659,8 @@ export default function AssessmentChart() {
               <Gauge className="h-5 w-5 text-white" />
             </div>
           </div>
-          <div>
-              <h3 className="text-lg xs:text-xl font-semibold text-slate-900 dark:text-slate-50">
+          <div className="min-w-0">
+            <h3 className="text-lg xs:text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
               Điểm TOEIC theo thời gian
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -669,14 +669,17 @@ export default function AssessmentChart() {
           </div>
         </div>
 
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100/80 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-600 dark:bg-zinc-800 dark:text-zinc-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
-          Assessment trend
+          <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200/80 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700/80">
+            <span className="text-[10px] uppercase tracking-[0.16em] text-slate-400 dark:text-zinc-500">
+              Assessment
+            </span>
+            <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-zinc-500" />
+            <span className="truncate">trend</span>
           </div>
       </div>
 
-      {/* Chart */}
-      <div className="relative h-60 sm:h-56 md:h-64 lg:h-72">
+      {/* Chart – height tối ưu cho mobile */}
+      <div className="relative h-52 sm:h-60 md:h-64 lg:h-72">
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
@@ -688,7 +691,7 @@ export default function AssessmentChart() {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={assessmentLineData}
-              margin={{ top: 4, right: 12, left: 0, bottom: 4 }}
+              margin={{ top: 8, right: 10, left: 0, bottom: 8 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
@@ -847,8 +850,8 @@ export default function AssessmentChart() {
 
       {/* Legend */}
       {assessmentLineData.length > 0 && (
-        <div className="mt-4 flex flex-col gap-3 text-[11px] text-slate-600 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="mt-4 flex flex-col gap-3 text-[10px] text-slate-600 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:text-[11px]">
+          <div className="flex flex-wrap items-center gap-3">
             {[
               { label: "Listening", color: "from-sky-400 to-sky-500" },
               { label: "Reading", color: "from-indigo-400 to-indigo-500" },

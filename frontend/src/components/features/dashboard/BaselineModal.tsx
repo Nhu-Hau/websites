@@ -96,7 +96,7 @@ export default function BaselineModal({
     >
       <div
         className="
-          w-full max-w-sm rounded-2xl 
+          w-full max-w-md sm:max-w-lg rounded-2xl sm:rounded-3xl 
           bg-white/95 dark:bg-zinc-900/95 
           border border-zinc-200 dark:border-zinc-800
           shadow-xl ring-1 ring-black/5
@@ -105,16 +105,16 @@ export default function BaselineModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
-              <Target className="h-4 w-4 text-amber-600 dark:text-amber-300" />
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <Target className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-300" />
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50 leading-tight">
                 Thiết lập baseline TOEIC
               </h3>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
                 Giúp hệ thống cá nhân hóa lộ trình học
               </p>
             </div>
@@ -124,12 +124,12 @@ export default function BaselineModal({
         </div>
 
         {/* BODY */}
-        <div className="px-4 py-4 space-y-3">
+        <div className="px-4 sm:px-5 py-4 sm:py-5 space-y-3 sm:space-y-4">
           {/* OPTION 1 */}
           <button
             onClick={() => setSource("unknown")}
             className={`
-              w-full flex gap-3 p-3 rounded-xl border text-left transition-all 
+              w-full flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all 
               ${
                 source === "unknown"
                   ? "border-amber-400/60 bg-amber-50 shadow-sm dark:bg-amber-500/10"
@@ -137,10 +137,10 @@ export default function BaselineModal({
               }
             `}
           >
-            <div className="pt-0.5">
+            <div className="pt-0.5 sm:pt-1">
               <span
                 className={`
-                  h-4 w-4 rounded-full border flex items-center justify-center
+                  h-5 w-5 sm:h-6 sm:w-6 rounded-full border flex items-center justify-center flex-shrink-0
                   ${
                     source === "unknown"
                       ? "border-amber-500 bg-amber-500"
@@ -149,16 +149,16 @@ export default function BaselineModal({
                 `}
               >
                 {source === "unknown" && (
-                  <span className="h-2 w-2 bg-white rounded-full" />
+                  <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 bg-white rounded-full" />
                 )}
               </span>
             </div>
 
-            <div>
-              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-zinc-50 leading-tight">
                 Tôi chưa thi TOEIC / chưa xác định
               </p>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-4">
+              <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mt-1 sm:mt-1.5 leading-relaxed">
                 Hệ thống sẽ dùng điểm placement test làm baseline.
               </p>
             </div>
@@ -168,7 +168,7 @@ export default function BaselineModal({
           <button
             onClick={() => setSource("self_report_official")}
             className={`
-              w-full flex gap-3 p-3 rounded-xl border text-left transition-all 
+              w-full flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all 
               ${
                 source === "self_report_official"
                   ? "border-amber-400/60 bg-amber-50 shadow-sm dark:bg-amber-500/10"
@@ -176,10 +176,10 @@ export default function BaselineModal({
               }
             `}
           >
-            <div className="pt-0.5">
+            <div className="pt-0.5 sm:pt-1">
               <span
                 className={`
-                  h-4 w-4 rounded-full border flex items-center justify-center
+                  h-5 w-5 sm:h-6 sm:w-6 rounded-full border flex items-center justify-center flex-shrink-0
                   ${
                     source === "self_report_official"
                       ? "border-amber-500 bg-amber-500"
@@ -188,16 +188,16 @@ export default function BaselineModal({
                 `}
               >
                 {source === "self_report_official" && (
-                  <span className="h-2 w-2 bg-white rounded-full" />
+                  <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 bg-white rounded-full" />
                 )}
               </span>
             </div>
 
-            <div>
-              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-zinc-50 leading-tight">
                 Tôi đã thi TOEIC và nhớ điểm
               </p>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-4">
+              <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mt-1 sm:mt-1.5 leading-relaxed">
                 Nhập điểm thi chính thức gần nhất của bạn.
               </p>
             </div>
@@ -207,11 +207,11 @@ export default function BaselineModal({
           {source === "self_report_official" && (
             <div
               className="
-                rounded-xl border border-amber-200/70 bg-amber-50/40 
-                p-3 dark:border-amber-500/40 dark:bg-amber-500/5
+                rounded-xl sm:rounded-2xl border border-amber-200/70 bg-amber-50/40 
+                p-3 sm:p-4 dark:border-amber-500/40 dark:bg-amber-500/5
               "
             >
-              <label className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+              <label className="text-sm sm:text-base font-semibold text-amber-700 dark:text-amber-300">
                 Điểm TOEIC của bạn *
               </label>
 
@@ -223,8 +223,8 @@ export default function BaselineModal({
                 onChange={(e) => setScore(e.target.value)}
                 placeholder="VD: 650"
                 className="
-                  mt-1 w-full rounded-lg border border-amber-200 bg-white px-3 py-2 
-                  text-sm font-medium text-zinc-900 shadow-sm 
+                  mt-2 sm:mt-3 w-full rounded-lg sm:rounded-xl border border-amber-200 bg-white px-4 py-3 sm:py-3.5
+                  text-base sm:text-lg font-medium text-zinc-900 shadow-sm 
                   placeholder:text-zinc-400 outline-none
                   focus:border-amber-400 focus:ring-2 focus:ring-amber-300/70
                   dark:bg-zinc-900 dark:text-zinc-50 dark:border-amber-500/60
@@ -235,29 +235,31 @@ export default function BaselineModal({
         </div>
 
         {/* FOOTER BUTTONS */}
-        <div className="px-4 pb-4 pt-1">
+        <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-3 sm:pt-4">
           <button
             onClick={handleSave}
             disabled={isSaving || (source === "self_report_official" && (!score || isNaN(Number(score)) || Number(score) < 10 || Number(score) > 990))}
             className="
-              w-full py-2.5 rounded-xl
+              w-full py-3 sm:py-3.5 rounded-xl sm:rounded-2xl
               bg-gradient-to-r from-amber-500 to-amber-600
-              text-xs font-semibold text-white shadow-sm
+              text-sm sm:text-base font-semibold text-white shadow-sm
               hover:from-amber-400 hover:to-amber-500
               disabled:opacity-60 disabled:cursor-not-allowed
               flex items-center justify-center gap-2
+              transition-colors
             "
           >
             {isSaving ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Đang lưu...
+                <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
+                <span className="hidden sm:inline">Đang lưu...</span>
+                <span className="sm:hidden">Đang lưu</span>
               </>
             ) : (
               "Lưu baseline"
             )}
           </button>
-          <p className="mt-2 text-center text-[10px] text-zinc-500 dark:text-zinc-400">
+          <p className="mt-2 sm:mt-3 text-center text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
             Vui lòng điền thông tin để tiếp tục sử dụng dashboard
           </p>
         </div>

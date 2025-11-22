@@ -194,7 +194,7 @@ export default function ProfileClient({
   // 🔄 Loading hồ sơ – đồng bộ spinner với community
   if (!profile) {
     return (
-      <div className="flex items-center justify-center py-16 sm:py-20">
+      <div className="flex items-center justify-center py-12 sm:py-16">
         <div className="flex flex-col items-center gap-3">
           <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -228,7 +228,7 @@ export default function ProfileClient({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Cover + uploading badge */}
       <div className="relative mb-4 overflow-hidden rounded-2xl border border-zinc-200/80 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 shadow-sm ring-1 ring-black/[0.04] dark:border-zinc-800/80">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.30),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.75),_transparent_55%)]" />

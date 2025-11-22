@@ -20,7 +20,7 @@ interface GoalProgressClientProps {
 }
 
 const CARD_BASE =
-  "relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl dark:border-gray-800/80 dark:bg-gray-950/90 dark:ring-white/5 sm:p-5";
+  "relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md sm:p-5 dark:border-zinc-800/80 dark:bg-zinc-900/95";
 
 const SECTION_LABEL_CLASS =
   "text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400";
@@ -116,9 +116,9 @@ export default function GoalProgressClient({
                 <Target className="h-5 w-5 text-white" />
               </div>
             </div>
-            <div>
+            <div className="min-w-0">
               <p className={SECTION_LABEL_CLASS}>Goal planning</p>
-              <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-50">
+              <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                 Tiến độ đạt mục tiêu
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-400">
@@ -216,9 +216,9 @@ export default function GoalProgressClient({
               )}
             </div>
           </div>
-          <div>
+          <div className="min-w-0">
             <p className={SECTION_LABEL_CLASS}>Goal tracking</p>
-            <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-50">
+            <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
               Tiến độ đạt mục tiêu
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400">
@@ -376,7 +376,7 @@ function GoalDialog({
     >
       <div
         className="
-          w-full max-w-sm rounded-2xl 
+          w-full max-w-md sm:max-w-lg rounded-2xl sm:rounded-3xl 
           bg-white/95 dark:bg-zinc-900/95 
           border border-zinc-200 dark:border-zinc-800
           shadow-xl ring-1 ring-black/5
@@ -385,16 +385,16 @@ function GoalDialog({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-full bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center">
-              <Target className="h-4 w-4 text-violet-600 dark:text-violet-300" />
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+              <Target className="h-5 w-5 sm:h-6 sm:w-6 text-violet-600 dark:text-violet-300" />
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50 leading-tight">
                 {isEdit ? "Cập nhật mục tiêu" : "Đặt mục tiêu TOEIC"}
               </h3>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
                 Nhập điểm TOEIC mong muốn trong khoảng 10 – 990.
               </p>
             </div>
@@ -408,21 +408,21 @@ function GoalDialog({
               }
             }}
             disabled={isUpdating}
-            className="h-8 w-8 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-300 disabled:opacity-60"
+            className="h-9 w-9 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-300 disabled:opacity-60 flex-shrink-0"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
         </div>
 
         {/* BODY */}
-        <div className="px-4 py-4 space-y-3">
+        <div className="px-4 sm:px-5 py-4 sm:py-5 space-y-3 sm:space-y-4">
           <div
             className="
-              rounded-xl border border-violet-200/70 bg-violet-50/40 
-              p-3 dark:border-violet-500/40 dark:bg-violet-500/5
+              rounded-xl sm:rounded-2xl border border-violet-200/70 bg-violet-50/40 
+              p-3 sm:p-4 dark:border-violet-500/40 dark:bg-violet-500/5
             "
           >
-            <label className="text-[11px] font-semibold text-violet-700 dark:text-violet-300">
+            <label className="text-sm sm:text-base font-semibold text-violet-700 dark:text-violet-300">
               Điểm TOEIC mục tiêu *
             </label>
 
@@ -434,15 +434,15 @@ function GoalDialog({
               onChange={(e) => setTargetInput(e.target.value)}
               placeholder="VD: 750"
               className="
-                mt-1 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 
-                text-sm font-medium text-zinc-900 shadow-sm 
+                mt-2 sm:mt-3 w-full rounded-lg sm:rounded-xl border border-violet-200 bg-white px-4 py-3 sm:py-3.5
+                text-base sm:text-lg font-medium text-zinc-900 shadow-sm 
                 placeholder:text-zinc-400 outline-none
                 focus:border-violet-400 focus:ring-2 focus:ring-violet-300/70
                 dark:bg-zinc-900 dark:text-zinc-50 dark:border-violet-500/60
               "
             />
             {currentTarget && isEdit && (
-              <p className="mt-1.5 text-[11px] text-violet-600 dark:text-violet-400">
+              <p className="mt-2 sm:mt-2.5 text-sm sm:text-base text-violet-600 dark:text-violet-400">
                 Hiện tại: {currentTarget} điểm
               </p>
             )}
@@ -450,7 +450,7 @@ function GoalDialog({
         </div>
 
         {/* FOOTER BUTTONS */}
-        <div className="px-4 pb-4 pt-1 flex gap-3">
+        <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-3 sm:pt-4 flex gap-3 sm:gap-4">
           <button
             onClick={() => {
               if (!isUpdating) {
@@ -460,11 +460,12 @@ function GoalDialog({
             }}
             disabled={isUpdating}
             className="
-              flex-1 py-2.5 rounded-xl bg-white border border-zinc-300
-              text-xs font-semibold text-zinc-700 shadow-sm
+              flex-1 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl bg-white border border-zinc-300
+              text-sm sm:text-base font-semibold text-zinc-700 shadow-sm
               hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-200
               dark:border-zinc-700 dark:hover:bg-zinc-800
               disabled:opacity-60 disabled:cursor-not-allowed
+              transition-colors
             "
           >
             Hủy
@@ -474,18 +475,20 @@ function GoalDialog({
             onClick={handleSetGoal}
             disabled={isUpdating}
             className="
-              flex-1 py-2.5 rounded-xl
+              flex-1 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl
               bg-gradient-to-r from-violet-500 to-indigo-600
-              text-xs font-semibold text-white shadow-sm
+              text-sm sm:text-base font-semibold text-white shadow-sm
               hover:from-violet-400 hover:to-indigo-500
               disabled:opacity-60 disabled:cursor-not-allowed
               flex items-center justify-center gap-2
+              transition-colors
             "
           >
             {isUpdating ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Đang lưu...
+                <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
+                <span className="hidden sm:inline">Đang lưu...</span>
+                <span className="sm:hidden">Đang lưu</span>
               </>
             ) : (
               "Xác nhận"

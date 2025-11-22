@@ -50,16 +50,43 @@ export async function uploadAttachment(req: Request, res: Response) {
     const f = (req as any).file as Express.Multer.File | undefined;
     if (!f) return res.status(400).json({ message: "Thiếu file" });
 
+    // Normalize MIME type for Safari iOS compatibility
+    // Safari sometimes sends empty or incorrect MIME types
+    let normalizedMime = f.mimetype || "";
+    if (!normalizedMime || normalizedMime === "application/octet-stream") {
+      // Try to infer from file extension
+      const ext = f.originalname.toLowerCase().substring(f.originalname.lastIndexOf("."));
+      const mimeMap: Record<string, string> = {
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".webp": "image/webp",
+        ".gif": "image/gif",
+        ".heic": "image/heic",
+        ".heif": "image/heif",
+        ".mp4": "video/mp4",
+        ".webm": "video/webm",
+        ".mov": "video/quicktime",
+      };
+      normalizedMime = mimeMap[ext] || normalizedMime;
+    }
+
+    // Normalize image/jpg to image/jpeg (Safari iOS sometimes sends image/jpg)
+    if (normalizedMime === "image/jpg") {
+      normalizedMime = "image/jpeg";
+    }
+
     const { url, type, name, key } = await uploadBufferToS3({
       buffer: f.buffer,
-      mime: f.mimetype,
+      mime: normalizedMime,
       originalName: f.originalname,
     });
 
     return res.json({ url, type, name, size: f.size, key });
   } catch (e) {
     console.error("[uploadAttachment] ERROR", e);
-    return res.status(500).json({ message: "Upload failed" });
+    const errorMessage = e instanceof Error ? e.message : "Upload failed";
+    return res.status(500).json({ message: errorMessage });
   }
 }
 

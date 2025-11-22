@@ -34,7 +34,7 @@ export default function ActivityHeatmapClient({
     initialData.activityData.length === 0
   ) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/80 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-lg dark:border-gray-800/80 dark:bg-gray-950/90 dark:ring-white/5 sm:p-6">
+      <div className="relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95 sm:p-5">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-800" />
 
         <div className="mb-5 flex gap-3 sm:mb-6 items-center">
@@ -45,11 +45,11 @@ export default function ActivityHeatmapClient({
               <Calendar className="h-5 w-5 text-white" />
             </div>
           </div>
-          <div>
-            <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
+          <div className="min-w-0">
+            <h3 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-gray-50 sm:text-xl">
               Biểu đồ hoạt động học tập
             </h3>
-            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 sm:text-[13px]">
               Theo dõi thói quen học hằng ngày của bạn.
             </p>
           </div>
@@ -121,7 +121,7 @@ export default function ActivityHeatmapClient({
   const stats = initialData.stats;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/80 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-lg dark:border-gray-800/80 dark:bg-gray-950/90 dark:ring-white/5 sm:p-6">
+    <div className="relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95 sm:p-5">
       {/* accent line */}
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-800" />
       {/* HEADER */}
@@ -135,10 +135,10 @@ export default function ActivityHeatmapClient({
             </div>
           </div>
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold tracking-tight text-gray-900 sm:text-xl">
+            <h2 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-gray-50 sm:text-xl">
               Biểu đồ hoạt động học tập
             </h2>
-            <p className="mt-0.5 text-xs text-gray-500 sm:text-[13px]">
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 sm:text-[13px]">
               Mỗi ô vuông là một ngày – màu càng đậm, bạn học càng chăm chỉ.
             </p>
           </div>

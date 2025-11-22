@@ -803,11 +803,11 @@ export async function adminDeleteStimulus(id: string) {
   return res.json() as Promise<{ message: string }>;
 }
 
-export async function adminImportExcel(file: File) {
+export async function adminImportExcel(file: File, preview: boolean = false) {
   const formData = new FormData();
   formData.append('file', file);
 
-  const res = await fetch(`/api/admin/parts/import-excel`, {
+  const res = await fetch(`/api/admin/parts/import-excel?preview=${preview}`, {
     method: 'POST',
     credentials: 'include',
     body: formData,
@@ -818,5 +818,45 @@ export async function adminImportExcel(file: File) {
     throw new Error(e.message || 'Import Excel failed');
   }
 
-  return res.json() as Promise<{ message: string; itemsCount: number; stimuliCount: number }>;
-}
+
+  export async function adminImportExcel(file: File, preview: boolean = false) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`/api/admin/parts/import-excel?preview=${preview}`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.message || 'Import Excel failed');
+    }
+
+    return res.json() as Promise<{
+      message: string;
+      itemsCount: number;
+      stimuliCount: number;
+      preview?: boolean;
+      summary?: Array<{
+        part: string,
+        level: number,
+        test: number,
+        itemsCount: number,
+        stimuliCount: number,
+        items: Array<{
+          id: string;
+          status: 'new' | 'update';
+          question: string;
+          answer: string;
+          choices: number;
+        }>;
+        stimuli: Array<{
+          id: string;
+          status: 'new' | 'update';
+          media: string;
+        }>;
+      }>;
+    }>;
+  }

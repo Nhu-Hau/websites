@@ -597,6 +597,7 @@ export async function importExcel(req: Request, res: Response) {
       return res.status(400).json({ message: "Thiếu file" });
     }
 
+    const isPreview = req.query.preview === 'true';
     const workbook = XLSX.read(f.buffer, { type: 'buffer' });
 
     // 1. Parse Items
@@ -698,12 +699,96 @@ export async function importExcel(req: Request, res: Response) {
       return res.status(400).json({ message: "Lỗi dữ liệu Stimuli", errors: errors.slice(0, 10) });
     }
 
-    // Bulk Write
-    // Use bulkWrite to upsert (update if exists, insert if not)
+    if (isPreview) {
+      // Analyze what will be imported
+      const allItemIds = itemsToInsert.map(i => i.id);
+      const allStimuliIds = stimuliToInsert.map(s => s.id);
+
+      const existingItems = await itemsCol.find({ id: { $in: allItemIds } }).toArray();
+      const existingStimuli = await stimCol.find({ id: { $in: allStimuliIds } }).toArray();
+
+      const existingItemIds = new Set(existingItems.map(i => i.id));
+      const existingStimuliIds = new Set(existingStimuli.map(s => s.id));
+
+      // Group by test to show summary
+      const testSummary = new Map<string, {
+        part: string,
+        level: number,
+        test: number,
+        itemsCount: number,
+        stimuliCount: number,
+        items: any[],
+        stimuli: any[]
+      }>();
+
+      itemsToInsert.forEach(item => {
+        const key = `${item.part}-${item.level}-${item.test}`;
+        if (!testSummary.has(key)) {
+          testSummary.set(key, {
+            part: item.part,
+            level: item.level,
+            test: item.test,
+            itemsCount: 0,
+            stimuliCount: 0,
+            items: [],
+            stimuli: []
+          });
+        }
+        const entry = testSummary.get(key)!;
+        entry.itemsCount++;
+        entry.items.push({
+          id: item.id,
+          status: existingItemIds.has(item.id) ? 'update' : 'new',
+          question: item.question || item.stem,
+          answer: item.answer,
+          choices: item.choices?.length || 0
+        });
+      });
+
+      stimuliToInsert.forEach(stim => {
+        const key = `${stim.part}-${stim.level}-${stim.test}`;
+        if (!testSummary.has(key)) {
+          testSummary.set(key, {
+            part: stim.part,
+            level: stim.level,
+            test: stim.test,
+            itemsCount: 0,
+            stimuliCount: 0,
+            items: [],
+            stimuli: []
+          });
+        }
+        const entry = testSummary.get(key)!;
+        entry.stimuliCount++;
+        entry.stimuli.push({
+          id: stim.id,
+          status: existingStimuliIds.has(stim.id) ? 'update' : 'new',
+          media: Object.keys(stim.media || {}).filter(k => stim.media[k]).join(', ')
+        });
+      });
+
+      return res.json({
+        preview: true,
+        message: "Preview import",
+        itemsCount: itemsToInsert.length,
+        stimuliCount: stimuliToInsert.length,
+        summary: Array.from(testSummary.values()).map(s => ({
+          ...s,
+          items: s.items.sort((a, b) => a.id.localeCompare(b.id)),
+          stimuli: s.stimuli.sort((a, b) => a.id.localeCompare(b.id))
+        }))
+      });
+    }
+
     if (itemsToInsert.length > 0) {
       const itemOps = itemsToInsert.map(item => ({
         updateOne: {
-          filter: { id: item.id },
+          filter: {
+            id: item.id,
+            part: item.part,
+            level: item.level,
+            test: item.test,
+          },
           update: { $set: item },
           upsert: true
         }
@@ -714,7 +799,12 @@ export async function importExcel(req: Request, res: Response) {
     if (stimuliToInsert.length > 0) {
       const stimOps = stimuliToInsert.map(stim => ({
         updateOne: {
-          filter: { id: stim.id },
+          filter: {
+            id: stim.id,
+            part: stim.part,
+            level: stim.level,
+            test: stim.test,
+          },
           update: { $set: stim },
           upsert: true
         }

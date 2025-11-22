@@ -48,27 +48,59 @@ export default function SideNav() {
   ];
 
   const isActive = (href: string) => {
+    if (!pathname) return false;
+    
     // Normalize pathname and href for comparison (remove trailing slashes)
-    const normalizedPathname = pathname?.replace(/\/$/, "") || "";
+    const normalizedPathname = pathname.replace(/\/$/, "");
     const normalizedHref = href.replace(/\/$/, "");
+    const normalizedBasePrefix = basePrefix.replace(/\/$/, "");
     
     // Exact match for community home page - only match /community exactly, not sub-routes
-    if (normalizedHref === `${basePrefix}/community`) {
-      return normalizedPathname === `${basePrefix}/community`;
+    if (normalizedHref === `${normalizedBasePrefix}/community`) {
+      return normalizedPathname === `${normalizedBasePrefix}/community` || 
+             normalizedPathname === "/community";
     }
     
     // For profile routes, check if pathname starts with the profile href
     if (normalizedHref.includes("/community/profile")) {
-      return normalizedPathname.startsWith(normalizedHref);
+      return normalizedPathname.startsWith(normalizedHref) ||
+             (normalizedPathname.includes("/community/profile") && 
+              normalizedPathname.split("/community/profile")[1]?.split("/")[1] === user?.id);
     }
     
-    // For other routes, check exact match first, then startsWith
+    // For account/settings routes - match any account route
+    if (normalizedHref.includes("/account")) {
+      return normalizedPathname.includes("/account");
+    }
+    
+    // For study/create routes
+    if (normalizedHref.includes("/study/create")) {
+      return normalizedPathname.includes("/study/create");
+    }
+    
+    // For other routes, check exact match first
     if (normalizedPathname === normalizedHref) {
       return true;
     }
     
     // Check if pathname starts with href followed by / (to avoid partial matches)
-    return normalizedPathname.startsWith(normalizedHref + "/");
+    if (normalizedPathname.startsWith(normalizedHref + "/")) {
+      return true;
+    }
+    
+    // Also check without basePrefix in case of mismatch
+    const pathWithoutPrefix = normalizedPathname.replace(normalizedBasePrefix, "");
+    const hrefWithoutPrefix = normalizedHref.replace(normalizedBasePrefix, "");
+    
+    if (pathWithoutPrefix === hrefWithoutPrefix) {
+      return true;
+    }
+    
+    if (pathWithoutPrefix.startsWith(hrefWithoutPrefix + "/")) {
+      return true;
+    }
+    
+    return false;
   };
 
   return (

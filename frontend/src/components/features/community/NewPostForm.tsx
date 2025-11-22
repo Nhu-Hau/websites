@@ -340,25 +340,39 @@ export default function NewPostForm({
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 border-t border-zinc-100/80 pt-4 dark:border-zinc-800/80">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+        <div className="relative flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <input
             type="file"
             multiple
             accept={[...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES].join(",")}
-            hidden
             ref={fileInputRef}
             onChange={(e) => {
               handleFileSelect(e.target.files);
-              e.target.value = "";
+              // Reset input to allow selecting same file again
+              if (e.target) {
+                e.target.value = "";
+              }
             }}
-            // Safari fix: ensure file input works properly
-            style={{ display: "none" }}
+            // Safari iOS fix: use opacity and position instead of display:none
+            // This ensures the input is accessible to Safari's file picker
+            style={{ 
+              position: "absolute",
+              width: "1px",
+              height: "1px",
+              opacity: 0,
+              overflow: "hidden",
+              pointerEvents: "none"
+            }}
           />
           <button
             type="button"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               // Safari fix: ensure file input is properly triggered
               if (fileInputRef.current) {
+                // Reset the input to allow selecting same file again on Safari
+                fileInputRef.current.value = "";
                 fileInputRef.current.click();
               }
             }}

@@ -234,6 +234,18 @@ export default function Account() {
     height: number;
   } | null>(null);
 
+  // Ẩn ChatFAB khi đang crop ảnh
+  useEffect(() => {
+    if (cropOpen) {
+      document.body.setAttribute("data-cropping", "true");
+    } else {
+      document.body.removeAttribute("data-cropping");
+    }
+    return () => {
+      document.body.removeAttribute("data-cropping");
+    };
+  }, [cropOpen]);
+
   const levelsByPart = useMemo(
     () => normalizePartLevels((user as any)?.partLevels),
     [user]
@@ -319,15 +331,28 @@ export default function Account() {
   async function onPickAvatar(files: FileList | null) {
     if (!files || !files[0]) return;
     const f = files[0];
-    if (!/^image\//.test(f.type)) {
-      toast.error("Vui lòng chọn file ảnh");
+    
+    // iOS Safari fix: Check file type by extension if MIME type is missing
+    const fileName = f.name.toLowerCase();
+    const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+    const isImage = f.type.startsWith("image/") || 
+      [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"].includes(fileExtension);
+    
+    if (!isImage) {
+      toast.error("Vui lòng chọn file ảnh hợp lệ");
       return;
     }
-    const dataUrl = await fileToDataURL(f);
-    setRawImage(dataUrl);
-    setZoom(1);
-    setCrop({ x: 0, y: 0 });
-    setCropOpen(true);
+    
+    try {
+      const dataUrl = await fileToDataURL(f);
+      setRawImage(dataUrl);
+      setZoom(1);
+      setCrop({ x: 0, y: 0 });
+      setCropOpen(true);
+    } catch (error) {
+      console.error("[onPickAvatar] Error:", error);
+      toast.error("Không thể đọc file ảnh");
+    }
   }
 
   async function handleSaveCrop() {
@@ -460,7 +485,7 @@ export default function Account() {
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept="image/*,image/heic,image/heif,.heic,.heif"
               hidden
               onChange={(e) => onPickAvatar(e.currentTarget.files)}
             />

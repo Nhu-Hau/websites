@@ -291,16 +291,31 @@ export default function ProfileClient({
             <label className="flex cursor-pointer items-center justify-center rounded-lg bg-white/90 p-2 text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:bg-zinc-900/90 dark:text-zinc-200 dark:hover:bg-zinc-800">
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,image/heic,image/heif,.heic,.heif"
                 className="hidden"
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
+                  
+                  // iOS Safari fix: Check file type by extension if MIME type is missing
+                  const fileName = file.name.toLowerCase();
+                  const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+                  const isImage = file.type.startsWith("image/") || 
+                    [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"].includes(fileExtension);
+                  
+                  if (!isImage) {
+                    toast.error("Vui lòng chọn file ảnh hợp lệ");
+                    return;
+                  }
+                  
                   const reader = new FileReader();
                   reader.onloadend = () => {
                     setCropperImage(reader.result as string);
                     setCropperType("cover");
                     setShowCropper(true);
+                  };
+                  reader.onerror = () => {
+                    toast.error("Không thể đọc file ảnh");
                   };
                   reader.readAsDataURL(file);
                 }}
@@ -343,17 +358,32 @@ export default function ProfileClient({
                     <label className="flex cursor-pointer items-center gap-3 px-4 py-2 text-sm text-zinc-900 transition-colors hover:bg-zinc-100 dark:text-zinc-50 dark:hover:bg-zinc-800">
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/*,image/heic,image/heif,.heic,.heif"
                         className="hidden"
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
+                          
+                          // iOS Safari fix: Check file type by extension if MIME type is missing
+                          const fileName = file.name.toLowerCase();
+                          const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+                          const isImage = file.type.startsWith("image/") || 
+                            [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"].includes(fileExtension);
+                          
+                          if (!isImage) {
+                            toast.error("Vui lòng chọn file ảnh hợp lệ");
+                            return;
+                          }
+                          
                           setShowAvatarMenu(false);
                           const reader = new FileReader();
                           reader.onloadend = () => {
                             setCropperImage(reader.result as string);
                             setCropperType("avatar");
                             setShowCropper(true);
+                          };
+                          reader.onerror = () => {
+                            toast.error("Không thể đọc file ảnh");
                           };
                           reader.readAsDataURL(file);
                         }}

@@ -10,7 +10,7 @@ export default function ChatFAB() {
   const totalUnread = unreadCount.admin + unreadCount.ai;
 
   return (
-    <div className="fixed z-[110] right-4 bottom-20 lg:right-6 lg:bottom-6">
+    <div className="fixed z-[110] right-4 bottom-20 lg:right-6 lg:bottom-6 [body[data-cropping]>&]:hidden">
       <motion.button
         onClick={() => {
           setActiveTab("ai");

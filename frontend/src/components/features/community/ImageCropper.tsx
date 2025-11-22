@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Cropper from "react-easy-crop";
 import { X, Check } from "lucide-react";
 
@@ -31,6 +31,14 @@ export default function ImageCropper({
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [processing, setProcessing] = useState(false);
+
+  // Ẩn ChatFAB khi đang crop ảnh
+  useEffect(() => {
+    document.body.setAttribute("data-cropping", "true");
+    return () => {
+      document.body.removeAttribute("data-cropping");
+    };
+  }, []);
 
   const onCropChange = useCallback((crop: { x: number; y: number }) => {
     setCrop(crop);

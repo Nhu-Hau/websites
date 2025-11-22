@@ -28,7 +28,7 @@ export default function MobileTopBar() {
         <div className="flex h-14 items-center justify-between">
           {/* Logo */}
           <Link
-            href={`${base}/home`}
+            href={`${base}`}
             aria-label="Về trang chủ ToeicPrep"
             className="flex items-center gap-2"
           >

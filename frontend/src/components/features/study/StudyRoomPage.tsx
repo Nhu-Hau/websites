@@ -917,8 +917,8 @@ export default function StudyRoomPage() {
               <LikeReaction />
             </div>
 
-            {/* Nút mở chat (dùng cho cả mobile + desktop) - ẩn khi panel mở */}
-            {!showChatMobile && (
+            {/* Nút mở chat (dùng cho cả mobile + desktop) - ẩn khi panel mở - ĐÃ ẨN THEO YÊU CẦU */}
+            {/* {!showChatMobile && (
             <button
               type="button"
               onClick={() => setShowChatMobile(true)}
@@ -927,7 +927,7 @@ export default function StudyRoomPage() {
               <MessageSquare className="h-4 w-4 md:h-5 md:w-5" />
               <span>Chat phòng học</span>
             </button>
-            )}
+            )} */}
 
             {/* Chat overlay cho mọi kích thước (Zoom-style) - z-index cao hơn */}
             {showChatMobile && (

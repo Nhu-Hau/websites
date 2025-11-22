@@ -351,9 +351,17 @@ export default function NewPostForm({
               handleFileSelect(e.target.files);
               e.target.value = "";
             }}
+            // Safari fix: ensure file input works properly
+            style={{ display: "none" }}
           />
           <button
-            onClick={() => fileInputRef.current?.click()}
+            type="button"
+            onClick={() => {
+              // Safari fix: ensure file input is properly triggered
+              if (fileInputRef.current) {
+                fileInputRef.current.click();
+              }
+            }}
             disabled={uploading || previews.length >= MAX_FILES}
             className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-lg border border-zinc-200/80 bg-white/95 px-4 py-2 text-sm font-medium text-zinc-700 shadow-xs transition-colors hover:bg-zinc-50 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-300 dark:hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
           >

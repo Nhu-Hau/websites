@@ -48,13 +48,27 @@ export default function SideNav() {
   ];
 
   const isActive = (href: string) => {
-    if (href === `${basePrefix}/community`) {
-      return (
-        pathname === `${basePrefix}/community` ||
-        pathname === `${basePrefix}/community/`
-      );
+    // Normalize pathname and href for comparison (remove trailing slashes)
+    const normalizedPathname = pathname?.replace(/\/$/, "") || "";
+    const normalizedHref = href.replace(/\/$/, "");
+    
+    // Exact match for community home page - only match /community exactly, not sub-routes
+    if (normalizedHref === `${basePrefix}/community`) {
+      return normalizedPathname === `${basePrefix}/community`;
     }
-    return pathname.startsWith(href);
+    
+    // For profile routes, check if pathname starts with the profile href
+    if (normalizedHref.includes("/community/profile")) {
+      return normalizedPathname.startsWith(normalizedHref);
+    }
+    
+    // For other routes, check exact match first, then startsWith
+    if (normalizedPathname === normalizedHref) {
+      return true;
+    }
+    
+    // Check if pathname starts with href followed by / (to avoid partial matches)
+    return normalizedPathname.startsWith(normalizedHref + "/");
   };
 
   return (

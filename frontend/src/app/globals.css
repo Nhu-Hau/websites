@@ -34,12 +34,25 @@ body {
 }
 
 /* Ngăn Safari trên iOS tự phóng to input < 16px */
-@media (max-width: 640px) {
-  input,
-  textarea,
-  select {
-    font-size: 16px;
-  }
+/* Apply to all inputs, textareas, and selects on mobile */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select {
+  font-size: 16px !important;
+}
+
+/* Also ensure file inputs work properly on Safari */
+input[type="file"] {
+  font-size: 16px !important;
 }
 
 @keyframes pulse-slow {

@@ -21,6 +21,30 @@ const ACCEPTED_IMAGE_TYPES = [
 ];
 const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
+// Safari iOS fix: Also accept file extensions
+const ACCEPTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
+const ACCEPTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
+
+// Helper function to check if file is valid (handles Safari iOS mime type issues)
+function isValidFileType(file: File): { isImage: boolean; isVideo: boolean } {
+  const fileName = file.name.toLowerCase();
+  const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+  
+  // Check by extension first (more reliable on Safari iOS)
+  const isImageByExt = ACCEPTED_IMAGE_EXTENSIONS.includes(fileExtension);
+  const isVideoByExt = ACCEPTED_VIDEO_EXTENSIONS.includes(fileExtension);
+  
+  // Check by mime type
+  const isImageByMime = ACCEPTED_IMAGE_TYPES.includes(file.type);
+  const isVideoByMime = ACCEPTED_VIDEO_TYPES.includes(file.type);
+  
+  // Accept if either extension or mime type matches
+  return {
+    isImage: isImageByExt || isImageByMime,
+    isVideo: isVideoByExt || isVideoByMime,
+  };
+}
+
 type NewPostFormProps = {
   onSuccess?: () => void;
   initialContent?: string;
@@ -83,8 +107,7 @@ export default function NewPostForm({
     const newPreviews: PreviewItem[] = [];
 
     for (const file of fileArray) {
-      const isImage = ACCEPTED_IMAGE_TYPES.includes(file.type);
-      const isVideo = ACCEPTED_VIDEO_TYPES.includes(file.type);
+      const { isImage, isVideo } = isValidFileType(file);
 
       if (!isImage && !isVideo) {
         toast.error(
@@ -344,7 +367,12 @@ export default function NewPostForm({
           <input
             type="file"
             multiple
-            accept={[...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES].join(",")}
+            accept={[
+              ...ACCEPTED_IMAGE_TYPES,
+              ...ACCEPTED_VIDEO_TYPES,
+              ...ACCEPTED_IMAGE_EXTENSIONS,
+              ...ACCEPTED_VIDEO_EXTENSIONS,
+            ].join(",")}
             ref={fileInputRef}
             onChange={(e) => {
               handleFileSelect(e.target.files);

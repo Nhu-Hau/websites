@@ -185,7 +185,7 @@ const userSchema = new Schema<IUser>(
     currentToeicSource: {
       type: String,
       enum: ["unknown", "self_report_official"],
-      default: "unknown",
+      default: null,
     },
     currentToeicScore: { type: Number, default: null },
     currentToeicExamDate: { type: String, default: null },

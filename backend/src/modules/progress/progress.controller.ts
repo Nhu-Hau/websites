@@ -549,6 +549,27 @@ export async function getProgressEligibility(req: Request, res: Response) {
       .select("progressMeta")
       .lean<{ progressMeta?: any }>();
 
+    // Đếm số practice test (test !== null)
+    const practiceTestCount = await PracticeAttempt.countDocuments({
+      userId,
+      test: { $ne: null },
+    });
+
+    // Phải có ít nhất 3 practice test mới được làm progress
+    const MIN_PRACTICE_TESTS = 3;
+    if (practiceTestCount < MIN_PRACTICE_TESTS) {
+      return res.json({
+        eligible: false,
+        reason: "insufficient_practice_tests",
+        practiceTestCount,
+        requiredPracticeTests: MIN_PRACTICE_TESTS,
+        nextEligibleAt: null,
+        remainingMs: null,
+        windowMinutes: getEligibilityWindowMs() / 60_000,
+        suggestedAt: me?.progressMeta?.lastSuggestedAt ?? null,
+      });
+    }
+
     // Lấy progress gần nhất & practice gần nhất
     const [lastProgress, lastPracticeOverall] = await Promise.all([
       ProgressAttempt.findOne({ userId })

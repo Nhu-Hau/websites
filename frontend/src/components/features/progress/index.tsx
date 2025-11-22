@@ -25,12 +25,15 @@ type EligResp = {
     | "ok"
     | "waiting_window"
     | "no_practice_after_progress"
-    | "no_practice_yet";
+    | "no_practice_yet"
+    | "insufficient_practice_tests";
   since?: string;
   nextEligibleAt?: string | null;
   remainingMs?: number | null;
   windowMinutes?: number;
   suggestedAt?: string | null;
+  practiceTestCount?: number;
+  requiredPracticeTests?: number;
 };
 
 function fmtTime(totalSec: number) {
@@ -181,6 +184,15 @@ export default function ProgressPage() {
         case "no_practice_yet":
           toast.error("Bạn chưa có lượt luyện tập nào");
           break;
+        case "insufficient_practice_tests": {
+          const current = elig.practiceTestCount ?? 0;
+          const required = elig.requiredPracticeTests ?? 3;
+          const remaining = required - current;
+          toast.error(
+            `Bạn cần hoàn thành ${remaining} bài Practice Test nữa (đã làm ${current}/${required} bài) để mở Progress Test.`
+          );
+          break;
+        }
         case "no_practice_after_progress":
           toast.error(
             "Hãy luyện tập ít nhất một lần sau bài Progress gần nhất trước khi bắt đầu."
@@ -273,16 +285,49 @@ export default function ProgressPage() {
               Thời gian: <strong>{durationMin} phút</strong> – {total} câu hỏi.
               Sau khi nộp bạn sẽ nhận kết quả mới nhất để so sánh tiến bộ.
               {elig && !elig.eligible && (
-                <div className="mt-4 text-sm text-zinc-600 dark:text-zinc-300">
-                  <p className="mb-1">
-                    Có vẻ bạn chưa đủ điều kiện làm Progress Test.
-                  </p>
-                  <a
-                    href={`${basePrefix}/practice`}
-                    className="font-semibold text-sky-600 underline dark:text-sky-400"
-                  >
-                    Đi luyện tập thêm trước khi làm Progress Test
-                  </a>
+                <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950/30">
+                  {elig.reason === "insufficient_practice_tests" ? (
+                    <>
+                      <p className="mb-1 font-medium text-amber-900 dark:text-amber-100">
+                        Bạn cần hoàn thành ít nhất 3 bài Practice Test
+                      </p>
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        Đã làm: {elig.practiceTestCount ?? 0}/{elig.requiredPracticeTests ?? 3} bài
+                      </p>
+                      <a
+                        href={`${basePrefix}/practice`}
+                        className="mt-2 inline-block font-semibold text-amber-700 underline dark:text-amber-300"
+                      >
+                        Đi luyện tập thêm →
+                      </a>
+                    </>
+                  ) : elig.reason === "waiting_window" && elig.remainingMs != null && elig.remainingMs > 0 ? (
+                    <>
+                      <p className="mb-1 font-medium text-amber-900 dark:text-amber-100">
+                        Chưa tới thời điểm làm Progress Test
+                      </p>
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        ⏱️ Còn lại: <strong>{fmtDuration(elig.remainingMs)}</strong>
+                      </p>
+                      {elig.nextEligibleAt && (
+                        <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                          Sẽ mở vào: {new Date(elig.nextEligibleAt).toLocaleString("vi-VN")}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <p className="mb-1 font-medium text-amber-900 dark:text-amber-100">
+                        Có vẻ bạn chưa đủ điều kiện làm Progress Test.
+                      </p>
+                      <a
+                        href={`${basePrefix}/practice`}
+                        className="font-semibold text-amber-700 underline dark:text-amber-300"
+                      >
+                        Đi luyện tập thêm trước khi làm Progress Test
+                      </a>
+                    </>
+                  )}
                 </div>
               )}
             </>

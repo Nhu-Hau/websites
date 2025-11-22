@@ -49,51 +49,44 @@ export default function LevelSuggestModal({
   const suggestedConfig = LEVEL_CONFIG[suggestedLevel];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 py-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-3 py-6 backdrop-blur-sm">
       <div
         className={cn(
-          "relative w-full max-w-md rounded-2xl",
-          "border border-zinc-200 dark:border-zinc-700",
-          "bg-white dark:bg-zinc-900",
-          "shadow-xl"
+          "relative w-full max-w-sm rounded-2xl",
+          "border border-zinc-200 dark:border-zinc-800",
+          "bg-white/95 dark:bg-zinc-900/95",
+          "shadow-xl ring-1 ring-black/5",
+          "overflow-hidden"
         )}
       >
-        {/* Close */}
-        {onCancel && (
-          <button
-            onClick={onCancel}
-            aria-label="Đóng"
-            className={cn(
-              "absolute right-3.5 top-3.5",
-              "inline-flex h-8 w-8 items-center justify-center rounded-lg",
-              "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200",
-              "hover:bg-zinc-100 dark:hover:bg-zinc-800",
-              "transition-colors"
-            )}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-
         {/* Header */}
-        <div className="px-6 pt-6 pb-4">
-          <div className="flex justify-center mb-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-              <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+        <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className="h-9 w-9 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-300" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                Level bạn chọn khác với gợi ý
+              </h3>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                Hệ thống đề xuất Level phù hợp với năng lực hiện tại
+              </p>
             </div>
           </div>
-
-          <h3 className="text-center text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Level bạn chọn khác với gợi ý
-          </h3>
-          <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
-            Hệ thống đề xuất Level phù hợp với năng lực hiện tại để bạn học
-            hiệu quả hơn.
-          </p>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              aria-label="Đóng"
+              className="h-8 w-8 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-300"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         {/* Body */}
-        <div className="px-6 pb-4 space-y-3">
+        <div className="px-4 py-4 space-y-3">
           {/* Current Level */}
           <div
             className={cn(
@@ -159,8 +152,8 @@ export default function LevelSuggestModal({
         </div>
 
         {/* Message */}
-        <div className="px-6 pb-4">
-          <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="px-4 pb-4">
+          <p className="text-center text-xs text-zinc-600 dark:text-zinc-400">
             Bạn vẫn có thể tiếp tục với{" "}
             <span className="font-semibold">
               Level {currentLevel}
@@ -174,17 +167,16 @@ export default function LevelSuggestModal({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 px-6 pb-6 pt-2">
+        <div className="flex gap-3 px-4 pb-4 pt-1">
           {onCancel && (
             <button
               onClick={onCancel}
               className={cn(
-                "flex-1 rounded-xl border border-zinc-300 dark:border-zinc-600",
+                "flex-1 py-2.5 rounded-xl border border-zinc-300",
                 "bg-white dark:bg-zinc-900",
-                "px-4 py-2.5 text-sm font-medium",
-                "text-zinc-700 dark:text-zinc-200",
+                "text-xs font-semibold text-zinc-700 dark:text-zinc-200",
                 "hover:bg-zinc-50 dark:hover:bg-zinc-800",
-                "transition-colors"
+                "dark:border-zinc-700"
               )}
             >
               Đổi Level khác
@@ -194,12 +186,11 @@ export default function LevelSuggestModal({
           <button
             onClick={onContinue}
             className={cn(
-              "flex flex-1 items-center justify-center gap-2 rounded-xl",
+              "flex flex-1 items-center justify-center gap-2 py-2.5 rounded-xl",
               "bg-gradient-to-r from-indigo-600 to-indigo-500",
               "hover:from-indigo-500 hover:to-indigo-400",
-              "px-4 py-2.5 text-sm font-semibold text-white",
-              "shadow-sm hover:shadow-md",
-              "transition-transform duration-150 active:scale-[0.97]"
+              "text-xs font-semibold text-white",
+              "shadow-sm"
             )}
           >
             <ArrowRight className="h-4 w-4" />

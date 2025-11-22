@@ -366,7 +366,7 @@ function GoalDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-3 py-6 backdrop-blur-sm"
       onClick={() => {
         if (!isUpdating) {
           setShowDialog(false);
@@ -375,81 +375,122 @@ function GoalDialog({
       }}
     >
       <div
-        className="w-full max-w-md overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 shadow-2xl ring-1 ring-black/5 dark:border-gray-800/80 dark:bg-gray-950/95"
+        className="
+          w-full max-w-sm rounded-2xl 
+          bg-white/95 dark:bg-zinc-900/95 
+          border border-zinc-200 dark:border-zinc-800
+          shadow-xl ring-1 ring-black/5
+          overflow-hidden
+        "
         onClick={(e) => e.stopPropagation()}
       >
-        {/* top accent */}
-        <div className="h-1 w-full bg-gradient-to-r from-violet-400 via-violet-500 to-indigo-600" />
-
-        <div className="px-6 pb-6 pt-5">
-          <div className="mb-4 flex items-center justify-between gap-3">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center gap-2">
+            <div className="h-9 w-9 rounded-full bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center">
+              <Target className="h-4 w-4 text-violet-600 dark:text-violet-300" />
+            </div>
             <div>
-              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
                 {isEdit ? "Cập nhật mục tiêu" : "Đặt mục tiêu TOEIC"}
               </h3>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
                 Nhập điểm TOEIC mong muốn trong khoảng 10 – 990.
               </p>
             </div>
-            <button
-              onClick={() => {
-                if (!isUpdating) {
-                  setShowDialog(false);
-                  setTargetInput("");
-                }
-              }}
-              disabled={isUpdating}
-              className="rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:opacity-60 dark:hover:bg-zinc-800 dark:hover:text-slate-200"
-            >
-              <X className="h-4 w-4" />
-            </button>
           </div>
 
-          <div className="relative mb-5">
+          <button
+            onClick={() => {
+              if (!isUpdating) {
+                setShowDialog(false);
+                setTargetInput("");
+              }
+            }}
+            disabled={isUpdating}
+            className="h-8 w-8 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-300 disabled:opacity-60"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* BODY */}
+        <div className="px-4 py-4 space-y-3">
+          <div
+            className="
+              rounded-xl border border-violet-200/70 bg-violet-50/40 
+              p-3 dark:border-violet-500/40 dark:bg-violet-500/5
+            "
+          >
+            <label className="text-[11px] font-semibold text-violet-700 dark:text-violet-300">
+              Điểm TOEIC mục tiêu *
+            </label>
+
             <input
               type="number"
               min={10}
               max={990}
               value={targetInput}
               onChange={(e) => setTargetInput(e.target.value)}
-              placeholder="Ví dụ: 750"
-              className="w-full rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-900 shadow-sm outline-none placeholder:text-slate-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-300/80 dark:border-zinc-800 dark:bg-zinc-900 dark:text-slate-50 dark:placeholder:text-slate-500 dark:focus:border-violet-500 dark:focus:ring-violet-500/40"
+              placeholder="VD: 750"
+              className="
+                mt-1 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 
+                text-sm font-medium text-zinc-900 shadow-sm 
+                placeholder:text-zinc-400 outline-none
+                focus:border-violet-400 focus:ring-2 focus:ring-violet-300/70
+                dark:bg-zinc-900 dark:text-zinc-50 dark:border-violet-500/60
+              "
             />
             {currentTarget && isEdit && (
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 dark:text-slate-500">
-                Hiện tại: {currentTarget}
-              </div>
+              <p className="mt-1.5 text-[11px] text-violet-600 dark:text-violet-400">
+                Hiện tại: {currentTarget} điểm
+              </p>
             )}
           </div>
+        </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={() => {
-                if (!isUpdating) {
-                  setShowDialog(false);
-                  setTargetInput("");
-                }
-              }}
-              disabled={isUpdating}
-              className="flex-1 rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:text-slate-200 dark:hover:bg-zinc-800"
-            >
-              Hủy
-            </button>
-            <button
-              onClick={handleSetGoal}
-              disabled={isUpdating}
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-md shadow-violet-500/30 transition-all hover:brightness-110 disabled:opacity-60"
-            >
-              {isUpdating ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Đang xử lý...
-                </>
-              ) : (
-                "Xác nhận"
-              )}
-            </button>
-          </div>
+        {/* FOOTER BUTTONS */}
+        <div className="px-4 pb-4 pt-1 flex gap-3">
+          <button
+            onClick={() => {
+              if (!isUpdating) {
+                setShowDialog(false);
+                setTargetInput("");
+              }
+            }}
+            disabled={isUpdating}
+            className="
+              flex-1 py-2.5 rounded-xl bg-white border border-zinc-300
+              text-xs font-semibold text-zinc-700 shadow-sm
+              hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-200
+              dark:border-zinc-700 dark:hover:bg-zinc-800
+              disabled:opacity-60 disabled:cursor-not-allowed
+            "
+          >
+            Hủy
+          </button>
+
+          <button
+            onClick={handleSetGoal}
+            disabled={isUpdating}
+            className="
+              flex-1 py-2.5 rounded-xl
+              bg-gradient-to-r from-violet-500 to-indigo-600
+              text-xs font-semibold text-white shadow-sm
+              hover:from-violet-400 hover:to-indigo-500
+              disabled:opacity-60 disabled:cursor-not-allowed
+              flex items-center justify-center gap-2
+            "
+          >
+            {isUpdating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Đang lưu...
+              </>
+            ) : (
+              "Xác nhận"
+            )}
+          </button>
         </div>
       </div>
     </div>

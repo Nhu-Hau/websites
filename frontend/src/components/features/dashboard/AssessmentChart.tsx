@@ -535,12 +535,14 @@ export default function AssessmentChart() {
         <div className={CARD_BASE}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-1 items-center gap-3">
+              {/* Icon gradient kiểu planner */}
               <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
-                {/* Glow phía sau */}
-                <div className="absolute inset-0 rounded-2xl" />
-
-                {/* Khối icon chính */}
-                <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
+                <div
+                  className="absolute inset-0 rounded-2xl bg-gradient-to-r from-amber-200/60 via-amber-200/40 to-orange-300/40 blur-xl"
+                />
+                <div
+                  className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-md shadow-[#00000022] sm:h-10 sm:w-10"
+                >
                   <Clock3 className="h-5 w-5 text-white" />
                 </div>
               </div>
@@ -591,14 +593,16 @@ export default function AssessmentChart() {
       {/* Header */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-            <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
-              {/* Glow phía sau */}
-              <div className="absolute inset-0 rounded-2xl" />
-
-              {/* Khối icon chính */}
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
-                <Gauge className="h-5 w-5 text-white" />
-              </div>
+          {/* Icon gradient kiểu planner */}
+          <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
+            <div
+              className="absolute inset-0 rounded-2xl bg-gradient-to-r from-sky-200/60 via-indigo-200/40 to-sky-300/40 blur-xl"
+            />
+            <div
+              className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 shadow-md shadow-[#00000022] sm:h-10 sm:w-10"
+            >
+              <Gauge className="h-5 w-5 text-white" />
+            </div>
           </div>
           <div>
               <h3 className="text-lg xs:text-xl font-semibold text-slate-900 dark:text-slate-50">

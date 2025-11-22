@@ -552,10 +552,6 @@ export default function ProfileClient({
       <div className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/95 p-5 shadow-sm ring-1 ring-black/[0.03] dark:border-zinc-800/80 dark:bg-zinc-900/95">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-[#35519a] shadow-md shadow-[#35519a]/30">
-              <Trophy className="relative z-10 h-5 w-5 text-white" />
-              <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/40" />
-            </div>
             <div className="min-w-0">
               <h2 className="truncate text-lg font-semibold text-zinc-900 dark:text-white">
                 Bộ sưu tập huy hiệu

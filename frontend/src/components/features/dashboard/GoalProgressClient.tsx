@@ -105,13 +105,20 @@ export default function GoalProgressClient({
         {/* Header */}
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-md shadow-violet-500/30">
-              <div className="absolute inset-0 rounded-2xl bg-white/25 blur-lg" />
-              <Target className="relative h-5 w-5" />
+            {/* Icon gradient kiểu planner */}
+            <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
+              <div
+                className="absolute inset-0 rounded-2xl bg-gradient-to-r from-violet-200/60 via-violet-200/40 to-indigo-300/40 blur-xl"
+              />
+              <div
+                className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-md shadow-[#00000022] sm:h-10 sm:w-10"
+              >
+                <Target className="h-5 w-5 text-white" />
+              </div>
             </div>
             <div>
               <p className={SECTION_LABEL_CLASS}>Goal planning</p>
-              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">
+              <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-50">
                 Tiến độ đạt mục tiêu
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-400">
@@ -186,25 +193,21 @@ export default function GoalProgressClient({
       {/* Header */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-3">
-          <div className="relative flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl">
-            {/* Glow phía sau */}
+          {/* Icon gradient kiểu planner */}
+          <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
             <div
-              className={`
-      absolute inset-0 rounded-2xl`}
+              className={`absolute inset-0 rounded-2xl bg-gradient-to-r blur-xl ${
+                isAchieved
+                  ? "from-emerald-200/60 via-emerald-200/40 to-teal-300/40"
+                  : "from-violet-200/60 via-violet-200/40 to-indigo-300/40"
+              }`}
             />
-
-            {/* Icon box */}
             <div
-              className={`
-      relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl
-      shadow-md shadow-[#00000022]
-      bg-gradient-to-br 
-      ${
-        isAchieved
-          ? "from-emerald-500 to-teal-500"
-          : "from-violet-500 to-indigo-600"
-      }
-    `}
+              className={`relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br shadow-md shadow-[#00000022] sm:h-10 sm:w-10 ${
+                isAchieved
+                  ? "from-emerald-500 to-teal-500"
+                  : "from-violet-500 to-indigo-600"
+              }`}
             >
               {isAchieved ? (
                 <Trophy className="h-5 w-5 text-white" />
@@ -215,7 +218,7 @@ export default function GoalProgressClient({
           </div>
           <div>
             <p className={SECTION_LABEL_CLASS}>Goal tracking</p>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">
+            <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-50">
               Tiến độ đạt mục tiêu
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400">

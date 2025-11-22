@@ -37,12 +37,16 @@ export default function ActivityHeatmapClient({
       <div className="relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/80 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-lg dark:border-gray-800/80 dark:bg-gray-950/90 dark:ring-white/5 sm:p-6">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-800" />
 
-        <div className="mb-5 flex flex-col items-start gap-3 sm:mb-6 sm:flex-row sm:items-center">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-700/12 ring-1 ring-blue-700/30 dark:bg-blue-600/15">
-            <Calendar className="h-5 w-5 text-blue-700 dark:text-blue-400" />
+        <div className="mb-5 flex gap-3 sm:mb-6 items-center">
+          {/* Icon gradient kiểu planner */}
+          <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-200/60 via-blue-200/40 to-indigo-300/40 blur-xl" />
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
+              <Calendar className="h-5 w-5 text-white" />
+            </div>
           </div>
           <div>
-            <h3 className="text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-50 sm:text-base">
+            <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
               Biểu đồ hoạt động học tập
             </h3>
             <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
@@ -123,13 +127,10 @@ export default function ActivityHeatmapClient({
       {/* HEADER */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          {/* icon style theo mẫu, tối ưu mobile */}
+          {/* Icon gradient kiểu planner */}
           <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
-            {/* Glow layer */}
-            <div className="absolute inset-0 rounded-2xl" />
-
-            {/* Icon container */}
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#3B6ECC] to-[#224A97] shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-200/60 via-blue-200/40 to-indigo-300/40 blur-xl" />
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
               <Calendar className="h-5 w-5 text-white" />
             </div>
           </div>
@@ -198,8 +199,12 @@ export default function ActivityHeatmapClient({
         {/* Streaks */}
         <div className="flex flex-wrap items-center gap-4 sm:gap-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 shadow-md shadow-blue-600/30 sm:h-10 sm:w-10">
-              <Flame className="h-4 w-4 text-white sm:h-5 sm:w-5" />
+            {/* Icon gradient kiểu planner */}
+            <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-orange-200/60 via-orange-200/40 to-red-300/40 blur-xl" />
+              <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
+                <Flame className="h-4 w-4 text-white sm:h-5 sm:w-5" />
+              </div>
             </div>
             <div>
               <p className="text-base font-bold text-blue-700 dark:text-blue-400 sm:text-lg">
@@ -212,8 +217,12 @@ export default function ActivityHeatmapClient({
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-gray-600 to-gray-800 shadow-md sm:h-10 sm:w-10">
-              <Trophy className="h-4 w-4 text-white sm:h-5 sm:w-5" />
+            {/* Icon gradient kiểu planner */}
+            <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-amber-200/60 via-amber-200/40 to-yellow-300/40 blur-xl" />
+              <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-600 shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
+                <Trophy className="h-4 w-4 text-white sm:h-5 sm:w-5" />
+              </div>
             </div>
             <div>
               <p className="text-base font-bold text-gray-800 dark:text-gray-200 sm:text-lg">

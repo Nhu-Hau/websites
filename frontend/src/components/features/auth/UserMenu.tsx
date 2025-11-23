@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -263,11 +263,15 @@ export default function UserMenu() {
           className="group rounded-full focus:outline-none transition-all duration-200 flex items-center"
         >
           {avatarSrc ? (
-            <img
-              src={avatarSrc}
-              alt={me?.name || "avatar"}
-              className="w-8 h-8 rounded-full object-cover border-2 border-zinc-200 dark:border-zinc-700"
-            />
+            <div className="relative w-8 h-8">
+              <Image
+                src={avatarSrc}
+                alt={me?.name || "avatar"}
+                fill
+                className="rounded-full object-cover border-2 border-zinc-200 dark:border-zinc-700"
+                unoptimized
+              />
+            </div>
           ) : (
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/30 dark:to-sky-800/20 flex items-center justify-center">
               <UserIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
@@ -298,11 +302,15 @@ export default function UserMenu() {
         }`}
       >
         {avatarSrc ? (
-          <img
-            src={avatarSrc}
-            alt={me?.name || "avatar"}
-            className="w-8 h-8 rounded-full object-cover border-2 border-zinc-200 dark:border-zinc-700 group-hover:border-sky-500 dark:group-hover:border-sky-400 transition-colors"
-          />
+          <div className="relative w-8 h-8">
+            <Image
+              src={avatarSrc}
+              alt={me?.name || "avatar"}
+              fill
+              className="rounded-full object-cover border-2 border-zinc-200 dark:border-zinc-700 group-hover:border-sky-500 dark:group-hover:border-sky-400 transition-colors"
+              unoptimized
+            />
+          </div>
         ) : (
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/30 dark:to-sky-800/20 flex items-center justify-center group-hover:from-sky-200 dark:group-hover:from-sky-800/50 transition-all">
             <UserIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
@@ -323,11 +331,15 @@ export default function UserMenu() {
               {/* Header */}
               <div className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-700">
                 {avatarSrc ? (
-                  <img
-                    src={avatarSrc}
-                    alt={me?.name || "avatar"}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-sky-500"
-                  />
+                  <div className="relative w-10 h-10">
+                    <Image
+                      src={avatarSrc}
+                      alt={me?.name || "avatar"}
+                      fill
+                      className="rounded-full object-cover border-2 border-sky-500"
+                      unoptimized
+                    />
+                  </div>
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/30 dark:to-sky-800/20 flex items-center justify-center">
                     <UserIcon className="w-6 h-6 text-sky-600 dark:text-sky-400" />
@@ -554,3 +566,11 @@ export default function UserMenu() {
     </div>
   );
 }
+
+<Tooltip
+  id="user-tooltip"
+  place="bottom"
+  positionStrategy="fixed"
+  offset={10}
+  className="z-50 !bg-zinc-800 !text-white !text-xs !rounded-lg !px-2.5 !py-1.5 shadow-lg"
+/>;

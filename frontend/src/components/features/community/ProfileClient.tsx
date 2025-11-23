@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   UserPlus,
@@ -233,11 +234,15 @@ export default function ProfileClient({
       <div className="relative mb-4 overflow-hidden rounded-2xl border border-zinc-200/80 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 shadow-sm ring-1 ring-black/[0.04] dark:border-zinc-800/80">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.30),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.75),_transparent_55%)]" />
         {coverUrl && (
-          <img
-            src={coverUrl}
-            alt="Cover"
-            className="h-48 xs:h-56 sm:h-64 w-full object-cover opacity-95"
-          />
+          <div className="relative h-48 xs:h-56 sm:h-64 w-full">
+            <Image
+              src={coverUrl}
+              alt="Cover"
+              fill
+              className="object-cover opacity-95"
+              unoptimized
+            />
+          </div>
         )}
         {!coverUrl && <div className="h-48 xs:h-56 sm:h-64 w-full" />}
 
@@ -298,18 +303,29 @@ export default function ProfileClient({
                   // iOS fix: Reset value to allow selecting same file again
                   e.currentTarget.value = "";
                   if (!file) return;
-                  
+
                   // iOS Safari fix: Check file type by extension if MIME type is missing
                   const fileName = file.name.toLowerCase();
-                  const fileExtension = fileName.substring(fileName.lastIndexOf("."));
-                  const isImage = file.type.startsWith("image/") || 
-                    [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"].includes(fileExtension);
-                  
+                  const fileExtension = fileName.substring(
+                    fileName.lastIndexOf(".")
+                  );
+                  const isImage =
+                    file.type.startsWith("image/") ||
+                    [
+                      ".jpg",
+                      ".jpeg",
+                      ".png",
+                      ".webp",
+                      ".gif",
+                      ".heic",
+                      ".heif",
+                    ].includes(fileExtension);
+
                   if (!isImage) {
                     toast.error("Vui lòng chọn file ảnh hợp lệ");
                     return;
                   }
-                  
+
                   const reader = new FileReader();
                   reader.onloadend = () => {
                     setCropperImage(reader.result as string);
@@ -336,13 +352,15 @@ export default function ProfileClient({
             <div className="relative">
               <button
                 onClick={() => setShowAvatarMenu((v) => !v)}
-                className="flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl transition-all hover:ring-blue-300 dark:ring-zinc-950"
+                className="relative flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl transition-all hover:ring-blue-300 dark:ring-zinc-950 overflow-hidden"
               >
                 {avatarUrl ? (
-                  <img
+                  <Image
                     src={avatarUrl}
-                    alt={profile.name}
-                    className="h-full w-full rounded-full object-cover"
+                    alt={profile.name || "User"}
+                    fill
+                    className="rounded-full object-cover"
+                    unoptimized
                   />
                 ) : (
                   (profile.name?.[0] || "U").toUpperCase()
@@ -367,18 +385,29 @@ export default function ProfileClient({
                           // iOS fix: Reset value to allow selecting same file again
                           e.currentTarget.value = "";
                           if (!file) return;
-                          
+
                           // iOS Safari fix: Check file type by extension if MIME type is missing
                           const fileName = file.name.toLowerCase();
-                          const fileExtension = fileName.substring(fileName.lastIndexOf("."));
-                          const isImage = file.type.startsWith("image/") || 
-                            [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"].includes(fileExtension);
-                          
+                          const fileExtension = fileName.substring(
+                            fileName.lastIndexOf(".")
+                          );
+                          const isImage =
+                            file.type.startsWith("image/") ||
+                            [
+                              ".jpg",
+                              ".jpeg",
+                              ".png",
+                              ".webp",
+                              ".gif",
+                              ".heic",
+                              ".heif",
+                            ].includes(fileExtension);
+
                           if (!isImage) {
                             toast.error("Vui lòng chọn file ảnh hợp lệ");
                             return;
                           }
-                          
+
                           setShowAvatarMenu(false);
                           const reader = new FileReader();
                           reader.onloadend = () => {
@@ -452,12 +481,14 @@ export default function ProfileClient({
               )}
             </div>
           ) : (
-            <div className="flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl dark:ring-zinc-950">
+            <div className="relative flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl dark:ring-zinc-950">
               {avatarUrl ? (
-                <img
+                <Image
                   src={avatarUrl}
-                  alt={profile.name}
-                  className="h-full w-full rounded-full object-cover"
+                  alt={profile.name || "User"}
+                  fill
+                  className="rounded-full object-cover"
+                  unoptimized
                 />
               ) : (
                 (profile.name?.[0] || "U").toUpperCase()
@@ -613,8 +644,8 @@ export default function ProfileClient({
               Chưa có huy hiệu nào
             </h3>
             <p className="mb-1 max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
-              Làm bài đều đặn, giữ streak và đặt mục tiêu để mở khóa huy hiệu đầu
-              tiên.
+              Làm bài đều đặn, giữ streak và đặt mục tiêu để mở khóa huy hiệu
+              đầu tiên.
             </p>
           </div>
         ) : (
@@ -735,7 +766,7 @@ export default function ProfileClient({
 
       {/* Posts */}
       <div className="space-y-4">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+        <h2 className="truncate text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Bài viết
         </h2>
         {posts.length > 0 ? (
@@ -782,11 +813,12 @@ export default function ProfileClient({
                 // iOS fix: Convert dataURL to blob properly
                 const response = await fetch(croppedImage);
                 const blob = await response.blob();
-                
+
                 // Ensure proper MIME type for iOS
-                const finalBlob = blob.type === "image/png" || blob.type === "image/jpeg" 
-                  ? blob 
-                  : new Blob([blob], { type: "image/jpeg" });
+                const finalBlob =
+                  blob.type === "image/png" || blob.type === "image/jpeg"
+                    ? blob
+                    : new Blob([blob], { type: "image/jpeg" });
 
                 const formData = new FormData();
                 // iOS fix: Explicitly set filename with .jpg extension
@@ -824,11 +856,12 @@ export default function ProfileClient({
                 // iOS fix: Convert dataURL to blob properly
                 const response = await fetch(croppedImage);
                 const blob = await response.blob();
-                
+
                 // Ensure proper MIME type for iOS
-                const finalBlob = blob.type === "image/png" || blob.type === "image/jpeg" 
-                  ? blob 
-                  : new Blob([blob], { type: "image/jpeg" });
+                const finalBlob =
+                  blob.type === "image/png" || blob.type === "image/jpeg"
+                    ? blob
+                    : new Blob([blob], { type: "image/jpeg" });
 
                 const formData = new FormData();
                 // iOS fix: Explicitly set filename with .jpg extension

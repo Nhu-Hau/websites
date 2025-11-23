@@ -2,6 +2,21 @@
 // src/components/AuthLayout.tsx
 "use client";
 import React from "react";
+import { motion, Variants, easeOut } from "framer-motion";
+
+const easeOutBezier = easeOut;
+
+const pageVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: easeOutBezier,
+    },
+  },
+};
 
 type Props = {
   title: string;
@@ -19,8 +34,12 @@ export default function AuthLayout({
   className,
 }: Props) {
   return (
-    <main
-      className="relative min-h-screen grid place-items-center bg-gradient-to-br from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 px-4 py-12 overflow-hidden">
+    <motion.main
+      className="relative min-h-screen grid place-items-center bg-gradient-to-br from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 px-4 py-12 overflow-hidden"
+      variants={pageVariants}
+      initial="hidden"
+      animate="show"
+    >
       {/* Nền gradient + noise nhẹ (tạo chiều sâu) */}
       <div
         aria-hidden
@@ -84,6 +103,6 @@ export default function AuthLayout({
           )}
         </div>
       </div>
-    </main>
+    </motion.main>
   );
 }

@@ -486,9 +486,11 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         {/* Media Gallery (only show if not a repost) */}
         {!post.repostedFrom &&
           post.attachments &&
-          post.attachments.length > 0 && (
+          Array.isArray(post.attachments) &&
+          post.attachments.length > 0 &&
+          post.attachments.some((att) => att && att.url) && (
             <div className="px-5 pb-4">
-              <MediaGallery attachments={post.attachments} />
+              <MediaGallery attachments={post.attachments.filter((att) => att && att.url)} />
             </div>
           )}
 

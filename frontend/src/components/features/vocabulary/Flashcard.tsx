@@ -1,8 +1,10 @@
 // frontend/src/components/features/vocabulary/Flashcard.tsx
 "use client";
 
+import React from "react";
 import { VocabularyTerm } from "@/types/vocabulary.types";
 import { Volume2, BookOpen } from "lucide-react";
+import { useSpeech } from "@/hooks/news/useSpeech";
 
 interface FlashcardProps {
   term: VocabularyTerm;
@@ -11,6 +13,8 @@ interface FlashcardProps {
 }
 
 export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
+  const { speak, speaking } = useSpeech();
+
   const handleAudio = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     if (term.audio) {
@@ -18,120 +22,176 @@ export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
       audio.play().catch(() => {
         /* ignore */
       });
+    } else {
+      // Use text-to-speech if no audio URL
+      speak(term.word);
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onFlip();
     }
   };
 
   return (
-    <div className="mx-auto mb-8 w-full max-w-3xl">
+    <div className="mx-auto mb-4 w-full sm:mb-6 max-w-2xl md:max-w-3xl lg:max-w-4xl">
       <div
-        className="relative aspect-[4/3] cursor-pointer perspective-1000"
+        className="relative w-full aspect-[4/3] xs:aspect-[4/3] sm:aspect-[5/3] cursor-pointer overflow-visible rounded-2xl transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl sm:rounded-3xl"
         onClick={onFlip}
         role="button"
         tabIndex={0}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            onFlip();
-          }
-        }}
+        onKeyDown={handleKeyDown}
       >
+        {/* LỚP BÊN TRONG ĐỂ XOAY 3D */}
         <div
-          className={`relative h-full w-full preserve-3d transition-transform duration-500 ${
-            isFlipped ? "rotate-y-180" : ""
+          className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] ${
+            isFlipped ? "[transform:rotateY(180deg)]" : ""
           }`}
         >
+          {/* ============== FRONT: TỪ VỰNG ============== */}
           <FlashcardFace
             heading="Thuật ngữ"
             subheading={term.partOfSpeech}
             accent="from-sky-50 via-white to-emerald-50"
-            className={`backface-hidden ${
-              isFlipped ? "pointer-events-none opacity-0" : "opacity-100"
-            }`}
+            className=""
+            style={{ backfaceVisibility: "hidden" }}
           >
-            <h2 className="mb-6 break-words text-center text-4xl font-semibold tracking-tight text-zinc-900 dark:text-white md:text-5xl">
-              {term.word}
-            </h2>
-            {term.audio && (
-              <button
-                onClick={handleAudio}
-                className="inline-flex items-center gap-2 rounded-2xl border border-zinc-200/80 bg-white/90 px-5 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-100"
-              >
-                <Volume2 className="h-4 w-4" />
-                Phát âm
-              </button>
-            )}
-            <p className="absolute bottom-6 text-xs uppercase tracking-[0.4em] text-zinc-400">
-              Nhấn Space để lật
-            </p>
+            <div className="flex h-full flex-col justify-between">
+              <div className="flex flex-1 flex-col items-center justify-center px-3 text-center sm:px-6 md:px-8">
+                <div className="w-full max-w-md sm:max-w-lg">
+                  {/* BLOCK CHUẨN: sử dụng cho cả {term.word} & {term.meaning} */}
+                  <h2 className="mb-2 break-words text-lg font-semibold tracking-tight text-zinc-900 dark:text-white xs:text-xl sm:text-2xl md:text-3xl">
+                    {term.word}
+                  </h2>
+
+                  {term.phonetic && (
+                    <p className="mb-3 text-xs font-medium text-zinc-600 xs:text-sm dark:text-zinc-400">
+                      /{term.phonetic}/
+                    </p>
+                  )}
+
+                  <button
+                    onClick={handleAudio}
+                    disabled={speaking}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-white/70 bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:text-[#2E5EB8] dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100 disabled:opacity-50"
+                  >
+                    <Volume2 className={`h-3.5 w-3.5 ${speaking ? 'text-[#2E5EB8]' : ''}`} />
+                    {term.audio ? "Nghe phát âm" : "Đọc từ"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between px-3 pb-2 pt-1 text-[10px] text-zinc-400 sm:px-6 sm:pb-3">
+                <span className="uppercase tracking-[0.22em]">Nhấn để lật</span>
+                {/* Chip trạng thái: Thuật ngữ */}
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/85 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.25em] text-slate-500 sm:px-3 sm:py-1 sm:text-[10px] dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-300">
+                  <BookOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  Thuật ngữ
+                </span>
+              </div>
+            </div>
           </FlashcardFace>
 
+          {/* ============== BACK: NGHĨA ============== */}
           <FlashcardFace
             heading="Nghĩa"
+            subheading={term.partOfSpeech}
             accent="from-emerald-50 via-white to-amber-50"
-            className={`rotate-y-180 backface-hidden ${
-              !isFlipped ? "pointer-events-none opacity-0" : "opacity-100"
-            }`}
+            className=""
+            style={{
+              backfaceVisibility: "hidden",
+              transform: "rotateY(180deg)",
+            }}
           >
-            <div className="flex flex-1 flex-col gap-6">
-              <section>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
-                  Tiếng Việt
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">
-                  {term.meaning}
-                </p>
-              </section>
+            <div className="flex h-full flex-col justify-between">
+              <div className="flex flex-1 flex-col items-center justify-center px-3 text-center sm:px-6 md:px-8">
+                <div className="w-full max-w-[290px] xs:max-w-md sm:max-w-lg">
+                  {/* BLOCK CHUẨN Y HỆT TRÊN, CHỈ ĐỔI DATA => {term.meaning} */}
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <h2 className="break-words text-lg font-semibold tracking-tight text-zinc-900 dark:text-white xs:text-xl sm:text-2xl md:text-3xl">
+                      {term.meaning}
+                    </h2>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (term.audio) {
+                          const audio = new Audio(term.audio);
+                          audio.play().catch(() => {
+                            /* ignore */
+                          });
+                        } else {
+                          speak(term.word);
+                        }
+                      }}
+                      disabled={speaking}
+                      className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-600 transition-all duration-200 hover:bg-gray-100 hover:text-[#2E5EB8] dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-sky-400 active:scale-95 disabled:opacity-50 flex-shrink-0"
+                      title="Đọc từ"
+                    >
+                      <Volume2 className={`h-4 w-4 ${speaking ? 'text-[#2E5EB8] dark:text-sky-400' : ''}`} />
+                    </button>
+                  </div>
 
-              {term.englishMeaning && (
-                <section>
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
-                    English
-                  </p>
-                  <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-300">
-                    {term.englishMeaning}
-                  </p>
-                </section>
-              )}
-
-              {(term.example || term.translatedExample) && (
-                <section className="rounded-2xl border border-zinc-200/70 bg-white/90 p-4 text-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
-                  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-400">
-                    Ví dụ
-                  </p>
-                  {term.example && (
-                    <p className="mt-2 italic text-zinc-700 dark:text-zinc-200">
-                      “{term.example}”
+                  {term.englishMeaning && (
+                    <p className="mb-2 text-xs text-zinc-600 xs:text-sm dark:text-zinc-300">
+                      {term.englishMeaning}
                     </p>
                   )}
-                  {term.translatedExample && (
-                    <p className="mt-2 italic text-zinc-500 dark:text-zinc-400">
-                      “{term.translatedExample}”
-                    </p>
+
+                  {(term.example || term.translatedExample) && (
+                    <div
+                      className="
+                        mt-3 xs:mt-4 sm:mt-5
+                        w-full rounded-xl border border-slate-100/70 bg-white
+                        p-2.5 xs:p-3 sm:p-3.5
+                        text-left text-[11px] xs:text-xs sm:text-[13px]
+                        leading-relaxed
+                        max-h-32 xs:max-h-40 sm:max-h-48
+                        overflow-y-auto
+                        scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent
+                        dark:border-zinc-800/70 dark:bg-zinc-900/80
+                        dark:scrollbar-thumb-zinc-700
+                      "
+                    >
+                      <p className="text-[9px] xs:text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-400">
+                        Ví dụ
+                      </p>
+
+                      {term.example && (
+                        <p className="mt-1.5 xs:mt-2 sm:mt-2.5 italic text-slate-700 dark:text-zinc-200 break-words">
+                          &quot;{term.example}&quot;
+                        </p>
+                      )}
+
+                      {term.translatedExample && (
+                        <p className="mt-1.5 xs:mt-2 sm:mt-2.5 text-slate-500 dark:text-zinc-400 break-words">
+                          &quot;{term.translatedExample}&quot;
+                        </p>
+                      )}
+                    </div>
                   )}
-                </section>
-              )}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between px-3 pb-2 pt-1 text-[10px] text-zinc-400 sm:px-6 sm:pb-3">
+                <span className="uppercase tracking-[0.24em]">
+                  Nhấn để lật lại
+                </span>
+                {/* Chip trạng thái: Nghĩa */}
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/85 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.25em] text-slate-500 sm:px-3 sm:py-1 sm:text-[10px] dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-300">
+                  <BookOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  Nghĩa
+                </span>
+              </div>
             </div>
-            <p className="absolute bottom-6 text-xs uppercase tracking-[0.4em] text-zinc-400">
-              Nhấn Space để lật lại
-            </p>
           </FlashcardFace>
         </div>
       </div>
 
-      <style jsx>{`
-        .perspective-1000 {
-          perspective: 1600px;
-        }
-        .preserve-3d {
-          transform-style: preserve-3d;
-        }
-        .backface-hidden {
-          backface-visibility: hidden;
-        }
-        .rotate-y-180 {
-          transform: rotateY(180deg);
-        }
-      `}</style>
+      <p className="mt-2 text-center text-[10px] text-zinc-400 sm:hidden">
+        Chạm vào thẻ hoặc nhấn Space để lật
+      </p>
     </div>
   );
 }
@@ -142,30 +202,23 @@ function FlashcardFace({
   accent,
   className,
   children,
+  style,
 }: {
   heading: string;
   subheading?: string;
   accent: string;
   className?: string;
   children: React.ReactNode;
+  style?: React.CSSProperties;
 }) {
   return (
     <div
-      className={`absolute inset-0 rounded-[40px] border border-zinc-200/80 bg-gradient-to-br ${accent} p-8 shadow-xl transition dark:border-zinc-800/70 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 ${className}`}
+      className={`absolute inset-0 rounded-2xl border border-white/60 bg-gradient-to-br ${accent} p-3 shadow-lg shadow-slate-900/5 transition backdrop-blur-xl xs:p-3.5 sm:rounded-3xl sm:p-4 md:p-5 dark:border-zinc-800/60 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 ${
+        className ?? ""
+      }`}
+      style={style}
     >
-      <div className="flex h-full flex-col items-center justify-center text-center">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-zinc-200/80 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500 dark:border-zinc-800/70 dark:text-zinc-300">
-          <BookOpen className="h-4 w-4" />
-          {heading}
-        </div>
-        {subheading && (
-          <span className="mb-4 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-600 dark:bg-white/10 dark:text-sky-200">
-            {subheading}
-          </span>
-        )}
-        {children}
-      </div>
+      <div className="flex h-full flex-col">{children}</div>
     </div>
   );
 }
-

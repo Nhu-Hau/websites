@@ -42,7 +42,12 @@ async function parseMaybeJson(res: Response) {
   
   try {
     const parsed = JSON.parse(text);
-    // Merge parsed data with raw text for debugging
+    // If parsed is an array, return it directly (can't merge with object)
+    // Arrays are returned as-is, objects get _rawText merged in
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+    // Merge parsed data with raw text for debugging (only for objects)
     return { ...parsed, _rawText: text };
   } catch (e) {
     // If parsing fails but response is successful, return empty object

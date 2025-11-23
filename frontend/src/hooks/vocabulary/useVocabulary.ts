@@ -22,13 +22,14 @@ export function useVocabulary() {
       setError(null);
       const data = await vocabularyService.getVocabularySets();
       // Ensure data is always an array
+      // After fixing parseMaybeJson, data should be array directly
       setSets(Array.isArray(data) ? data : []);
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch vocabulary sets"
       );
-      // On error, ensure sets remains an array (keep existing sets or empty array)
-      setSets((prev) => (Array.isArray(prev) ? prev : []));
+      // On error, keep existing sets if available (don't clear them)
+      setSets((prev) => (Array.isArray(prev) && prev.length > 0 ? prev : []));
     } finally {
       setLoading(false);
     }

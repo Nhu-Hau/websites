@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { X, Image as ImageIcon, Video, Upload, Send } from "lucide-react";
+import { X, Image as ImageIcon, Video, Upload, Send, FolderUp, Images } from "lucide-react";
 import { toast } from "@/lib/toast";
 import type { Attachment } from "@/types/community.types";
 
@@ -32,22 +32,24 @@ const ACCEPTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
 function isValidFileType(file: File): { isImage: boolean; isVideo: boolean } {
   const fileName = file.name.toLowerCase();
   const fileExtension = fileName.substring(fileName.lastIndexOf("."));
-  
+
   // Check by extension first (more reliable on Safari iOS)
   const isImageByExt = ACCEPTED_IMAGE_EXTENSIONS.includes(fileExtension);
   const isVideoByExt = ACCEPTED_VIDEO_EXTENSIONS.includes(fileExtension);
-  
+
   // Normalize MIME type for Safari iOS (handles image/jpeg vs image/jpg)
   const normalizedMime = file.type.toLowerCase().trim();
-  const isImageByMime = ACCEPTED_IMAGE_TYPES.some(mime => 
-    normalizedMime === mime.toLowerCase() || 
-    normalizedMime.startsWith("image/")
+  const isImageByMime = ACCEPTED_IMAGE_TYPES.some(
+    (mime) =>
+      normalizedMime === mime.toLowerCase() ||
+      normalizedMime.startsWith("image/")
   );
-  const isVideoByMime = ACCEPTED_VIDEO_TYPES.some(mime => 
-    normalizedMime === mime.toLowerCase() || 
-    normalizedMime.startsWith("video/")
+  const isVideoByMime = ACCEPTED_VIDEO_TYPES.some(
+    (mime) =>
+      normalizedMime === mime.toLowerCase() ||
+      normalizedMime.startsWith("video/")
   );
-  
+
   // Accept if either extension or mime type matches
   return {
     isImage: isImageByExt || isImageByMime,
@@ -128,7 +130,11 @@ export default function NewPostForm({
       const { isImage, isVideo } = isValidFileType(file);
 
       if (!isImage && !isVideo) {
-        console.warn("[handleFileSelect] Invalid file type:", file.name, file.type);
+        console.warn(
+          "[handleFileSelect] Invalid file type:",
+          file.name,
+          file.type
+        );
         toast.error(
           `${file.name} không phải là tệp hình ảnh hoặc video được hỗ trợ.`
         );
@@ -218,8 +224,18 @@ export default function NewPostForm({
         thumbnail: data.thumbnail,
       };
     } catch (error) {
-      console.error("[uploadFile] ERROR", error, "File:", file.name, "Type:", file.type, "Size:", file.size);
-      const errorMessage = error instanceof Error ? error.message : "Lỗi không xác định";
+      console.error(
+        "[uploadFile] ERROR",
+        error,
+        "File:",
+        file.name,
+        "Type:",
+        file.type,
+        "Size:",
+        file.size
+      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Lỗi không xác định";
       toast.error(`Không thể tải lên ${file.name}: ${errorMessage}`);
       return null;
     }
@@ -326,19 +342,25 @@ export default function NewPostForm({
     };
   }, [previews]);
 
-  const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleTextareaKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
       e.preventDefault();
-      if (!submitting && !uploading && (content.trim() || previews.length > 0)) {
+      if (
+        !submitting &&
+        !uploading &&
+        (content.trim() || previews.length > 0)
+      ) {
         handleSubmit();
       }
     }
   };
 
   return (
-    <div className="space-y-4">
-      {/* Text Input */}
-      <div>
+    <div className="flex flex-col">
+      {/* Text Input - Facebook/Instagram style */}
+      <div className="mb-4">
         <textarea
           ref={textareaRef}
           value={content}
@@ -350,30 +372,32 @@ export default function NewPostForm({
             el.style.height = Math.min(el.scrollHeight, 300) + "px";
           }}
           onKeyDown={handleTextareaKeyDown}
-          placeholder="Chia sẻ mẹo học TOEIC, câu hỏi hoặc tài nguyên..."
-          className="w-full min-h-[220px] max-h-[500px] resize-none rounded-2xl border border-zinc-200/80 bg-white/95 px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-xs outline-none transition-all duration-150 focus:border-sky-300 focus:ring-2 focus:ring-sky-500 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-100 dark:placeholder-zinc-400"
-          rows={5}
+          placeholder="Bạn đang nghĩ gì?"
+          className="w-full min-h-[100px] max-h-[300px] resize-none rounded-xl border-0 bg-transparent px-0 py-3 text-[15px] leading-6 text-zinc-900 placeholder-zinc-500 outline-none transition-colors focus:outline-none dark:text-zinc-100 dark:placeholder-zinc-400"
+          rows={4}
         />
-        <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <p
-            className={`text-xs font-medium ${
-              content.length > maxChars * 0.9
-                ? "text-red-600 dark:text-red-400"
-                : "text-zinc-500 dark:text-zinc-400"
-            }`}
-          >
-            {content.length}/{maxChars}
-          </p>
-        </div>
+        {content.length > 0 && (
+          <div className="mt-1 flex justify-end">
+            <p
+              className={`text-xs font-medium ${
+                content.length > maxChars * 0.9
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-zinc-500 dark:text-zinc-400"
+              }`}
+            >
+              {content.length}/{maxChars}
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Preview Grid */}
+      {/* Preview Grid - Facebook/Instagram style */}
       {previews.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           {previews.map((item, index) => (
             <div
               key={index}
-              className="group relative aspect-square overflow-hidden rounded-xl border border-zinc-200/80 bg-zinc-100/80 dark:border-zinc-700/80 dark:bg-zinc-800/80"
+              className="group relative aspect-square overflow-hidden rounded-lg border border-zinc-200/60 bg-zinc-50 dark:border-zinc-700/60 dark:bg-zinc-800/50"
             >
               {item.type === "image" ? (
                 <img
@@ -382,20 +406,20 @@ export default function NewPostForm({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-zinc-900">
-                  <Video className="h-12 w-12 text-white/90" />
+                <div className="flex h-full w-full items-center justify-center bg-zinc-900/90">
+                  <Video className="h-10 w-10 text-white/80" />
                 </div>
               )}
 
               {item.uploading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 </div>
               )}
 
               <button
                 onClick={() => removePreview(index)}
-                className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+                className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur-sm transition-all hover:bg-black/80 group-hover:opacity-100"
                 aria-label="Remove"
               >
                 <X className="h-4 w-4" />
@@ -405,9 +429,12 @@ export default function NewPostForm({
         </div>
       )}
 
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 border-t border-zinc-100/80 pt-4 dark:border-zinc-800/80">
-        <div className="relative flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+      {/* Divider */}
+      <div className="my-3 border-t border-zinc-200/60 dark:border-zinc-700/60" />
+
+      {/* Actions Bar - Facebook/Instagram style */}
+      <div className="flex items-center justify-between">
+        <div className="relative flex items-center gap-2">
           <input
             type="file"
             multiple
@@ -428,12 +455,12 @@ export default function NewPostForm({
             // Safari iOS fix: use opacity and position instead of display:none
             // This ensures the input is accessible to Safari's file picker
             // Note: pointerEvents must be "auto" or removed for Safari iOS to work
-            style={{ 
+            style={{
               position: "absolute",
               width: "1px",
               height: "1px",
               opacity: 0,
-              overflow: "hidden"
+              overflow: "hidden",
             }}
           />
           <button
@@ -449,34 +476,40 @@ export default function NewPostForm({
               }
             }}
             disabled={uploading || previews.length >= MAX_FILES}
-            className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-lg border border-zinc-200/80 bg-white/95 px-4 py-2 text-sm font-medium text-zinc-700 shadow-xs transition-colors hover:bg-zinc-50 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-300 dark:hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100/80 dark:text-zinc-300 dark:hover:bg-zinc-800/50 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Upload className="h-4 w-4 text-sky-600 dark:text-sky-400" />
-            <span>Thêm ảnh/video</span>
+            <div className="flex items-center">
+              <FolderUp className="h-5 w-5 text-sky-500 dark:text-sky-400" />
+              {previews.length > 0 && (
+                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                  {previews.length}
+                </span>
+              )}
+            </div>
+            <span className="hidden sm:inline">Chọn tệp</span>
           </button>
-          {previews.length > 0 && (
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              {previews.length}/{MAX_FILES}
-            </span>
-          )}
         </div>
 
         <button
           onClick={handleSubmit}
           disabled={
-            uploading || submitting || (!content.trim() && previews.length === 0)
+            uploading ||
+            submitting ||
+            (!content.trim() && previews.length === 0)
           }
-          className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-lg bg-sky-600 px-6 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-sky-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
+          className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-sky-600 dark:hover:bg-sky-700"
         >
           {submitting || uploading ? (
             <>
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              <span>{uploading ? "Đang tải lên..." : "Đang đăng..."}</span>
+              <span className="hidden sm:inline">
+                {uploading ? "Đang tải lên..." : "Đang đăng..."}
+              </span>
             </>
           ) : (
             <>
               <Send className="h-4 w-4" />
-              <span>{postId ? "Cập nhật" : "Đăng bài"}</span>
+              <span>{postId ? "Cập nhật" : "Đăng"}</span>
             </>
           )}
         </button>

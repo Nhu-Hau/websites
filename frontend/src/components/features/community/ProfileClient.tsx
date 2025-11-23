@@ -298,18 +298,29 @@ export default function ProfileClient({
                   // iOS fix: Reset value to allow selecting same file again
                   e.currentTarget.value = "";
                   if (!file) return;
-                  
+
                   // iOS Safari fix: Check file type by extension if MIME type is missing
                   const fileName = file.name.toLowerCase();
-                  const fileExtension = fileName.substring(fileName.lastIndexOf("."));
-                  const isImage = file.type.startsWith("image/") || 
-                    [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"].includes(fileExtension);
-                  
+                  const fileExtension = fileName.substring(
+                    fileName.lastIndexOf(".")
+                  );
+                  const isImage =
+                    file.type.startsWith("image/") ||
+                    [
+                      ".jpg",
+                      ".jpeg",
+                      ".png",
+                      ".webp",
+                      ".gif",
+                      ".heic",
+                      ".heif",
+                    ].includes(fileExtension);
+
                   if (!isImage) {
                     toast.error("Vui lòng chọn file ảnh hợp lệ");
                     return;
                   }
-                  
+
                   const reader = new FileReader();
                   reader.onloadend = () => {
                     setCropperImage(reader.result as string);
@@ -367,18 +378,29 @@ export default function ProfileClient({
                           // iOS fix: Reset value to allow selecting same file again
                           e.currentTarget.value = "";
                           if (!file) return;
-                          
+
                           // iOS Safari fix: Check file type by extension if MIME type is missing
                           const fileName = file.name.toLowerCase();
-                          const fileExtension = fileName.substring(fileName.lastIndexOf("."));
-                          const isImage = file.type.startsWith("image/") || 
-                            [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"].includes(fileExtension);
-                          
+                          const fileExtension = fileName.substring(
+                            fileName.lastIndexOf(".")
+                          );
+                          const isImage =
+                            file.type.startsWith("image/") ||
+                            [
+                              ".jpg",
+                              ".jpeg",
+                              ".png",
+                              ".webp",
+                              ".gif",
+                              ".heic",
+                              ".heif",
+                            ].includes(fileExtension);
+
                           if (!isImage) {
                             toast.error("Vui lòng chọn file ảnh hợp lệ");
                             return;
                           }
-                          
+
                           setShowAvatarMenu(false);
                           const reader = new FileReader();
                           reader.onloadend = () => {
@@ -613,8 +635,8 @@ export default function ProfileClient({
               Chưa có huy hiệu nào
             </h3>
             <p className="mb-1 max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
-              Làm bài đều đặn, giữ streak và đặt mục tiêu để mở khóa huy hiệu đầu
-              tiên.
+              Làm bài đều đặn, giữ streak và đặt mục tiêu để mở khóa huy hiệu
+              đầu tiên.
             </p>
           </div>
         ) : (
@@ -735,7 +757,7 @@ export default function ProfileClient({
 
       {/* Posts */}
       <div className="space-y-4">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+        <h2 className="truncate text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Bài viết
         </h2>
         {posts.length > 0 ? (
@@ -782,11 +804,12 @@ export default function ProfileClient({
                 // iOS fix: Convert dataURL to blob properly
                 const response = await fetch(croppedImage);
                 const blob = await response.blob();
-                
+
                 // Ensure proper MIME type for iOS
-                const finalBlob = blob.type === "image/png" || blob.type === "image/jpeg" 
-                  ? blob 
-                  : new Blob([blob], { type: "image/jpeg" });
+                const finalBlob =
+                  blob.type === "image/png" || blob.type === "image/jpeg"
+                    ? blob
+                    : new Blob([blob], { type: "image/jpeg" });
 
                 const formData = new FormData();
                 // iOS fix: Explicitly set filename with .jpg extension
@@ -824,11 +847,12 @@ export default function ProfileClient({
                 // iOS fix: Convert dataURL to blob properly
                 const response = await fetch(croppedImage);
                 const blob = await response.blob();
-                
+
                 // Ensure proper MIME type for iOS
-                const finalBlob = blob.type === "image/png" || blob.type === "image/jpeg" 
-                  ? blob 
-                  : new Blob([blob], { type: "image/jpeg" });
+                const finalBlob =
+                  blob.type === "image/png" || blob.type === "image/jpeg"
+                    ? blob
+                    : new Blob([blob], { type: "image/jpeg" });
 
                 const formData = new FormData();
                 // iOS fix: Explicitly set filename with .jpg extension

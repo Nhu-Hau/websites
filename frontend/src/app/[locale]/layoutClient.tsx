@@ -79,6 +79,11 @@ export default function LayoutClient({
   const shouldShowBottomBar = !isStudyRoom;
   const shouldHideBottomBarForChat = isChatOpen && isMobile;
 
+  // Hide Chat FAB on community pages and study pages
+  const isCommunityPage = pathname?.includes("/community") || false;
+  const isStudyPage = pathname?.includes("/study") || false;
+  const shouldHideChatFAB = hideAll || isCommunityPage || isStudyPage;
+
   return (
     <SnackbarProvider
       maxSnack={3}
@@ -119,8 +124,8 @@ export default function LayoutClient({
       />
 
       {/* Chat System - Unified FAB + Panel/Sheet */}
-      {/* Hide on study room pages and other test/placement pages */}
-      {!hideAll && !isStudyRoom && (
+      {/* Hide on study room pages, community pages, study pages, and other test/placement pages */}
+      {!shouldHideChatFAB && (
         <>
           <ChatFAB />
           <ChatPanel />

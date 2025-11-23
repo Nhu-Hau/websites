@@ -1,15 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // frontend/src/components/features/vocabulary/VocabularyPageClient.tsx
 "use client";
 
 import React from "react";
-import {
-  BookOpenCheck,
-  Filter,
-  Layers,
-  Plus,
-  Search,
-  Tag,
-} from "lucide-react";
+import { BookOpenCheck, Filter, Layers, Plus, Search, Tag } from "lucide-react";
 import { useVocabulary } from "@/hooks/vocabulary/useVocabulary";
 import { useVocabularyProgress } from "@/hooks/vocabulary/useVocabularyProgress";
 import {
@@ -24,13 +18,11 @@ import { VocabularySetSkeleton } from "./VocabularySetSkeleton";
 import { VocabularySetCard } from "./VocabularySetCard";
 import { SetComposerModal } from "./CreateVocabularySetModal";
 import { TermComposerModal } from "./AddTermModal";
-import { StudyModal } from "./StudyModal";
-import { QuizModal } from "./QuizModal";
 import { EmptyState } from "./EmptyState";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 /* ------------------------------- HEADER UI ------------------------------- */
@@ -163,6 +155,7 @@ function FilterChip({
 
 export function VocabularyPageClient() {
   const router = useRouter();
+  const pathname = usePathname();
   const basePrefix = useBasePrefix();
 
   const {
@@ -176,10 +169,39 @@ export function VocabularyPageClient() {
     updateTerm,
     deleteTerm,
     refreshSet,
+    fetchSets,
   } = useVocabulary();
 
   const { getProgressForSet, markRemembered, markDifficult } =
     useVocabularyProgress();
+
+  // Track previous pathname to detect navigation back from detail page
+  const prevPathnameRef = React.useRef<string | null>(null);
+
+  // Refetch when navigating back to this page from detail page
+  React.useEffect(() => {
+    const currentPath = pathname || "";
+    const isVocabularyPage =
+      currentPath.includes("/vocabulary") &&
+      !currentPath.match(/\/vocabulary\/[^/]+$/);
+    const wasDetailPage =
+      prevPathnameRef.current?.match(/\/vocabulary\/[^/]+$/);
+
+    // If we were on a detail page and now we're back on the main vocabulary page, refetch
+    if (wasDetailPage && isVocabularyPage) {
+      // Small delay to ensure navigation is complete
+      const timeoutId = setTimeout(() => {
+        fetchSets();
+      }, 200);
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+
+    // Update previous pathname
+    prevPathnameRef.current = currentPath;
+  }, [pathname, fetchSets]);
 
   const [filters, setFilters] = React.useState({
     query: "",
@@ -191,9 +213,6 @@ export function VocabularyPageClient() {
     mode: "create" | "edit";
     set?: VocabularySet | null;
   }>({ open: false, mode: "create" });
-
-  const [studySet, setStudySet] = React.useState<VocabularySet | null>(null);
-  const [quizSet, setQuizSet] = React.useState<VocabularySet | null>(null);
 
   const [termModal, setTermModal] = React.useState<{
     open: boolean;
@@ -264,24 +283,14 @@ export function VocabularyPageClient() {
   const handleOpenPractice = React.useCallback(
     async (set: VocabularySet, mode: "flashcard" | "quiz" = "flashcard") => {
       if (mode === "flashcard") {
-        setStudySet(set);
+        // Navigate to study page
+        router.push(`${basePrefix}/vocabulary/${set._id}/study`);
       } else {
-        setQuizSet(set);
-      }
-
-      try {
-        const latest = await refreshSet(set._id);
-        if (!latest) return;
-        if (mode === "flashcard") {
-          setStudySet(latest);
-        } else {
-          setQuizSet(latest);
-        }
-      } catch {
-        // ignore refresh errors, keep optimistic data
+        // Navigate to quiz page
+        router.push(`${basePrefix}/vocabulary/${set._id}/quiz`);
       }
     },
-    [refreshSet]
+    [router, basePrefix]
   );
 
   /* ------------------------------ RENDER UI ------------------------------ */
@@ -307,7 +316,16 @@ export function VocabularyPageClient() {
     }
 
     return (
-      <div className="grid grid-cols-2 gap-4 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div
+        className="
+        grid grid-cols-2
+        md:grid-cols-3
+        lg:grid-cols-4
+        gap-3 xs:gap-4
+        items-stretch
+        auto-rows-[minmax(240px,1fr)]
+      "
+      >
         {filteredSets.map((set) => (
           <VocabularySetCard
             key={set._id}
@@ -332,7 +350,6 @@ export function VocabularyPageClient() {
       </div>
     );
   };
-
   /* ---------------------------- MAIN RETURN ---------------------------- */
 
   return (
@@ -369,7 +386,13 @@ export function VocabularyPageClient() {
                     setFilters((prev) => ({ ...prev, query: e.target.value }))
                   }
                   placeholder="Nhập từ khóa, chủ đề hoặc ghi chú..."
-                  className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                  className="w-full rounded-2xl border border-slate-200/80 bg-white 
+             py-2 pl-9 pr-3 text-[13px] placeholder:text-[12px]
+             xs:py-2.5 xs:pl-10 xs:text-sm xs:placeholder:text-sm
+             text-slate-900 outline-none transition
+             focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f]
+             dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 
+             dark:placeholder:text-zinc-500"
                 />
               </div>
             </div>
@@ -427,7 +450,8 @@ export function VocabularyPageClient() {
             }
           } catch (err: any) {
             console.error("Error saving vocabulary set:", err);
-            const message = err instanceof Error ? err.message : "Không thể lưu bộ từ";
+            const message =
+              err instanceof Error ? err.message : "Không thể lưu bộ từ";
             // Only show error if it's a real error
             if (err?.status && err.status >= 400) {
               toast.error(message);
@@ -460,7 +484,8 @@ export function VocabularyPageClient() {
             }
           } catch (err: any) {
             console.error("Error saving vocabulary term:", err);
-            const message = err instanceof Error ? err.message : "Không thể lưu từ vựng";
+            const message =
+              err instanceof Error ? err.message : "Không thể lưu từ vựng";
             // Only show error if it's a real error
             if (err?.status && err.status >= 400) {
               toast.error(message);
@@ -469,36 +494,6 @@ export function VocabularyPageClient() {
             }
             throw err; // Re-throw để modal có thể xử lý
           }
-        }}
-      />
-
-      <StudyModal
-        open={!!studySet}
-        set={studySet}
-        onClose={() => setStudySet(null)}
-        onSwitchToQuiz={() => {
-          if (studySet) setQuizSet(studySet);
-          setStudySet(null);
-        }}
-        onAddTerm={(set) =>
-          setTermModal({ open: true, mode: "create", setId: set._id })
-        }
-        onEditSet={(set) => setComposer({ open: true, mode: "edit", set })}
-        onTermRemembered={(term) => {
-          if (studySet && term._id) markRemembered(studySet._id, term._id);
-        }}
-        onTermForgotten={(term) => {
-          if (studySet && term._id) markDifficult(studySet._id, term._id);
-        }}
-      />
-
-      <QuizModal
-        open={!!quizSet}
-        set={quizSet}
-        onClose={() => setQuizSet(null)}
-        onSwitchToFlashcard={() => {
-          if (quizSet) setStudySet(quizSet);
-          setQuizSet(null);
         }}
       />
 
@@ -514,7 +509,8 @@ export function VocabularyPageClient() {
             setDeleteTarget(null);
           } catch (err: any) {
             console.error("Error deleting vocabulary set:", err);
-            const message = err instanceof Error ? err.message : "Không thể xóa bộ từ";
+            const message =
+              err instanceof Error ? err.message : "Không thể xóa bộ từ";
             // Only show error if it's a real error
             if (err?.status && err.status >= 400) {
               toast.error(message);
@@ -544,7 +540,8 @@ export function VocabularyPageClient() {
             setDeleteTermTarget(null);
           } catch (err: any) {
             console.error("Error deleting vocabulary term:", err);
-            const message = err instanceof Error ? err.message : "Không thể xóa từ";
+            const message =
+              err instanceof Error ? err.message : "Không thể xóa từ";
             // Only show error if it's a real error
             if (err?.status && err.status >= 400) {
               toast.error(message);

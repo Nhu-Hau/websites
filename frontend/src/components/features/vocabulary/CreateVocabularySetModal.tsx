@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { X, BookOpenCheck } from "lucide-react";
 import {
   CreateVocabularySetDTO,
   UpdateVocabularySetDTO,
   VocabularySet,
 } from "@/types/vocabulary.types";
+import { cn } from "@/lib/utils";
 
 export interface SetComposerModalProps {
   open: boolean;
@@ -46,6 +47,30 @@ export function SetComposerModal({
     setError(null);
   }, [mode, initialSet, open]);
 
+  // Handle ESC key
+  useEffect(() => {
+    if (!open) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !loading) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [open, onClose, loading]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
   const subtitle = useMemo(
     () =>
       mode === "create"
@@ -55,6 +80,12 @@ export function SetComposerModal({
   );
 
   if (!open) return null;
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget && !loading) {
+      onClose();
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -88,49 +119,58 @@ export function SetComposerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center px-3 py-6 sm:px-4">
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" />
-
-      {/* Panel */}
+    <div
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 px-3 py-6 backdrop-blur-sm"
+      onClick={handleBackdropClick}
+    >
+      {/* Modal */}
       <div
         role="dialog"
         aria-modal="true"
-        className="
-          relative z-10 w-full max-w-xl
-          overflow-hidden rounded-2xl border border-[#2E5EB8]/25
-          bg-white shadow-2xl shadow-black/25
-          dark:border-[#2E5EB8]/45 dark:bg-zinc-950
-        "
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+        className={cn(
+          "relative w-full max-w-sm rounded-xl border border-white/60 bg-white/90 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5 backdrop-blur-xl overflow-hidden",
+          "xs:max-w-md xs:rounded-2xl sm:max-w-md md:max-w-lg md:rounded-2xl",
+          "dark:border-zinc-800/60 dark:bg-zinc-900/90 dark:shadow-black/20"
+        )}
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Close */}
+        {/* Background gradient */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#4063bb0f] via-sky-200/30 to-emerald-100/20 dark:from-[#4063bb22] dark:via-sky-500/5 dark:to-emerald-500/5" />
+        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#4063bb26] blur-[100px] dark:bg-[#4063bb33]" />
+
+        {/* Close button */}
         <button
           type="button"
           onClick={onClose}
+          disabled={loading}
           aria-label="Đóng"
-          className="
-            absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center
-            rounded-xl bg-white/80 text-zinc-500 ring-1 ring-zinc-200
-            shadow-sm transition
-            hover:bg-white hover:text-zinc-900
-            dark:bg-zinc-900/80 dark:text-zinc-300 dark:ring-zinc-700 dark:hover:bg-zinc-800
-          "
+          className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/80 text-zinc-500 ring-1 ring-zinc-200/80 shadow-sm transition hover:bg-white hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed xs:right-4 xs:top-4 xs:h-9 xs:w-9 sm:h-10 sm:w-10 dark:bg-zinc-900/80 dark:text-zinc-300 dark:ring-zinc-700/80 dark:hover:bg-zinc-800"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4 xs:h-5 xs:w-5 sm:h-5 sm:h-5" />
         </button>
 
         {/* Header */}
-        <div
-          className="
-            border-b border-zinc-100/70 px-4 pb-3 pt-4 sm:px-5 sm:pt-5 sm:pb-4
-            bg-gradient-to-r from-[#2E5EB8]/10 via-white to-[#2E5EB8]/5
-            dark:border-zinc-800/70 dark:from-[#0F1A33] dark:via-zinc-950 dark:to-[#2E5EB8]/15
-          "
-        >
-          <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-[#102347] dark:text-white">
+        <div className="relative border-b border-white/70 px-4 pb-3 pt-4 xs:px-5 xs:pb-4 xs:pt-5 dark:border-zinc-800/70">
+          <div className="inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/80">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-sky-500 shadow-lg shadow-[#4063bb4d] xs:h-9 xs:w-9">
+              <BookOpenCheck className="h-4 w-4 text-white xs:h-5 xs:w-5" />
+            </div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
+              {mode === "create" ? "Tạo bộ từ" : "Chỉnh sửa"}
+            </div>
+          </div>
+          <h2
+            id="modal-title"
+            className="mt-3 text-lg font-bold tracking-tight text-slate-900 xs:mt-4 xs:text-xl sm:text-2xl dark:text-white"
+          >
             {mode === "create" ? "Thiết lập bộ từ" : "Cập nhật bộ từ"}
           </h2>
-          <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+          <p
+            id="modal-description"
+            className="mt-1 text-xs leading-relaxed text-slate-600 xs:text-sm dark:text-zinc-300"
+          >
             {subtitle}
           </p>
         </div>
@@ -138,17 +178,17 @@ export function SetComposerModal({
         {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto px-4 pb-4 pt-4 sm:px-5 sm:pb-5"
+          className="relative flex max-h-[65vh] flex-col gap-3 overflow-y-auto px-4 pb-4 pt-4 xs:gap-4 xs:px-5 xs:pb-5 xs:pt-5"
         >
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
+            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 shadow-sm xs:rounded-2xl xs:px-4 xs:py-2.5 xs:text-sm dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
               {error}
             </div>
           )}
 
           {/* Title */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-100">
+            <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
               Tên bộ từ <span className="text-red-500">*</span>
             </label>
             <input
@@ -156,36 +196,26 @@ export function SetComposerModal({
               onChange={(event) => setTitle(event.target.value)}
               placeholder="VD: TOEIC – Office Communication"
               maxLength={80}
-              className="
-                w-full rounded-xl border border-zinc-200/80 bg-white px-3 py-2.5
-                text-sm font-medium text-zinc-900 outline-none
-                transition focus:border-[#2E5EB8] focus:ring-2 focus:ring-[#2E5EB8]/15
-                dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-[#2E5EB8] dark:focus:ring-[#2E5EB8]/30
-              "
+              className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-3 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
           </div>
 
           {/* Topic */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-100">
+            <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
               Chủ đề / tag
             </label>
             <input
               value={topic}
               onChange={(event) => setTopic(event.target.value)}
               placeholder="VD: Office, Meetings, Customer service"
-              className="
-                w-full rounded-xl border border-zinc-200/80 bg-white px-3 py-2.5
-                text-sm text-zinc-900 outline-none
-                transition focus:border-[#2E5EB8] focus:ring-2 focus:ring-[#2E5EB8]/15
-                dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-[#2E5EB8] dark:focus:ring-[#2E5EB8]/30
-              "
+              className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-3 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
           </div>
 
           {/* Description */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-100">
+            <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
               Mô tả (tùy chọn)
             </label>
             <textarea
@@ -193,46 +223,54 @@ export function SetComposerModal({
               onChange={(event) => setDescription(event.target.value)}
               rows={3}
               placeholder="VD: Từ vựng thường gặp trong hội thoại văn phòng."
-              className="
-                w-full rounded-xl border border-zinc-200/80 bg-white px-3 py-2.5
-                text-sm text-zinc-900 outline-none
-                transition focus:border-[#2E5EB8] focus:ring-2 focus:ring-[#2E5EB8]/15
-                dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-[#2E5EB8] dark:focus:ring-[#2E5EB8]/30
-              "
+              className="w-full rounded-2xl border border-slate-200/80 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
           </div>
 
           {/* Actions */}
-          <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <div className="mt-1 flex flex-col gap-2 xs:flex-row xs:justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="
-                inline-flex w-full sm:w-auto items-center justify-center
-                rounded-xl border border-zinc-200/80 bg-white px-4 py-2.5
-                text-sm font-semibold text-zinc-600
-                transition hover:border-zinc-300 hover:text-zinc-900
-                dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-50
-              "
+              disabled={loading}
+              className="inline-flex w-full items-center justify-center rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed xs:w-auto dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-50"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="
-                inline-flex w-full sm:w-auto items-center justify-center
-                rounded-xl bg-[#2E5EB8] px-4 py-2.5 text-sm font-semibold text-white
-                shadow-sm transition hover:bg-[#244A90]
-                disabled:cursor-not-allowed disabled:opacity-70
-                dark:bg-[#2E5EB8]/90 dark:hover:bg-[#2E5EB8]
-              "
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70 xs:w-auto"
             >
-              {loading
-                ? "Đang lưu..."
-                : mode === "create"
-                ? "Tạo bộ từ"
-                : "Lưu thay đổi"}
+              {loading ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <span>Đang lưu...</span>
+                </>
+              ) : mode === "create" ? (
+                "Tạo bộ từ"
+              ) : (
+                "Lưu thay đổi"
+              )}
             </button>
           </div>
         </form>

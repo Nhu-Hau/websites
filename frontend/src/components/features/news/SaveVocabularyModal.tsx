@@ -1,17 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
-import { toast } from "@/lib/toast";
+import { useRouter, usePathname } from "next/navigation";
+import { toast } from "sonner";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-import type { VocabularyTerm } from "@/types/vocabulary.types";
 
 interface VocabularySet {
   _id: string;
   name: string;
   description?: string;
-  terms: VocabularyTerm[];
+  terms: any[];
 }
 
 interface SaveVocabularyModalProps {
@@ -19,6 +17,7 @@ interface SaveVocabularyModalProps {
   meaning: string;
   englishMeaning?: string;
   partOfSpeech?: string;
+  phonetic?: string;
   example?: string;
   translatedExample?: string;
   onClose: () => void;
@@ -29,11 +28,13 @@ export function SaveVocabularyModal({
   meaning,
   englishMeaning,
   partOfSpeech,
+  phonetic,
   example,
   translatedExample,
   onClose,
 }: SaveVocabularyModalProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const basePrefix = useBasePrefix();
   
   const [sets, setSets] = useState<VocabularySet[]>([]);
@@ -43,10 +44,95 @@ export function SaveVocabularyModal({
   const [newSetDescription, setNewSetDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [autoSaveFailed, setAutoSaveFailed] = useState(false);
+
+  // Check if we're on a vocabulary set page
+  const vocabularySetMatch = pathname?.match(/\/vocabulary\/([^/]+)$/);
+  const currentSetId = vocabularySetMatch ? vocabularySetMatch[1] : null;
 
   useEffect(() => {
-    fetchSets();
-  }, []);
+    // If we're on a vocabulary set page, auto-select that set and save immediately
+    if (currentSetId && !autoSaveFailed) {
+      setSelectedSetId(currentSetId);
+      handleSaveWordDirectly(currentSetId);
+    } else if (!currentSetId && !autoSaveFailed) {
+      // Otherwise, save word data to localStorage and navigate to vocabulary page
+      const wordDataToSave = {
+        word,
+        meaning,
+        englishMeaning,
+        partOfSpeech,
+        phonetic,
+        example,
+        translatedExample,
+        returnUrl: window.location.href, // Save current page URL to return later
+      };
+      localStorage.setItem("pendingVocabularyWord", JSON.stringify(wordDataToSave));
+      router.push(`${basePrefix}/vocabulary`);
+      onClose();
+    } else if (autoSaveFailed) {
+      // If auto-save failed, fetch sets to show selection UI
+      fetchSets();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSetId, autoSaveFailed]);
+
+  // Auto-save when on vocabulary set page
+  const handleSaveWordDirectly = async (setId: string) => {
+    try {
+      setSaving(true);
+      const response = await fetch(`/api/vocabulary/${setId}/term`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          word,
+          meaning,
+          englishMeaning,
+          partOfSpeech,
+          phonetic,
+          example,
+          translatedExample,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || error.message || "Failed to save word");
+      }
+
+      toast.success("Đã lưu từ vào bộ từ vựng!");
+      
+      // Check if there's a return URL in localStorage (from navigation from vocabulary page)
+      const pendingWordData = localStorage.getItem("pendingVocabularyWord");
+      if (pendingWordData) {
+        try {
+          const data = JSON.parse(pendingWordData);
+          if (data.returnUrl) {
+            // Clear localStorage and navigate back to news page
+            localStorage.removeItem("pendingVocabularyWord");
+            router.push(data.returnUrl);
+            onClose();
+            return;
+          }
+        } catch (e) {
+          console.error("Error parsing pending word data:", e);
+        }
+      }
+      
+      onClose();
+    } catch (error: any) {
+      console.error("Error saving word:", error);
+      toast.error(error.message || "Không thể lưu từ");
+      // If auto-save fails, show the modal to select a set
+      setAutoSaveFailed(true);
+      fetchSets();
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const fetchSets = async () => {
     try {
@@ -115,7 +201,7 @@ export function SaveVocabularyModal({
 
   const handleSaveWord = async () => {
     if (!selectedSetId) {
-      toast.error("Please select a vocabulary set");
+      toast.error("Vui lòng chọn bộ từ vựng");
       return;
     }
 
@@ -132,6 +218,7 @@ export function SaveVocabularyModal({
           meaning,
           englishMeaning,
           partOfSpeech,
+          phonetic,
           example,
           translatedExample,
         }),
@@ -139,58 +226,78 @@ export function SaveVocabularyModal({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to save word");
+        throw new Error(error.error || error.message || "Failed to save word");
       }
 
-      toast.success("Word saved successfully!");
+      toast.success("Đã lưu từ vào bộ từ vựng!");
       onClose();
       
       // Navigate to vocabulary set page
       router.push(`${basePrefix}/vocabulary/${selectedSetId}`);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Error saving word:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to save word";
-      toast.error(errorMessage);
+      toast.error(error.message || "Không thể lưu từ");
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-3 py-6 backdrop-blur-sm">
-      <div className="absolute inset-0" onClick={onClose} />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative w-full max-w-sm rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 shadow-xl ring-1 ring-black/5 overflow-hidden max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-4 py-3">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
             Lưu từ vựng
           </h3>
           <button
             onClick={onClose}
-            className="h-8 w-8 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-300"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300 active:scale-95"
           >
-            <X className="h-4 w-4" />
+            ✕
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <div className="p-4 space-y-4">
           {/* Word Preview */}
           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <div className="font-bold text-gray-900 dark:text-white mb-1">
-              {word}
+            <div className="flex items-center gap-2 mb-1">
+              <div className="font-bold text-gray-900 dark:text-white">
+                {word}
+              </div>
+              {phonetic && (
+                <span className="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                  {phonetic}
+                </span>
+              )}
             </div>
+            {partOfSpeech && (
+              <div className="text-xs text-gray-500 dark:text-gray-400 italic mb-1">
+                {partOfSpeech}
+              </div>
+            )}
             <div className="text-sm text-gray-700 dark:text-gray-300">
               {meaning}
             </div>
           </div>
 
-          {/* Select Set or Create New */}
-          {loading ? (
-            <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-              Loading...
+          {/* Auto-saving indicator */}
+          {currentSetId && saving && (
+            <div className="text-center py-2 text-sm text-gray-600 dark:text-gray-400">
+              Đang lưu vào bộ từ hiện tại...
             </div>
-          ) : showNewSetForm ? (
+          )}
+
+          {/* Show selection UI only if not on vocabulary set page or if auto-save failed */}
+          {(!currentSetId || autoSaveFailed) && (
+            <>
+              {/* Select Set or Create New */}
+              {loading ? (
+              <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                Đang tải...
+              </div>
+            ) : showNewSetForm ? (
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -216,17 +323,17 @@ export function SaveVocabularyModal({
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 xs:gap-3">
                 <button
                   onClick={() => setShowNewSetForm(false)}
-                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+                  className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600 hover:scale-105 active:scale-95"
                 >
                   Hủy
                 </button>
                 <button
                   onClick={handleCreateSet}
                   disabled={saving}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 bg-gradient-to-br from-[#4063bb] to-sky-500 text-white font-semibold rounded-xl shadow-lg shadow-[#4063bb]/30 transition-all duration-200 hover:shadow-xl hover:shadow-[#4063bb]/40 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-lg"
                 >
                   {saving ? "Đang tạo..." : "Tạo bộ từ"}
                 </button>
@@ -277,36 +384,41 @@ export function SaveVocabularyModal({
               
               <button
                 onClick={() => setShowNewSetForm(true)}
-                className="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-lg hover:border-blue-500 hover:text-blue-600 dark:hover:border-blue-500 dark:hover:text-blue-400 transition-colors"
+                className="w-full px-4 py-2.5 border-2 border-dashed border-[#4063bb]/30 dark:border-[#4063bb]/40 text-[#4063bb] dark:text-sky-300 rounded-xl font-medium transition-all duration-200 hover:border-[#4063bb]/50 hover:bg-gradient-to-br hover:from-[#4063bb]/10 hover:to-sky-500/10 hover:scale-105 active:scale-95 dark:hover:border-[#4063bb]/50"
               >
                 + Tạo bộ từ mới
               </button>
             </div>
           )}
 
-          {/* Actions */}
-          {!showNewSetForm && (
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={onClose}
-                className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleSaveWord}
-                disabled={!selectedSetId || saving}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? "Đang lưu..." : "Lưu từ"}
-              </button>
-            </div>
+              {/* Actions */}
+              {!showNewSetForm && (
+                <div className="flex gap-2 xs:gap-3 pt-2">
+                  <button
+                    onClick={() => {
+                      // Navigate to vocabulary page to select a set
+                      router.push(`${basePrefix}/vocabulary`);
+                      onClose();
+                    }}
+                    className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600 hover:scale-105 active:scale-95"
+                  >
+                    Chọn bộ từ
+                  </button>
+                  <button
+                    onClick={handleSaveWord}
+                    disabled={!selectedSetId || saving}
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-br from-[#4063bb] to-sky-500 text-white font-semibold rounded-xl shadow-lg shadow-[#4063bb]/30 transition-all duration-200 hover:shadow-xl hover:shadow-[#4063bb]/40 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-lg"
+                  >
+                    {saving ? "Đang lưu..." : "Lưu từ"}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
     </div>
   );
 }
-
 
 

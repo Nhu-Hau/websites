@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Volume2, X } from "lucide-react";
 import { WordTranslation } from "../../../hooks/news/useWordTranslation";
 import { useSpeech } from "../../../hooks/news/useSpeech";
 import { SaveVocabularyButton } from "./SaveVocabularyButton";
@@ -26,39 +27,47 @@ export function TranslationPopover({
   const [adjustedPosition, setAdjustedPosition] = useState(position);
   const { speak, speaking } = useSpeech();
 
-  // Adjust position to prevent overflow
+  // Adjust position to prevent overflow (only once, fixed position)
   useEffect(() => {
     if (!popoverRef.current) return;
 
-    const rect = popoverRef.current.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      if (!popoverRef.current) return;
 
-    let x = position.x;
-    let y = position.y + 20; // Offset below cursor
+      const rect = popoverRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
 
-    // Prevent overflow right
-    if (x + rect.width > viewportWidth - 20) {
-      x = viewportWidth - rect.width - 20;
-    }
+      // Position is already in viewport coordinates (from getBoundingClientRect)
+      // Place sát bên dưới từ, căn trái với từ
+      let x = position.x; // Align left with the word
+      let y = position.y + 3; // Sát bên dưới từ (khoảng cách nhỏ nhất)
 
-    // Prevent overflow bottom
-    if (y + rect.height > viewportHeight - 20) {
-      y = position.y - rect.height - 10; // Show above cursor
-    }
+      // Prevent overflow right
+      if (x + rect.width > viewportWidth - 20) {
+        x = viewportWidth - rect.width - 20;
+      }
 
-    // Prevent overflow left
-    if (x < 20) {
-      x = 20;
-    }
+      // Prevent overflow bottom
+      if (y + rect.height > viewportHeight - 20) {
+        y = position.y - rect.height - 10; // Show above word
+      }
 
-    // Prevent overflow top
-    if (y < 20) {
-      y = 20;
-    }
+      // Prevent overflow left
+      if (x < 20) {
+        x = 20;
+      }
 
-    setAdjustedPosition({ x, y });
-  }, [position, data]);
+      // Prevent overflow top
+      if (y < 20) {
+        y = 20;
+      }
+
+      setAdjustedPosition({ x, y });
+    });
+    // Only calculate once when position/data changes, not on scroll
+  }, [position.x, position.y, data.word]);
 
   // Close on outside click
   useEffect(() => {
@@ -83,7 +92,7 @@ export function TranslationPopover({
   return (
     <div
       ref={popoverRef}
-      className="fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 p-4 max-w-md"
+      className="fixed z-[100] bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 p-4 max-w-md"
       style={{
         left: `${adjustedPosition.x}px`,
         top: `${adjustedPosition.y}px`,
@@ -106,27 +115,31 @@ export function TranslationPopover({
                 <button
                   onClick={() => speak(data.word)}
                   disabled={speaking}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                  title="Pronounce"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-600 transition-all duration-200 hover:bg-gray-100 hover:text-[#4063bb] dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-sky-400 active:scale-95 disabled:opacity-50"
+                  title="Phát âm"
                 >
-                  {speaking ? (
-                    <span className="text-blue-600">🔊</span>
-                  ) : (
-                    <span className="text-gray-600 dark:text-gray-400">🔊</span>
-                  )}
+                  <Volume2 className={`h-4 w-4 ${speaking ? 'text-[#4063bb] dark:text-sky-400' : ''}`} />
                 </button>
               </div>
-              {data.partOfSpeech && (
-                <span className="text-xs text-gray-500 dark:text-gray-400 italic">
-                  {data.partOfSpeech}
-                </span>
-              )}
+              <div className="flex items-center gap-2 flex-wrap">
+                {data.phonetic && (
+                  <span className="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                    {data.phonetic}
+                  </span>
+                )}
+                {data.partOfSpeech && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400 italic">
+                    {data.partOfSpeech}
+                  </span>
+                )}
+              </div>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300 active:scale-95"
+              title="Đóng"
             >
-              ✕
+              <X className="h-4 w-4" />
             </button>
           </div>
 
@@ -134,9 +147,9 @@ export function TranslationPopover({
           <div className="mb-3 flex items-center gap-2">
             <button
               onClick={onToggleMeaning}
-              className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+              className="text-xs px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600 hover:scale-105 active:scale-95"
             >
-              {showMeaning === "vietnamese" ? "🇻🇳 Vietnamese" : "🇬🇧 English"}
+              {showMeaning === "vietnamese" ? "Tiếng Việt" : "English"}
             </button>
           </div>
 
@@ -174,6 +187,7 @@ export function TranslationPopover({
             meaning={data.vietnameseMeaning}
             englishMeaning={data.englishMeaning}
             partOfSpeech={data.partOfSpeech}
+            phonetic={data.phonetic}
             example={data.examples[0]?.english}
             translatedExample={data.examples[0]?.vietnamese}
           />

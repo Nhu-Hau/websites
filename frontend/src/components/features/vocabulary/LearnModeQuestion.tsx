@@ -26,27 +26,32 @@ export function LearnModeQuestionComponent({
 }: LearnModeQuestionProps) {
   if (question.type === "multiple-choice") {
     return (
-      <div className="rounded-[28px] border border-zinc-200/80 bg-white/95 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/80">
-        <header className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-400">
+      <div className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-900/90 xs:rounded-3xl xs:p-5">
+        <header className="mb-4 xs:mb-5">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-zinc-400 xs:text-[10px]">
             Trắc nghiệm
           </p>
-          <h3 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+          <h3 className="mt-1.5 text-lg font-semibold text-zinc-900 xs:mt-2 xs:text-xl dark:text-zinc-50">
             {question.question}
           </h3>
         </header>
-        <div className="space-y-3">
+        <div className="space-y-2 xs:space-y-2.5">
           {question.options?.map((option) => {
             const selected = selectedAnswer === option;
             const correct = option === question.correctAnswer;
-            const tone = getOptionTone({ showResult, selected, correct, isCorrect });
+            const tone = getOptionTone({
+              showResult,
+              selected,
+              correct,
+              isCorrect,
+            });
             return (
               <button
                 key={option}
                 disabled={showResult}
                 onClick={() => onSelectAnswer(option)}
                 className={cn(
-                  "w-full rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition",
+                  "w-full rounded-2xl border px-3 py-2.5 text-left text-xs font-semibold shadow-sm transition xs:rounded-3xl xs:px-4 xs:py-3 xs:text-sm",
                   tone.base,
                   tone.hover,
                   showResult && tone.result
@@ -54,9 +59,11 @@ export function LearnModeQuestionComponent({
               >
                 <div className="flex items-center justify-between">
                   <span>{option}</span>
-                  {showResult && correct && <Check className="h-4 w-4 text-emerald-500" />}
+                  {showResult && correct && (
+                    <Check className="h-3.5 w-3.5 text-emerald-500 xs:h-4 xs:w-4" />
+                  )}
                   {showResult && selected && !isCorrect && (
-                    <X className="h-4 w-4 text-rose-500" />
+                    <X className="h-3.5 w-3.5 text-rose-500 xs:h-4 xs:w-4" />
                   )}
                 </div>
               </button>
@@ -68,7 +75,7 @@ export function LearnModeQuestionComponent({
           <button
             onClick={onSubmit}
             disabled={!selectedAnswer}
-            className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-zinc-900"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 xs:mt-5 xs:px-5 xs:py-3 xs:text-sm"
           >
             Nộp câu trả lời
           </button>
@@ -84,12 +91,12 @@ export function LearnModeQuestionComponent({
   }
 
   return (
-    <div className="rounded-[28px] border border-zinc-200/80 bg-white/95 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/80">
-      <header className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-400">
+    <div className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-900/90 xs:rounded-3xl xs:p-5">
+      <header className="mb-4 xs:mb-5">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-zinc-400 xs:text-[10px]">
           Điền từ
         </p>
-        <h3 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+        <h3 className="mt-1.5 text-lg font-semibold text-zinc-900 xs:mt-2 xs:text-xl dark:text-zinc-50">
           {question.question}
         </h3>
       </header>
@@ -99,13 +106,42 @@ export function LearnModeQuestionComponent({
         onChange={(event) => !showResult && onSelectAnswer(event.target.value)}
         disabled={showResult}
         placeholder="Nhập đáp án..."
-        className="w-full rounded-2xl border border-zinc-200/80 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+        className="
+    w-full 
+    rounded-2xl 
+    border border-slate-200/70 
+    bg-white 
+    px-3.5 
+    py-2.5 
+    text-[13px] 
+    text-slate-900 
+    outline-none 
+    transition 
+
+    placeholder:text-[12px] 
+    placeholder:text-slate-400
+
+    focus:border-[#4063bb] 
+    focus:ring-2 
+    focus:ring-[#4063bb1f] 
+
+    disabled:opacity-60
+
+    xs:rounded-3xl 
+    xs:px-4 
+    xs:py-3 
+    xs:text-sm 
+    dark:border-zinc-700 
+    dark:bg-zinc-900 
+    dark:text-zinc-50 
+    dark:placeholder:text-zinc-500
+  "
       />
       {!showResult ? (
         <button
           onClick={onSubmit}
           disabled={!selectedAnswer?.trim()}
-          className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-zinc-900"
+          className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 xs:mt-5 xs:px-5 xs:py-3 xs:text-sm"
         >
           Nộp câu trả lời
         </button>
@@ -134,9 +170,9 @@ function getOptionTone({
   if (!showResult) {
     return {
       base: selected
-        ? "border-zinc-900 bg-zinc-900/5 text-zinc-900 dark:border-white dark:text-white"
-        : "border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200",
-      hover: "hover:-translate-y-0.5 hover:border-sky-200",
+        ? "border-[#4063bb] bg-[#4063bb]/10 text-[#4063bb] dark:border-sky-400 dark:bg-sky-500/10 dark:text-sky-300"
+        : "border-slate-200/80 bg-white text-slate-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200",
+      hover: "hover:-translate-y-0.5 hover:border-[#4063bb]",
       result: "",
     };
   }
@@ -155,7 +191,7 @@ function getOptionTone({
     };
   }
   return {
-    base: "border-zinc-200 text-zinc-400 dark:border-zinc-700 dark:text-zinc-500",
+    base: "border-slate-200/80 bg-white/50 text-slate-400 dark:border-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-500",
     hover: "",
     result: "",
   };
@@ -171,20 +207,20 @@ function ResultPanel({
   onNext: () => void;
 }) {
   return (
-    <div className="mt-5 space-y-4">
+    <div className="mt-4 space-y-3 xs:mt-5 xs:space-y-4">
       <div
         className={cn(
-          "rounded-2xl border px-4 py-3 text-sm font-semibold",
+          "rounded-2xl border px-3 py-2.5 text-xs font-semibold xs:rounded-3xl xs:px-4 xs:py-3 xs:text-sm",
           isCorrect
             ? "border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-300"
             : "border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-300"
         )}
       >
-        {isCorrect ? "Chính xác! 🎯" : `Đáp án đúng: ${correctAnswer}`}
+        {isCorrect ? "Chính xác!" : `Đáp án đúng: ${correctAnswer}`}
       </div>
       <button
         onClick={onNext}
-        className="inline-flex w-full items-center justify-center rounded-2xl border border-zinc-200/80 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:-translate-y-0.5 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+        className="inline-flex w-full items-center justify-center rounded-2xl border border-[#4063bb]/30 bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 xs:px-4 xs:py-3 xs:text-sm"
       >
         Câu tiếp theo
       </button>

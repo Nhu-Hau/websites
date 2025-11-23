@@ -2,6 +2,7 @@
 
 interface WordTranslation {
   word: string;
+  phonetic?: string; // IPA phonetic transcription
   vietnameseMeaning: string;
   englishMeaning: string;
   partOfSpeech: string;
@@ -72,6 +73,7 @@ class GroqService {
     const prompt = `Translate the English word "${word}" to Vietnamese. Return a JSON object with this exact structure:
 {
   "word": "${word}",
+  "phonetic": "/IPA phonetic transcription/",
   "vietnameseMeaning": "nghĩa tiếng Việt chuẩn",
   "englishMeaning": "short English definition/glossary",
   "partOfSpeech": "noun/verb/adjective/adverb/etc",
@@ -83,7 +85,7 @@ class GroqService {
   ]
 }
 
-Provide at least 1-2 examples. Keep englishMeaning concise. Return ONLY valid JSON, no markdown formatting.`;
+Provide at least 1-2 examples. Keep englishMeaning concise. Include phonetic in IPA format (e.g., /ˈwɜːrd/). Return ONLY valid JSON, no markdown formatting.`;
 
     const content = await this.makeRequest([
       {

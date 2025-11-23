@@ -24,20 +24,17 @@ export function useSelectionTranslation(isPremium: boolean) {
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
 
-  const handleSelection = useCallback(
-    async (e: MouseEvent, text: string) => {
+  // Translate selection from text and position
+  const translateSelection = useCallback(
+    async (text: string, selectionPosition: Position) => {
       // Validate selection (should be a phrase, not just a single word)
       const wordCount = text.split(/\s+/).length;
-      if (wordCount < 3) {
-        // Too short, might be a single word - ignore
+      if (wordCount < 1) {
         return;
       }
 
-      // Set position
-      setPosition({
-        x: e.clientX,
-        y: e.clientY,
-      });
+      // Set position (fixed in viewport)
+      setPosition(selectionPosition);
 
       if (!isPremium) {
         // Show premium guard
@@ -84,6 +81,26 @@ export function useSelectionTranslation(isPremium: boolean) {
     [isPremium]
   );
 
+  const handleSelection = useCallback(
+    async (e: MouseEvent, text: string) => {
+      // Get selection range for position
+      const selection = window.getSelection();
+      if (!selection || !selection.rangeCount) {
+        return;
+      }
+
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+
+      // Use the bottom center of the selection as position (fixed in viewport)
+      await translateSelection(text, {
+        x: rect.left + rect.width / 2,
+        y: rect.bottom,
+      });
+    },
+    [translateSelection]
+  );
+
   const clearSelectionData = useCallback(() => {
     setSelectionData(null);
     setLoading(false);
@@ -94,6 +111,7 @@ export function useSelectionTranslation(isPremium: boolean) {
     position,
     loading,
     handleSelection,
+    translateSelection,
     clearSelectionData,
   };
 }

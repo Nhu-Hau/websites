@@ -638,17 +638,17 @@ export async function importExcel(req: Request, res: Response) {
         continue;
       }
 
-      // Choices: expect columns choiceA, choiceB, choiceC, choiceD
-      // Or choices column as JSON? Let's support columns.
-      const choices = [];
-      if (row.choiceA) choices.push({ id: "A", text: String(row.choiceA) });
-      if (row.choiceB) choices.push({ id: "B", text: String(row.choiceB) });
-      if (row.choiceC) choices.push({ id: "C", text: String(row.choiceC) });
-      if (row.choiceD) choices.push({ id: "D", text: String(row.choiceD) });
 
-      // If no specific choice columns, use default empty ones
-      if (choices.length === 0) {
-        choices.push({ id: "A" }, { id: "B" }, { id: "C" }, { id: "D" });
+      // Choices: expect columns choiceA, choiceB, choiceC, choiceD
+      // Only build choices if at least one choice column exists
+      const choices = [];
+      const hasAnyChoice = row.choiceA || row.choiceB || row.choiceC || row.choiceD;
+
+      if (hasAnyChoice) {
+        if (row.choiceA) choices.push({ id: "A", text: String(row.choiceA) });
+        if (row.choiceB) choices.push({ id: "B", text: String(row.choiceB) });
+        if (row.choiceC) choices.push({ id: "C", text: String(row.choiceC) });
+        if (row.choiceD) choices.push({ id: "D", text: String(row.choiceD) });
       }
 
       itemsToInsert.push({
@@ -656,15 +656,15 @@ export async function importExcel(req: Request, res: Response) {
         part: String(row.part),
         level: Number(row.level),
         test: Number(row.test),
-        stimulusId: row.stimulusId ? String(row.stimulusId) : null,
-        stem: row.stem ? String(row.stem) : null,
-        choices,
+        stimulusId: row.stimulusId ? String(row.stimulusId) : undefined,
+        stem: row.stem ? String(row.stem) : undefined,
+        choices: choices.length > 0 ? choices : undefined,
         answer: String(row.answer),
-        explain: row.explain ? String(row.explain) : null,
-        order: row.order ? Number(row.order) : 0,
-        tags: row.tags ? String(row.tags).split(',').map(t => t.trim()) : [],
-        question: row.question ? String(row.question) : null,
-        options: row.options ? String(row.options) : null,
+        explain: row.explain ? String(row.explain) : undefined,
+        order: row.order !== undefined ? Number(row.order) : undefined,
+        tags: row.tags ? String(row.tags).split(',').map(t => t.trim()) : undefined,
+        question: row.question ? String(row.question) : undefined,
+        options: row.options ? String(row.options) : undefined,
       });
     }
 
@@ -795,34 +795,76 @@ export async function importExcel(req: Request, res: Response) {
     }
 
     if (itemsToInsert.length > 0) {
-      const itemOps = itemsToInsert.map(item => ({
-        updateOne: {
-          filter: {
-            id: item.id,
-            part: item.part,
-            level: item.level,
-            test: item.test,
-          },
-          update: { $set: item },
-          upsert: true
-        }
-      }));
+      const itemOps = itemsToInsert.map(item => {
+        // Build update object with only non-empty fields
+        const updateFields: any = {
+          id: item.id,
+          part: item.part,
+          level: item.level,
+          test: item.test,
+        };
+
+        // Only include fields that have values (not undefined, not empty string, but allow explicit null)
+        if (item.stimulusId !== undefined && item.stimulusId !== '') updateFields.stimulusId = item.stimulusId;
+        if (item.stem !== undefined && item.stem !== '') updateFields.stem = item.stem;
+        if (item.choices && item.choices.length > 0) updateFields.choices = item.choices;
+        if (item.answer !== undefined && item.answer !== '') updateFields.answer = item.answer;
+        if (item.explain !== undefined && item.explain !== '') updateFields.explain = item.explain;
+        if (item.order !== undefined) updateFields.order = item.order;
+        if (item.tags !== undefined && item.tags.length > 0) updateFields.tags = item.tags;
+        if (item.question !== undefined && item.question !== '') updateFields.question = item.question;
+        if (item.options !== undefined && item.options !== '') updateFields.options = item.options;
+
+        return {
+          updateOne: {
+            filter: {
+              id: item.id,
+              part: item.part,
+              level: item.level,
+              test: item.test,
+            },
+            update: { $set: updateFields },
+            upsert: true
+          }
+        };
+      });
       await itemsCol.bulkWrite(itemOps);
     }
 
     if (stimuliToInsert.length > 0) {
-      const stimOps = stimuliToInsert.map(stim => ({
-        updateOne: {
-          filter: {
-            id: stim.id,
-            part: stim.part,
-            level: stim.level,
-            test: stim.test,
-          },
-          update: { $set: stim },
-          upsert: true
+      const stimOps = stimuliToInsert.map(stim => {
+        // Build update object with only non-empty fields
+        const updateFields: any = {
+          id: stim.id,
+          part: stim.part,
+          level: stim.level,
+          test: stim.test,
+        };
+
+        // Only include media fields that have values
+        const media: any = {};
+        if (stim.media.image !== undefined && stim.media.image !== '') media.image = stim.media.image;
+        if (stim.media.audio !== undefined && stim.media.audio !== '') media.audio = stim.media.audio;
+        if (stim.media.script !== undefined && stim.media.script !== '') media.script = stim.media.script;
+        if (stim.media.explain !== undefined && stim.media.explain !== '') media.explain = stim.media.explain;
+
+        if (Object.keys(media).length > 0) {
+          updateFields.media = media;
         }
-      }));
+
+        return {
+          updateOne: {
+            filter: {
+              id: stim.id,
+              part: stim.part,
+              level: stim.level,
+              test: stim.test,
+            },
+            update: { $set: updateFields },
+            upsert: true
+          }
+        };
+      });
       await stimCol.bulkWrite(stimOps);
     }
 

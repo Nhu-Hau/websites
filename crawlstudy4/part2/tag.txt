@@ -1,0 +1,11 @@
+[Part 2] Câu hỏi đuôi	0	0	3	0.00%	8 13 28
+[Part 2] Câu hỏi HOW	0	0	2	0.00%	12 18
+[Part 2] Câu hỏi lựa chọn	0	0	2	0.00%	21 30
+[Part 2] Câu hỏi WHAT	0	0	1	0.00%	16
+[Part 2] Câu hỏi WHEN	0	0	1	0.00%	10
+[Part 2] Câu hỏi WHERE	0	0	1	0.00%	17
+[Part 2] Câu hỏi WHO	0	0	2	0.00%	22 29
+[Part 2] Câu hỏi WHY	0	0	1	0.00%	7
+[Part 2] Câu hỏi YES/NO	0	0	6	0.00%	9 14 15 20 24 27
+[Part 2] Câu trần thuật	0	0	2	0.00%	23 31
+[Part 2] Câu yêu cầu, đề nghị	0	0	4	0.00%	11 19 25 26

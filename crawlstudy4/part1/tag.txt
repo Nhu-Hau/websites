@@ -1,0 +1,3 @@
+[Part 1] Tranh tả cả người và vật	0	0	3	0.00%	2 4 6
+[Part 1] Tranh tả người	0	0	2	0.00%	1 3
+[Part 1] Tranh tả vật	0	0	1	0.00%	5

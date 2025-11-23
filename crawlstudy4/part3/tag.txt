@@ -1,0 +1,14 @@
+[Part 3] Câu hỏi kết hợp bảng biểu	0	0	3	0.00%	62 66 69
+[Part 3] Câu hỏi về chi tiết cuộc hội thoại	0	0	23	0.00%	32 34 35 36 38 39 40 43 44 45 47 48 50 51 52 54 55 57 60 61 63 64 65
+[Part 3] Câu hỏi về chủ đề, mục đích	0	0	1	0.00%	42
+[Part 3] Câu hỏi về danh tính người nói	0	0	5	0.00%	33 41 53 59 68
+[Part 3] Câu hỏi về hàm ý câu nói	0	0	2	0.00%	49 56
+[Part 3] Câu hỏi về hành động tương lai	0	0	2	0.00%	67 70
+[Part 3] Câu hỏi về yêu cầu, gợi ý	0	0	3	0.00%	37 46 58
+[Part 3] Chủ đề: Company - Business, Marketing	0	0	3	0.00%	47 48 49
+[Part 3] Chủ đề: Company - Event, Project	0	0	9	0.00%	32 33 34 53 54 55 65 66 67
+[Part 3] Chủ đề: Company - Facility	0	0	6	0.00%	32 33 34 41 42 43
+[Part 3] Chủ đề: Company - General Office Work	0	0	3	0.00%	41 42 43
+[Part 3] Chủ đề: Company - Personnel	0	0	6	0.00%	35 36 37 50 51 52
+[Part 3] Chủ đề: Housing	0	0	3	0.00%	68 69 70
+[Part 3] Chủ đề: Shopping, Service	0	0	15	0.00%	38 39 40 44 45 46 56 57 58 59 60 61 62 63 64

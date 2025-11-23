@@ -1,0 +1,13 @@
+[Grammar] Đại từ	0	0	1	0.00%	142
+[Grammar] Danh từ	0	0	3	0.00%	131 141 146
+[Grammar] Động từ nguyên mẫu có to	0	0	1	0.00%	145
+[Grammar] Liên từ	0	0	2	0.00%	132 136
+[Grammar] Thì	0	0	1	0.00%	133
+[Grammar] Tính từ	0	0	3	0.00%	138 140 143
+[Grammar] Trạng từ	0	0	1	0.00%	135
+[Part 6] Câu hỏi điền câu vào đoạn văn	0	0	4	0.00%	134 137 139 144
+[Part 6] Câu hỏi ngữ pháp	0	0	4	0.00%	132 136 142 145
+[Part 6] Câu hỏi từ loại	0	0	3	0.00%	131 135 143
+[Part 6] Câu hỏi từ vựng	0	0	5	0.00%	133 138 140 141 146
+[Part 6] Hình thức: Thông báo/ văn bản hướng dẫn (Notice/ Announcement Information)	0	0	4	0.00%	131 132 133 134
+[Part 6] Hình thức: Thư điện tử/ thư tay (Email/ Letter)	0	0	12	0.00%	135 136 137 138 139 140 141 142 143 144 145 146

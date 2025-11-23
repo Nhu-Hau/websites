@@ -1,0 +1,12 @@
+[Part 4] Câu hỏi kết hợp bảng biểu	0	0	2	0.00%	97 98
+[Part 4] Câu hỏi về chi tiết	0	0	14	0.00%	72 73 75 76 78 79 84 85 88 90 94 96 99 100
+[Part 4] Câu hỏi về chủ đề, mục đích	0	0	5	0.00%	74 80 83 86 95
+[Part 4] Câu hỏi về danh tính, địa điểm	0	0	4	0.00%	71 77 89 92
+[Part 4] Câu hỏi về hàm ý câu nói	0	0	3	0.00%	81 87 93
+[Part 4] Câu hỏi về hành động tương lai	0	0	1	0.00%	91
+[Part 4] Câu hỏi yêu cầu, gợi ý	0	0	1	0.00%	82
+[Part 4] Dạng bài: Advertisement - Quảng cáo	0	0	3	0.00%	74 75 76
+[Part 4] Dạng bài: Announcement - Thông báo	0	0	6	0.00%	77 78 79 83 84 85
+[Part 4] Dạng bài: News report, Broadcast - Bản tin	0	0	6	0.00%	86 87 88 95 96 97
+[Part 4] Dạng bài: Talk - Bài phát biểu, diễn văn	0	0	6	0.00%	80 81 82 89 90 91
+[Part 4] Dạng bài: Telephone message - Tin nhắn thoại	0	0	9	0.00%	71 72 73 92 93 94 98 99 100

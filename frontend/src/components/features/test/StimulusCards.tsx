@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import type { Stimulus, Item, ChoiceId } from "@/types/tests.types";
 import { Volume2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -389,12 +389,16 @@ function CardSticky(props: BaseProps) {
             {imgs.length > 0 && (
               <div className="space-y-3">
                 {imgs.map((url, i) => (
-                  <img
-                    key={i}
-                    src={url}
-                    alt=""
-                    className="max-h-[70vh] w-full rounded-lg sm:rounded-xl border border-zinc-200/80 object-contain dark:border-zinc-700/80"
-                  />
+                  <div key={i} className="relative w-full max-h-[70vh] rounded-lg sm:rounded-xl border border-zinc-200/80 dark:border-zinc-700/80" style={{ aspectRatio: 'auto' }}>
+                    <Image
+                      src={url}
+                      alt=""
+                      fill
+                      className="object-contain rounded-lg sm:rounded-xl"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      unoptimized
+                    />
+                  </div>
                 ))}
               </div>
             )}

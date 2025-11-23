@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import PracticeHistoryClient from "@/components/features/practice/PracticeHistory";
 import { getPracticeHistory } from "@/lib/server/api";
+import { PageMotion } from "@/components/layout/PageMotion";
 
 async function PracticeHistoryData({
   searchParams,
@@ -44,20 +45,22 @@ export default function Page({
 }) {
   return (
     <div className="min-h-screen w-full bg-gradient-to-b dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 transition-colors duration-300">
-      <Suspense
-        fallback={
-          <div className="mx-auto max-w-[1350px] px-6 py-10 mt-16">
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="h-12 w-12 rounded-full border-4 border-blue-600 dark:border-blue-400 border-t-transparent animate-spin" />
-              <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-                Đang tải...
-              </p>
+      <PageMotion>
+        <Suspense
+          fallback={
+            <div className="mx-auto max-w-[1350px] px-6 py-10 mt-16">
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <div className="h-12 w-12 rounded-full border-4 border-blue-600 dark:border-blue-400 border-t-transparent animate-spin" />
+                <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+                  Đang tải...
+                </p>
+              </div>
             </div>
-          </div>
-        }
-      >
-        <PracticeHistoryData searchParams={searchParams} />
-      </Suspense>
+          }
+        >
+          <PracticeHistoryData searchParams={searchParams} />
+        </Suspense>
+      </PageMotion>
     </div>
   );
 }

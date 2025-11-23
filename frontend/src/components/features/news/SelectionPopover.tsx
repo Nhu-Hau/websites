@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Volume2, X } from "lucide-react";
 import { SelectionTranslation } from "../../../hooks/news/useSelectionTranslation";
 import { useSpeech } from "../../../hooks/news/useSpeech";
 import { SaveVocabularyButton } from "./SaveVocabularyButton";
@@ -22,35 +23,43 @@ export function SelectionPopover({
   const [adjustedPosition, setAdjustedPosition] = useState(position);
   const { speak, speaking } = useSpeech();
 
-  // Adjust position to prevent overflow
+  // Adjust position to prevent overflow (only once, fixed position)
   useEffect(() => {
     if (!popoverRef.current) return;
 
-    const rect = popoverRef.current.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      if (!popoverRef.current) return;
 
-    let x = position.x;
-    let y = position.y + 20;
+      const rect = popoverRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
 
-    if (x + rect.width > viewportWidth - 20) {
-      x = viewportWidth - rect.width - 20;
-    }
+      // Position is already in viewport coordinates (from getBoundingClientRect)
+      // Center horizontally on the selection, place below it
+      let x = position.x - rect.width / 2; // Center on selection
+      let y = position.y + 10; // Offset below selection
 
-    if (y + rect.height > viewportHeight - 20) {
-      y = position.y - rect.height - 10;
-    }
+      if (x + rect.width > viewportWidth - 20) {
+        x = viewportWidth - rect.width - 20;
+      }
 
-    if (x < 20) {
-      x = 20;
-    }
+      if (y + rect.height > viewportHeight - 20) {
+        y = position.y - rect.height - 10;
+      }
 
-    if (y < 20) {
-      y = 20;
-    }
+      if (x < 20) {
+        x = 20;
+      }
 
-    setAdjustedPosition({ x, y });
-  }, [position, data]);
+      if (y < 20) {
+        y = 20;
+      }
+
+      setAdjustedPosition({ x, y });
+    });
+    // Only calculate once when position/data changes, not on scroll
+  }, [position.x, position.y, data.originalText]);
 
   // Close on outside click
   useEffect(() => {
@@ -74,7 +83,7 @@ export function SelectionPopover({
   return (
     <div
       ref={popoverRef}
-      className="fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 p-4 max-w-lg"
+      className="fixed z-[100] bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 p-4 max-w-lg"
       style={{
         left: `${adjustedPosition.x}px`,
         top: `${adjustedPosition.y}px`,
@@ -89,14 +98,15 @@ export function SelectionPopover({
         <>
           {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-3">
-            <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase">
-              Translation
+            <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+              Dịch
             </h4>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300 active:scale-95"
+              title="Đóng"
             >
-              ✕
+              <X className="h-4 w-4" />
             </button>
           </div>
 
@@ -109,14 +119,10 @@ export function SelectionPopover({
               <button
                 onClick={() => speak(data.originalText)}
                 disabled={speaking}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
-                title="Read aloud"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-600 transition-all duration-200 hover:bg-gray-100 hover:text-[#4063bb] dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-sky-400 active:scale-95 disabled:opacity-50 flex-shrink-0"
+                title="Đọc to"
               >
-                {speaking ? (
-                  <span className="text-blue-600">🔊</span>
-                ) : (
-                  <span className="text-gray-600 dark:text-gray-400">🔊</span>
-                )}
+                <Volume2 className={`h-4 w-4 ${speaking ? 'text-[#4063bb] dark:text-sky-400' : ''}`} />
               </button>
             </div>
           </div>

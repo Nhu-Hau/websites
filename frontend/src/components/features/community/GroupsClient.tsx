@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Users, Plus, Search, Trash2 } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import Link from "next/link";
@@ -174,15 +175,17 @@ export default function GroupsClient() {
                   >
                     {/* Cover */}
                     {group.coverImage ? (
-                      <div className="mb-3 overflow-hidden rounded-xl">
-                        <img
+                      <div className="relative mb-3 h-28 sm:h-32 w-full overflow-hidden rounded-xl">
+                        <Image
                           src={
                             group.coverImage.startsWith("http")
                               ? group.coverImage
                               : `${API_BASE}${group.coverImage}`
                           }
                           alt={group.name}
-                          className="h-28 sm:h-32 w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                          fill
+                          className="object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                          unoptimized
                         />
                       </div>
                     ) : (

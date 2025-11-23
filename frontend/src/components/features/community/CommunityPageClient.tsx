@@ -55,7 +55,21 @@ export default function CommunityPageClient({
       if (!r.ok) throw new Error("Failed to load posts");
       const j = await r.json();
       setTotal(j.total || 0);
-      setPosts(j.items ?? []);
+      // Debug: Log posts to check attachments
+      const postsWithAttachments = (j.items ?? []).map((p: any) => {
+        // Ensure attachments is always an array
+        if (!p.attachments || !Array.isArray(p.attachments)) {
+          p.attachments = [];
+        }
+        return p;
+      });
+      console.log("[CommunityPageClient] Loaded posts:", postsWithAttachments.map((p: any) => ({
+        _id: p._id,
+        hasAttachments: !!p.attachments && p.attachments.length > 0,
+        attachmentsCount: p.attachments?.length || 0,
+        attachments: p.attachments
+      })));
+      setPosts(postsWithAttachments);
     } catch (e) {
       toast.error("Lỗi khi tải bài viết");
       console.error("[load] ERROR", e);
@@ -121,7 +135,15 @@ export default function CommunityPageClient({
       );
     };
 
-    const onNewPost = () => load(page);
+    const onNewPost = () => {
+      // Always reload page 1 when new post is created to show the latest post
+      if (page === 1) {
+        load(1);
+      } else {
+        // If not on page 1, navigate to page 1 to show new post
+        onChangePage(1);
+      }
+    };
     const onPostDeleted = (p: { postId: string }) => {
       setPosts((prev) => prev.filter((x) => x._id !== p.postId));
       setTotal((t) => Math.max(0, t - 1));

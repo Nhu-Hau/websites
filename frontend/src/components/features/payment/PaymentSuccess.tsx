@@ -7,6 +7,21 @@ import { CheckCircle, Loader2 } from "lucide-react";
 import { apiBase, apiGet } from "@/lib/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { motion, Variants, easeOut } from "framer-motion";
+
+const easeOutBezier = easeOut;
+
+const pageVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: easeOutBezier,
+    },
+  },
+};
 
 export default function PaymentSuccess() {
   const router = useRouter();
@@ -82,20 +97,30 @@ export default function PaymentSuccess() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-900">
+      <motion.div
+        className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-900"
+        variants={pageVariants}
+        initial="hidden"
+        animate="show"
+      >
         <div className="text-center">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-sky-600" />
           <p className="mt-4 text-gray-600 dark:text-gray-400">
             Đang xác thực thanh toán...
           </p>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white px-4 dark:bg-zinc-900">
+      <motion.div
+        className="flex min-h-screen items-center justify-center bg-white px-4 dark:bg-zinc-900"
+        variants={pageVariants}
+        initial="hidden"
+        animate="show"
+      >
         <div className="max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
           <CheckCircle className="mx-auto h-16 w-16 text-emerald-600 dark:text-emerald-500" />
           <h1 className="mt-4 text-2xl font-bold text-slate-900 dark:text-zinc-100">
@@ -118,13 +143,18 @@ export default function PaymentSuccess() {
             </Link>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   // Trạng thái lỗi
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-4 dark:bg-zinc-900">
+    <motion.div
+      className="flex min-h-screen items-center justify-center bg-white px-4 dark:bg-zinc-900"
+      variants={pageVariants}
+      initial="hidden"
+      animate="show"
+    >
       <div className="max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
         <div className="mx-auto h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/20">
           <span className="flex h-full items-center justify-center text-2xl">⚠️</span>
@@ -144,6 +174,6 @@ export default function PaymentSuccess() {
           </Link>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

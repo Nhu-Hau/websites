@@ -51,12 +51,12 @@ export function PremiumGuard() {
           </ul>
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex gap-2 xs:gap-3">
             <button
               onClick={() => {
                 document.getElementById("premium-guard-modal")?.classList.add("hidden");
               }}
-              className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600 hover:scale-105 active:scale-95"
             >
               Đóng
             </button>
@@ -64,7 +64,7 @@ export function PremiumGuard() {
               onClick={() => {
                 router.push(`${basePrefix}/account`);
               }}
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-colors"
+              className="flex-1 px-4 py-2.5 bg-gradient-to-br from-[#4063bb] to-sky-500 text-white font-semibold rounded-xl shadow-lg shadow-[#4063bb]/30 transition-all duration-200 hover:shadow-xl hover:shadow-[#4063bb]/40 hover:scale-105 active:scale-95"
             >
               Nâng cấp Premium
             </button>
@@ -81,6 +81,5 @@ export function showPremiumGuard() {
     document.getElementById("premium-guard-modal")?.classList.remove("hidden");
   }
 }
-
 
 

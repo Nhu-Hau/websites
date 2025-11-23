@@ -473,56 +473,55 @@ export default function CreateStudyRoomPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <main className="mx-auto max-w-4xl px-4 py-6 lg:py-8 pt-20 lg:pt-28 pb-20 lg:pb-8">
-        {/* Page Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="mb-1 text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-                Phòng học
-              </h1>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Theo dõi phòng đang mở, tạo phòng hoặc tham gia khi có liên kết.
-              </p>
-            </div>
+        <div className="space-y-8">
+          {/* Page Header */}
+          <div className="mb-2">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+                  Phòng học
+                </h1>
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  Theo dõi phòng đang mở, tạo phòng hoặc tham gia khi có liên kết.
+                </p>
+              </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2 md:flex-nowrap md:gap-3">
-              {canCreate && (
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-2 md:flex-nowrap md:gap-3">
+                {canCreate && (
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Tạo phòng</span>
+                    <span className="sm:hidden">Tạo</span>
+                  </button>
+                )}
+
                 <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
+                  onClick={reload}
+                  disabled={busy === "reload"}
+                  className={cn(
+                    "w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all",
+                    busy === "reload"
+                      ? "cursor-not-allowed text-zinc-400 dark:text-zinc-500"
+                      : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                  )}
                 >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Tạo phòng</span>
-                  <span className="sm:hidden">Tạo</span>
+                  {busy === "reload" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">Làm mới</span>
+                  <span className="sm:hidden">Refresh</span>
                 </button>
-              )}
-
-              <button
-                onClick={reload}
-                disabled={busy === "reload"}
-                className={cn(
-                  "w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all",
-                  busy === "reload"
-                    ? "cursor-not-allowed text-zinc-400 dark:text-zinc-500"
-                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                )}
-              >
-                {busy === "reload" ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-4 w-4" />
-                )}
-                <span className="hidden sm:inline">Làm mới</span>
-                <span className="sm:hidden">Refresh</span>
-              </button>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="space-y-6 sm:space-y-8">
           {/* Create Room Modal */}
           {showCreateModal && (
             <div

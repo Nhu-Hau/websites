@@ -1,6 +1,7 @@
 // frontend/src/components/features/vocabulary/FlashcardControls.tsx
 "use client";
 
+import React from "react";
 import { ChevronLeft, ChevronRight, Check, X } from "lucide-react";
 
 interface FlashcardControlsProps {
@@ -16,57 +17,88 @@ interface FlashcardControlsProps {
 export function FlashcardControls({
   onPrevious,
   onNext,
-  onRemember,
-  onNotYet,
+  onRemember: _onRemember,
+  onNotYet: _onNotYet,
   canGoPrevious,
   canGoNext,
-  isFlipped,
 }: FlashcardControlsProps) {
+  const handlePrevClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (canGoPrevious) onPrevious();
+  };
+
+  const handleNextClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (canGoNext) onNext();
+  };
+
   return (
-    <div className="mx-auto w-full max-w-3xl">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <button
-            onClick={onPrevious}
-            disabled={!canGoPrevious}
-            className="inline-flex items-center gap-2 rounded-2xl border border-zinc-200/80 px-4 py-2 text-sm font-semibold text-zinc-600 transition hover:-translate-y-0.5 hover:border-zinc-300 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-200"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Trước
-          </button>
-          <button
-            onClick={onNext}
-            disabled={!canGoNext}
-            className="inline-flex items-center gap-2 rounded-2xl border border-zinc-200/80 px-4 py-2 text-sm font-semibold text-zinc-600 transition hover:-translate-y-0.5 hover:border-zinc-300 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-200"
-          >
-            Sau
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+    <>
+      {/* Nút TRƯỚC - icon bên trái, luôn nằm trong card */}
+      <button
+        type="button"
+        onClick={handlePrevClick}
+        disabled={!canGoPrevious}
+        className="absolute left-1 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/95 text-slate-700 shadow-md transition hover:scale-105 hover:text-[#4063bb] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 xs:left-2 xs:h-9 xs:w-9 sm:left-3 sm:h-10 sm:w-10 dark:border-zinc-800 dark:bg-zinc-900/95 dark:text-zinc-200"
+        aria-label="Trước"
+      >
+        <ChevronLeft className="h-4 w-4 xs:h-5 xs:w-5" />
+      </button>
 
-        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <button
-            onClick={onNotYet}
-            disabled={!isFlipped}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-200/80 bg-amber-50/80 px-5 py-3 text-sm font-semibold text-amber-700 transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-300 sm:w-auto"
-          >
-            <X className="h-4 w-4" />
-            Chưa nhớ
-          </button>
-          <button
-            onClick={onRemember}
-            disabled={!isFlipped}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:bg-emerald-400 dark:text-emerald-950 sm:w-auto"
-          >
-            <Check className="h-4 w-4" />
-            Đã nhớ
-          </button>
-        </div>
-      </div>
+      {/* Nút TIẾP THEO - icon bên phải, luôn nằm trong card */}
+      <button
+        type="button"
+        onClick={handleNextClick}
+        disabled={!canGoNext}
+        className="absolute right-1 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/95 text-slate-700 shadow-md transition hover:scale-105 hover:text-[#4063bb] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 xs:right-2 xs:h-9 xs:w-9 sm:right-3 sm:h-10 sm:w-10 dark:border-zinc-800 dark:bg-zinc-900/95 dark:text-zinc-200"
+        aria-label="Tiếp theo"
+      >
+        <ChevronRight className="h-4 w-4 xs:h-5 xs:w-5" />
+      </button>
+    </>
+  );
+}
 
-      <p className="mt-6 text-center text-xs uppercase tracking-[0.4em] text-zinc-400">
-        Phím tắt: Space để lật, ← / → để di chuyển
-      </p>
+// Nút "Chưa nhớ" / "Đã nhớ"
+export function FlashcardActionButtons({
+  onRemember,
+  onNotYet,
+  isFlipped,
+}: {
+  onRemember: () => void;
+  onNotYet: () => void;
+  isFlipped: boolean;
+}) {
+  const handleNotYet = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (isFlipped) onNotYet();
+  };
+
+  const handleRemember = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (isFlipped) onRemember();
+  };
+
+  return (
+    <div className="absolute top-3 left-1/2 z-20 flex max-w-full -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 px-2 xs:top-4 xs:gap-2">
+      <button
+        type="button"
+        onClick={handleNotYet}
+        disabled={!isFlipped}
+        className="inline-flex items-center gap-1 rounded-2xl border border-amber-200/70 bg-white/95 px-2 py-1 text-[10px] font-semibold text-amber-700 shadow-md backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 xs:px-3 xs:py-1.5 xs:text-xs dark:border-amber-900/40 dark:bg-zinc-900/95 dark:text-amber-300"
+      >
+        <X className="h-3 w-3 xs:h-3.5 xs:w-3.5" />
+        <span>Chưa nhớ</span>
+      </button>
+      <button
+        type="button"
+        onClick={handleRemember}
+        disabled={!isFlipped}
+        className="inline-flex items-center gap-1 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-2 py-1 text-[10px] font-semibold text-white shadow-md shadow-emerald-500/30 backdrop-blur-sm transition hover:-translate-y-0.5 hover:brightness-110 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 xs:px-3 xs:py-1.5 xs:text-xs"
+      >
+        <Check className="h-3 w-3 xs:h-3.5 xs:w-3.5" />
+        <span>Đã nhớ</span>
+      </button>
     </div>
   );
 }

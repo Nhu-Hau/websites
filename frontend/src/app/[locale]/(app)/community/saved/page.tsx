@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import SavedPostsClient from "@/components/features/community/SavedPostsClient";
+import { PageMotion } from "@/components/layout/PageMotion";
 
 
 export default async function SavedPostsPage({
@@ -14,7 +15,7 @@ export default async function SavedPostsPage({
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <main className="mx-auto max-w-4xl px-4 py-6 lg:py-8 pt-20 lg:pt-28 pb-20 lg:pb-8">
+      <PageMotion className="mx-auto max-w-4xl px-4 py-6 lg:py-8 pt-20 lg:pt-28 pb-20 lg:pb-8">
         <Suspense fallback={
           <div className="flex items-center justify-center py-16">
             <div className="flex flex-col items-center gap-4">
@@ -27,8 +28,9 @@ export default async function SavedPostsPage({
         }>
           <SavedPostsClient initialPage={page} />
         </Suspense>
-      </main>
+      </PageMotion>
     </div>
   );
 }
+
 

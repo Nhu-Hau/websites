@@ -1,9 +1,11 @@
-//frontend/src/components/common/CornerToast.tsx
+// frontend/src/components/common/CornerToast.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
 import React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { X, Info, CheckCircle2 } from "lucide-react";
 
 type Corner = { id: string; title: string; message: string; link?: string };
 
@@ -16,16 +18,15 @@ export default function CornerToast() {
   const mountedOnceRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (mountedOnceRef.current) return; // ✅ tránh đăng ký lặp
+    if (mountedOnceRef.current) return;
     mountedOnceRef.current = true;
 
-    const seenSet = seenRef.current; // Copy ref value for cleanup
+    const seenSet = seenRef.current;
 
     const onToast = (e: Event) => {
       const detail = (e as CustomEvent).detail as Corner;
       if (!detail?.id) return;
 
-      // ✅ de-dup theo id
       if (seenSet.has(detail.id)) return;
       seenSet.add(detail.id);
 
@@ -36,7 +37,7 @@ export default function CornerToast() {
         setToasts((prev) => prev.filter((t) => t.id !== detail.id));
       }, 4000);
 
-      // xóa dấu vết để không giữ mãi
+      // clear dấu vết
       setTimeout(() => {
         seenSet.delete(detail.id);
       }, 10000);
@@ -51,42 +52,107 @@ export default function CornerToast() {
     };
   }, []);
 
-  return (
-    <div className="fixed bottom-4 right-4 z-[1000] flex flex-col gap-3">
-      {toasts.map((t) => (
-        <div
-          key={t.id}
-          className={cn(
-            "relative w-72 rounded-2xl px-4 py-3",
-            "bg-zinc-900/90 text-zinc-100 shadow-xl shadow-black/30",
-            "border border-white/10 backdrop-blur-xl",
-            "animate-in fade-in slide-in-from-bottom-4 duration-300"
-          )}
-        >
-          {/* Accent bar bên trái (giống style Dropdown/NavItem) */}
-          <span className="absolute left-0 top-3 bottom-3 w-1 rounded-full bg-gradient-to-b from-amber-500 to-amber-400" />
+  const handleClose = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
-          {/* Nội dung */}
-          <div className="pl-3">
-            <div className="font-semibold tracking-wide text-[15px]">
-              {t.title}
+  return (
+    <div
+      className={cn(
+        "pointer-events-none fixed inset-x-0 bottom-4 z-[1000]",
+        "flex flex-col items-center gap-3 px-4",
+        "sm:inset-x-auto sm:right-4 sm:items-end sm:px-0"
+      )}
+    >
+      {toasts.map((t, idx) => {
+        const isFirst = idx === 0;
+
+        return (
+          <div
+            key={t.id}
+            className={cn(
+              "pointer-events-auto w-full max-w-sm overflow-hidden rounded-2xl border",
+              "border-slate-800/70 bg-gradient-to-br from-slate-950/95 via-slate-900/95 to-sky-950/90",
+              "text-slate-50 shadow-[0_18px_45px_rgba(15,23,42,0.9)] backdrop-blur-2xl",
+              "relative px-4 py-3.5",
+              "animate-in fade-in slide-in-from-bottom-5 zoom-in-95 duration-300",
+              !isFirst && "opacity-90 scale-[0.98]"
+            )}
+          >
+            {/* Accent blur & border glow */}
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-sky-500/25 blur-3xl" />
+              <div className="absolute -left-10 bottom-0 h-20 w-20 rounded-full bg-indigo-500/15 blur-2xl" />
             </div>
 
-            <div className="mt-1 text-sm text-zinc-300 leading-snug">
-              {t.link ? (
-                <Link
-                  href={t.link}
-                  className="text-amber-400 underline underline-offset-2 hover:text-amber-300 transition-colors"
-                >
-                  {t.message}
-                </Link>
-              ) : (
-                t.message
-              )}
+            {/* Thin gradient bar */}
+            <span className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-sky-400 via-sky-300 to-emerald-300" />
+
+            {/* Nội dung */}
+            <div className="relative flex gap-3">
+              {/* Icon */}
+              <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/15 ring-1 ring-sky-400/40">
+                {t.title.toLowerCase().includes("thành công") ||
+                t.title.toLowerCase().includes("success") ? (
+                  <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                ) : (
+                  <Info className="h-5 w-5 text-sky-300" />
+                )}
+              </div>
+
+              <div className="flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[13px] font-semibold tracking-wide text-slate-50">
+                      {t.title}
+                    </p>
+                  </div>
+
+                  {/* Close */}
+                  <button
+                    type="button"
+                    onClick={() => handleClose(t.id)}
+                    className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900/70 text-slate-400 transition hover:bg-slate-800/90 hover:text-slate-100"
+                    aria-label="Đóng thông báo"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                <div className="mt-1.5 text-[12px] leading-snug text-slate-200/90">
+                  {t.link ? (
+                    <Link
+                      href={t.link}
+                      className="font-medium text-sky-300 underline underline-offset-2 transition-colors hover:text-sky-200"
+                    >
+                      {t.message}
+                    </Link>
+                  ) : (
+                    t.message
+                  )}
+                </div>
+
+                {/* Progress line */}
+                <div className="mt-2 h-0.5 overflow-hidden rounded-full bg-slate-800/80">
+                  <div className="h-full w-full origin-left animate-[shrink_4s_linear_forwards] bg-gradient-to-r from-sky-400 via-sky-300 to-emerald-300" />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
+
+      {/* keyframes cho progress bar (tailwind arbitrary) */}
+      <style jsx>{`
+        @keyframes shrink {
+          from {
+            transform: scaleX(1);
+          }
+          to {
+            transform: scaleX(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { TranslationProvider } from "./TranslationProvider";
@@ -157,13 +158,15 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
         <div className="rounded-3xl border border-white/80 bg-white/90 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5 backdrop-blur-xl overflow-hidden dark:border-zinc-800/60 dark:bg-zinc-900/90 dark:shadow-black/20">
           {/* Header Image */}
           <div className="relative w-full h-64 xs:h-80 md:h-96 overflow-hidden">
-            <img
+            <Image
               src={getImageUrl(news.image)}
               alt={news.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
               onError={(e) => {
                 e.currentTarget.src = "https://via.placeholder.com/800x400?text=News";
               }}
+              unoptimized
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 xs:p-8">

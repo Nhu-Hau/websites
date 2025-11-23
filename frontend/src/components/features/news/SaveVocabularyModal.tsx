@@ -36,7 +36,7 @@ export function SaveVocabularyModal({
   const router = useRouter();
   const pathname = usePathname();
   const basePrefix = useBasePrefix();
-  
+
   const [sets, setSets] = useState<VocabularySet[]>([]);
   const [selectedSetId, setSelectedSetId] = useState<string>("");
   const [showNewSetForm, setShowNewSetForm] = useState(false);
@@ -67,7 +67,10 @@ export function SaveVocabularyModal({
         translatedExample,
         returnUrl: window.location.href, // Save current page URL to return later
       };
-      localStorage.setItem("pendingVocabularyWord", JSON.stringify(wordDataToSave));
+      localStorage.setItem(
+        "pendingVocabularyWord",
+        JSON.stringify(wordDataToSave)
+      );
       router.push(`${basePrefix}/vocabulary`);
       onClose();
     } else if (autoSaveFailed) {
@@ -104,7 +107,7 @@ export function SaveVocabularyModal({
       }
 
       toast.success("Đã lưu từ vào bộ từ vựng!");
-      
+
       // Check if there's a return URL in localStorage (from navigation from vocabulary page)
       const pendingWordData = localStorage.getItem("pendingVocabularyWord");
       if (pendingWordData) {
@@ -121,7 +124,7 @@ export function SaveVocabularyModal({
           console.error("Error parsing pending word data:", e);
         }
       }
-      
+
       onClose();
     } catch (error: any) {
       console.error("Error saving word:", error);
@@ -145,7 +148,7 @@ export function SaveVocabularyModal({
 
       const data = await response.json();
       setSets(data.data || []);
-      
+
       // Auto-select first set if exists
       if (data.data && data.data.length > 0) {
         setSelectedSetId(data.data[0]._id);
@@ -182,14 +185,14 @@ export function SaveVocabularyModal({
 
       const data = await response.json();
       const newSet = data.data;
-      
+
       // Add to list and select it
       setSets([newSet, ...sets]);
       setSelectedSetId(newSet._id);
       setShowNewSetForm(false);
       setNewSetName("");
       setNewSetDescription("");
-      
+
       toast.success("Set created successfully");
     } catch (error) {
       console.error("Error creating set:", error);
@@ -231,7 +234,7 @@ export function SaveVocabularyModal({
 
       toast.success("Đã lưu từ vào bộ từ vựng!");
       onClose();
-      
+
       // Navigate to vocabulary set page
       router.push(`${basePrefix}/vocabulary/${selectedSetId}`);
     } catch (error: any) {
@@ -244,8 +247,11 @@ export function SaveVocabularyModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
       <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
           <h3 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -294,102 +300,102 @@ export function SaveVocabularyModal({
             <>
               {/* Select Set or Create New */}
               {loading ? (
-              <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                Đang tải...
-              </div>
-            ) : showNewSetForm ? (
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Tên bộ từ mới
-                </label>
-                <input
-                  type="text"
-                  value={newSetName}
-                  onChange={(e) => setNewSetName(e.target.value)}
-                  placeholder="Ví dụ: TOEIC Vocabulary"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Mô tả (tùy chọn)
-                </label>
-                <textarea
-                  value={newSetDescription}
-                  onChange={(e) => setNewSetDescription(e.target.value)}
-                  placeholder="Mô tả về bộ từ này..."
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div className="flex gap-2 xs:gap-3">
-                <button
-                  onClick={() => setShowNewSetForm(false)}
-                  className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600 hover:scale-105 active:scale-95"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={handleCreateSet}
-                  disabled={saving}
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-br from-[#4063bb] to-sky-500 text-white font-semibold rounded-xl shadow-lg shadow-[#4063bb]/30 transition-all duration-200 hover:shadow-xl hover:shadow-[#4063bb]/40 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-lg"
-                >
-                  {saving ? "Đang tạo..." : "Tạo bộ từ"}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {sets.length > 0 ? (
-                <>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Chọn bộ từ
-                  </label>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {sets.map((set) => (
-                      <label
-                        key={set._id}
-                        className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedSetId === set._id
-                            ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                            : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="vocabulary-set"
-                          value={set._id}
-                          checked={selectedSetId === set._id}
-                          onChange={(e) => setSelectedSetId(e.target.value)}
-                          className="mt-1"
-                        />
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-900 dark:text-white">
-                            {set.name}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {set.terms.length} từ
-                          </div>
-                        </div>
-                      </label>
-                    ))}
+                <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                  Đang tải...
+                </div>
+              ) : showNewSetForm ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Tên bộ từ mới
+                    </label>
+                    <input
+                      type="text"
+                      value={newSetName}
+                      onChange={(e) => setNewSetName(e.target.value)}
+                      placeholder="Ví dụ: TOEIC Vocabulary"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    />
                   </div>
-                </>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Mô tả (tùy chọn)
+                    </label>
+                    <textarea
+                      value={newSetDescription}
+                      onChange={(e) => setNewSetDescription(e.target.value)}
+                      placeholder="Mô tả về bộ từ này..."
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="flex gap-2 xs:gap-3">
+                    <button
+                      onClick={() => setShowNewSetForm(false)}
+                      className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600 hover:scale-105 active:scale-95"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      onClick={handleCreateSet}
+                      disabled={saving}
+                      className="flex-1 px-4 py-2.5 bg-gradient-to-br from-[#4063bb] to-sky-500 text-white font-semibold rounded-xl shadow-lg shadow-[#4063bb]/30 transition-all duration-200 hover:shadow-xl hover:shadow-[#4063bb]/40 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-lg"
+                    >
+                      {saving ? "Đang tạo..." : "Tạo bộ từ"}
+                    </button>
+                  </div>
+                </div>
               ) : (
-                <p className="text-center text-gray-500 dark:text-gray-400 py-4">
-                  Bạn chưa có bộ từ nào
-                </p>
+                <div className="space-y-3">
+                  {sets.length > 0 ? (
+                    <>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Chọn bộ từ
+                      </label>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {sets.map((set) => (
+                          <label
+                            key={set._id}
+                            className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                              selectedSetId === set._id
+                                ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                                : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="vocabulary-set"
+                              value={set._id}
+                              checked={selectedSetId === set._id}
+                              onChange={(e) => setSelectedSetId(e.target.value)}
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {set.name}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                                {set.terms.length} từ
+                              </div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-center text-gray-500 dark:text-gray-400 py-4">
+                      Bạn chưa có bộ từ nào
+                    </p>
+                  )}
+
+                  <button
+                    onClick={() => setShowNewSetForm(true)}
+                    className="w-full px-4 py-2.5 border-2 border-dashed border-[#4063bb]/30 dark:border-[#4063bb]/40 text-[#4063bb] dark:text-sky-300 rounded-xl font-medium transition-all duration-200 hover:border-[#4063bb]/50 hover:bg-gradient-to-br hover:from-[#4063bb]/10 hover:to-sky-500/10 hover:scale-105 active:scale-95 dark:hover:border-[#4063bb]/50"
+                  >
+                    + Tạo bộ từ mới
+                  </button>
+                </div>
               )}
-              
-              <button
-                onClick={() => setShowNewSetForm(true)}
-                className="w-full px-4 py-2.5 border-2 border-dashed border-[#4063bb]/30 dark:border-[#4063bb]/40 text-[#4063bb] dark:text-sky-300 rounded-xl font-medium transition-all duration-200 hover:border-[#4063bb]/50 hover:bg-gradient-to-br hover:from-[#4063bb]/10 hover:to-sky-500/10 hover:scale-105 active:scale-95 dark:hover:border-[#4063bb]/50"
-              >
-                + Tạo bộ từ mới
-              </button>
-            </div>
-          )}
 
               {/* Actions */}
               {!showNewSetForm && (
@@ -420,5 +426,3 @@ export function SaveVocabularyModal({
     </div>
   );
 }
-
-

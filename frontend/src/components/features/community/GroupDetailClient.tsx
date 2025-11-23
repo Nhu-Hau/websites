@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -376,11 +377,13 @@ export default function GroupDetailClient({
       <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900">
         {/* Cover */}
         {coverImage ? (
-          <div className="h-48 w-full bg-zinc-200 md:h-64">
-            <img
+          <div className="relative h-48 w-full bg-zinc-200 md:h-64">
+            <Image
               src={coverImage}
               alt={group.name}
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
+              unoptimized
             />
           </div>
         ) : (

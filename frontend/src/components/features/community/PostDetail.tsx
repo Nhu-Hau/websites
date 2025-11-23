@@ -3,6 +3,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Heart,
@@ -47,11 +48,15 @@ function Avatar({ url, name }: { url?: string; name?: string }) {
   if (url) {
     const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
     return (
-      <img
-        src={fullUrl}
-        alt={name || "avatar"}
-        className="h-10 w-10 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
-      />
+      <div className="relative h-10 w-10">
+        <Image
+          src={fullUrl}
+          alt={name || "avatar"}
+          fill
+          className="rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+          unoptimized
+        />
+      </div>
     );
   }
   return (

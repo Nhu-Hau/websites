@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -9,6 +8,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
@@ -166,7 +166,7 @@ async function getCroppedBlob(
   targetSize = 512
 ): Promise<Blob> {
   const img = await new Promise<HTMLImageElement>((res, rej) => {
-    const image = new Image();
+    const image = new window.Image();
     image.onload = () => res(image);
     image.onerror = rej;
     image.src = imageSrc;
@@ -404,12 +404,14 @@ export default function Account() {
       {/* ===== Profile Card ===== */}
       <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 sm:p-5 bg-white dark:bg-zinc-900">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-          <div className="relative">
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24">
             {user.picture ? (
-              <img
+              <Image
                 src={user.picture}
                 alt={user.name || "avatar"}
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border border-zinc-200 dark:border-zinc-700"
+                fill
+                className="rounded-full object-cover border border-zinc-200 dark:border-zinc-700"
+                unoptimized
               />
             ) : (
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs sm:text-sm text-zinc-500">

@@ -38,7 +38,7 @@ interface VocabularySetCardProps {
   onQuickQuiz: (set: VocabularySet) => void;
   onEdit: (set: VocabularySet) => void;
   onDuplicate: (set: VocabularySet) => void;
-  onDelete: (set: VocabularySet) => void;
+  onDelete?: (set: VocabularySet) => void;
 }
 
 /* =============== CARD MOTION =============== */
@@ -199,7 +199,7 @@ export function VocabularySetCard({
                   tone="danger"
                   onClick={(event) => {
                     stopPropagation(event as any);
-                    handleAction(() => onDelete(set));
+                    handleAction(() => onDelete?.(set));
                   }}
                 />
               </div>

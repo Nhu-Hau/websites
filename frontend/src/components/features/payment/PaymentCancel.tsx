@@ -4,11 +4,31 @@ import React from "react";
 import Link from "next/link";
 import { XCircle } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { motion, Variants, easeOut } from "framer-motion";
+
+const easeOutBezier = easeOut;
+
+const pageVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: easeOutBezier,
+    },
+  },
+};
 
 export default function PaymentCancel() {
   const basePrefix = useBasePrefix();
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-4 dark:bg-zinc-900">
+    <motion.div
+      className="flex min-h-screen items-center justify-center bg-white px-4 dark:bg-zinc-900"
+      variants={pageVariants}
+      initial="hidden"
+      animate="show"
+    >
       <div className="max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
         <XCircle className="mx-auto h-16 w-16 text-amber-600 dark:text-amber-500" />
         <h1 className="mt-4 text-2xl font-bold text-slate-900 dark:text-zinc-100">
@@ -32,6 +52,6 @@ export default function PaymentCancel() {
           </Link>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

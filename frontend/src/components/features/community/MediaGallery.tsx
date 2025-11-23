@@ -4,7 +4,8 @@ import React from "react";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import type { Attachment } from "@/types/community.types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 type MediaGalleryProps = {
   attachments: Attachment[];
@@ -31,7 +32,9 @@ function VideoPlayer({ attachment }: { attachment: Attachment }) {
   };
 
   const url = getFullUrl(attachment.url);
-  const thumbnail = attachment.thumbnail ? getFullUrl(attachment.thumbnail) : null;
+  const thumbnail = attachment.thumbnail
+    ? getFullUrl(attachment.thumbnail)
+    : null;
 
   return (
     <div className="relative w-full h-full group">
@@ -65,14 +68,22 @@ function VideoPlayer({ attachment }: { attachment: Attachment }) {
   );
 }
 
-function ImageItem({ attachment, className = "" }: { attachment: Attachment; className?: string }) {
+function ImageItem({
+  attachment,
+  className = "",
+}: {
+  attachment: Attachment;
+  className?: string;
+}) {
   const url = getFullUrl(attachment.url);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(false);
 
   if (error) {
     return (
-      <div className={`bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center ${className}`}>
+      <div
+        className={`bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center ${className}`}
+      >
         <span className="text-xs text-zinc-500">Failed to load image</span>
       </div>
     );
@@ -86,7 +97,7 @@ function ImageItem({ attachment, className = "" }: { attachment: Attachment; cla
       <img
         src={url}
         alt={attachment.name || "Image"}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain"
         onLoad={() => setLoading(false)}
         onError={() => {
           setLoading(false);
@@ -100,8 +111,11 @@ function ImageItem({ attachment, className = "" }: { attachment: Attachment; cla
 
 function CarouselGallery({ attachments }: { attachments: Attachment[] }) {
   const [currentIndex, setCurrentIndex] = React.useState(0);
-  const images = attachments.filter((a) => a.type === "image");
-  const videos = attachments.filter((a) => a.type === "video");
+  const validAttachments = attachments.filter(
+    (a) => a && a.url && (a.type === "image" || a.type === "video")
+  );
+  const images = validAttachments.filter((a) => a.type === "image");
+  const videos = validAttachments.filter((a) => a.type === "video");
   const allMedia = [...images, ...videos];
 
   const goNext = () => {
@@ -168,8 +182,11 @@ function CarouselGallery({ attachments }: { attachments: Attachment[] }) {
 }
 
 function GridGallery({ attachments }: { attachments: Attachment[] }) {
-  const images = attachments.filter((a) => a.type === "image");
-  const videos = attachments.filter((a) => a.type === "video");
+  const validAttachments = attachments.filter(
+    (a) => a && a.url && (a.type === "image" || a.type === "video")
+  );
+  const images = validAttachments.filter((a) => a.type === "image");
+  const videos = validAttachments.filter((a) => a.type === "video");
   const allMedia = [...images, ...videos].slice(0, 4);
 
   if (allMedia.length === 0) return null;
@@ -179,7 +196,10 @@ function GridGallery({ attachments }: { attachments: Attachment[] }) {
     return (
       <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
         {allMedia.map((media, idx) => (
-          <div key={idx} className="relative aspect-square bg-zinc-100 dark:bg-zinc-900">
+          <div
+            key={idx}
+            className="relative aspect-square bg-zinc-100 dark:bg-zinc-900"
+          >
             {media.type === "video" ? (
               <VideoPlayer attachment={media} />
             ) : (
@@ -212,9 +232,16 @@ function GridGallery({ attachments }: { attachments: Attachment[] }) {
   );
 }
 
-export default function MediaGallery({ attachments, className = "" }: MediaGalleryProps) {
-  const images = attachments.filter((a) => a.type === "image");
-  const videos = attachments.filter((a) => a.type === "video");
+export default function MediaGallery({
+  attachments,
+  className = "",
+}: MediaGalleryProps) {
+  // Filter and validate attachments
+  const validAttachments = attachments.filter(
+    (a) => a && a.url && (a.type === "image" || a.type === "video")
+  );
+  const images = validAttachments.filter((a) => a.type === "image");
+  const videos = validAttachments.filter((a) => a.type === "video");
   const allMedia = [...images, ...videos];
 
   if (allMedia.length === 0) return null;
@@ -230,12 +257,14 @@ export default function MediaGallery({ attachments, className = "" }: MediaGalle
               <VideoPlayer attachment={media} />
             </div>
           ) : (
-            <img
-              src={getFullUrl(media.url)}
-              alt={media.name || "Image"}
-              className="w-full h-auto max-h-[600px] object-contain"
-              loading="lazy"
-            />
+            <div className="relative w-full flex items-center justify-center">
+              <img
+                src={getFullUrl(media.url)}
+                alt={media.name || "Image"}
+                className="w-full h-auto object-contain"
+                loading="lazy"
+              />
+            </div>
           )}
         </div>
       </div>
@@ -250,4 +279,3 @@ export default function MediaGallery({ attachments, className = "" }: MediaGalle
   // 4+ items: grid 2x2
   return <GridGallery attachments={attachments} />;
 }
-

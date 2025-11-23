@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   UserPlus,
@@ -233,11 +234,15 @@ export default function ProfileClient({
       <div className="relative mb-4 overflow-hidden rounded-2xl border border-zinc-200/80 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 shadow-sm ring-1 ring-black/[0.04] dark:border-zinc-800/80">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.30),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.75),_transparent_55%)]" />
         {coverUrl && (
-          <img
-            src={coverUrl}
-            alt="Cover"
-            className="h-48 xs:h-56 sm:h-64 w-full object-cover opacity-95"
-          />
+          <div className="relative h-48 xs:h-56 sm:h-64 w-full">
+            <Image
+              src={coverUrl}
+              alt="Cover"
+              fill
+              className="object-cover opacity-95"
+              unoptimized
+            />
+          </div>
         )}
         {!coverUrl && <div className="h-48 xs:h-56 sm:h-64 w-full" />}
 
@@ -347,13 +352,15 @@ export default function ProfileClient({
             <div className="relative">
               <button
                 onClick={() => setShowAvatarMenu((v) => !v)}
-                className="flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl transition-all hover:ring-blue-300 dark:ring-zinc-950"
+                className="relative flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl transition-all hover:ring-blue-300 dark:ring-zinc-950 overflow-hidden"
               >
                 {avatarUrl ? (
-                  <img
+                  <Image
                     src={avatarUrl}
-                    alt={profile.name}
-                    className="h-full w-full rounded-full object-cover"
+                    alt={profile.name || "User"}
+                    fill
+                    className="rounded-full object-cover"
+                    unoptimized
                   />
                 ) : (
                   (profile.name?.[0] || "U").toUpperCase()
@@ -474,12 +481,14 @@ export default function ProfileClient({
               )}
             </div>
           ) : (
-            <div className="flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl dark:ring-zinc-950">
+            <div className="relative flex h-28 w-28 xs:h-32 xs:w-32 sm:h-40 sm:w-40 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-blue-600 text-3xl xs:text-4xl font-bold text-white ring-4 ring-white shadow-xl dark:ring-zinc-950">
               {avatarUrl ? (
-                <img
+                <Image
                   src={avatarUrl}
-                  alt={profile.name}
-                  className="h-full w-full rounded-full object-cover"
+                  alt={profile.name || "User"}
+                  fill
+                  className="rounded-full object-cover"
+                  unoptimized
                 />
               ) : (
                 (profile.name?.[0] || "U").toUpperCase()

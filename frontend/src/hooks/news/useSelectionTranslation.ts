@@ -115,6 +115,3 @@ export function useSelectionTranslation(isPremium: boolean) {
     clearSelectionData,
   };
 }
-
-
-

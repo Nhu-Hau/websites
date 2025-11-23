@@ -24,7 +24,9 @@ export function TranslationMenu({
       y: position.y + 5, // Sát bên dưới từ
     };
   });
-  const [placement, setPlacement] = useState<"right" | "left" | "bottom">("bottom");
+  const [placement, setPlacement] = useState<"right" | "left" | "bottom">(
+    "bottom"
+  );
 
   // Adjust position to show below the word/selection
   useEffect(() => {
@@ -45,22 +47,22 @@ export function TranslationMenu({
       // Menu should appear directly below, aligned with the left edge of the word
       let x = position.x; // Align left with the word
       let y = position.y + spacing; // Sát bên dưới từ
-    
+
       // Adjust if overflow right
       if (x + menuWidth > viewportWidth - 16) {
         x = viewportWidth - menuWidth - 16;
       }
-    
+
       // Adjust if overflow left
       if (x < 16) {
         x = 16;
       }
-    
+
       // Adjust if overflow bottom
       if (y + menuHeight > viewportHeight - 16) {
         y = position.y - menuHeight - spacing; // Show above word if no space below
       }
-    
+
       // Adjust if overflow top
       if (y < 16) {
         y = 16;
@@ -74,10 +76,7 @@ export function TranslationMenu({
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(e.target as Node)
-      ) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         onClose();
       }
     };
@@ -118,4 +117,3 @@ export function TranslationMenu({
     </div>
   );
 }
-

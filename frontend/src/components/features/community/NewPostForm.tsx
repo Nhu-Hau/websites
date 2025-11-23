@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { X, Image as ImageIcon, Video, Upload, Send, FolderUp, Images } from "lucide-react";
 import { toast } from "@/lib/toast";
 import type { Attachment } from "@/types/community.types";
@@ -307,6 +308,16 @@ export default function NewPostForm({
         body.groupId = groupId;
       }
 
+      // Debug: Log attachments being sent
+      console.log("[NewPostForm] Submitting post with attachments:", {
+        attachmentsCount: attachments.length,
+        attachments: attachments.map((att) => ({
+          type: att.type,
+          url: att.url,
+          name: att.name
+        }))
+      });
+
       const res = await fetch(url, {
         method,
         credentials: "include",
@@ -315,8 +326,18 @@ export default function NewPostForm({
       });
 
       if (!res.ok) {
+        const errorText = await res.text();
+        console.error("[NewPostForm] Failed to create/update post:", res.status, errorText);
         throw new Error("Failed to create post");
       }
+
+      const responseData = await res.json().catch(() => ({}));
+      // Debug: Log response to check if attachments are returned
+      console.log("[NewPostForm] Post created/updated successfully:", {
+        postId: responseData.post?._id || responseData._id,
+        hasAttachments: !!(responseData.post?.attachments || responseData.attachments),
+        attachmentsCount: (responseData.post?.attachments || responseData.attachments || []).length
+      });
 
       toast.success(postId ? "Đã cập nhật bài viết!" : "Đã tạo bài viết!");
       setContent("");
@@ -400,10 +421,12 @@ export default function NewPostForm({
               className="group relative aspect-square overflow-hidden rounded-lg border border-zinc-200/60 bg-zinc-50 dark:border-zinc-700/60 dark:bg-zinc-800/50"
             >
               {item.type === "image" ? (
-                <img
+                <Image
                   src={item.preview}
                   alt={`Preview ${index + 1}`}
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
+                  unoptimized
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-zinc-900/90">

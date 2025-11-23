@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  // Protect admin routes -> require admin token cookie
+  // Bảo vệ các route admin -> yêu cầu cookie adminToken
   if (pathname.startsWith("/users") || pathname.startsWith("/admin-chat")) {
     const hasAdminAccess = req.cookies.has("adminToken");
     if (!hasAdminAccess) {
@@ -19,5 +19,3 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: ["/users/:path*", "/admin-chat/:path*"],
 };
-
-

@@ -1,24 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useSocket } from "../../hooks/useSocket";
+import { useSocket } from "@/hooks/useSocket";
 import { useState, useEffect, useCallback } from "react";
 
 export default function AdminChatLink() {
   const { socket } = useSocket();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Load unread count
+  // Tải số lượng tin nhắn chưa đọc
   const loadUnreadCount = useCallback(async () => {
     try {
       const response = await fetch("/api/admin-chat/admin/conversations", {
         credentials: "include",
       });
       const data = await response.json();
-      
+
       if (data?.data) {
         // Tính tổng unread count từ tất cả conversations
-        const totalUnread = (data.data || []).reduce((sum: number, conv: { unreadCount?: number }) => 
+        const totalUnread = (data.data || []).reduce((sum: number, conv: { unreadCount?: number }) =>
           sum + (conv.unreadCount || 0), 0
         );
         setUnreadCount(totalUnread);
@@ -28,22 +28,22 @@ export default function AdminChatLink() {
     }
   }, []);
 
-  // Load unread count when component mounts
+  // Tải số lượng tin nhắn chưa đọc khi component mount
   useEffect(() => {
     loadUnreadCount();
   }, [loadUnreadCount]);
 
-  // Listen for admin viewed messages event
+  // Lắng nghe sự kiện admin đã xem tin nhắn
   useEffect(() => {
     console.log("AdminChatLink: Setting up admin-viewed-messages event listener");
-    
+
     const handleAdminViewedMessages = (event: CustomEvent) => {
       console.log("AdminChatLink: Received admin-viewed-messages event:", event.detail);
       console.log("AdminChatLink: Admin viewed messages, reloading unread count");
-      
+
       // Reset unread count ngay lập tức
       setUnreadCount(0);
-      
+
       // Reload unread count để cập nhật chính xác
       loadUnreadCount();
     };
@@ -56,7 +56,7 @@ export default function AdminChatLink() {
     };
   }, [loadUnreadCount]);
 
-  // Real-time listeners
+  // Lắng nghe real-time
   useEffect(() => {
     if (!socket) {
       console.log("AdminChatLink: No socket available");
@@ -64,7 +64,7 @@ export default function AdminChatLink() {
     }
 
     console.log("AdminChatLink: Setting up socket listeners");
-    
+
     // Join admin room để nhận tin nhắn
     socket.emit("admin:join-conversation", "admin");
 
@@ -73,7 +73,7 @@ export default function AdminChatLink() {
       if (data.message && data.message.role === 'user') {
         console.log("Admin navigation: Incrementing unread count");
         setUnreadCount(prev => prev + 1);
-        
+
         // Reload unread count để cập nhật chính xác
         loadUnreadCount();
       }
@@ -81,7 +81,7 @@ export default function AdminChatLink() {
 
     const handleConversationUpdate = (_data: unknown) => {
       console.log("Admin navigation received conversation-updated:", _data);
-      // Reload unread count when conversation is updated
+      // Tải lại số tin nhắn chưa đọc khi conversation được cập nhật
       loadUnreadCount();
     };
 

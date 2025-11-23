@@ -18,10 +18,11 @@ import {
 } from "@/lib/apiClient";
 import { ChevronDown, ChevronRight, FileText, BarChart3, Plus, Edit, Trash2, Home, Filter, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import EditStimulusModal from "@/components/parts/EditStimulusModal";
-import EditQuestionModal from "@/components/parts/EditQuestionModal";
-import AddQuestionModal from "@/components/parts/AddQuestionModal";
-import AddStimulusModal from "@/components/parts/AddStimulusModal";
+import EditStimulusModal from "@/components/features/parts/EditStimulusModal";
+import EditQuestionModal from "@/components/features/parts/EditQuestionModal";
+import AddQuestionModal from "@/components/features/parts/AddQuestionModal";
+import AddStimulusModal from "@/components/features/parts/AddStimulusModal";
+
 import { useToast } from "@/components/common/ToastProvider";
 
 type ConfirmDialogState = {
@@ -97,7 +98,7 @@ export default function PartsPage() {
 
   const toggleTest = async (test: AdminTest) => {
     const key = `${test.part}-${test.level}-${test.test}`;
-    
+
     if (expandedTest === key) {
       setExpandedTest(null);
     } else {
@@ -186,7 +187,7 @@ export default function PartsPage() {
   const handleUpdate = async (item: AdminPart, newData: Partial<AdminPart>) => {
     try {
       await adminUpdatePart(item.id, newData);
-      const key = Object.entries(testItems).find(([_, items]) => 
+      const key = Object.entries(testItems).find(([_, items]) =>
         items.some(i => i.id === item.id)
       )?.[0];
       if (key) {
@@ -303,7 +304,7 @@ export default function PartsPage() {
                   const testKey = `${test.part}-${test.level}-${test.test}`;
                   testCountByPart.get(test.part)!.add(testKey);
                 });
-                
+
                 // Sắp xếp các part theo thứ tự
                 const sortedParts = Array.from(testCountByPart.entries())
                   .sort((a, b) => {
@@ -312,7 +313,7 @@ export default function PartsPage() {
                     const numB = parseInt(b[0].replace('part.', '') || '0');
                     return numA - numB;
                   });
-                
+
                 return sortedParts.map(([partName, testSet]) => (
                   <div key={partName} className="flex items-center gap-2">
                     <span className="font-semibold">{partName}:</span>
@@ -490,7 +491,7 @@ export default function PartsPage() {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="bg-white rounded-lg border border-zinc-200 overflow-hidden">
                       <div className="p-4 border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-white">
                         <div className="text-sm font-semibold text-zinc-900">Chi tiết câu hỏi:</div>
@@ -551,7 +552,7 @@ export default function PartsPage() {
             </div>
           );
         })}
-        
+
         {tests.length === 0 && (
           <div className="bg-white rounded-xl shadow-lg border border-zinc-200 text-center p-12">
             <div className="flex flex-col items-center gap-3">
@@ -582,7 +583,7 @@ export default function PartsPage() {
           }
         }}
       />
-      
+
       <EditQuestionModal
         item={editQuestion}
         isOpen={editQuestion !== null}

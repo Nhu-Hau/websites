@@ -26,24 +26,44 @@ export default function CommunityChipNav() {
   const { user } = useAuth();
 
   const getActiveId = (): string => {
+    // Normalize pathname for comparison
+    const normalizedPathname = pathname?.replace(/\/$/, "") || "";
+    const normalizedBasePrefix = basePrefix.replace(/\/$/, "");
+    
     // Check exact matches first (more specific routes)
-    if (pathname === `${basePrefix}/community/new` || pathname === `${basePrefix}/community/new/`) {
+    // CRITICAL: Must check /community/new BEFORE /community to avoid false matches
+    const isNewPost = normalizedPathname === `${normalizedBasePrefix}/community/new` || 
+                      normalizedPathname.endsWith("/community/new") ||
+                      normalizedPathname.includes("/community/new/");
+    if (isNewPost) {
       return "new-post";
     }
-    if (pathname.includes("/community/profile")) return "profile";
-    if (pathname.includes("/community/following")) return "following";
-    if (pathname.includes("/community/trending")) return "trending";
-    if (pathname.includes("/community/saved")) return "saved";
-    if (pathname.includes("/community/groups")) return "groups";
-    if (pathname.includes("/community/explore")) return "explore";
-    if (pathname.includes("/study/create")) return "study-room";
-    if (pathname.includes("/account")) return "settings";
-    // Default to feed for main community page
-    if (pathname === `${basePrefix}/community` || pathname === `${basePrefix}/community/`) {
+    
+    // Check other specific routes
+    if (normalizedPathname.includes("/community/profile")) return "profile";
+    if (normalizedPathname.includes("/community/following")) return "following";
+    if (normalizedPathname.includes("/community/trending")) return "trending";
+    if (normalizedPathname.includes("/community/saved")) return "saved";
+    if (normalizedPathname.includes("/community/groups")) return "groups";
+    if (normalizedPathname.includes("/community/explore")) return "explore";
+    if (normalizedPathname.includes("/study/create")) return "study-room";
+    if (normalizedPathname.includes("/account")) return "settings";
+    
+    // Default to feed for main community page - must be exact match
+    // Only match /community exactly, not sub-routes
+    const isCommunityHome = normalizedPathname === `${normalizedBasePrefix}/community` || 
+                            normalizedPathname === "/community";
+    if (isCommunityHome) {
       return "feed";
     }
-    // Fallback to feed if on any community sub-route that doesn't match above
-    if (pathname.includes("/community")) return "feed";
+    
+    // Fallback: if we're on a community route but none of the above matched,
+    // return feed (but we've already excluded /community/new above)
+    if (normalizedPathname.includes("/community")) {
+      return "feed";
+    }
+    
+    // Ultimate fallback
     return "feed";
   };
 

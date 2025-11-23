@@ -20,35 +20,32 @@ export default function MobilePracticePage() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#e5e7eb_0,_#fafafa_40%,_#f4f4f5_100%)] pt-14 pb-20 dark:bg-[radial-gradient(circle_at_top,_#020617_0,_#020617_40%,_#020617_100%)]">
-      <div className="px-6 py-6">
+      <main className="mx-auto max-w-xl px-4 pt-4">
         {/* Header */}
-        <div className="mb-6 space-y-3">
+        <header className="mb-6 space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-[11px] font-medium text-zinc-600 shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300">
             <span className="inline-flex h-1.5 w-1.5 rounded-full bg-sky-500" />
-            Luyện Listening & Reading theo từng Part
+            <span>Luyện Listening &amp; Reading theo từng Part</span>
           </div>
 
-          <div className="flex items-start gap-3">
-            {/* <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white shadow-sm dark:bg-zinc-50 dark:text-zinc-900">
-              <BookOpen className="h-5 w-5" />
-            </div> */}
+          <div>
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-                Luyện L&R
+                Luyện L&amp;R
               </h1>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                 Chọn Part bạn muốn luyện. Hệ thống mặc định bắt đầu từ{" "}
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                   Level 1
                 </span>{" "}
-                và tự điều chỉnh theo kết quả.
+                và tự điều chỉnh theo kết quả của bạn.
               </p>
             </div>
           </div>
-        </div>
+        </header>
 
         {/* Parts List */}
-        <div className="space-y-3">
+        <section className="space-y-3">
           {PARTS.map((part) => {
             const partIdx = part.key.split(".")[1];
             const partLabels: Record<string, string> = {
@@ -137,10 +134,10 @@ export default function MobilePracticePage() {
               </Link>
             );
           })}
-        </div>
+        </section>
 
         {/* Helper */}
-        <div className="mt-6 rounded-xl border border-dashed border-zinc-200 bg-white/80 px-3 py-2 text-[11px] text-zinc-600 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-400">
+        <section className="mt-6 rounded-xl border border-dashed border-zinc-200 bg-white/80 px-3 py-2 text-[11px] leading-relaxed text-zinc-600 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-400">
           Gợi ý: xen kẽ luyện{" "}
           <span className="font-semibold text-sky-700 dark:text-sky-300">
             Part 1–4
@@ -150,8 +147,8 @@ export default function MobilePracticePage() {
             Part 5–7
           </span>{" "}
           (Reading) để cân bằng hai kỹ năng.
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

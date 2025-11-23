@@ -1,114 +1,564 @@
 // frontend/src/components/features/vocabulary/VocabularyPageClient.tsx
 "use client";
 
-import { useState } from "react";
+import React from "react";
+import {
+  BookOpenCheck,
+  Filter,
+  Layers,
+  Plus,
+  Search,
+  Tag,
+} from "lucide-react";
 import { useVocabulary } from "@/hooks/vocabulary/useVocabulary";
-import { VocabularyList } from "./VocabularyList";
+import { useVocabularyProgress } from "@/hooks/vocabulary/useVocabularyProgress";
+import {
+  VocabularySet,
+  VocabularyTerm,
+  CreateVocabularySetDTO,
+  UpdateVocabularySetDTO,
+  AddTermDTO,
+  UpdateTermDTO,
+} from "@/types/vocabulary.types";
 import { VocabularySetSkeleton } from "./VocabularySetSkeleton";
-import { Search, Plus, BookOpen } from "lucide-react";
-import { CreateVocabularySetModal } from "./CreateVocabularySetModal";
+import { VocabularySetCard } from "./VocabularySetCard";
+import { SetComposerModal } from "./CreateVocabularySetModal";
+import { TermComposerModal } from "./AddTermModal";
+import { StudyModal } from "./StudyModal";
+import { QuizModal } from "./QuizModal";
+import { EmptyState } from "./EmptyState";
+import { ConfirmModal } from "@/components/common/ConfirmModal";
+import { toast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
-export function VocabularyPageClient() {
-  const { sets, loading, error, createSet, deleteSet } = useVocabulary();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showCreateModal, setShowCreateModal] = useState(false);
+/* ------------------------------- HEADER UI ------------------------------- */
 
-  const filteredSets = sets.filter((set) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      (set.title?.toLowerCase() || "").includes(query) ||
-      (set.description?.toLowerCase() || "").includes(query) ||
-      (set.topic?.toLowerCase() || "").includes(query)
-    );
-  });
-
-  const handleDelete = async (setId: string) => {
-    try {
-      await deleteSet(setId);
-    } catch (err) {
-      console.error("Failed to delete set:", err);
-    }
-  };
-
+function VocabularyHeader({
+  totalSets,
+  totalTerms,
+  onCreate,
+}: {
+  totalSets: number;
+  totalTerms: number;
+  onCreate: () => void;
+}) {
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 py-8 px-4 pt-20">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
-              <BookOpen className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
-                Bộ từ vựng
-              </h1>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                Xây dựng và học từ vựng của bạn với flashcards
-              </p>
-            </div>
+    <header className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/90 px-4 py-4 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5 backdrop-blur-xl xs:px-5 xs:py-5 sm:px-6 sm:py-6 dark:border-zinc-800/60 dark:bg-zinc-900/90 dark:shadow-black/20">
+      {/* background soft gradient */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#4063bb0f] via-sky-200/30 to-emerald-100/20 dark:from-[#4063bb22] dark:via-sky-500/5 dark:to-emerald-500/5" />
+      <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[#4063bb26] blur-[120px] dark:bg-[#4063bb33]" />
+
+      <div className="relative z-10 space-y-5">
+        {/* Pill + icon */}
+        <div className="inline-flex items-center gap-3 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/80">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-sky-500 shadow-lg shadow-[#4063bb4d] xs:h-10 xs:w-10">
+            <BookOpenCheck className="h-4 w-4 text-white xs:h-5 xs:w-5" />
+          </div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
+            Vocabulary lab
           </div>
         </div>
 
-        {/* Search and Create */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Tìm kiếm bộ từ vựng..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none transition-all"
+        {/* Title + desc */}
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 xs:text-3xl sm:text-[32px] sm:leading-tight dark:text-white">
+            Tạo lộ trình từ vựng chuẩn TOEIC
+          </h1>
+          <p className="max-w-2xl text-[13px] leading-relaxed text-slate-600 xs:text-sm dark:text-zinc-300">
+            Quản lý bộ từ, luyện flashcard theo cấp độ và quiz nhanh để khóa
+            kiến thức mỗi ngày. Thiết kế tối ưu cho trải nghiệm giống Quizlet
+            nhưng theo lộ trình TOEIC.
+          </p>
+        </div>
+
+        {/* Stats + CTA – mobile first */}
+        <div className="flex flex-col gap-3 xs:flex-row xs:items-center xs:justify-between">
+          {/* Stats row – scroll ngang nếu chật */}
+          <div className="flex w-full gap-2 overflow-x-auto pb-1 xs:w-auto">
+            <MiniStat
+              icon={<Layers className="h-3.5 w-3.5" />}
+              label="Bộ từ"
+              value={totalSets}
+            />
+            <MiniStat
+              icon={<Tag className="h-3.5 w-3.5" />}
+              label="Tổng từ"
+              value={totalTerms}
             />
           </div>
+
+          {/* CTA */}
           <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold hover:shadow-md transition-all"
+            onClick={onCreate}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 xs:w-auto"
           >
-            <Plus className="w-5 h-5" />
-            <span>Tạo bộ từ vựng</span>
+            <Plus className="h-4 w-4" />
+            <span className="whitespace-nowrap">Tạo bộ từ mới</span>
           </button>
         </div>
+      </div>
+    </header>
+  );
+}
 
-        {/* Error message */}
-        {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-            <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
-          </div>
-        )}
+/* ----------------------------- MINI STAT BADGE ---------------------------- */
 
-        {/* Stats */}
-        {!loading && sets.length > 0 && (
-          <div className="mb-6 flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
-            <span className="font-semibold">
-              {sets.length} {sets.length === 1 ? "bộ" : "bộ"}
-            </span>
-            <span>•</span>
-            <span>
-              {sets.reduce((acc, set) => acc + set.terms.length, 0)}{" "}
-              {sets.reduce((acc, set) => acc + set.terms.length, 0) === 1
-                ? "từ"
-                : "từ"}
-            </span>
-          </div>
-        )}
+function MiniStat({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="inline-flex min-w-[140px] flex-1 items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-[11px] font-medium text-slate-600 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-900/80 dark:text-zinc-200">
+      <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4063bb]/10 text-[#4063bb] dark:bg-[#4063bb]/20 dark:text-sky-200">
+        {icon}
+      </span>
+      <span className="flex items-center gap-1">
+        {label}
+        <span className="font-semibold text-slate-900 dark:text-white">
+          {value}
+        </span>
+      </span>
+    </div>
+  );
+}
 
-        {/* Loading state */}
-        {loading ? (
+/* ------------------------------ FILTER CHIP ------------------------------- */
+
+function FilterChip({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4063bb]/40",
+        active
+          ? "border-transparent bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] text-white shadow-md shadow-[#2d4c9b33]"
+          : "border-slate-200 bg-white/90 text-slate-600 hover:border-[#4063bb66] hover:text-[#4063bb] dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-200"
+      )}
+    >
+      {icon}
+      <span className="whitespace-nowrap">{label}</span>
+    </button>
+  );
+}
+
+/* ---------------------------- MAIN PAGE CLIENT ---------------------------- */
+
+export function VocabularyPageClient() {
+  const router = useRouter();
+  const basePrefix = useBasePrefix();
+
+  const {
+    sets,
+    loading,
+    error,
+    createSet,
+    updateSet,
+    deleteSet,
+    addTerm,
+    updateTerm,
+    deleteTerm,
+    refreshSet,
+  } = useVocabulary();
+
+  const { getProgressForSet, markRemembered, markDifficult } =
+    useVocabularyProgress();
+
+  const [filters, setFilters] = React.useState({
+    query: "",
+    sort: "recent" as "recent" | "alphabetical" | "terms",
+  });
+
+  const [composer, setComposer] = React.useState<{
+    open: boolean;
+    mode: "create" | "edit";
+    set?: VocabularySet | null;
+  }>({ open: false, mode: "create" });
+
+  const [studySet, setStudySet] = React.useState<VocabularySet | null>(null);
+  const [quizSet, setQuizSet] = React.useState<VocabularySet | null>(null);
+
+  const [termModal, setTermModal] = React.useState<{
+    open: boolean;
+    mode: "create" | "edit";
+    setId?: string;
+    term?: VocabularyTerm | null;
+  }>({ open: false, mode: "create" });
+
+  const [deleteTarget, setDeleteTarget] = React.useState<VocabularySet | null>(
+    null
+  );
+
+  const [deleteTermTarget, setDeleteTermTarget] = React.useState<{
+    set: VocabularySet;
+    term: VocabularyTerm;
+  } | null>(null);
+
+  const handleQuickAdd = React.useCallback(
+    async (setId: string, payload: AddTermDTO) => {
+      await addTerm(setId, payload);
+    },
+    [addTerm]
+  );
+
+  /* ---------------------------- FILTER + SORT ---------------------------- */
+
+  const filteredSets = React.useMemo(() => {
+    // Ensure sets is always an array
+    const safeSets = Array.isArray(sets) ? sets : [];
+    const query = filters.query.trim().toLowerCase();
+
+    return [...safeSets]
+      .filter((set) => {
+        if (!query) return true;
+        return [set.title, set.description, set.topic]
+          .filter(Boolean)
+          .some((v) => v?.toLowerCase().includes(query));
+      })
+      .sort((a, b) => {
+        if (filters.sort === "alphabetical") {
+          return a.title.localeCompare(b.title);
+        }
+        if (filters.sort === "terms") {
+          return b.terms.length - a.terms.length;
+        }
+
+        return (
+          new Date(b.updatedAt ?? b.createdAt).getTime() -
+          new Date(a.updatedAt ?? a.createdAt).getTime()
+        );
+      });
+  }, [sets, filters]);
+
+  const totalTerms = React.useMemo(() => {
+    const safeSets = Array.isArray(sets) ? sets : [];
+    return safeSets.reduce((sum, s) => sum + (s.terms?.length || 0), 0);
+  }, [sets]);
+
+  /* --------------------------- ACTION HANDLERS --------------------------- */
+
+  const handleOpenSet = React.useCallback(
+    (set: VocabularySet) => {
+      router.push(`${basePrefix}/vocabulary/${set._id}`);
+    },
+    [router, basePrefix]
+  );
+
+  const handleOpenPractice = React.useCallback(
+    async (set: VocabularySet, mode: "flashcard" | "quiz" = "flashcard") => {
+      if (mode === "flashcard") {
+        setStudySet(set);
+      } else {
+        setQuizSet(set);
+      }
+
+      try {
+        const latest = await refreshSet(set._id);
+        if (!latest) return;
+        if (mode === "flashcard") {
+          setStudySet(latest);
+        } else {
+          setQuizSet(latest);
+        }
+      } catch {
+        // ignore refresh errors, keep optimistic data
+      }
+    },
+    [refreshSet]
+  );
+
+  /* ------------------------------ RENDER UI ------------------------------ */
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="py-6 xs:py-8 sm:py-10">
           <VocabularySetSkeleton />
-        ) : (
-          <VocabularyList sets={filteredSets} onDelete={handleDelete} />
+        </div>
+      );
+    }
+
+    if (!filteredSets.length) {
+      return (
+        <div className="py-6 xs:py-8 sm:py-10">
+          <EmptyState
+            title="Chưa có bộ từ nào"
+            description="Tạo bộ từ đầu tiên hoặc import danh sách từ để bắt đầu học giống Quizlet nhưng tối ưu cho TOEIC."
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-2 gap-4 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {filteredSets.map((set) => (
+          <VocabularySetCard
+            key={set._id}
+            set={set}
+            progress={getProgressForSet(set._id, set.terms.length)}
+            onOpen={() => handleOpenSet(set)}
+            onStudy={() => handleOpenPractice(set, "flashcard")}
+            onQuickQuiz={() => handleOpenPractice(set, "quiz")}
+            onEdit={() => setComposer({ open: true, mode: "edit", set })}
+            onDuplicate={async () => {
+              await createSet({
+                title: `${set.title} (copy)`,
+                description: set.description,
+                topic: set.topic,
+                terms: set.terms.map(({ _id, ...rest }) => rest),
+              });
+              toast.success("Đã nhân bản bộ từ");
+            }}
+            onDelete={() => setDeleteTarget(set)}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  /* ---------------------------- MAIN RETURN ---------------------------- */
+
+  return (
+    <section className="relative min-h-screen overflow-hidden bg-slate-50 pb-16 dark:bg-zinc-950 pt-20">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(64,99,187,0.16),_rgba(15,23,42,0)_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(64,99,187,0.24),_rgba(3,7,18,0)_65%)]" />
+      <div className="relative mx-auto max-w-6xl space-y-5 px-4 xs:px-5">
+        {/* HEADER */}
+        <VocabularyHeader
+          totalSets={Array.isArray(sets) ? sets.length : 0}
+          totalTerms={totalTerms}
+          onCreate={() => setComposer({ open: true, mode: "create" })}
+        />
+
+        {/* Error */}
+        {error && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700 shadow-sm sm:text-sm dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
+            {error}
+          </div>
         )}
+
+        {/* Filter Bar – mobile friendly */}
+        <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl xs:p-5 dark:border-zinc-800/60 dark:bg-zinc-900/90">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            {/* Search */}
+            <div className="w-full md:max-w-md">
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
+                Tìm kiếm nhanh
+              </label>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
+                <input
+                  value={filters.query}
+                  onChange={(e) =>
+                    setFilters((prev) => ({ ...prev, query: e.target.value }))
+                  }
+                  placeholder="Nhập từ khóa, chủ đề hoặc ghi chú..."
+                  className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                />
+              </div>
+            </div>
+
+            {/* Chips */}
+            <div className="w-full md:w-auto">
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
+                Sắp xếp & lọc
+              </label>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                <FilterChip
+                  icon={<Filter className="h-3.5 w-3.5" />}
+                  label="Mới cập nhật"
+                  active={filters.sort === "recent"}
+                  onClick={() => setFilters((p) => ({ ...p, sort: "recent" }))}
+                />
+                <FilterChip
+                  label="Theo A–Z"
+                  active={filters.sort === "alphabetical"}
+                  onClick={() =>
+                    setFilters((p) => ({ ...p, sort: "alphabetical" }))
+                  }
+                />
+                <FilterChip
+                  label="Nhiều từ nhất"
+                  active={filters.sort === "terms"}
+                  onClick={() => setFilters((p) => ({ ...p, sort: "terms" }))}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        {renderContent()}
       </div>
 
-      {/* Create Modal */}
-      {showCreateModal && (
-        <CreateVocabularySetModal
-          onClose={() => setShowCreateModal(false)}
-          onCreate={createSet}
-        />
-      )}
-    </div>
+      {/* Modals */}
+      <SetComposerModal
+        open={composer.open}
+        mode={composer.mode}
+        initialSet={composer.set ?? undefined}
+        onClose={() => setComposer({ open: false, mode: "create" })}
+        onSubmit={async (payload) => {
+          try {
+            if (composer.mode === "edit" && composer.set) {
+              await updateSet(
+                composer.set._id,
+                payload as UpdateVocabularySetDTO
+              );
+              toast.success("Đã cập nhật bộ từ");
+            } else {
+              await createSet(payload as CreateVocabularySetDTO);
+              toast.success("Đã tạo bộ từ mới");
+            }
+          } catch (err: any) {
+            console.error("Error saving vocabulary set:", err);
+            const message = err instanceof Error ? err.message : "Không thể lưu bộ từ";
+            // Only show error if it's a real error
+            if (err?.status && err.status >= 400) {
+              toast.error(message);
+            } else if (!err?.message?.includes("Network error")) {
+              toast.error(message);
+            }
+            throw err; // Re-throw để modal có thể xử lý
+          }
+        }}
+      />
+
+      <TermComposerModal
+        open={termModal.open}
+        mode={termModal.mode}
+        initialTerm={termModal.term}
+        onClose={() => setTermModal({ open: false, mode: "create" })}
+        onSubmit={async (data) => {
+          if (!termModal.setId) return;
+          try {
+            if (termModal.mode === "edit" && termModal.term) {
+              await updateTerm(
+                termModal.setId,
+                termModal.term._id!,
+                data as UpdateTermDTO
+              );
+              toast.success("Đã cập nhật từ");
+            } else {
+              await addTerm(termModal.setId, data as AddTermDTO);
+              toast.success("Đã thêm từ");
+            }
+          } catch (err: any) {
+            console.error("Error saving vocabulary term:", err);
+            const message = err instanceof Error ? err.message : "Không thể lưu từ vựng";
+            // Only show error if it's a real error
+            if (err?.status && err.status >= 400) {
+              toast.error(message);
+            } else if (!err?.message?.includes("Network error")) {
+              toast.error(message);
+            }
+            throw err; // Re-throw để modal có thể xử lý
+          }
+        }}
+      />
+
+      <StudyModal
+        open={!!studySet}
+        set={studySet}
+        onClose={() => setStudySet(null)}
+        onSwitchToQuiz={() => {
+          if (studySet) setQuizSet(studySet);
+          setStudySet(null);
+        }}
+        onAddTerm={(set) =>
+          setTermModal({ open: true, mode: "create", setId: set._id })
+        }
+        onEditSet={(set) => setComposer({ open: true, mode: "edit", set })}
+        onTermRemembered={(term) => {
+          if (studySet && term._id) markRemembered(studySet._id, term._id);
+        }}
+        onTermForgotten={(term) => {
+          if (studySet && term._id) markDifficult(studySet._id, term._id);
+        }}
+      />
+
+      <QuizModal
+        open={!!quizSet}
+        set={quizSet}
+        onClose={() => setQuizSet(null)}
+        onSwitchToFlashcard={() => {
+          if (quizSet) setStudySet(quizSet);
+          setQuizSet(null);
+        }}
+      />
+
+      {/* Delete confirm */}
+      <ConfirmModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          try {
+            await deleteSet(deleteTarget._id);
+            toast.success("Đã xóa bộ từ");
+            setDeleteTarget(null);
+          } catch (err: any) {
+            console.error("Error deleting vocabulary set:", err);
+            const message = err instanceof Error ? err.message : "Không thể xóa bộ từ";
+            // Only show error if it's a real error
+            if (err?.status && err.status >= 400) {
+              toast.error(message);
+            } else if (!err?.message?.includes("Network error")) {
+              toast.error(message);
+            }
+          }
+        }}
+        title="Xóa bộ từ vựng?"
+        message="Thao tác này không thể hoàn tác."
+        icon="warning"
+        confirmText="Xóa"
+        confirmColor="red"
+      />
+
+      <ConfirmModal
+        open={!!deleteTermTarget}
+        onClose={() => setDeleteTermTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTermTarget) return;
+          try {
+            await deleteTerm(
+              deleteTermTarget.set._id,
+              deleteTermTarget.term._id!
+            );
+            toast.success("Đã xóa từ");
+            setDeleteTermTarget(null);
+          } catch (err: any) {
+            console.error("Error deleting vocabulary term:", err);
+            const message = err instanceof Error ? err.message : "Không thể xóa từ";
+            // Only show error if it's a real error
+            if (err?.status && err.status >= 400) {
+              toast.error(message);
+            } else if (!err?.message?.includes("Network error")) {
+              toast.error(message);
+            }
+          }
+        }}
+        title="Xóa từ?"
+        message="Bạn chắc chắn muốn xóa từ khỏi bộ?"
+        icon="warning"
+        confirmText="Xóa từ"
+        confirmColor="red"
+      />
+    </section>
   );
 }

@@ -303,6 +303,68 @@ export async function listComments(req: Request, res: Response) {
   res.json({ comments });
 }
 
+export async function editComment(req: Request, res: Response) {
+  try {
+    const { roomName, commentId } = req.params;
+    const userId = (req as any).auth?.userId as string | undefined;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const content = String(req.body?.content || "").trim();
+    if (!content) return res.status(400).json({ message: "Nội dung trống" });
+
+    const comment = await RoomComment.findOne({ _id: commentId, roomName });
+    if (!comment) return res.status(404).json({ message: "Comment không tồn tại" });
+
+    // Chỉ cho phép user sở hữu comment hoặc teacher/admin
+    const user = await User.findById(userId)
+      .select("role")
+      .lean<Pick<IUserSlim, "role"> | null>();
+    const isOwner = String(comment.userId) === userId;
+    const isTeacherOrAdmin = user?.role === "teacher" || user?.role === "admin";
+
+    if (!isOwner && !isTeacherOrAdmin) {
+      return res.status(403).json({ message: "Không có quyền chỉnh sửa comment này" });
+    }
+
+    comment.content = content;
+    comment.editedAt = new Date();
+    await comment.save();
+
+    res.json({ comment: comment.toObject() });
+  } catch (e) {
+    console.error("[editComment] ERROR", e);
+    res.status(500).json({ message: "Lỗi khi chỉnh sửa comment" });
+  }
+}
+
+export async function deleteComment(req: Request, res: Response) {
+  try {
+    const { roomName, commentId } = req.params;
+    const userId = (req as any).auth?.userId as string | undefined;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const comment = await RoomComment.findOne({ _id: commentId, roomName });
+    if (!comment) return res.status(404).json({ message: "Comment không tồn tại" });
+
+    // Chỉ cho phép user sở hữu comment hoặc teacher/admin
+    const user = await User.findById(userId)
+      .select("role")
+      .lean<Pick<IUserSlim, "role"> | null>();
+    const isOwner = String(comment.userId) === userId;
+    const isTeacherOrAdmin = user?.role === "teacher" || user?.role === "admin";
+
+    if (!isOwner && !isTeacherOrAdmin) {
+      return res.status(403).json({ message: "Không có quyền xóa comment này" });
+    }
+
+    await comment.deleteOne();
+    res.json({ ok: true });
+  } catch (e) {
+    console.error("[deleteComment] ERROR", e);
+    res.status(500).json({ message: "Lỗi khi xóa comment" });
+  }
+}
+
 /* ---------------- Documents ---------------- */
 
 const upload = multer({

@@ -1,8 +1,8 @@
 // frontend/src/components/features/vocabulary/CompletionScreen.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { Trophy, RotateCcw, BookOpen, Brain } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { Brain, BookOpen, RotateCcw, Trophy } from "lucide-react";
 import confetti from "canvas-confetti";
 
 interface CompletionScreenProps {
@@ -26,163 +26,148 @@ export function CompletionScreen({
   mode = "flashcard",
   score,
 }: CompletionScreenProps) {
-  const [showCelebration, setShowCelebration] = useState(false);
-  const percentage = total > 0 ? Math.round((remembered / total) * 100) : 0;
+  const percentage =
+    typeof score === "number"
+      ? score
+      : total > 0
+      ? Math.round((remembered / total) * 100)
+      : 0;
 
   useEffect(() => {
-    // Trigger confetti animation
-    if (percentage >= 80) {
-      const duration = 3000;
-      const end = Date.now() + duration;
-
+    if (percentage >= 75) {
+      const duration = 1500;
+      const animationEnd = Date.now() + duration;
+      const colors = ["#0ea5e9", "#22c55e", "#f97316", "#facc15"];
       const frame = () => {
         confetti({
-          particleCount: 3,
+          particleCount: 4,
           angle: 60,
-          spread: 55,
+          spread: 70,
           origin: { x: 0 },
-          colors: ["#18181b", "#71717a", "#a1a1aa"],
+          colors,
         });
         confetti({
-          particleCount: 3,
+          particleCount: 4,
           angle: 120,
-          spread: 55,
+          spread: 70,
           origin: { x: 1 },
-          colors: ["#18181b", "#71717a", "#a1a1aa"],
+          colors,
         });
-
-        if (Date.now() < end) {
+        if (Date.now() < animationEnd) {
           requestAnimationFrame(frame);
         }
       };
-
       frame();
-      setShowCelebration(true);
     }
   }, [percentage]);
 
-  const getMessage = () => {
-    if (percentage >= 90) return "Xuất sắc! 🎉";
-    if (percentage >= 80) return "Tuyệt vời! 🌟";
-    if (percentage >= 70) return "Tốt lắm! 👏";
-    if (percentage >= 60) return "Cố gắng tốt! 💪";
-    return "Tiếp tục luyện tập! 📚";
-  };
+  const badge = useMemo(() => {
+    if (percentage >= 90) return { label: "Legendary", tone: "text-emerald-600" };
+    if (percentage >= 75) return { label: "Great job", tone: "text-sky-600" };
+    if (percentage >= 60) return { label: "Keep going", tone: "text-amber-600" };
+    return { label: "Practice more", tone: "text-zinc-500" };
+  }, [percentage]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <div className="rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-8 shadow-lg">
-        {/* Trophy icon */}
-        <div className="flex justify-center mb-6">
-          <div
-            className={`w-20 h-20 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center ${
-              showCelebration ? "animate-bounce" : ""
-            }`}
-          >
-            <Trophy className="w-10 h-10 text-yellow-600 dark:text-yellow-400" />
-          </div>
+    <div className="mx-auto w-full max-w-3xl rounded-[36px] border border-zinc-200/80 bg-white/95 p-8 shadow-xl dark:border-zinc-800/80 dark:bg-zinc-900/90">
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-zinc-200/70 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-zinc-400 dark:border-zinc-700">
+          {mode === "learn" ? "Quiz" : "Flashcard"}
         </div>
-
-        {/* Title */}
-        <h2 className="text-2xl font-bold text-center text-zinc-900 dark:text-white mb-2">
-          {mode === "learn" ? "Hoàn thành bài kiểm tra!" : "Hoàn thành vòng học!"}
+        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-emerald-50 text-amber-500 dark:from-amber-900/30 dark:to-emerald-900/30">
+          <Trophy className="h-10 w-10" />
+        </div>
+        <h2 className="text-3xl font-semibold text-zinc-900 dark:text-white">
+          {mode === "learn" ? "Bạn đã hoàn tất quiz!" : "Vòng flashcard hoàn thành!"}
         </h2>
-        <p className="text-lg text-center text-zinc-600 dark:text-zinc-400 mb-8">
-          {getMessage()}
-        </p>
+        <p className={`mt-2 text-sm font-semibold ${badge.tone}`}>{badge.label}</p>
+      </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="text-center p-4 rounded-lg bg-zinc-50 dark:bg-zinc-700/50">
-            <p className="text-3xl font-bold text-zinc-900 dark:text-white">
-              {total}
-            </p>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-              Tổng cộng
-            </p>
-          </div>
-          <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
-            <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-              {remembered}
-            </p>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-              {mode === "learn" ? "Đúng" : "Đã nhớ"}
-            </p>
-          </div>
-          <div className="text-center p-4 rounded-lg bg-orange-50 dark:bg-orange-900/20">
-            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-              {notYet}
-            </p>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-              {mode === "learn" ? "Sai" : "Chưa nhớ"}
-            </p>
-          </div>
+      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+        <StatCard label="Tổng số" value={total} />
+        <StatCard label={mode === "learn" ? "Câu đúng" : "Đã nhớ"} value={remembered} tone="emerald" />
+        <StatCard label={mode === "learn" ? "Câu sai" : "Chưa nhớ"} value={notYet} tone="amber" />
+      </div>
+
+      <div className="mt-6 rounded-3xl border border-zinc-200/80 p-5 dark:border-zinc-800/70">
+        <div className="flex items-center justify-between text-sm font-semibold text-zinc-600 dark:text-zinc-300">
+          <span>Điểm</span>
+          <span className="text-2xl text-zinc-900 dark:text-white">{percentage}%</span>
         </div>
-
-        {/* Score percentage */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-              Điểm
-            </span>
-            <span className="text-2xl font-bold text-zinc-900 dark:text-white">
-              {percentage}%
-            </span>
-          </div>
-          <div className="w-full h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all duration-1000 ${
-                percentage >= 80
-                  ? "bg-green-500"
-                  : percentage >= 60
-                  ? "bg-blue-500"
-                  : "bg-orange-500"
-              }`}
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Suggestions */}
-        {notYet > 0 && (
-          <div className="mb-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-blue-800 dark:text-blue-300">
-              💡 <strong>Mẹo:</strong> Ôn tập {notYet} từ bạn đánh dấu &quot;Chưa nhớ&quot; để củng cố trí nhớ!
-            </p>
-          </div>
-        )}
-
-        {/* Action buttons */}
-        <div className="space-y-3">
-          <button
-            onClick={onRestart}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold hover:shadow-md transition-all"
-          >
-            <RotateCcw className="w-5 h-5" />
-            <span>Luyện tập lại</span>
-          </button>
-
-          {notYet > 0 && mode === "flashcard" && (
-            <button
-              onClick={onReviewWeak}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold transition-colors"
-            >
-              <BookOpen className="w-5 h-5" />
-              <span>Ôn tập từ yếu ({notYet})</span>
-            </button>
-          )}
-
-          {mode === "flashcard" && (
-            <button
-              onClick={onLearnMode}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold transition-colors"
-            >
-              <Brain className="w-5 h-5" />
-              <span>Thử chế độ học</span>
-            </button>
-          )}
+        <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800/80">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-sky-500 via-emerald-500 to-amber-400 transition-all"
+            style={{ width: `${percentage}%` }}
+          />
         </div>
       </div>
+
+      {notYet > 0 && (
+        <div className="mt-4 rounded-3xl border border-sky-100/80 bg-sky-50/60 px-4 py-3 text-sm text-sky-700 dark:border-sky-900/40 dark:bg-sky-950/20 dark:text-sky-200">
+          🔁 Gợi ý: Có {notYet} từ/câu hỏi bạn chưa chắc chắn – ôn lại ngay để ghi nhớ sâu hơn.
+        </div>
+      )}
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <button
+          onClick={onRestart}
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-zinc-800 dark:bg-white dark:text-zinc-900"
+        >
+          <RotateCcw className="h-4 w-4" />
+          Luyện lại vòng này
+        </button>
+        {mode === "flashcard" ? (
+          <>
+            {notYet > 0 && (
+              <button
+                onClick={onReviewWeak}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-amber-200/70 bg-white px-5 py-3 text-sm font-semibold text-amber-600 transition hover:-translate-y-0.5 hover:border-amber-300 dark:border-amber-900/40 dark:bg-amber-950/10 dark:text-amber-200"
+              >
+                <BookOpen className="h-4 w-4" />
+                Ôn từ khó ({notYet})
+              </button>
+            )}
+            <button
+              onClick={onLearnMode}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200/70 bg-sky-50/80 px-5 py-3 text-sm font-semibold text-sky-600 transition hover:-translate-y-0.5 hover:border-sky-300 dark:border-sky-900/40 dark:bg-sky-950/20 dark:text-sky-200 sm:col-span-2"
+            >
+              <Brain className="h-4 w-4" />
+              Chuyển sang quiz
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={onLearnMode}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200/70 bg-sky-50/80 px-5 py-3 text-sm font-semibold text-sky-600 transition hover:-translate-y-0.5 hover:border-sky-300 dark:border-sky-900/40 dark:bg-sky-950/20 dark:text-sky-200"
+          >
+            <Brain className="h-4 w-4" />
+            Luyện lại flashcard
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone?: "emerald" | "amber";
+}) {
+  const toneClasses =
+    tone === "emerald"
+      ? "border-emerald-200/80 bg-emerald-50/60 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-300"
+      : tone === "amber"
+      ? "border-amber-200/80 bg-amber-50/60 text-amber-600 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-300"
+      : "border-zinc-200/80 bg-zinc-50/80 text-zinc-700 dark:border-zinc-800/70 dark:bg-zinc-900/70 dark:text-zinc-100";
+  return (
+    <div className={`rounded-3xl border px-4 py-4 text-center ${toneClasses}`}>
+      <p className="text-3xl font-semibold">{value}</p>
+      <p className="mt-1 text-xs uppercase tracking-[0.4em]">{label}</p>
     </div>
   );
 }

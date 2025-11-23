@@ -5,8 +5,8 @@ import { deleteUser, listUsers, updateUser, overviewPlacementScores, userScores,
 import {
   listCommunityPosts,
   createCommunityPost,
-  deleteCommunityPost, 
-  listCommunityComments, 
+  deleteCommunityPost,
+  listCommunityComments,
   deleteCommunityComment,
   uploadCommunityAttachment,
   toggleCommunityPostVisibility,
@@ -26,8 +26,11 @@ import {
   createStimulus,
   updateStimulus,
   deleteStimulus,
-  uploadStimulusMedia
+  uploadStimulusMedia,
+  importExcel
 } from "./admin-parts.controller";
+
+
 import {
   listPromoCodes,
   getPromoCode,
@@ -49,6 +52,7 @@ import {
   adminCreateNews,
   adminUpdateNews,
   adminDeleteNews,
+  uploadNewsImage,
 } from "./admin-news.controller";
 
 const router = Router();
@@ -97,6 +101,8 @@ router.post("/parts/test", createTest);
 router.delete("/parts/test", deleteTest);
 router.post("/parts/item", createOrUpdateItem);
 router.post("/parts/upload", upload.single("file"), uploadStimulusMedia);
+router.post("/parts/import-excel", upload.single("file"), importExcel);
+
 router.post("/parts/stimulus", createStimulus);
 router.patch("/parts/stimulus/:id", updateStimulus);
 router.delete("/parts/stimulus/:id", deleteStimulus);
@@ -123,6 +129,7 @@ router.delete("/study-rooms/:roomName/documents/:docId", adminDeleteRoomDocument
 // News admin routes
 router.get("/news", adminListNews);
 router.post("/news", adminCreateNews);
+router.post("/news/upload", upload.single("file"), uploadNewsImage);
 router.get("/news/:id", adminGetNews);
 router.patch("/news/:id", adminUpdateNews);
 router.delete("/news/:id", adminDeleteNews);

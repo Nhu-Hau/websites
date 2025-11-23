@@ -31,7 +31,7 @@ export function MobileQuickNavSheet({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] lg:hidden">
+    <div className="fixed inset-0 z-[110] lg:hidden">
       {/* backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"

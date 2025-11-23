@@ -11,169 +11,116 @@ interface FlashcardProps {
 }
 
 export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
+  const handleAudio = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    if (term.audio) {
+      const audio = new Audio(term.audio);
+      audio.play().catch(() => {
+        /* ignore */
+      });
+    }
+  };
+
   return (
-    <div className="w-full max-w-2xl mx-auto mb-8">
+    <div className="mx-auto mb-8 w-full max-w-3xl">
       <div
-        className="relative w-full aspect-[4/3] cursor-pointer perspective-1000"
+        className="relative aspect-[4/3] cursor-pointer perspective-1000"
         onClick={onFlip}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
             onFlip();
           }
         }}
       >
         <div
-          className={`relative w-full h-full preserve-3d transition-transform duration-500 ${
+          className={`relative h-full w-full preserve-3d transition-transform duration-500 ${
             isFlipped ? "rotate-y-180" : ""
           }`}
         >
-          {/* Front side - Word */}
-          <div
-            className={`absolute inset-0 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-lg hover:shadow-xl backface-hidden ${
-              isFlipped ? "opacity-0 pointer-events-none" : "opacity-100"
+          <FlashcardFace
+            heading="Thuật ngữ"
+            subheading={term.partOfSpeech}
+            accent="from-sky-50 via-white to-emerald-50"
+            className={`backface-hidden ${
+              isFlipped ? "pointer-events-none opacity-0" : "opacity-100"
             }`}
           >
-            <div className="p-8 h-full flex flex-col items-center justify-center text-center">
-              <div className="mb-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-700">
-                  <BookOpen className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
-                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide">
-                    Từ
-                  </span>
-                </div>
-              </div>
+            <h2 className="mb-6 break-words text-center text-4xl font-semibold tracking-tight text-zinc-900 dark:text-white md:text-5xl">
+              {term.word}
+            </h2>
+            {term.audio && (
+              <button
+                onClick={handleAudio}
+                className="inline-flex items-center gap-2 rounded-2xl border border-zinc-200/80 bg-white/90 px-5 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-100"
+              >
+                <Volume2 className="h-4 w-4" />
+                Phát âm
+              </button>
+            )}
+            <p className="absolute bottom-6 text-xs uppercase tracking-[0.4em] text-zinc-400">
+              Nhấn Space để lật
+            </p>
+          </FlashcardFace>
 
-              {term.partOfSpeech && (
-                <div className="mb-3">
-                  <span className="text-xs font-medium px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-                    {term.partOfSpeech}
-                  </span>
-                </div>
-              )}
-
-              <h2 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-6 break-words">
-                {term.word}
-              </h2>
-
-              {term.audio && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Play audio logic here
-                  }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 text-zinc-700 dark:text-zinc-300 transition-colors"
-                >
-                  <Volume2 className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Nghe</span>
-                </button>
-              )}
-
-              <p className="absolute bottom-6 text-sm text-zinc-500 dark:text-zinc-400">
-                Nhấp hoặc nhấn Space để lật
-              </p>
-            </div>
-          </div>
-
-          {/* Back side - Meaning */}
-          <div
-            className={`absolute inset-0 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-lg hover:shadow-xl backface-hidden rotate-y-180 ${
-              !isFlipped ? "opacity-0 pointer-events-none" : "opacity-100"
+          <FlashcardFace
+            heading="Nghĩa"
+            accent="from-emerald-50 via-white to-amber-50"
+            className={`rotate-y-180 backface-hidden ${
+              !isFlipped ? "pointer-events-none opacity-0" : "opacity-100"
             }`}
           >
-            <div className="p-8 h-full flex flex-col">
-              <div className="mb-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-700">
-                  <BookOpen className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
-                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide">
-                    Nghĩa
-                  </span>
-                </div>
-              </div>
+            <div className="flex flex-1 flex-col gap-6">
+              <section>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
+                  Tiếng Việt
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">
+                  {term.meaning}
+                </p>
+              </section>
 
-              <div className="flex-1 space-y-6">
-                {/* Vietnamese Meaning */}
-                <div>
-                  <div className="mb-2">
-                    <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
-                      Tiếng Việt
-                    </span>
-                  </div>
-                  <h2 className="text-2xl md:text-3xl font-semibold text-zinc-900 dark:text-white">
-                    {term.meaning}
-                  </h2>
-                </div>
+              {term.englishMeaning && (
+                <section>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
+                    English
+                  </p>
+                  <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-300">
+                    {term.englishMeaning}
+                  </p>
+                </section>
+              )}
 
-                {/* English Meaning */}
-                {term.englishMeaning && (
-                  <div>
-                    <div className="mb-2">
-                      <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
-                        English
-                      </span>
-                    </div>
-                    <p className="text-lg text-zinc-700 dark:text-zinc-300">
-                      {term.englishMeaning}
+              {(term.example || term.translatedExample) && (
+                <section className="rounded-2xl border border-zinc-200/70 bg-white/90 p-4 text-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
+                  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-400">
+                    Ví dụ
+                  </p>
+                  {term.example && (
+                    <p className="mt-2 italic text-zinc-700 dark:text-zinc-200">
+                      “{term.example}”
                     </p>
-                  </div>
-                )}
-
-                {/* Examples */}
-                {(term.example || term.translatedExample) && (
-                  <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-                    <div className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
-                      Ví dụ
-                    </div>
-
-                    {term.example && (
-                      <div className="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-700/50">
-                        <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                          English:
-                        </p>
-                        <p className="text-zinc-900 dark:text-white italic">
-                          &quot;{term.example}&quot;
-                        </p>
-                      </div>
-                    )}
-
-                    {term.translatedExample && (
-                      <div className="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-700/50">
-                        <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                          Tiếng Việt:
-                        </p>
-                        <p className="text-zinc-900 dark:text-white italic">
-                          &quot;{term.translatedExample}&quot;
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Image */}
-                {term.image && (
-                  <div className="pt-4">
-                    <img
-                      src={term.image}
-                      alt={term.word}
-                      className="max-h-32 mx-auto rounded-lg"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <p className="absolute bottom-6 text-sm text-zinc-500 dark:text-zinc-400">
-                Nhấp hoặc nhấn Space để lật lại
-              </p>
+                  )}
+                  {term.translatedExample && (
+                    <p className="mt-2 italic text-zinc-500 dark:text-zinc-400">
+                      “{term.translatedExample}”
+                    </p>
+                  )}
+                </section>
+              )}
             </div>
-          </div>
+            <p className="absolute bottom-6 text-xs uppercase tracking-[0.4em] text-zinc-400">
+              Nhấn Space để lật lại
+            </p>
+          </FlashcardFace>
         </div>
       </div>
 
       <style jsx>{`
         .perspective-1000 {
-          perspective: 1000px;
+          perspective: 1600px;
         }
         .preserve-3d {
           transform-style: preserve-3d;
@@ -188,3 +135,37 @@ export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
     </div>
   );
 }
+
+function FlashcardFace({
+  heading,
+  subheading,
+  accent,
+  className,
+  children,
+}: {
+  heading: string;
+  subheading?: string;
+  accent: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`absolute inset-0 rounded-[40px] border border-zinc-200/80 bg-gradient-to-br ${accent} p-8 shadow-xl transition dark:border-zinc-800/70 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 ${className}`}
+    >
+      <div className="flex h-full flex-col items-center justify-center text-center">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-zinc-200/80 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500 dark:border-zinc-800/70 dark:text-zinc-300">
+          <BookOpen className="h-4 w-4" />
+          {heading}
+        </div>
+        {subheading && (
+          <span className="mb-4 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-600 dark:bg-white/10 dark:text-sky-200">
+            {subheading}
+          </span>
+        )}
+        {children}
+      </div>
+    </div>
+  );
+}
+

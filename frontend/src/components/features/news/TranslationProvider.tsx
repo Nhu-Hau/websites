@@ -1,8 +1,8 @@
 "use client";
 
 import { ReactNode, useEffect, useRef } from "react";
-import { useWordTranslation } from "./hooks/useWordTranslation";
-import { useSelectionTranslation } from "./hooks/useSelectionTranslation";
+import { useWordTranslation } from "../../../hooks/news/useWordTranslation";
+import { useSelectionTranslation } from "../../../hooks/news/useSelectionTranslation";
 import { TranslationPopover } from "./TranslationPopover";
 import { SelectionPopover } from "./SelectionPopover";
 
@@ -11,9 +11,12 @@ interface TranslationProviderProps {
   isPremium: boolean;
 }
 
-export function TranslationProvider({ children, isPremium }: TranslationProviderProps) {
+export function TranslationProvider({
+  children,
+  isPremium,
+}: TranslationProviderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const {
     wordData,
     position: wordPosition,
@@ -40,7 +43,7 @@ export function TranslationProvider({ children, isPremium }: TranslationProvider
     // Handle click on words
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      
+
       // Check if clicked inside a paragraph
       if (target.closest("p")) {
         handleWordClick(e);
@@ -52,7 +55,7 @@ export function TranslationProvider({ children, isPremium }: TranslationProvider
       setTimeout(() => {
         const selection = window.getSelection();
         const selectedText = selection?.toString().trim();
-        
+
         if (selectedText && selectedText.length > 1) {
           handleSelection(e, selectedText);
         }
@@ -79,7 +82,11 @@ export function TranslationProvider({ children, isPremium }: TranslationProvider
           position={wordPosition}
           loading={wordLoading}
           showMeaning={showMeaning}
-          onToggleMeaning={() => setShowMeaning(showMeaning === "vietnamese" ? "english" : "vietnamese")}
+          onToggleMeaning={() =>
+            setShowMeaning(
+              showMeaning === "vietnamese" ? "english" : "vietnamese"
+            )
+          }
           onClose={clearWordData}
         />
       )}
@@ -96,6 +103,3 @@ export function TranslationProvider({ children, isPremium }: TranslationProvider
     </div>
   );
 }
-
-
-

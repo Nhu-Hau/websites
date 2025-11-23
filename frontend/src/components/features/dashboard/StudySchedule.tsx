@@ -18,6 +18,7 @@ import {
   Loader2,
   Trophy,
   Target,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -63,52 +64,52 @@ const PLAN_OPTIONS: { value: StudyPlan; label: string; color: string }[] = [
   {
     value: "auto",
     label: "Tự động (Smart Auto)",
-    color: "from-indigo-600 to-sky-500",
+    color: "from-[#3B8561] to-[#31694E]",
   },
   {
     value: "progress",
     label: "Progress Test",
-    color: "from-emerald-600 to-emerald-500",
+    color: "from-[#3B8561] to-[#31694E]",
   },
   {
     value: "mini_progress",
     label: "Mini-Progress",
-    color: "from-teal-600 to-teal-500",
+    color: "from-[#3B8561] to-[#31694E]",
   },
   {
     value: "practice_p1",
     label: "Luyện Part 1",
-    color: "from-violet-600 to-violet-500",
+    color: "from-[#3B8561] to-[#31694E]",
   },
   {
     value: "practice_p2",
     label: "Luyện Part 2",
-    color: "from-purple-600 to-purple-500",
+    color: "from-[#3B8561] to-[#31694E]",
   },
   {
     value: "practice_p3",
     label: "Luyện Part 3",
-    color: "from-rose-600 to-rose-500",
+    color: "from-[#3B8561] to-[#31694E]",
   },
   {
     value: "practice_p4",
     label: "Luyện Part 4",
-    color: "from-amber-600 to-amber-500",
+    color: "from-[#3B8561] to-[#31694E]",
   },
   {
     value: "practice_p5",
     label: "Luyện Part 5",
-    color: "from-sky-600 to-sky-500",
+    color: "from-[#3B8561] to-[#31694E]",
   },
   {
     value: "practice_p6",
     label: "Luyện Part 6",
-    color: "from-lime-600 to-lime-500",
+    color: "from-[#3B8561] to-[#31694E]",
   },
   {
     value: "practice_p7",
     label: "Luyện Part 7",
-    color: "from-cyan-600 to-cyan-500",
+    color: "from-[#3B8561] to-[#31694E]",
   },
 ];
 
@@ -150,6 +151,7 @@ function isoToLocalHHmm(iso: string) {
   const d = new Date(iso);
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
+
 function isoPrettyDay(iso: string) {
   const d = new Date(iso);
   const today = new Date();
@@ -177,16 +179,89 @@ function DayPill({
     <button
       type="button"
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+      className={cn(
+        "rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-all",
         active
-          ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm"
-          : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700"
-      }`}
+          ? "bg-[#31694E] text-white shadow-sm"
+          : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+      )}
     >
       {label}
     </button>
   );
 }
+
+/* Toggle đẹp cho phần Nhắc lịch */
+function NotifyToggleRow({
+  icon,
+  label,
+  checked,
+  onChange,
+  compact,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  compact?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "flex w-full items-center justify-between rounded-lg border transition-all",
+        compact
+          ? "px-2.5 py-2 text-[11px]"
+          : "px-3.5 py-2.5 text-xs sm:text-sm",
+        checked
+          ? "border-[#31694E] bg-[#31694E]/5 text-gray-900 shadow-sm"
+          : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+      )}
+    >
+      <span className="inline-flex items-center gap-2">
+        <span
+          className={cn(
+            "flex items-center justify-center rounded-full bg-gray-100 text-gray-500",
+            compact ? "h-6 w-6" : "h-7 w-7"
+          )}
+        >
+          {icon}
+        </span>
+        <span className={cn("font-medium", compact && "text-[11px]")}>
+          {label}
+        </span>
+      </span>
+
+      {/* Toggle switch */}
+      <span
+        className={cn(
+          "relative inline-flex items-center rounded-full border transition-colors",
+          compact ? "h-4 w-7" : "h-5 w-9",
+          checked
+            ? "border-[#31694E] bg-[#31694E]"
+            : "border-gray-300 bg-gray-200"
+        )}
+      >
+        <span
+          className={cn(
+            "rounded-full bg-white shadow transition-transform",
+            compact ? "h-3 w-3" : "h-4 w-4",
+            checked
+              ? compact
+                ? "translate-x-3"
+                : "translate-x-4"
+              : "translate-x-0.5"
+          )}
+        />
+      </span>
+    </button>
+  );
+}
+
+/* base style cho input / select */
+const baseInputClass =
+  "w-full rounded-xl border border-gray-200 bg-white/95 px-3.5 py-2.5 text-sm font-medium text-gray-900 shadow-sm focus:border-[#31694E] focus:ring-2 focus:ring-[#31694E]/20 focus:outline-none focus-visible:outline-none";
 
 export interface StudyScheduleClientProps {
   initialUpcoming: StudyScheduleData | null;
@@ -298,6 +373,7 @@ export default function StudyScheduleClient({
       );
       if (!res.ok) throw new Error(await res.text());
       toast.success("Đã cập nhật lịch");
+      setEditing(false);
       await fetchUpcoming();
     } catch {
       toast.error("Cập nhật thất bại");
@@ -327,44 +403,46 @@ export default function StudyScheduleClient({
   return (
     <div className="space-y-6">
       {/* ===== PLANNER CARD ===== */}
-      <div className="relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/95 p-5 shadow-sm ring-1 ring-black/[0.02] transition-all duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95">
-        {/* accent line */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500" />
+      <div className="relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md sm:p-5 dark:border-zinc-800/80 dark:bg-zinc-900/95">
+        {/* accent line brand */}
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#3B8561] to-[#31694E]" />
 
         {/* header */}
-        <div className="mb-5 flex items-start justify-between gap-3">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
-              <Calendar className="relative z-10 h-5 w-5 text-zinc-700 dark:text-zinc-200" />
-              <div className="pointer-events-none absolute inset-0 rounded-xl bg-white/60 blur-md dark:bg-white/10" />
+            {/* icon style theo mẫu, tối ưu mobile */}
+            <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#3B8561]/60 via-[#31694E]/40 to-[#3B8561]/40 blur-xl" />
+              <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#3B8561] to-[#31694E] shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
+                <Calendar className="h-5 w-5 text-white" />
+              </div>
             </div>
-            <div>
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-slate-50 sm:text-xl">
                 Lên lịch học thông minh
               </h2>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                Đặt lịch luyện tập cố định để giữ nhịp học TOEIC và tránh quên
-                bài.
+              <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400 sm:text-[13px]">
+                Đặt lịch luyện tập cố định để giữ nhịp học TOEIC bạn nhé.
               </p>
             </div>
           </div>
 
-          <div className="hidden rounded-full border border-zinc-200/80 bg-zinc-50 px-3 py-1 text-[11px] font-medium text-zinc-600 shadow-sm dark:border-zinc-700/80 dark:bg-zinc-900/80 dark:text-zinc-300 sm:inline-flex items-center gap-1.5">
-            <AlarmClock className="h-3.5 w-3.5" />
-            <span>Lời nhắc qua Email / Web</span>
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-gray-100/80 px-3 py-1 text-[11px] font-medium text-gray-600 ring-1 ring-gray-200/60">
+            <AlarmClock className="h-3.5 w-3.5 text-[#31694E]" />
+            <span>Lời nhắc Email / Web</span>
           </div>
         </div>
 
         {/* form */}
         <form
           onSubmit={submit}
-          className="grid grid-cols-1 gap-6 lg:grid-cols-2"
+          className="grid gap-6 text-[13px] lg:grid-cols-2 lg:gap-7"
         >
           {/* LEFT – WHEN */}
-          <div className="space-y-5">
+          <div className="space-y-6">
             {/* recurrence */}
             <div>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
                 Chu kỳ lặp
               </p>
               <div className="flex flex-wrap gap-2">
@@ -384,10 +462,10 @@ export default function StudyScheduleClient({
                         setRecurrenceMode(k as typeof recurrenceMode)
                       }
                       className={cn(
-                        "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
+                        "rounded-xl px-3.5 py-2 text-xs font-medium transition-all sm:text-sm",
                         active
-                          ? "bg-zinc-900 text-white shadow-sm dark:bg-zinc-50 dark:text-zinc-900"
-                          : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          ? "bg-gradient-to-r from-[#3B8561] to-[#31694E] text-white shadow-sm shadow-[#31694E]/30 ring-1 ring-[#31694E]/40"
+                          : "border border-gray-200 bg-white/95 text-gray-700 hover:bg-gray-50"
                       )}
                     >
                       {label}
@@ -416,14 +494,15 @@ export default function StudyScheduleClient({
               )}
             </div>
 
-            <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-200/70 to-transparent dark:via-zinc-700/70" />
+            <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
 
             {/* date & time */}
             <div className="space-y-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
                 Ngày & giờ học
               </p>
-              <div className="flex flex-wrap gap-2">
+
+              <div className="flex flex-wrap gap-2.5">
                 {[
                   { k: "today", label: "Hôm nay" },
                   { k: "tomorrow", label: "Ngày mai" },
@@ -436,10 +515,10 @@ export default function StudyScheduleClient({
                       type="button"
                       onClick={() => setWhenType(k as typeof whenType)}
                       className={cn(
-                        "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
+                        "rounded-xl px-3.5 py-2 text-xs font-medium transition-all sm:text-sm",
                         active
-                          ? "bg-indigo-600 text-white shadow-sm dark:bg-indigo-500"
-                          : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          ? "bg-gradient-to-r from-[#3B8561] to-[#31694E] text-white shadow-sm shadow-[#31694E]/30 ring-1 ring-[#31694E]/40"
+                          : "border border-gray-200 bg-white/95 text-gray-700 hover:bg-gray-50"
                       )}
                     >
                       {label}
@@ -451,37 +530,41 @@ export default function StudyScheduleClient({
                     type="date"
                     value={customDate}
                     onChange={(e) => setCustomDate(e.target.value)}
-                    className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                    className={cn(
+                      baseInputClass,
+                      "mt-1 w-full px-3 py-2 text-xs sm:mt-0 sm:w-auto sm:text-sm"
+                    )}
                   />
                 )}
               </div>
 
-              <div className="relative mt-2">
-                <Clock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
+              <div className="relative">
+                <Clock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   type="time"
                   value={timeHHmm}
                   onChange={(e) => setTimeHHmm(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-10 py-2 text-sm font-semibold text-zinc-900 shadow-sm outline-none placeholder:text-zinc-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                   required
+                  className={cn(baseInputClass, "pl-10")}
                 />
               </div>
             </div>
           </div>
 
-          {/* RIGHT – PLAN & OPTIONS */}
-          <div className="space-y-5">
+          {/* RIGHT */}
+          <div className="space-y-6">
             {/* plan */}
             <div>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
                 Loại buổi học
               </p>
               <div className="relative">
-                <BookOpen className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
+                <BookOpen className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <select
                   value={plan}
                   onChange={(e) => setPlan(e.target.value as StudyPlan)}
-                  className="w-full appearance-none rounded-lg border border-zinc-200 bg-white px-10 py-2 text-sm font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                  className={cn(baseInputClass, "appearance-none pl-10 pr-10")}
                 >
                   {PLAN_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -491,7 +574,7 @@ export default function StudyScheduleClient({
                 </select>
                 <div
                   className={cn(
-                    "pointer-events-none absolute right-3 top-1/2 h-2 w-12 -translate-y-1/2 rounded-full bg-gradient-to-r",
+                    "pointer-events-none absolute right-9 top-1/2 h-2 w-10 -translate-y-1/2 rounded-full opacity-80",
                     PLAN_COLORS[plan]
                   )}
                 />
@@ -499,70 +582,73 @@ export default function StudyScheduleClient({
             </div>
 
             {/* duration + remind */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 grid-cols-2">
               <div>
-                <p className="mb-1.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
+                <p className="mb-1.5 text-[11px] font-semibold text-gray-600">
                   Thời lượng
                 </p>
-                <select
-                  value={durationMin}
-                  onChange={(e) =>
-                    setDurationMin(Number(e.target.value) as Duration)
-                  }
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                >
-                  {DURATIONS.map((d) => (
-                    <option key={d} value={d}>
-                      {d} phút
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <select
+                    value={durationMin}
+                    onChange={(e) =>
+                      setDurationMin(Number(e.target.value) as Duration)
+                    }
+                    className={cn(baseInputClass, "appearance-none pr-9")}
+                  >
+                    {DURATIONS.map((d) => (
+                      <option key={d} value={d}>
+                        {d} phút
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
-                <p className="mb-1.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
+                <p className="mb-1.5 text-[11px] font-semibold text-gray-600">
                   Nhắc trước
                 </p>
-                <select
-                  value={remindMinutes}
-                  onChange={(e) =>
-                    setRemindMinutes(Number(e.target.value) as any)
-                  }
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                >
-                  {REMIND_MINUTES.map((m) => (
-                    <option key={m} value={m}>
-                      {m} phút
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <select
+                    value={remindMinutes}
+                    onChange={(e) =>
+                      setRemindMinutes(Number(e.target.value) as any)
+                    }
+                    className={cn(baseInputClass, "appearance-none pr-9")}
+                  >
+                    {REMIND_MINUTES.map((m) => (
+                      <option key={m} value={m}>
+                        {m} phút
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
-            {/* notify */}
-            <div className="flex flex-wrap items-center gap-4 rounded-lg bg-zinc-50/80 px-3 py-2 dark:bg-zinc-900/70">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            {/* notify with custom toggles */}
+            <div className="rounded-lg bg-gray-50/80 p-3 ring-1 ring-gray-200/60">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
                 Nhắc lịch
               </p>
-              <label className="flex items-center gap-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                <input
-                  type="checkbox"
+
+              <div className="grid gap-2 grid-cols-2">
+                <NotifyToggleRow
+                  icon={<Bell className="h-3.5 w-3.5" />}
+                  label="Email"
                   checked={notifyEmail}
-                  onChange={(e) => setNotifyEmail(e.target.checked)}
-                  className="h-4 w-4 rounded border border-zinc-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 dark:border-zinc-600"
+                  onChange={setNotifyEmail}
+                  compact
                 />
-                <Bell className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-                Email
-              </label>
-              <label className="flex items-center gap-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                <input
-                  type="checkbox"
+                <NotifyToggleRow
+                  icon={<BellRing className="h-3.5 w-3.5" />}
+                  label="Web push"
                   checked={notifyWeb}
-                  onChange={(e) => setNotifyWeb(e.target.checked)}
-                  className="h-4 w-4 rounded border border-zinc-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 dark:border-zinc-600"
+                  onChange={setNotifyWeb}
+                  compact
                 />
-                <BellRing className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-                Web push
-              </label>
+              </div>
             </div>
           </div>
 
@@ -571,7 +657,7 @@ export default function StudyScheduleClient({
             <button
               type="submit"
               disabled={saving}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-sky-500 to-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#3B8561] to-[#31694E] px-4 py-3 text-sm font-semibold text-white shadow-md shadow-[#31694E]/30 transition-all hover:shadow-lg disabled:opacity-60"
             >
               {saving ? (
                 <>
@@ -591,41 +677,43 @@ export default function StudyScheduleClient({
 
       {/* ===== UPCOMING CARD ===== */}
       {loadingUpcoming ? (
-        <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-6 text-center shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/95">
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-zinc-500 dark:text-zinc-400" />
-          </div>
+        <div className="rounded-2xl border border-gray-200/70 bg-white/95 p-6 text-center shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-900/95">
+          <Loader2 className="mx-auto h-6 w-6 animate-spin text-gray-400 dark:text-zinc-500" />
         </div>
       ) : !upcoming ? (
-        <div className="rounded-2xl border border-dashed border-zinc-200/90 bg-white/95 p-6 shadow-sm dark:border-zinc-700/90 dark:bg-zinc-900/95">
+        <div className="rounded-2xl border border-dashed border-gray-200/80 bg-white/90 p-6 shadow-sm backdrop-blur-xl dark:border-zinc-800/70 dark:bg-zinc-900/60">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
-              <AlarmClock className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gray-100">
+              <AlarmClock className="h-5 w-5 text-gray-400" />
             </div>
-            <div>
-              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-900 dark:text-slate-50">
                 Chưa có lịch sắp tới
               </p>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                Hãy tạo một lịch học ở trên, hệ thống sẽ nhắc bạn đúng giờ để
-                giữ thói quen học.
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
+                Hãy tạo một lịch học ở trên, hệ thống sẽ nhắc bạn đúng giờ như
+                các app edtech pro.
               </p>
             </div>
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-sm ring-1 ring-black/[0.02] transition-all duration-200 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95">
+        <div className="rounded-2xl border border-gray-200/70 bg-white/95 p-5 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/95">
           {/* header */}
-          <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* LEFT */}
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
-                <AlarmClock className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
+              {/* Icon */}
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-2xl bg-gray-100 sm:h-9 sm:w-9">
+                <AlarmClock className="h-4 w-4 text-gray-700 sm:h-5 sm:w-5" />
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+
+              {/* Text */}
+              <div className="min-w-0 flex flex-col justify-center">
+                <h3 className="text-sm font-semibold tracking-tight text-gray-900 dark:text-slate-50">
                   Lịch học sắp tới
                 </h3>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                <p className="text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
                   {upcoming.status === "completed"
                     ? "Buổi học gần nhất đã hoàn thành."
                     : upcoming.status === "missed"
@@ -635,28 +723,29 @@ export default function StudyScheduleClient({
               </div>
             </div>
 
-            <div className="hidden rounded-full bg-zinc-50 px-3 py-1 text-[11px] font-medium text-zinc-600 dark:bg-zinc-900/80 dark:text-zinc-300 sm:inline-flex items-center gap-1.5">
-              <Target className="h-3.5 w-3.5" />
+            {/* RIGHT */}
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-gray-100/80 px-3 py-1 text-[11px] font-medium text-gray-700 shadow-sm sm:self-center">
+              <Target className="h-3.5 w-3.5 text-[#31694E]" />
               <span>{PLAN_LABELS[upcoming.plan]}</span>
             </div>
           </div>
 
-          {/* content theo trạng thái */}
+          {/* content */}
           {upcoming.status === "completed" ? (
-            <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/90 px-4 py-3 dark:border-emerald-800/80 dark:bg-emerald-900/25">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                <div>
-                  <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
+            <div className="rounded-xl border border-emerald-600/30 bg-emerald-600/5 px-4 py-3.5 ring-1 ring-emerald-600/15">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-600" />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-emerald-700">
                     Hoàn thành buổi học!
                   </p>
-                  <p className="text-xs text-emerald-800/90 dark:text-emerald-200/90">
+                  <p className="text-xs text-emerald-700/90 sm:text-sm">
                     {isoPrettyDay(upcoming.startAt)} •{" "}
                     {isoToLocalHHmm(upcoming.startAt)} • {upcoming.durationMin}{" "}
                     phút • {PLAN_LABELS[upcoming.plan]}
                   </p>
                   {upcoming.streak > 0 && (
-                    <p className="mt-1 flex items-center gap-1.5 text-[11px] text-emerald-800 dark:text-emerald-200">
+                    <p className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-emerald-700">
                       <Trophy className="h-3.5 w-3.5" />
                       Chuỗi hiện tại: {upcoming.streak} ngày
                     </p>
@@ -665,14 +754,14 @@ export default function StudyScheduleClient({
               </div>
             </div>
           ) : upcoming.status === "missed" ? (
-            <div className="rounded-xl border border-rose-200/80 bg-rose-50/90 px-4 py-3 dark:border-rose-800/80 dark:bg-rose-900/25">
-              <div className="flex items-center gap-2">
-                <XCircle className="h-5 w-5 text-rose-600 dark:text-rose-400" />
-                <div>
-                  <p className="text-sm font-semibold text-rose-900 dark:text-rose-100">
+            <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 px-4 py-3.5 ring-1 ring-rose-500/15">
+              <div className="flex items-start gap-3">
+                <XCircle className="h-5 w-5 flex-shrink-0 text-rose-500" />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-rose-600">
                     Bạn đã bỏ lỡ buổi học
                   </p>
-                  <p className="text-xs text-rose-800/90 dark:text-rose-200/90">
+                  <p className="text-xs text-rose-600/90 sm:text-sm">
                     {isoPrettyDay(upcoming.startAt)} •{" "}
                     {isoToLocalHHmm(upcoming.startAt)} • {upcoming.durationMin}{" "}
                     phút • {PLAN_LABELS[upcoming.plan]}
@@ -681,29 +770,36 @@ export default function StudyScheduleClient({
               </div>
             </div>
           ) : (
-            <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-4 py-4 dark:border-zinc-700/80 dark:bg-zinc-900/80">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <div className="rounded-xl border border-gray-200/80 bg-gray-50/80 px-3.5 py-3.5 sm:px-4 sm:py-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                {/* LEFT – info */}
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-gray-900">
                     {isoPrettyDay(upcoming.startAt)} •{" "}
                     {isoToLocalHHmm(upcoming.startAt)} • {upcoming.durationMin}{" "}
                     phút
                   </p>
-                  <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-                    {PLAN_LABELS[upcoming.plan]}
-                  </p>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
-                    {upcoming.remindMinutes && (
-                      <span className="flex items-center gap-1">
-                        <Bell className="h-3.5 w-3.5" />
-                        Nhắc trước {upcoming.remindMinutes} phút
-                      </span>
-                    )}
-                    {upcoming.notifyEmail && <span>Email</span>}
-                    {upcoming.notifyWeb && <span>Web</span>}
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-gray-700 shadow-sm">
+                      <BookOpen className="h-3.5 w-3.5 text-[#31694E]" />
+                      {PLAN_LABELS[upcoming.plan]}
+                    </span>
+
+                    <div className="flex flex-wrap gap-3 text-[11px] text-gray-600">
+                      {upcoming.remindMinutes && (
+                        <span className="flex items-center gap-1">
+                          <Bell className="h-3.5 w-3.5" />
+                          Nhắc trước {upcoming.remindMinutes} phút
+                        </span>
+                      )}
+                      {upcoming.notifyEmail && <span>Email</span>}
+                      {upcoming.notifyWeb && <span>Web</span>}
+                    </div>
                   </div>
+
                   {upcoming.recurrence?.mode && (
-                    <p className="mt-1 flex items-center gap-1 text-[11px] text-zinc-600 dark:text-zinc-400">
+                    <p className="flex items-center gap-1.5 text-[11px] text-gray-600">
                       <Repeat className="h-3.5 w-3.5" />
                       {upcoming.recurrence.mode === "daily"
                         ? "Lặp lại hàng ngày"
@@ -714,14 +810,16 @@ export default function StudyScheduleClient({
                             .join(", ")}`}
                     </p>
                   )}
+
                   {upcoming.streak > 0 && (
-                    <p className="mt-1 text-[11px] text-zinc-600 dark:text-zinc-400">
+                    <p className="text-[11px] font-medium text-gray-600">
                       Chuỗi hiện tại: {upcoming.streak} ngày
                     </p>
                   )}
                 </div>
 
-                <div className="flex gap-2">
+                {/* RIGHT – actions */}
+                <div className="flex w-full flex-col gap-2 sm:flex-row sm:w-auto sm:justify-end">
                   <button
                     type="button"
                     onClick={() => {
@@ -741,15 +839,16 @@ export default function StudyScheduleClient({
                         setRecurrenceDays([]);
                       }
                     }}
-                    className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 shadow-sm transition-all hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#31694E]/30 bg-white px-3.5 py-2 text-xs font-medium text-[#31694E] shadow-sm transition-all hover:border-[#31694E] hover:bg-[#31694E]/5 sm:flex-none sm:text-sm"
                   >
                     <Pencil className="h-4 w-4" />
                     Sửa
                   </button>
+
                   <button
                     type="button"
                     onClick={cancelUpcoming}
-                    className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#d32f2f] px-3.5 py-2 text-xs font-medium text-white shadow-sm transition-all hover:bg-[#e04343] sm:flex-none sm:text-sm"
                   >
                     <Trash2 className="h-4 w-4" />
                     Huỷ
@@ -760,55 +859,72 @@ export default function StudyScheduleClient({
               {editing &&
                 (upcoming.status as StudyStatus) !== "completed" &&
                 (upcoming.status as StudyStatus) !== "missed" && (
-                  <div className="mt-4 rounded-lg border border-zinc-200 bg-white/95 p-3 text-xs dark:border-zinc-700 dark:bg-zinc-900/95">
-                    <p className="mb-3 font-semibold text-zinc-700 dark:text-zinc-200">
+                  <div className="mt-4 rounded-xl border border-gray-200 bg-white/95 p-4">
+                    <p className="mb-3 text-sm font-semibold text-gray-800">
                       Chỉnh sửa nhanh lịch này
                     </p>
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                       <div>
-                        <p className="mb-1 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
+                        <p className="mb-1.5 text-[11px] font-semibold text-gray-600">
                           Giờ
                         </p>
                         <input
                           type="time"
                           value={timeHHmm}
                           onChange={(e) => setTimeHHmm(e.target.value)}
-                          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                          className={cn(
+                            baseInputClass,
+                            "px-3 text-sm font-medium"
+                          )}
                         />
                       </div>
                       <div>
-                        <p className="mb-1 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
+                        <p className="mb-1.5 text-[11px] font-semibold text-gray-600">
                           Thời lượng
                         </p>
-                        <select
-                          value={durationMin}
-                          onChange={(e) =>
-                            setDurationMin(Number(e.target.value) as Duration)
-                          }
-                          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                        >
-                          {DURATIONS.map((d) => (
-                            <option key={d} value={d}>
-                              {d} phút
-                            </option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                          <select
+                            value={durationMin}
+                            onChange={(e) =>
+                              setDurationMin(Number(e.target.value) as Duration)
+                            }
+                            className={cn(
+                              baseInputClass,
+                              "appearance-none pr-9"
+                            )}
+                          >
+                            {DURATIONS.map((d) => (
+                              <option key={d} value={d}>
+                                {d} phút
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                       <div>
-                        <p className="mb-1 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
+                        <p className="mb-1.5 text-[11px] font-semibold text-gray-600">
                           Loại
                         </p>
-                        <select
-                          value={plan}
-                          onChange={(e) => setPlan(e.target.value as StudyPlan)}
-                          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-900 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                        >
-                          {PLAN_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                          <select
+                            value={plan}
+                            onChange={(e) =>
+                              setPlan(e.target.value as StudyPlan)
+                            }
+                            className={cn(
+                              baseInputClass,
+                              "appearance-none pr-9"
+                            )}
+                          >
+                            {PLAN_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </div>
                     <div className="mt-3 flex gap-2">
@@ -825,15 +941,15 @@ export default function StudyScheduleClient({
                             recurrence: recurrence as any,
                           } as any)
                         }
-                        className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:shadow-md dark:bg-zinc-100 dark:text-zinc-900"
+                        className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#3B8561] to-[#31694E] px-3.5 py-2.5 text-sm font-medium text-white shadow-md shadow-[#31694E]/25 transition-all hover:shadow-lg"
                       >
                         <Save className="h-4 w-4" />
-                        Lưu
+                        Lưu thay đổi
                       </button>
                       <button
                         type="button"
                         onClick={() => setEditing(false)}
-                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50"
                       >
                         Huỷ
                       </button>

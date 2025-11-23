@@ -65,6 +65,7 @@ export function useNotifications() {
   const unread = items.filter((n) => !n.read).length;
 
   const uidRef = React.useRef<string | null>(null);
+  const prevUidRef = React.useRef<string | null>(null);
 
   const saveBox = React.useCallback(
     (uid: string | null, arr: RealtimeNotification[]) => {
@@ -145,6 +146,24 @@ export function useNotifications() {
     [mergeIn]
   );
 
+  // Listen for auth changes to clear notifications when user changes
+  React.useEffect(() => {
+    const handleAuthChange = () => {
+      // Reset state when auth changes
+      setItems([]);
+      prevUidRef.current = null;
+      uidRef.current = null;
+    };
+
+    window.addEventListener("auth:updated", handleAuthChange);
+    window.addEventListener("auth:changed", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("auth:updated", handleAuthChange);
+      window.removeEventListener("auth:changed", handleAuthChange);
+    };
+  }, []);
+
   React.useEffect(() => {
     const s = getSocket();
     const bus = getBus();
@@ -198,28 +217,49 @@ export function useNotifications() {
     };
 
     (async () => {
-      // rehydrate từ local
-      const lastUid = readJSON<string>(KEY_LAST_UID);
-      const seed = lastUid
-        ? readJSON<RealtimeNotification[]>(keyFor(lastUid))
-        : readJSON<RealtimeNotification[]>(KEY_TEMP);
-      if (seed?.length) setItems(prune(seed));
+      // lấy uid trước
+      const newUid = await fetchMe();
+      const oldUid = prevUidRef.current;
+      
+      // Nếu user thay đổi, clear state cũ
+      if (oldUid !== null && oldUid !== newUid) {
+        console.log("[useNotifications] User changed, clearing old notifications", { oldUid, newUid });
+        setItems([]);
+        // Clear localStorage của user cũ
+        if (oldUid) {
+          removeKey(keyFor(oldUid));
+        }
+        removeKey(KEY_TEMP);
+        removeKey(KEY_LAST_UID);
+      }
+      
+      // Update refs
+      prevUidRef.current = newUid;
+      uidRef.current = newUid;
 
-      // lấy uid
-      uidRef.current = await fetchMe();
+      // Chỉ rehydrate nếu user không đổi (hoặc là lần đầu mount với user)
+      if (newUid && oldUid === newUid) {
+        const lastUid = readJSON<string>(KEY_LAST_UID);
+        const seed = lastUid
+          ? readJSON<RealtimeNotification[]>(keyFor(lastUid))
+          : readJSON<RealtimeNotification[]>(KEY_TEMP);
+        if (seed?.length) setItems(prune(seed));
+      }
 
       // sync từ DB (không corner để tránh double)
-      try {
-        const r = await fetch(`${API_BASE}/api/notifications?limit=50`, {
-          credentials: "include",
-          cache: "no-store",
-        });
-        const j = await r.json();
-        const dbItems: RealtimeNotification[] = Array.isArray(j.items)
-          ? j.items
-          : [];
-        if (dbItems.length) mergeIn(dbItems);
-      } catch {}
+      if (newUid) {
+        try {
+          const r = await fetch(`${API_BASE}/api/notifications?limit=50`, {
+            credentials: "include",
+            cache: "no-store",
+          });
+          const j = await r.json();
+          const dbItems: RealtimeNotification[] = Array.isArray(j.items)
+            ? j.items
+            : [];
+          if (dbItems.length) mergeIn(dbItems);
+        } catch {}
+      }
 
       if (s.connected) joinMyRoom();
       s.on("connect", joinMyRoom);

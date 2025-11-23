@@ -2,12 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import {
-  LayoutDashboard,
-  BookOpen,
-  GraduationCap,
-  Users,
-} from "lucide-react";
+import { LayoutDashboard, BookOpen, GraduationCap, Users } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { cn } from "@/lib/utils";
 
@@ -17,39 +12,53 @@ export default function BottomTabBar() {
 
   const tabs = [
     {
-      id: "dashboard",
-      label: "Bảng điều khiển",
-      icon: LayoutDashboard,
-      href: `${base}/mobile/dashboard`,
-      match: (path: string) => path.includes("/mobile/dashboard") || (path.includes("/dashboard") && !path.includes("/mobile/")),
-    },
-    {
       id: "practice",
       label: "Luyện L&R",
       icon: BookOpen,
       href: `${base}/mobile/practice`,
-      match: (path: string) => path.includes("/mobile/practice") || (path.includes("/practice") && !path.includes("/mobile/") && !path.includes("/history")),
+      match: (path: string) =>
+        path.includes("/mobile/practice") ||
+        (path.includes("/practice") &&
+          !path.includes("/mobile/") &&
+          !path.includes("/history")),
     },
     {
       id: "study",
       label: "Học tập",
       icon: GraduationCap,
       href: `${base}/mobile/study`,
-      match: (path: string) => path.includes("/mobile/study") || (path.includes("/vocabulary") || path.includes("/news") || path.includes("/study/create")) && !path.includes("/mobile/"),
+      match: (path: string) =>
+        path.includes("/mobile/study") ||
+        ((path.includes("/vocabulary") ||
+          path.includes("/news") ||
+          path.includes("/study/create")) &&
+          !path.includes("/mobile/")),
     },
     {
       id: "community",
       label: "Cộng đồng",
       icon: Users,
       href: `${base}/community`,
-      match: (path: string) => path.includes("/community") || path.includes("/study/create") || path.includes("/account"),
+      match: (path: string) =>
+        path.includes("/community") ||
+        path.includes("/study/create") ||
+        path.includes("/account"),
+    },
+    {
+      id: "dashboard",
+      label: "Bảng điều khiển",
+      icon: LayoutDashboard,
+      href: `${base}/mobile/dashboard`,
+      match: (path: string) =>
+        path.includes("/mobile/dashboard") ||
+        (path.includes("/dashboard") && !path.includes("/mobile/")),
     },
   ];
 
   return (
     <nav
       className={cn(
-        "lg:hidden fixed inset-x-0 bottom-0 z-[10000]",
+        "lg:hidden fixed inset-x-0 bottom-0 z-[100]",
         "border-t border-zinc-200/80 dark:border-zinc-800/80",
         "bg-white/95 dark:bg-zinc-950/95",
         "backdrop-blur-xl shadow-lg"
@@ -105,4 +114,3 @@ export default function BottomTabBar() {
     </nav>
   );
 }
-

@@ -129,91 +129,74 @@ export function ConfirmModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-3 py-6 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
-        aria-hidden="true"
-      />
-
       {/* Modal */}
       <div
         className={cn(
-          "relative w-full max-w-sm sm:max-w-md rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80",
-          "bg-white/95 dark:bg-zinc-900/95 shadow-2xl shadow-black/30",
-          "transform transition-all duration-200 ease-out",
-          open ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-2"
+          "relative w-full max-w-md sm:max-w-lg rounded-2xl sm:rounded-3xl border border-zinc-200 dark:border-zinc-800",
+          "bg-white/95 dark:bg-zinc-900/95 shadow-xl ring-1 ring-black/5",
+          "overflow-hidden"
         )}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
         aria-describedby="modal-description"
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button (top-right) */}
-        <button
-          onClick={onClose}
-          disabled={loading}
-          className={cn(
-            "absolute right-3.5 top-3.5 inline-flex h-8 w-8 items-center justify-center rounded-full",
-            "text-zinc-500 dark:text-zinc-400",
-            "hover:bg-zinc-100 dark:hover:bg-zinc-800",
-            "hover:text-zinc-700 dark:hover:text-zinc-100",
-            "transition-colors duration-150",
-            "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900",
-            "disabled:opacity-50 disabled:cursor-not-allowed"
-          )}
-          aria-label="Đóng"
-        >
-          <X className="w-4 h-4" />
-        </button>
-
-        {/* Header: Icon + Title center */}
-        <div className="flex items-center text-center gap-3 px-6 pt-6 pb-4">
-          <div
-            className={cn(
-              "flex h-12 w-12 items-center justify-center rounded-2xl",
-              iconStyles.bg
-            )}
-          >
-            <IconComponent className={cn("w-6 h-6", iconStyles.color)} />
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-4 sm:px-5 py-3 sm:py-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div
+              className={cn(
+                "h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center flex-shrink-0",
+                iconStyles.bg
+              )}
+            >
+              <IconComponent className={cn("h-5 w-5 sm:h-6 sm:w-6", iconStyles.color)} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3
+                id="modal-title"
+                className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50 leading-tight"
+              >
+                {title}
+              </h3>
+              {message && (
+                <p
+                  id="modal-description"
+                  className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed"
+                >
+                  {message}
+                </p>
+              )}
+            </div>
           </div>
 
-          <h3
-            id="modal-title"
-            className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50"
+          <button
+            onClick={onClose}
+            disabled={loading}
+            className="h-9 w-9 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-300 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            aria-label="Đóng"
           >
-            {title}
-          </h3>
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
+          </button>
         </div>
 
-        {/* Content */}
-        {message && (
-          <div className="px-6 pb-4">
-            <p
-              id="modal-description"
-              className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400"
-            >
-              {message}
-            </p>
-          </div>
-        )}
-
         {/* Footer */}
-        <div className="mt-2 flex items-center justify-end gap-3 px-6 py-4 border-t border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/60 dark:bg-zinc-900/60 rounded-b-2xl">
+        <div className="flex items-center justify-end gap-3 sm:gap-4 px-4 sm:px-5 pb-4 sm:pb-5 pt-3 sm:pt-4">
           <button
             onClick={onClose}
             disabled={loading}
             className={cn(
-              "inline-flex items-center justify-center px-4 py-2.5 rounded-lg",
-              "text-sm font-medium transition-all duration-150",
-              "border border-zinc-300 dark:border-zinc-700",
+              "flex-1 py-3 sm:py-3.5 rounded-xl border border-zinc-300",
               "bg-white dark:bg-zinc-900",
-              "text-zinc-700 dark:text-zinc-200",
+              "text-sm sm:text-base font-semibold text-zinc-700 dark:text-zinc-200",
               "hover:bg-zinc-50 dark:hover:bg-zinc-800",
-              "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+              "dark:border-zinc-700",
+              "disabled:opacity-50 disabled:cursor-not-allowed",
+              "transition-colors"
             )}
           >
             {cancelText}
@@ -223,20 +206,19 @@ export function ConfirmModal({
             onClick={handleConfirm}
             disabled={loading}
             className={cn(
-              "inline-flex items-center justify-center px-5 py-2.5 rounded-lg",
-              "text-sm font-semibold transition-all duration-150",
-              "shadow-sm hover:shadow-md active:scale-[0.98]",
-              "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900",
+              "flex-1 py-3 sm:py-3.5 rounded-xl flex items-center justify-center gap-2",
+              "text-sm sm:text-base font-semibold text-white",
+              "shadow-sm",
               buttonStyles.base,
               buttonStyles.hover,
-              buttonStyles.focus,
-              "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-sm"
+              "disabled:opacity-50 disabled:cursor-not-allowed",
+              "transition-colors"
             )}
           >
             {loading ? (
               <>
                 <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -255,7 +237,8 @@ export function ConfirmModal({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Đang xử lý...
+                <span className="hidden sm:inline">Đang xử lý...</span>
+                <span className="sm:hidden">Đang xử lý</span>
               </>
             ) : (
               confirmText
@@ -319,6 +302,12 @@ export function useConfirmModal() {
 
   return { show, hide, Modal };
 }
+
+
+
+
+
+
 
 
 

@@ -33,6 +33,48 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Ngăn Safari trên iOS tự phóng to input < 16px */
+/* Apply to all inputs, textareas, and selects on mobile */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"],
+input[type="color"],
+textarea,
+select {
+  font-size: 16px !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Also ensure file inputs work properly on Safari */
+input[type="file"] {
+  font-size: 16px !important;
+}
+
+/* Ensure contenteditable elements also have minimum font size */
+[contenteditable="true"] {
+  font-size: 16px !important;
+}
+
+/* Prevent zoom on focus for all form elements on iOS */
+@media screen and (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 @keyframes pulse-slow {
   0%,
   100% {

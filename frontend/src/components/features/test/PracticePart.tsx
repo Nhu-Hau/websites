@@ -322,7 +322,7 @@ export default function PracticePart() {
   return (
     <div className="relative min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-hidden">
       {/* subtle grid background */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.1),_transparent_45%),radial-gradient(circle_at_bottom,_rgba(251,191,36,0.12),_transparent_50%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_#e5e7eb_0,_#fafafa_40%,_#f4f4f5_100%)]" />
 
       <div className="relative mx-auto max-w-6xl xl:max-w-7xl px-4 xs:px-6 py-10 pt-20">
         {/* ===== HEADER ===== */}
@@ -551,7 +551,12 @@ export default function PracticePart() {
 
           {loading ? (
             <motion.div
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-[300px] xs:max-w-[350px] sm:max-w-[600px] md:max-w-[700px] mx-auto lg:max-w-none"
+              className="
+      grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4
+      gap-3 xs:gap-4 sm:gap-5
+      max-w-md xs:max-w-xl sm:max-w-2xl md:max-w-3xl
+      mx-auto lg:max-w-none
+    "
               variants={gridVariants}
               initial="hidden"
               animate="visible"
@@ -591,7 +596,12 @@ export default function PracticePart() {
             </motion.div>
           ) : (
             <motion.div
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-[300px] xs:max-w-[350px] sm:max-w-[600px] md:max-w-[700px] mx-auto lg:max-w-none"
+              className="
+      grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4
+      gap-3 xs:gap-4 sm:gap-5
+      max-w-md xs:max-w-xl sm:max-w-2xl md:max-w-3xl
+      mx-auto lg:max-w-none
+    "
               variants={gridVariants}
               initial="hidden"
               animate="visible"
@@ -607,7 +617,6 @@ export default function PracticePart() {
                     className="h-full"
                     variants={itemVariants}
                     onClickCapture={(e) => {
-                      // Nếu có suggestedLevel khác level đang chọn, show modal gợi ý
                       if (suggestedLevel != null && level !== suggestedLevel) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -616,7 +625,6 @@ export default function PracticePart() {
                       }
                     }}
                     onClick={() => {
-                      // Cho vào trang test cụ thể nếu level trùng gợi ý
                       if (suggestedLevel == null || level === suggestedLevel) {
                         router.push(href);
                       }

@@ -57,6 +57,21 @@ function uid(prefix: string) {
 export function ForumProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<ForumState>({ posts: [], comments: [] });
 
+  // Reset state when user changes (auth:updated or auth:changed event)
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setState({ posts: mockPosts, comments: mockComments });
+    };
+
+    window.addEventListener("auth:updated", handleAuthChange);
+    window.addEventListener("auth:changed", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("auth:updated", handleAuthChange);
+      window.removeEventListener("auth:changed", handleAuthChange);
+    };
+  }, []);
+
   // Load from localStorage (or fallback to mockData on first run)
   useEffect(() => {
     const raw =

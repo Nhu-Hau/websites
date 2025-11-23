@@ -67,6 +67,9 @@ export interface IUser extends Document {
   followingCount?: number;
   bio?: string;
   coverImage?: string;
+  currentToeicSource?: "unknown" | "self_report_official" | null;
+  currentToeicScore?: number | null;
+  currentToeicExamDate?: string | null;
 
   comparePassword(candidate: string): Promise<boolean>;
 }
@@ -179,6 +182,13 @@ const userSchema = new Schema<IUser>(
     followingCount: { type: Number, default: 0 },
     bio: { type: String, trim: true, default: "" },
     coverImage: { type: String, default: null },
+    currentToeicSource: {
+      type: String,
+      enum: ["unknown", "self_report_official"],
+      default: null,
+    },
+    currentToeicScore: { type: Number, default: null },
+    currentToeicExamDate: { type: String, default: null },
   },
   { timestamps: true, versionKey: false }
 );

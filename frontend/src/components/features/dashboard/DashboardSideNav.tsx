@@ -1,11 +1,11 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { TrendingUp, BarChart3, Calendar } from "lucide-react";
+import { TrendingUp, BarChart3, Calendar, Trophy } from "lucide-react";
 import { Suspense } from "react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
-type TabId = "progress" | "results" | "activity";
+type TabId = "progress" | "results" | "activity" | "badges";
 
 interface NavItem {
   id: TabId;
@@ -28,6 +28,11 @@ const navItems: NavItem[] = [
     id: "activity",
     label: "Hoạt động & lịch học",
     icon: Calendar,
+  },
+  {
+    id: "badges",
+    label: "Bộ sưu tập huy hiệu",
+    icon: Trophy,
   },
 ];
 

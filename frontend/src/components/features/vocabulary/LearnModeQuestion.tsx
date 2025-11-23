@@ -3,6 +3,7 @@
 
 import { LearnModeQuestion } from "@/types/vocabulary.types";
 import { Check, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface LearnModeQuestionProps {
   question: LearnModeQuestion;
@@ -25,188 +26,168 @@ export function LearnModeQuestionComponent({
 }: LearnModeQuestionProps) {
   if (question.type === "multiple-choice") {
     return (
-      <div className="w-full max-w-2xl mx-auto">
-        <div className="rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-8 shadow-sm">
-          {/* Question */}
-          <div className="mb-8">
-            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wide">
-              Trắc nghiệm
-            </p>
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
-              {question.question}
-            </h2>
-          </div>
-
-          {/* Options */}
-          <div className="space-y-3 mb-8">
-            {question.options?.map((option, index) => {
-              const isSelected = selectedAnswer === option;
-              const isCorrectOption = option === question.correctAnswer;
-
-              let buttonClass =
-                "w-full text-left px-6 py-4 rounded-lg border-2 transition-all font-semibold ";
-
-              if (showResult) {
-                if (isCorrectOption) {
-                  buttonClass +=
-                    "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300";
-                } else if (isSelected && !isCorrect) {
-                  buttonClass +=
-                    "border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300";
-                } else {
-                  buttonClass +=
-                    "border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400";
-                }
-              } else {
-                if (isSelected) {
-                  buttonClass +=
-                    "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-white";
-                } else {
-                  buttonClass +=
-                    "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 text-zinc-700 dark:text-zinc-300";
-                }
-              }
-
-              return (
-                <button
-                  key={index}
-                  onClick={() => !showResult && onSelectAnswer(option)}
-                  disabled={showResult}
-                  className={buttonClass}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>{option}</span>
-                    {showResult && isCorrectOption && (
-                      <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
-                    )}
-                    {showResult && isSelected && !isCorrect && (
-                      <X className="w-5 h-5 text-red-600 dark:text-red-400" />
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Action button */}
-          {!showResult ? (
-            <button
-              onClick={onSubmit}
-              disabled={!selectedAnswer}
-              className="w-full px-6 py-3 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Nộp câu trả lời
-            </button>
-          ) : (
-            <div>
-              {/* Result message */}
-              <div
-                className={`mb-4 p-4 rounded-lg ${
-                  isCorrect
-                    ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
-                    : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
-                }`}
-              >
-                <p
-                  className={`font-semibold ${
-                    isCorrect
-                      ? "text-green-800 dark:text-green-300"
-                      : "text-red-800 dark:text-red-300"
-                  }`}
-                >
-                  {isCorrect ? "✓ Đúng!" : "✗ Sai"}
-                </p>
-                {!isCorrect && (
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                    Đáp án đúng là: <strong>{question.correctAnswer}</strong>
-                  </p>
-                )}
-              </div>
-
+      <div className="rounded-[28px] border border-zinc-200/80 bg-white/95 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/80">
+        <header className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-400">
+            Trắc nghiệm
+          </p>
+          <h3 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+            {question.question}
+          </h3>
+        </header>
+        <div className="space-y-3">
+          {question.options?.map((option) => {
+            const selected = selectedAnswer === option;
+            const correct = option === question.correctAnswer;
+            const tone = getOptionTone({ showResult, selected, correct, isCorrect });
+            return (
               <button
-                onClick={onNext}
-                className="w-full px-6 py-3 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold hover:shadow-md transition-all"
+                key={option}
+                disabled={showResult}
+                onClick={() => onSelectAnswer(option)}
+                className={cn(
+                  "w-full rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition",
+                  tone.base,
+                  tone.hover,
+                  showResult && tone.result
+                )}
               >
-                Câu hỏi tiếp theo
+                <div className="flex items-center justify-between">
+                  <span>{option}</span>
+                  {showResult && correct && <Check className="h-4 w-4 text-emerald-500" />}
+                  {showResult && selected && !isCorrect && (
+                    <X className="h-4 w-4 text-rose-500" />
+                  )}
+                </div>
               </button>
-            </div>
-          )}
+            );
+          })}
         </div>
+
+        {!showResult ? (
+          <button
+            onClick={onSubmit}
+            disabled={!selectedAnswer}
+            className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-zinc-900"
+          >
+            Nộp câu trả lời
+          </button>
+        ) : (
+          <ResultPanel
+            isCorrect={isCorrect}
+            correctAnswer={question.correctAnswer}
+            onNext={onNext}
+          />
+        )}
       </div>
     );
   }
 
-  // Fill in the blank
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <div className="rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-8 shadow-sm">
-        {/* Question */}
-        <div className="mb-8">
-          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wide">
-            Điền vào chỗ trống
-          </p>
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
-            {question.question}
-          </h2>
-        </div>
+    <div className="rounded-[28px] border border-zinc-200/80 bg-white/95 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/80">
+      <header className="mb-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-400">
+          Điền từ
+        </p>
+        <h3 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+          {question.question}
+        </h3>
+      </header>
+      <input
+        type="text"
+        value={selectedAnswer ?? ""}
+        onChange={(event) => !showResult && onSelectAnswer(event.target.value)}
+        disabled={showResult}
+        placeholder="Nhập đáp án..."
+        className="w-full rounded-2xl border border-zinc-200/80 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+      />
+      {!showResult ? (
+        <button
+          onClick={onSubmit}
+          disabled={!selectedAnswer?.trim()}
+          className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-zinc-900"
+        >
+          Nộp câu trả lời
+        </button>
+      ) : (
+        <ResultPanel
+          isCorrect={isCorrect}
+          correctAnswer={question.correctAnswer}
+          onNext={onNext}
+        />
+      )}
+    </div>
+  );
+}
 
-        {/* Input */}
-        <div className="mb-8">
-          <input
-            type="text"
-            value={selectedAnswer || ""}
-            onChange={(e) => !showResult && onSelectAnswer(e.target.value)}
-            disabled={showResult}
-            placeholder="Nhập câu trả lời của bạn..."
-            className="w-full px-6 py-4 rounded-lg border-2 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 outline-none disabled:opacity-50 transition-all"
-          />
-        </div>
+function getOptionTone({
+  showResult,
+  selected,
+  correct,
+  isCorrect,
+}: {
+  showResult: boolean;
+  selected: boolean;
+  correct: boolean;
+  isCorrect: boolean;
+}) {
+  if (!showResult) {
+    return {
+      base: selected
+        ? "border-zinc-900 bg-zinc-900/5 text-zinc-900 dark:border-white dark:text-white"
+        : "border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200",
+      hover: "hover:-translate-y-0.5 hover:border-sky-200",
+      result: "",
+    };
+  }
+  if (correct) {
+    return {
+      base: "border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-300",
+      hover: "",
+      result: "",
+    };
+  }
+  if (selected && !isCorrect) {
+    return {
+      base: "border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-300",
+      hover: "",
+      result: "",
+    };
+  }
+  return {
+    base: "border-zinc-200 text-zinc-400 dark:border-zinc-700 dark:text-zinc-500",
+    hover: "",
+    result: "",
+  };
+}
 
-        {/* Action button */}
-        {!showResult ? (
-          <button
-            onClick={onSubmit}
-            disabled={!selectedAnswer || selectedAnswer.trim() === ""}
-            className="w-full px-6 py-3 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Submit Answer
-          </button>
-        ) : (
-          <div>
-            {/* Result message */}
-            <div
-              className={`mb-4 p-4 rounded-lg ${
-                isCorrect
-                  ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
-                  : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
-              }`}
-            >
-              <p
-                className={`font-semibold ${
-                  isCorrect
-                    ? "text-green-800 dark:text-green-300"
-                    : "text-red-800 dark:text-red-300"
-                }`}
-              >
-                {isCorrect ? "✓ Correct!" : "✗ Incorrect"}
-              </p>
-              {!isCorrect && (
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                  The correct answer is:{" "}
-                  <strong>{question.correctAnswer}</strong>
-                </p>
-              )}
-            </div>
-
-            <button
-              onClick={onNext}
-              className="w-full px-6 py-3 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold hover:shadow-md transition-all"
-            >
-              Next Question
-            </button>
-          </div>
+function ResultPanel({
+  isCorrect,
+  correctAnswer,
+  onNext,
+}: {
+  isCorrect: boolean;
+  correctAnswer: string;
+  onNext: () => void;
+}) {
+  return (
+    <div className="mt-5 space-y-4">
+      <div
+        className={cn(
+          "rounded-2xl border px-4 py-3 text-sm font-semibold",
+          isCorrect
+            ? "border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-300"
+            : "border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-300"
         )}
+      >
+        {isCorrect ? "Chính xác! 🎯" : `Đáp án đúng: ${correctAnswer}`}
       </div>
+      <button
+        onClick={onNext}
+        className="inline-flex w-full items-center justify-center rounded-2xl border border-zinc-200/80 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:-translate-y-0.5 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+      >
+        Câu tiếp theo
+      </button>
     </div>
   );
 }

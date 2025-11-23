@@ -1,11 +1,32 @@
-import { redirect } from "next/navigation";
+//frontend/src/app/[locale]/(marketing)/home/page.tsx
+import React from "react";
+import {
+  Hero,
+  WorkflowSection,
+  Testimonials,
+  Pricing,
+  FAQSection,
+  FinalCTA,
+} from "@/components/features/marketing";
+import { GoogleAuthEffect } from "@/components/features/auth/GoogleAuthEffect";
 
-export default async function LocalePage({
-  params,
+export default async function HomePage({
+  searchParams,
 }: {
-  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { locale } = await params;
-  redirect(`/${locale}/home`);
-}
+  const sp = await searchParams; 
+  const auth = typeof sp.auth === "string" ? sp.auth : undefined;
 
+  return (
+    <main className="min-h-screen bg-white dark:bg-zinc-950 antialiased">
+      <GoogleAuthEffect auth={auth} />
+      <Hero />
+      <WorkflowSection />
+      <Testimonials />
+      <Pricing />
+      <FAQSection />
+      <FinalCTA />
+    </main>
+  );
+}

@@ -48,13 +48,59 @@ export default function SideNav() {
   ];
 
   const isActive = (href: string) => {
-    if (href === `${basePrefix}/community`) {
-      return (
-        pathname === `${basePrefix}/community` ||
-        pathname === `${basePrefix}/community/`
-      );
+    if (!pathname) return false;
+    
+    // Normalize pathname and href for comparison (remove trailing slashes)
+    const normalizedPathname = pathname.replace(/\/$/, "");
+    const normalizedHref = href.replace(/\/$/, "");
+    const normalizedBasePrefix = basePrefix.replace(/\/$/, "");
+    
+    // Exact match for community home page - only match /community exactly, not sub-routes
+    if (normalizedHref === `${normalizedBasePrefix}/community`) {
+      return normalizedPathname === `${normalizedBasePrefix}/community` || 
+             normalizedPathname === "/community";
     }
-    return pathname.startsWith(href);
+    
+    // For profile routes, check if pathname starts with the profile href
+    if (normalizedHref.includes("/community/profile")) {
+      return normalizedPathname.startsWith(normalizedHref) ||
+             (normalizedPathname.includes("/community/profile") && 
+              normalizedPathname.split("/community/profile")[1]?.split("/")[1] === user?.id);
+    }
+    
+    // For account/settings routes - match any account route
+    if (normalizedHref.includes("/account")) {
+      return normalizedPathname.includes("/account");
+    }
+    
+    // For study/create routes
+    if (normalizedHref.includes("/study/create")) {
+      return normalizedPathname.includes("/study/create");
+    }
+    
+    // For other routes, check exact match first
+    if (normalizedPathname === normalizedHref) {
+      return true;
+    }
+    
+    // Check if pathname starts with href followed by / (to avoid partial matches)
+    if (normalizedPathname.startsWith(normalizedHref + "/")) {
+      return true;
+    }
+    
+    // Also check without basePrefix in case of mismatch
+    const pathWithoutPrefix = normalizedPathname.replace(normalizedBasePrefix, "");
+    const hrefWithoutPrefix = normalizedHref.replace(normalizedBasePrefix, "");
+    
+    if (pathWithoutPrefix === hrefWithoutPrefix) {
+      return true;
+    }
+    
+    if (pathWithoutPrefix.startsWith(hrefWithoutPrefix + "/")) {
+      return true;
+    }
+    
+    return false;
   };
 
   return (
@@ -126,7 +172,7 @@ export default function SideNav() {
                       "relative flex h-9 w-9 items-center justify-center rounded-xl border text-[13px] font-semibold transition-all",
                       active
                         ? "bg-sky-500 border-sky-300 text-white shadow-sm dark:border-sky-600 dark:bg-sky-500"
-                        : "bg-white border-zinc-200 text-zinc-500 shadow-sm group-hover:border-sky-300 group-hover:text-sky-600 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:group-hover:border-sky-600 dark:group-hover:text-sky-300"
+                        : "bg-white border-zinc-200 text-slate-600 shadow-sm group-hover:border-sky-300 group-hover:text-sky-600 dark:bg-zinc-900 dark:border-zinc-700 dark:text-slate-200 dark:group-hover:border-sky-600 dark:group-hover:text-sky-300"
                     )}
                   >
                     <Icon className="h-4 w-4" />

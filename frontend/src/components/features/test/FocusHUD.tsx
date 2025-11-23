@@ -58,7 +58,7 @@ export default function FocusHUD({
     <>
       {/* Mobile HUD - Chưa bắt đầu */}
       {showMobile && !started && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-xl lg:hidden">
+        <div className="fixed bottom-[6rem] left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-xl lg:hidden">
           <div className="flex items-center justify-between gap-4 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-300 dark:border-zinc-700 px-5 py-4 shadow-2xl">
             <div className="flex items-center gap-4 text-sm font-medium">
               <span className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
@@ -83,7 +83,7 @@ export default function FocusHUD({
 
       {/* Mobile HUD - Đang làm */}
       {showMobile && started && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-xs xs:max-w-md sm:max-w-xl  md:max-w-2xl lg:hidden">
+        <div className="fixed bottom-[6rem] left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-xs xs:max-w-md sm:max-w-xl  md:max-w-2xl lg:hidden">
           <div
             className="flex items-center justify-between
               rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl

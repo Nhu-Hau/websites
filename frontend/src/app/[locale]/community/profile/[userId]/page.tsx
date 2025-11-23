@@ -8,7 +8,11 @@ export default async function ProfilePage({
 }) {
   const { userId } = await params;
   const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
+  const authHeaders: Record<string, string> = cookieHeader ? { Cookie: cookieHeader } : {};
 
   // Fetch user profile data
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -18,11 +22,11 @@ export default async function ProfilePage({
   try {
     const [profileRes, postsRes] = await Promise.all([
       fetch(`${API_BASE}/api/community/users/${userId}/profile`, {
-        headers: token ? { Cookie: `token=${token}` } : {},
+        headers: authHeaders,
         cache: "no-store",
       }),
       fetch(`${API_BASE}/api/community/users/${userId}/posts?page=1&limit=20`, {
-        headers: token ? { Cookie: `token=${token}` } : {},
+        headers: authHeaders,
         cache: "no-store",
       }),
     ]);

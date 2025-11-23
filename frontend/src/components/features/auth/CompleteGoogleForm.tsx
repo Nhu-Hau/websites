@@ -54,7 +54,7 @@ export default function CompleteGoogleForm() {
       if (res.status === 201) {
         if (json.user) login(json.user);
         toast.success(json.message || "Đăng ký bằng Google thành công!");
-        router.replace(`${basePrefix}/home`);
+        router.replace(basePrefix);
         return;
       }
 

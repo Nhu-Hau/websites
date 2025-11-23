@@ -4,6 +4,7 @@ import React from "react";
 import PostCard from "./PostCard";
 import type { CommunityPost } from "@/types/community.types";
 import { useAuth } from "@/context/AuthContext";
+import { Flame } from "lucide-react"; // ⭐ icon cho xu hướng
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -40,23 +41,30 @@ export default function TrendingClient({ initialPosts }: TrendingClientProps) {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="mb-2">
-        <h1 className="mb-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Xu hướng
         </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Những bài viết được tương tác nhiều nhất trong 24 giờ qua.
         </p>
       </div>
 
+      {/* Loading state – đồng bộ với các màn community khác */}
       {loading && (
-        <div className="flex items-center justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+        <div className="flex items-center justify-center py-12 sm:py-16">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Đang tải bài viết xu hướng...
+            </p>
+          </div>
         </div>
       )}
 
+      {/* List */}
       {!loading && posts.length > 0 ? (
         <div className="space-y-4">
           {posts.map((post) => (
@@ -69,11 +77,23 @@ export default function TrendingClient({ initialPosts }: TrendingClientProps) {
             />
           ))}
         </div>
-      ) : !loading ? (
-        <div className="rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 py-12 text-center text-sm text-zinc-600 shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95 dark:text-zinc-400">
-          Chưa có bài viết nào trong xu hướng.
-        </div>
       ) : null}
+
+      {/* Empty state – card giống “Chưa có nhóm phù hợp” */}
+      {!loading && posts.length === 0 && (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-4 sm:px-6 py-12 sm:py-16 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+          <div className="mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
+            <Flame className="h-7 w-7 sm:h-8 sm:w-8" />
+          </div>
+          <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+            Chưa có bài viết nào trong xu hướng
+          </h3>
+          <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
+            Khi các bài viết nhận được nhiều lượt thích và bình luận hơn, chúng
+            sẽ xuất hiện tại đây.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

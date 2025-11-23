@@ -6,11 +6,27 @@ import { User } from "../../shared/models/User";
 import jwt from "jsonwebtoken";
 
 /**
+ * Extract token from request - supports both cookie and Bearer token
+ */
+function extractToken(req: Request): string | null {
+  // 1. Try Bearer token from Authorization header (for mobile apps)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    return authHeader.substring(7);
+  }
+  
+  // 2. Fallback to cookie (for web)
+  const token = req.cookies?.[accessCookieName];
+  return token || null;
+}
+
+/**
  * Require authentication - returns 401 if no valid token
+ * Supports both cookie-based (web) and Bearer token (mobile) authentication
  */
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   try {
-    const token = req.cookies?.[accessCookieName];
+    const token = extractToken(req);
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
     const payload = verifyAccessToken(token); // trả { id, role }
@@ -23,9 +39,10 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
 /**
  * Optional authentication - attaches auth if token is valid, otherwise continues as guest
+ * Supports both cookie-based (web) and Bearer token (mobile) authentication
  */
 export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
-  const token = req.cookies?.[accessCookieName];
+  const token = extractToken(req);
   if (!token) return next();
 
   try {
@@ -39,6 +56,7 @@ export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
 
 /**
  * Attach auth if present - same as optionalAuth but with different naming
+ * Supports both cookie-based (web) and Bearer token (mobile) authentication
  */
 export function attachAuthIfPresent(
   req: Request,
@@ -46,7 +64,7 @@ export function attachAuthIfPresent(
   next: NextFunction
 ) {
   try {
-    const token = req.cookies?.[accessCookieName];
+    const token = extractToken(req);
     if (token) {
       const payload = verifyAccessToken(token);
       (req as any).auth = { userId: payload.id, role: payload.role };
@@ -75,12 +93,21 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
 }
 
 /**
- * Require admin authentication via admin token cookie
+ * Require admin authentication via admin token cookie or Bearer token
+ * Supports both cookie-based (web) and Bearer token (mobile) authentication
  */
 export function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
   try {
-    // Check for admin token in cookies
-    const adminToken = req.cookies.adminToken;
+    // Try Bearer token first (for mobile)
+    const authHeader = req.headers.authorization;
+    let adminToken: string | undefined;
+    
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      adminToken = authHeader.substring(7);
+    } else {
+      // Fallback to cookie (for web)
+      adminToken = req.cookies.adminToken;
+    }
     
     if (!adminToken) {
       return res.status(401).json({ message: "Admin authentication required" });
@@ -95,7 +122,7 @@ export function requireAdminAuth(req: Request, res: Response, next: NextFunction
 
     // Add admin info to request
     req.auth = {
-      userId: decoded.userId,
+      userId: decoded.userId || decoded.id,
       role: decoded.role,
     };
 

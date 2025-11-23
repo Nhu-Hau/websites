@@ -11,22 +11,56 @@ const API_BASE =
 
 const MAX_FILES = 12;
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-const MAX_VIDEO_DURATION = 30; // 30 seconds (hiện tại backend tự xử lý)
+const MAX_VIDEO_DURATION = 30; // 30 seconds
 const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
   "image/jpg",
   "image/png",
   "image/webp",
   "image/gif",
+  // Safari iOS sometimes returns these
+  "image/heic",
+  "image/heif",
 ];
 const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+
+// Safari iOS fix: Also accept file extensions
+const ACCEPTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
+const ACCEPTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
+
+// Helper function to check if file is valid (handles Safari iOS mime type issues)
+function isValidFileType(file: File): { isImage: boolean; isVideo: boolean } {
+  const fileName = file.name.toLowerCase();
+  const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+  
+  // Check by extension first (more reliable on Safari iOS)
+  const isImageByExt = ACCEPTED_IMAGE_EXTENSIONS.includes(fileExtension);
+  const isVideoByExt = ACCEPTED_VIDEO_EXTENSIONS.includes(fileExtension);
+  
+  // Normalize MIME type for Safari iOS (handles image/jpeg vs image/jpg)
+  const normalizedMime = file.type.toLowerCase().trim();
+  const isImageByMime = ACCEPTED_IMAGE_TYPES.some(mime => 
+    normalizedMime === mime.toLowerCase() || 
+    normalizedMime.startsWith("image/")
+  );
+  const isVideoByMime = ACCEPTED_VIDEO_TYPES.some(mime => 
+    normalizedMime === mime.toLowerCase() || 
+    normalizedMime.startsWith("video/")
+  );
+  
+  // Accept if either extension or mime type matches
+  return {
+    isImage: isImageByExt || isImageByMime,
+    isVideo: isVideoByExt || isVideoByMime,
+  };
+}
 
 type NewPostFormProps = {
   onSuccess?: () => void;
   initialContent?: string;
   initialAttachments?: Attachment[];
-  postId?: string; // For edit mode
-  groupId?: string; // For posting in a group
+  postId?: string;
+  groupId?: string;
 };
 
 type PreviewItem = {
@@ -83,13 +117,26 @@ export default function NewPostForm({
     const newPreviews: PreviewItem[] = [];
 
     for (const file of fileArray) {
-      const isImage = ACCEPTED_IMAGE_TYPES.includes(file.type);
-      const isVideo = ACCEPTED_VIDEO_TYPES.includes(file.type);
+      // Safari iOS fix: Log file info for debugging
+      console.log("[handleFileSelect] File:", {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: file.lastModified,
+      });
+
+      const { isImage, isVideo } = isValidFileType(file);
 
       if (!isImage && !isVideo) {
+        console.warn("[handleFileSelect] Invalid file type:", file.name, file.type);
         toast.error(
           `${file.name} không phải là tệp hình ảnh hoặc video được hỗ trợ.`
         );
+        continue;
+      }
+
+      if (file.size === 0) {
+        toast.error(`${file.name} là tệp rỗng.`);
         continue;
       }
 
@@ -99,7 +146,14 @@ export default function NewPostForm({
       }
 
       const type = isVideo ? "video" : "image";
-      const preview = type === "image" ? URL.createObjectURL(file) : "";
+      let preview = "";
+      try {
+        preview = type === "image" ? URL.createObjectURL(file) : "";
+      } catch (error) {
+        console.error("[handleFileSelect] Error creating preview:", error);
+        toast.error(`Không thể tạo preview cho ${file.name}`);
+        continue;
+      }
 
       newPreviews.push({
         file,
@@ -128,17 +182,29 @@ export default function NewPostForm({
     index: number
   ): Promise<Attachment | null> => {
     const formData = new FormData();
-    formData.append("file", file);
+    // Safari iOS fix: Ensure file is properly appended
+    // Some Safari versions need the filename explicitly
+    formData.append("file", file, file.name);
 
     try {
       const res = await fetch(`${API_BASE}/api/community/upload`, {
         method: "POST",
         credentials: "include",
+        // Safari iOS fix: Don't set Content-Type header, let browser set it with boundary
         body: formData,
       });
 
       if (!res.ok) {
-        throw new Error("Upload failed");
+        const errorText = await res.text();
+        let errorMessage = "Upload failed";
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        console.error("[uploadFile] Upload failed:", res.status, errorMessage);
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();
@@ -152,8 +218,9 @@ export default function NewPostForm({
         thumbnail: data.thumbnail,
       };
     } catch (error) {
-      console.error("[uploadFile] ERROR", error);
-      toast.error(`Không thể tải lên ${file.name}`);
+      console.error("[uploadFile] ERROR", error, "File:", file.name, "Type:", file.type, "Size:", file.size);
+      const errorMessage = error instanceof Error ? error.message : "Lỗi không xác định";
+      toast.error(`Không thể tải lên ${file.name}: ${errorMessage}`);
       return null;
     }
   };
@@ -283,14 +350,11 @@ export default function NewPostForm({
             el.style.height = Math.min(el.scrollHeight, 300) + "px";
           }}
           onKeyDown={handleTextareaKeyDown}
-          placeholder="Bạn đang nghĩ gì? Chia sẻ mẹo học TOEIC, câu hỏi hoặc tài nguyên..."
-          className="w-full min-h-[120px] max-h-[300px] resize-none rounded-2xl border border-zinc-200/80 bg-white/95 px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-xs outline-none transition-all duration-150 focus:border-sky-300 focus:ring-2 focus:ring-sky-500 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-100 dark:placeholder-zinc-400"
+          placeholder="Chia sẻ mẹo học TOEIC, câu hỏi hoặc tài nguyên..."
+          className="w-full min-h-[220px] max-h-[500px] resize-none rounded-2xl border border-zinc-200/80 bg-white/95 px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-xs outline-none transition-all duration-150 focus:border-sky-300 focus:ring-2 focus:ring-sky-500 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-100 dark:placeholder-zinc-400"
           rows={5}
         />
-        <div className="mt-2 flex items-center justify-between">
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Nhấn <span className="font-medium">Ctrl + Enter</span> để đăng
-          </p>
+        <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <p
             className={`text-xs font-medium ${
               content.length > maxChars * 0.9
@@ -342,23 +406,50 @@ export default function NewPostForm({
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between gap-4 border-t border-zinc-100/80 pt-4 dark:border-zinc-800/80">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 border-t border-zinc-100/80 pt-4 dark:border-zinc-800/80">
+        <div className="relative flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <input
             type="file"
             multiple
-            accept={[...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES].join(",")}
-            hidden
+            accept={[
+              ...ACCEPTED_IMAGE_TYPES,
+              ...ACCEPTED_VIDEO_TYPES,
+              ...ACCEPTED_IMAGE_EXTENSIONS,
+              ...ACCEPTED_VIDEO_EXTENSIONS,
+            ].join(",")}
             ref={fileInputRef}
             onChange={(e) => {
               handleFileSelect(e.target.files);
-              e.target.value = "";
+              // Reset input to allow selecting same file again
+              if (e.target) {
+                e.target.value = "";
+              }
+            }}
+            // Safari iOS fix: use opacity and position instead of display:none
+            // This ensures the input is accessible to Safari's file picker
+            // Note: pointerEvents must be "auto" or removed for Safari iOS to work
+            style={{ 
+              position: "absolute",
+              width: "1px",
+              height: "1px",
+              opacity: 0,
+              overflow: "hidden"
             }}
           />
           <button
-            onClick={() => fileInputRef.current?.click()}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // Safari fix: ensure file input is properly triggered
+              if (fileInputRef.current) {
+                // Reset the input to allow selecting same file again on Safari
+                fileInputRef.current.value = "";
+                fileInputRef.current.click();
+              }
+            }}
             disabled={uploading || previews.length >= MAX_FILES}
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-200/80 bg-white/95 px-4 py-2 text-sm font-medium text-zinc-700 shadow-xs transition-colors hover:bg-zinc-50 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-300 dark:hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-lg border border-zinc-200/80 bg-white/95 px-4 py-2 text-sm font-medium text-zinc-700 shadow-xs transition-colors hover:bg-zinc-50 dark:border-zinc-700/80 dark:bg-zinc-900/95 dark:text-zinc-300 dark:hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Upload className="h-4 w-4 text-sky-600 dark:text-sky-400" />
             <span>Thêm ảnh/video</span>
@@ -375,7 +466,7 @@ export default function NewPostForm({
           disabled={
             uploading || submitting || (!content.trim() && previews.length === 0)
           }
-          className="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-6 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-sky-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
+          className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-lg bg-sky-600 px-6 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-sky-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
         >
           {submitting || uploading ? (
             <>

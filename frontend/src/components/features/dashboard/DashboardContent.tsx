@@ -2,19 +2,22 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense, ReactNode } from "react";
+import BaselineModalWrapper from "./BaselineModalWrapper";
 
-type TabId = "progress" | "results" | "activity";
+type TabId = "progress" | "results" | "activity" | "badges";
 
 interface DashboardContentProps {
   progressTab: ReactNode;
   resultsTab: ReactNode;
   activityTab: ReactNode;
+  badgesTab: ReactNode;
 }
 
 function DashboardContentInner({
   progressTab,
   resultsTab,
   activityTab,
+  badgesTab,
 }: DashboardContentProps) {
   const searchParams = useSearchParams();
   const activeTab = (searchParams.get("tab") as TabId) || "progress";
@@ -24,6 +27,7 @@ function DashboardContentInner({
       {activeTab === "progress" && progressTab}
       {activeTab === "results" && resultsTab}
       {activeTab === "activity" && activityTab}
+      {activeTab === "badges" && badgesTab}
     </div>
   );
 }
@@ -32,15 +36,20 @@ export default function DashboardContent({
   progressTab,
   resultsTab,
   activityTab,
+  badgesTab,
 }: DashboardContentProps) {
   return (
-    <Suspense fallback={<DashboardContentSkeleton />}>
-      <DashboardContentInner
-        resultsTab={resultsTab}
-        progressTab={progressTab}
-        activityTab={activityTab}
-      />
-    </Suspense>
+    <>
+      <BaselineModalWrapper />
+      <Suspense fallback={<DashboardContentSkeleton />}>
+        <DashboardContentInner
+          resultsTab={resultsTab}
+          progressTab={progressTab}
+          activityTab={activityTab}
+          badgesTab={badgesTab}
+        />
+      </Suspense>
+    </>
   );
 }
 
@@ -61,4 +70,3 @@ function DashboardContentSkeleton() {
     </div>
   );
 }
-

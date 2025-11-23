@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import * as XLSX from "xlsx";
+
 import { uploadBufferToS3, BUCKET, extractKeyFromUrl, safeDeleteS3 } from "../../shared/services/storage.service";
 
 const PARTS_COLL = process.env.PARTS_COLL || "parts";
@@ -148,11 +150,11 @@ export async function createTest(req: Request, res: Response) {
       test,
       stimulusId: item.stimulusId || null,
       stem: item.stem || null,
-      choices: item.choices 
+      choices: item.choices
         ? item.choices.map((choice: any) => ({
-            id: choice.id,
-            text: choice.text && choice.text.trim() ? choice.text : null,
-          }))
+          id: choice.id,
+          text: choice.text && choice.text.trim() ? choice.text : null,
+        }))
         : [{ id: "A" }, { id: "B" }, { id: "C" }, { id: "D" }],
       answer: item.answer,
       explain: item.explain || null,
@@ -184,7 +186,7 @@ export async function createTest(req: Request, res: Response) {
       stimuliCount = stimuliToInsert.length;
     }
 
-    return res.status(201).json({ 
+    return res.status(201).json({
       message: "Đã tạo test thành công",
       count: itemsToInsert.length,
       stimuliCount: stimuliCount,
@@ -223,13 +225,27 @@ export async function createOrUpdateItem(req: Request, res: Response) {
       options: item.options || null,
     };
 
-    await itemsCol.findOneAndUpdate(
-      { id: item.id },
-      { $set: itemData },
-      { upsert: true }
-    );
+    if (item._id) {
+      if (!mongoose.Types.ObjectId.isValid(item._id)) {
+        return res.status(400).json({ message: "ID không hợp lệ" });
+      }
 
-    return res.json({ item: itemData });
+      const updated = await itemsCol.findOneAndUpdate(
+        { _id: new mongoose.Types.ObjectId(item._id) },
+        { $set: itemData },
+        { returnDocument: "after" }
+      );
+
+      const updatedDoc = updated?.value ?? updated;
+      if (!updatedDoc) {
+        return res.status(404).json({ message: "Không tìm thấy item để cập nhật" });
+      }
+
+      return res.json({ item: updatedDoc });
+    }
+
+    const insertResult = await itemsCol.insertOne(itemData);
+    return res.status(201).json({ item: { ...itemData, _id: insertResult.insertedId } });
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ message: e.message || "Lỗi máy chủ" });
@@ -240,9 +256,13 @@ export async function createOrUpdateItem(req: Request, res: Response) {
 export async function updatePart(req: Request, res: Response) {
   try {
     const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID không hợp lệ" });
+    }
     const update: any = {};
-    
-    const allowedFields = ['part', 'level', 'test', 'order', 'answer', 'tags', 'question', 'options', 'stimulusId', 'stem', 'choices'];
+
+    const allowedFields = ['part', 'level', 'test', 'order', 'answer', 'tags', 'question', 'options', 'stimulusId', 'stem', 'choices', 'explain'];
+
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
         update[field] = req.body[field];
@@ -253,16 +273,17 @@ export async function updatePart(req: Request, res: Response) {
     const itemsCol = db.collection(PARTS_COLL);
 
     const result = await itemsCol.findOneAndUpdate(
-      { id },
+      { _id: new mongoose.Types.ObjectId(id) },
       { $set: update },
       { returnDocument: "after" }
     );
 
-    if (!result) {
+    const updatedDoc = result?.value ?? result;
+    if (!updatedDoc) {
       return res.status(404).json({ message: "Không tìm thấy item" });
     }
 
-    return res.json({ item: result });
+    return res.json({ item: updatedDoc });
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ message: e.message || "Lỗi máy chủ" });
@@ -273,11 +294,14 @@ export async function updatePart(req: Request, res: Response) {
 export async function deletePart(req: Request, res: Response) {
   try {
     const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID không hợp lệ" });
+    }
 
     const db = mongoose.connection;
     const itemsCol = db.collection(PARTS_COLL);
 
-    const result = await itemsCol.findOneAndDelete({ id });
+    const result = await itemsCol.findOneAndDelete({ _id: new mongoose.Types.ObjectId(id) });
 
     if (!result) {
       return res.status(404).json({ message: "Không tìm thấy item" });
@@ -293,24 +317,24 @@ export async function deletePart(req: Request, res: Response) {
 /** Helper function to delete all S3 files from stimulus media */
 async function deleteStimulusMediaFromS3(media: any) {
   console.log('[deleteStimulusMediaFromS3] media:', JSON.stringify(media, null, 2));
-  
+
   if (!media || typeof media !== 'object') {
     console.log('[deleteStimulusMediaFromS3] media is not an object or is null');
     return;
   }
-  
+
   // media có thể chứa: image, audio (string hoặc string[])
   const mediaFields = ['image', 'audio'];
-  
+
   for (const field of mediaFields) {
     const value = media[field];
     if (!value) {
       console.log(`[deleteStimulusMediaFromS3] No value for field: ${field}`);
       continue;
     }
-    
+
     console.log(`[deleteStimulusMediaFromS3] Processing field: ${field}, value:`, value);
-    
+
     // Nếu là array
     if (Array.isArray(value)) {
       for (const url of value) {
@@ -325,7 +349,7 @@ async function deleteStimulusMediaFromS3(media: any) {
           }
         }
       }
-    } 
+    }
     // Nếu là string
     else if (typeof value === 'string') {
       const key = extractKeyFromUrl(BUCKET, value);
@@ -362,7 +386,7 @@ export async function deleteTest(req: Request, res: Response) {
     const stimuliToDelete = await stimCol
       .find({ part: partStr, level: levelNum, test: testNum })
       .toArray();
-    
+
     // Delete S3 files for all stimuli
     for (const stimulus of stimuliToDelete) {
       if (stimulus.media) {
@@ -372,13 +396,13 @@ export async function deleteTest(req: Request, res: Response) {
 
     // Delete all items of the test
     const result = await itemsCol.deleteMany({ part: partStr, level: levelNum, test: testNum });
-    
+
     // Also delete related stimuli
     await stimCol.deleteMany({ part: partStr, level: levelNum, test: testNum });
 
-    return res.json({ 
+    return res.json({
       message: "Đã xóa test thành công",
-      deletedCount: result.deletedCount 
+      deletedCount: result.deletedCount
     });
   } catch (e: any) {
     console.error(e);
@@ -390,7 +414,7 @@ export async function deleteTest(req: Request, res: Response) {
 export async function createStimulus(req: Request, res: Response) {
   try {
     const { id, part, level, test, media } = req.body;
-    
+
     if (!id || !part || level === undefined || test === undefined) {
       return res.status(400).json({ message: "Thiếu trường bắt buộc: id, part, level, test" });
     }
@@ -430,7 +454,7 @@ export async function updateStimulus(req: Request, res: Response) {
   try {
     const { id } = req.params;
     const { media } = req.body;
-    
+
     if (!media || typeof media !== 'object') {
       return res.status(400).json({ message: "Thiếu trường media" });
     }
@@ -440,7 +464,7 @@ export async function updateStimulus(req: Request, res: Response) {
 
     // Get existing stimulus to check for old media
     const existingStimulus = await stimCol.findOne({ id });
-    
+
     if (!existingStimulus) {
       return res.status(404).json({ message: "Không tìm thấy stimulus" });
     }
@@ -449,16 +473,16 @@ export async function updateStimulus(req: Request, res: Response) {
     if (existingStimulus.media) {
       const oldMedia = existingStimulus.media;
       const mediaFields = ['image', 'audio'];
-      
+
       for (const field of mediaFields) {
         const oldValue = oldMedia[field];
         const newValue = media[field];
-        
+
         // Delete old file if it exists and is different from new value
         // Also delete if old value exists but new value is null/empty
         if (oldValue) {
           const shouldDelete = !newValue || (newValue && oldValue !== newValue);
-          
+
           if (shouldDelete) {
             console.log(`[updateStimulus] Deleting old ${field}: ${oldValue}`);
             if (Array.isArray(oldValue)) {
@@ -535,7 +559,7 @@ export async function uploadStimulusMedia(req: Request, res: Response) {
     // Validate file type
     const isImage = f.mimetype.startsWith("image/");
     const isAudio = f.mimetype.startsWith("audio/");
-    
+
     if (!isImage && !isAudio) {
       return res.status(400).json({ message: "Chỉ chấp nhận file ảnh (image/*) hoặc audio (audio/*)" });
     }
@@ -548,8 +572,8 @@ export async function uploadStimulusMedia(req: Request, res: Response) {
       folder: "Upload",
     });
 
-    return res.json({ 
-      url, 
+    return res.json({
+      url,
       key,  // For potential future deletion
       type: isImage ? "image" : "audio",
       name: f.originalname,
@@ -561,6 +585,297 @@ export async function uploadStimulusMedia(req: Request, res: Response) {
   }
 }
 
-export const listParts = async (req: Request, res: Response) => {};
-export const getPart = async (req: Request, res: Response) => {};
-export const createPart = async (req: Request, res: Response) => {};
+export const listParts = async (req: Request, res: Response) => { };
+export const getPart = async (req: Request, res: Response) => { };
+export const createPart = async (req: Request, res: Response) => { };
+
+// POST /api/admin/parts/import-excel - Import test from Excel
+export async function importExcel(req: Request, res: Response) {
+  try {
+    const f = (req as any).file;
+    if (!f) {
+      return res.status(400).json({ message: "Thiếu file" });
+    }
+
+    const isPreview = req.query.preview === 'true';
+    const workbook = XLSX.read(f.buffer, { type: 'buffer' });
+
+    // 1. Parse Items
+    const itemsSheetName = workbook.SheetNames.find(n => n.toLowerCase() === 'items' || n.toLowerCase() === 'questions');
+    if (!itemsSheetName) {
+      return res.status(400).json({ message: "Không tìm thấy sheet 'Items' hoặc 'Questions'" });
+    }
+    const itemsRaw: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[itemsSheetName]);
+
+    // 2. Parse Stimuli (optional)
+    const stimuliSheetName = workbook.SheetNames.find(n => n.toLowerCase() === 'stimuli');
+    const stimuliRaw: any[] = stimuliSheetName ? XLSX.utils.sheet_to_json(workbook.Sheets[stimuliSheetName]) : [];
+
+    if (itemsRaw.length === 0) {
+      return res.status(400).json({ message: "Sheet Items trống" });
+    }
+
+    const db = mongoose.connection;
+    const itemsCol = db.collection(PARTS_COLL);
+    const stimCol = db.collection(STIMULI_COLL);
+
+    // Validate and transform Items
+    const itemsToInsert: any[] = [];
+    const errors: string[] = [];
+
+    // Group by test to check for existence (optional, but good for safety)
+    // For now, we just insert/upsert. 
+    // Actually, user might want to overwrite or fail if exists.
+    // Let's assume upsert behavior or just insert. 
+    // Given the complexity, let's try to process row by row or batch.
+
+    // We need to ensure required fields: id, part, level, test, answer
+    for (const [index, row] of itemsRaw.entries()) {
+      const line = index + 2; // Excel line number (header is 1)
+
+      if (!row.id || !row.part || row.level === undefined || row.test === undefined || !row.answer) {
+        errors.push(`Dòng ${line}: Thiếu trường bắt buộc (id, part, level, test, answer)`);
+        continue;
+      }
+
+
+      // Choices: expect columns choiceA, choiceB, choiceC, choiceD
+      // Only build choices if at least one choice column exists
+      const choices = [];
+      const hasAnyChoice = row.choiceA || row.choiceB || row.choiceC || row.choiceD;
+
+      if (hasAnyChoice) {
+        if (row.choiceA) choices.push({ id: "A", text: String(row.choiceA) });
+        if (row.choiceB) choices.push({ id: "B", text: String(row.choiceB) });
+        if (row.choiceC) choices.push({ id: "C", text: String(row.choiceC) });
+        if (row.choiceD) choices.push({ id: "D", text: String(row.choiceD) });
+      }
+
+      itemsToInsert.push({
+        id: String(row.id),
+        part: String(row.part),
+        level: Number(row.level),
+        test: Number(row.test),
+        stimulusId: row.stimulusId ? String(row.stimulusId) : undefined,
+        stem: row.stem ? String(row.stem) : undefined,
+        choices: choices.length > 0 ? choices : undefined,
+        answer: String(row.answer),
+        explain: row.explain ? String(row.explain) : undefined,
+        order: row.order !== undefined ? Number(row.order) : undefined,
+        tags: row.tags ? String(row.tags).split(',').map(t => t.trim()) : undefined,
+        question: row.question ? String(row.question) : undefined,
+        options: row.options ? String(row.options) : undefined,
+      });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({ message: "Lỗi dữ liệu", errors: errors.slice(0, 10) }); // Return first 10 errors
+    }
+
+    // Validate and transform Stimuli
+    const stimuliToInsert: any[] = [];
+    for (const [index, row] of stimuliRaw.entries()) {
+      const line = index + 2;
+      if (!row.id || !row.part || row.level === undefined || row.test === undefined) {
+        errors.push(`Sheet Stimuli Dòng ${line}: Thiếu trường bắt buộc (id, part, level, test)`);
+        continue;
+      }
+
+      stimuliToInsert.push({
+        id: String(row.id),
+        part: String(row.part),
+        level: Number(row.level),
+        test: Number(row.test),
+        media: {
+          image: row.image ? String(row.image) : null,
+          audio: row.audio ? String(row.audio) : null,
+          script: row.script ? String(row.script) : null,
+          explain: row.explain ? String(row.explain) : null,
+        }
+      });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({ message: "Lỗi dữ liệu Stimuli", errors: errors.slice(0, 10) });
+    }
+
+    if (isPreview) {
+      // Analyze what will be imported
+      // We need to check existence based on composite key: part-level-test-id
+      const testsToCheck = new Set<string>();
+      itemsToInsert.forEach(i => testsToCheck.add(`${i.part}-${i.level}-${i.test}`));
+      stimuliToInsert.forEach(s => testsToCheck.add(`${s.part}-${s.level}-${s.test}`));
+
+      const orQuery = Array.from(testsToCheck).map(t => {
+        const [p, l, te] = t.split('-');
+        return { part: p, level: Number(l), test: Number(te) };
+      });
+
+      let existingItems: any[] = [];
+      let existingStimuli: any[] = [];
+
+      if (orQuery.length > 0) {
+        existingItems = await itemsCol.find({ $or: orQuery }).toArray();
+        existingStimuli = await stimCol.find({ $or: orQuery }).toArray();
+      }
+
+      const existingItemKeys = new Set(existingItems.map(i => `${i.part}-${i.level}-${i.test}-${i.id}`));
+      const existingStimuliKeys = new Set(existingStimuli.map(s => `${s.part}-${s.level}-${s.test}-${s.id}`));
+
+      // Group by test to show summary
+      const testSummary = new Map<string, {
+        part: string,
+        level: number,
+        test: number,
+        itemsCount: number,
+        stimuliCount: number,
+        items: any[],
+        stimuli: any[]
+      }>();
+
+      itemsToInsert.forEach(item => {
+        const key = `${item.part}-${item.level}-${item.test}`;
+        if (!testSummary.has(key)) {
+          testSummary.set(key, {
+            part: item.part,
+            level: item.level,
+            test: item.test,
+            itemsCount: 0,
+            stimuliCount: 0,
+            items: [],
+            stimuli: []
+          });
+        }
+        const entry = testSummary.get(key)!;
+        const itemKey = `${item.part}-${item.level}-${item.test}-${item.id}`;
+        entry.itemsCount++;
+        entry.items.push({
+          id: item.id,
+          status: existingItemKeys.has(itemKey) ? 'update' : 'new',
+          question: item.question || item.stem,
+          answer: item.answer,
+          choices: item.choices?.length || 0
+        });
+      });
+
+      stimuliToInsert.forEach(stim => {
+        const key = `${stim.part}-${stim.level}-${stim.test}`;
+        if (!testSummary.has(key)) {
+          testSummary.set(key, {
+            part: stim.part,
+            level: stim.level,
+            test: stim.test,
+            itemsCount: 0,
+            stimuliCount: 0,
+            items: [],
+            stimuli: []
+          });
+        }
+        const entry = testSummary.get(key)!;
+        const stimKey = `${stim.part}-${stim.level}-${stim.test}-${stim.id}`;
+        entry.stimuliCount++;
+        entry.stimuli.push({
+          id: stim.id,
+          status: existingStimuliKeys.has(stimKey) ? 'update' : 'new',
+          media: Object.keys(stim.media || {}).filter(k => stim.media[k]).join(', ')
+        });
+      });
+
+      return res.json({
+        preview: true,
+        message: "Preview import",
+        itemsCount: itemsToInsert.length,
+        stimuliCount: stimuliToInsert.length,
+        summary: Array.from(testSummary.values()).map(s => ({
+          ...s,
+          items: s.items.sort((a, b) => a.id.localeCompare(b.id)),
+          stimuli: s.stimuli.sort((a, b) => a.id.localeCompare(b.id))
+        }))
+      });
+    }
+
+    if (itemsToInsert.length > 0) {
+      const itemOps = itemsToInsert.map(item => {
+        // Build update object with only non-empty fields
+        const updateFields: any = {
+          id: item.id,
+          part: item.part,
+          level: item.level,
+          test: item.test,
+        };
+
+        // Only include fields that have values (not undefined, not empty string, but allow explicit null)
+        if (item.stimulusId !== undefined && item.stimulusId !== '') updateFields.stimulusId = item.stimulusId;
+        if (item.stem !== undefined && item.stem !== '') updateFields.stem = item.stem;
+        if (item.choices && item.choices.length > 0) updateFields.choices = item.choices;
+        if (item.answer !== undefined && item.answer !== '') updateFields.answer = item.answer;
+        if (item.explain !== undefined && item.explain !== '') updateFields.explain = item.explain;
+        if (item.order !== undefined) updateFields.order = item.order;
+        if (item.tags !== undefined && item.tags.length > 0) updateFields.tags = item.tags;
+        if (item.question !== undefined && item.question !== '') updateFields.question = item.question;
+        if (item.options !== undefined && item.options !== '') updateFields.options = item.options;
+
+        return {
+          updateOne: {
+            filter: {
+              id: item.id,
+              part: item.part,
+              level: item.level,
+              test: item.test,
+            },
+            update: { $set: updateFields },
+            upsert: true
+          }
+        };
+      });
+      await itemsCol.bulkWrite(itemOps);
+    }
+
+    if (stimuliToInsert.length > 0) {
+      const stimOps = stimuliToInsert.map(stim => {
+        // Build update object with only non-empty fields
+        const updateFields: any = {
+          id: stim.id,
+          part: stim.part,
+          level: stim.level,
+          test: stim.test,
+        };
+
+        // Only include media fields that have values
+        const media: any = {};
+        if (stim.media.image !== undefined && stim.media.image !== '') media.image = stim.media.image;
+        if (stim.media.audio !== undefined && stim.media.audio !== '') media.audio = stim.media.audio;
+        if (stim.media.script !== undefined && stim.media.script !== '') media.script = stim.media.script;
+        if (stim.media.explain !== undefined && stim.media.explain !== '') media.explain = stim.media.explain;
+
+        if (Object.keys(media).length > 0) {
+          updateFields.media = media;
+        }
+
+        return {
+          updateOne: {
+            filter: {
+              id: stim.id,
+              part: stim.part,
+              level: stim.level,
+              test: stim.test,
+            },
+            update: { $set: updateFields },
+            upsert: true
+          }
+        };
+      });
+      await stimCol.bulkWrite(stimOps);
+    }
+
+    return res.json({
+      message: "Import thành công",
+      itemsCount: itemsToInsert.length,
+      stimuliCount: stimuliToInsert.length
+    });
+
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ message: e.message || "Lỗi import Excel" });
+  }
+}

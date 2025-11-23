@@ -9,6 +9,7 @@ export interface ChipItem {
   icon?: React.ComponentType<{ className?: string }>;
   href?: string;
   onClick?: () => void;
+  badge?: string | number;
 }
 
 interface HorizontalChipNavProps {
@@ -71,6 +72,20 @@ export default function HorizontalChipNav({
                   />
                 )}
                 <span>{item.label}</span>
+                {item.badge !== undefined &&
+                  item.badge !== null &&
+                  item.badge !== "" && (
+                    <span
+                      className={cn(
+                        "ml-1 inline-flex min-w-[1.5rem] items-center justify-center rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                        isActive
+                          ? "bg-white/90 text-sky-700 dark:bg-white/80 dark:text-sky-600"
+                          : "bg-zinc-200/80 text-zinc-700 dark:bg-zinc-700/80 dark:text-zinc-100"
+                      )}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
               </button>
             );
           })}

@@ -31,7 +31,7 @@ export default function ChatSheet() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[9999] lg:hidden bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] md:hidden bg-black/50 backdrop-blur-sm [body[data-cropping]>&]:hidden"
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
@@ -44,11 +44,12 @@ export default function ChatSheet() {
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className={cn(
-              "fixed inset-x-0 bottom-0 z-[10000] lg:hidden",
+              "fixed inset-x-0 bottom-0 z-[10000] md:hidden",
               "w-full bg-white dark:bg-zinc-900",
               "rounded-t-3xl shadow-2xl",
               "flex flex-col",
-              "h-[420px] max-h-[calc(100vh-4rem)]" // 👈 cố định chiều cao
+              "h-[620px] max-h-[calc(100vh-4rem)]", // 👈 cố định chiều cao
+              "[body[data-cropping]>&]:hidden"
             )}
             onClick={(e) => e.stopPropagation()}
           >
@@ -60,7 +61,7 @@ export default function ChatSheet() {
                   className={cn(
                     "flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
                     activeTab === "admin"
-                      ? "bg-gradient-to-r from-orange-50/80 to-amber-50/60 dark:from-orange-900/30 dark:to-amber-900/20 text-orange-700 dark:text-orange-300 border-b-2 border-orange-500"
+                      ? "bg-gradient-to-r from-orange-50/80 to-amber-50/60 dark:from-orange-900/30 dark:to-amber-900/20 text-orange-700 dark:text-orange-300 border-b-2 border-orange-500 rounded-tl-3xl"
                       : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800"
                   )}
                 >
@@ -73,7 +74,7 @@ export default function ChatSheet() {
                   className={cn(
                     "flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
                     activeTab === "ai"
-                      ? "bg-gradient-to-r from-sky-50/80 to-indigo-50/60 dark:from-sky-900/30 dark:to-indigo-900/20 text-sky-700 dark:text-sky-300 border-b-2 border-sky-500"
+                      ? "bg-gradient-to-r from-sky-50/80 to-indigo-50/60 dark:from-sky-900/30 dark:to-indigo-900/20 text-sky-700 dark:text-sky-300 border-b-2 border-sky-500 rounded-tr-3xl"
                       : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800"
                   )}
                 >

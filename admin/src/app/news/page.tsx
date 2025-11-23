@@ -6,6 +6,7 @@ import {
   adminCreateNews,
   adminUpdateNews,
   adminDeleteNews,
+  adminUploadNewsImage,
   AdminNewsItem,
 } from "@/lib/apiClient";
 import { useToast } from "@/components/common/ToastProvider";
@@ -21,6 +22,8 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
+  Upload,
+  Image as ImageIcon,
 } from "lucide-react";
 
 const CATEGORIES = [
@@ -71,6 +74,8 @@ export default function NewsPage() {
   const [editorOpen, setEditorOpen] = React.useState(false);
   const [editor, setEditor] = React.useState<EditorState>(emptyState);
   const [saving, setSaving] = React.useState(false);
+  const [uploadingImage, setUploadingImage] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const toast = useToast();
 
   const pages = Math.max(1, Math.ceil(total / LIMIT));
@@ -174,6 +179,38 @@ export default function NewsPage() {
       await loadNews();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Không thể xóa tin tức");
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Chỉ chấp nhận file ảnh");
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Kích thước file không được vượt quá 10MB");
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const result = await adminUploadNewsImage(file);
+      setEditor((prev) => ({ ...prev, image: result.url }));
+      toast.success("Đã upload ảnh thành công");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Không thể upload ảnh");
+    } finally {
+      setUploadingImage(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -403,13 +440,58 @@ export default function NewsPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-zinc-700 mb-1 block">Ảnh đại diện (URL)</label>
-                <input
-                  value={editor.image}
-                  onChange={(e) => setEditor((prev) => ({ ...prev, image: e.target.value }))}
-                  className="w-full border border-zinc-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-sky-500 focus:outline-none"
-                  placeholder="https://..."
-                />
+                <label className="text-sm font-medium text-zinc-700 mb-1 block">Ảnh đại diện</label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingImage}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-sky-300 bg-sky-50 text-sky-700 text-sm font-semibold hover:bg-sky-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploadingImage ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Đang upload...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4" />
+                          Upload ảnh từ máy
+                        </>
+                      )}
+                    </button>
+                    <input
+                      value={editor.image}
+                      onChange={(e) => setEditor((prev) => ({ ...prev, image: e.target.value }))}
+                      className="flex-1 border border-zinc-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                      placeholder="Hoặc nhập URL ảnh (https://...)"
+                    />
+                  </div>
+                  {editor.image && (
+                    <div className="relative border border-zinc-200 rounded-xl overflow-hidden bg-zinc-50">
+                      <img
+                        src={editor.image}
+                        alt="Preview"
+                        className="w-full h-48 object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                      <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                        <ImageIcon className="h-3 w-3" />
+                        Preview
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -431,7 +513,7 @@ export default function NewsPage() {
                   className="rounded border-zinc-300 text-sky-600 focus:ring-sky-500"
                 />
                 <label htmlFor="newsPublished" className="text-sm text-zinc-700">
-                  Xuất bản ngay
+                  Xuất bản
                 </label>
               </div>
 

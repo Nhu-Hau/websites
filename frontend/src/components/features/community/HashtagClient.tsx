@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -77,18 +78,19 @@ export default function HashtagClient({ tag, initialData }: HashtagClientProps) 
   }, [tag]);
 
   return (
-    <div>
-      <div className="mb-8">
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="mb-2">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
             <Hash className="h-6 w-6 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               #{tag}
             </h1>
             {initialData?.hashtag && (
-              <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
                 {initialData.hashtag.postsCount || 0} bài viết
               </p>
             )}
@@ -114,15 +116,23 @@ export default function HashtagClient({ tag, initialData }: HashtagClientProps) 
             <div ref={elementRef} className="py-8">
               {loading && (
                 <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent" />
+                  <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
                 </div>
               )}
             </div>
           )}
         </>
       ) : (
-        <div className="text-center py-12 text-zinc-600 dark:text-zinc-400">
-          Chưa có bài viết nào với hashtag này
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-4 sm:px-6 py-12 sm:py-16 text-center shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/95">
+          <div className="mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
+            <Hash className="h-7 w-7 sm:h-8 sm:w-8" />
+          </div>
+          <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+            Chưa có bài viết nào
+          </h3>
+          <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
+            Chưa có bài viết nào với hashtag này.
+          </p>
         </div>
       )}
     </div>

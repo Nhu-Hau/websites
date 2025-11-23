@@ -6,9 +6,9 @@ export type AdminUser = {
   _id: string;
   name: string;
   email: string;
-  role: 'user'|'teacher'|'admin';
-  access: 'free'|'premium';
-  level: 1|2|3;
+  role: 'user' | 'teacher' | 'admin';
+  access: 'free' | 'premium';
+  level: 1 | 2 | 3;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -38,18 +38,18 @@ export async function adminListUsers(params?: { page?: number; limit?: number; q
   if (params?.role) usp.set('role', params.role);
   if (params?.access) usp.set('access', params.access);
   const res = await fetch(`/api/admin/users?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch users failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch users failed'); }
   return res.json() as Promise<{ items: AdminUser[]; total: number; page: number; limit: number; pages: number }>;
 }
 
-export async function adminUpdateUser(id: string, body: Partial<Pick<AdminUser,'name'|'role'|'access'>> & { level?: 1|2|3 }) {
+export async function adminUpdateUser(id: string, body: Partial<Pick<AdminUser, 'name' | 'role' | 'access'>> & { level?: 1 | 2 | 3 }) {
   const res = await fetch(`/api/admin/users/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(body),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Update user failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Update user failed'); }
   return res.json() as Promise<{ user: AdminUser }>;
 }
 
@@ -108,64 +108,64 @@ export async function adminDeletePromoCode(code: string) {
 
 export async function adminDeleteUser(id: string) {
   const res = await fetch(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete user failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Delete user failed'); }
   return res.json() as Promise<{ message: string }>;
 }
 
 export async function adminOverview() {
   const res = await fetch(`/api/admin/analytics/overview`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch overview failed'); }
-  return res.json() as Promise<{ totalUsers: number; avgOverall: number; byLevel: Record<'1'|'2'|'3', number> | Record<number, number>; histogram: { min: number; max: number; count: number }[] }>;
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch overview failed'); }
+  return res.json() as Promise<{ totalUsers: number; avgOverall: number; byLevel: Record<'1' | '2' | '3', number> | Record<number, number>; histogram: { min: number; max: number; count: number }[] }>;
 }
 
 export async function adminVisitorCount() {
   const res = await fetch(`/api/admin/analytics/visitor-count`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch visitor count failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch visitor count failed'); }
   return res.json() as Promise<{ totalVisits: number; uniqueVisitorsLast30Days: number }>;
 }
 
 export async function adminOnlineUsersCount() {
   const res = await fetch(`/api/admin/analytics/online-users`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch online users count failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch online users count failed'); }
   return res.json() as Promise<{ onlineUsers: number; activeUsers: number }>;
 }
 
 export async function adminVpsStats() {
   const res = await fetch(`/api/admin/analytics/vps-stats`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch VPS stats failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch VPS stats failed'); }
   return res.json() as Promise<{ cpu: number; realMemory: number; virtualMemory: number; localDiskSpace: number; os: string; uptime: string; uptimeSeconds: number }>;
 }
 
 export async function adminVpsRestart() {
-  const res = await fetch(`/api/admin/vps/restart`, { 
+  const res = await fetch(`/api/admin/vps/restart`, {
     method: 'POST',
-    credentials: 'include', 
-    cache: 'no-store' 
+    credentials: 'include',
+    cache: 'no-store'
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Restart VPS failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Restart VPS failed'); }
   return res.json() as Promise<{ message: string }>;
 }
 
 export async function adminPm2Logs(app: 'admin' | 'frontend' | 'api', lines?: number) {
   const usp = new URLSearchParams();
   if (lines) usp.set('lines', String(lines));
-  const res = await fetch(`/api/admin/vps/pm2-logs/${app}?${usp.toString()}`, { 
-    credentials: 'include', 
-    cache: 'no-store' 
+  const res = await fetch(`/api/admin/vps/pm2-logs/${app}?${usp.toString()}`, {
+    credentials: 'include',
+    cache: 'no-store'
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch PM2 logs failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch PM2 logs failed'); }
   return res.json() as Promise<{ logs: string; app: string; lines: number }>;
 }
 
 export async function adminUserScores() {
   const res = await fetch(`/api/admin/analytics/user-scores`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch user scores failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch user scores failed'); }
   return res.json() as Promise<{ users: Array<{ _id: string; name: string; email: string; level: number; overall: number; listening: number; reading: number; submittedAt: string }> }>;
 }
 
 export async function adminUserToeicPred() {
   const res = await fetch(`/api/admin/analytics/user-toeic-pred`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch user TOEIC predictions failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch user TOEIC predictions failed'); }
   return res.json() as Promise<{ users: Array<{ _id: string; name: string; email: string; level: number; toeicPred: { overall: number | null; listening: number | null; reading: number | null } }> }>;
 }
 
@@ -223,7 +223,7 @@ export async function adminListPlacementAttempts(params?: { page?: number; limit
   if (params?.limit) usp.set('limit', String(params.limit));
   if (params?.userId) usp.set('userId', params.userId);
   const res = await fetch(`/api/admin/attempts/placement?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch placement attempts failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch placement attempts failed'); }
   return res.json() as Promise<{ items: AdminPlacementAttempt[]; total: number; page: number; limit: number; pages: number }>;
 }
 
@@ -233,7 +233,7 @@ export async function adminListProgressAttempts(params?: { page?: number; limit?
   if (params?.limit) usp.set('limit', String(params.limit));
   if (params?.userId) usp.set('userId', params.userId);
   const res = await fetch(`/api/admin/attempts/progress?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch progress attempts failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch progress attempts failed'); }
   return res.json() as Promise<{ items: AdminProgressAttempt[]; total: number; page: number; limit: number; pages: number }>;
 }
 
@@ -245,37 +245,37 @@ export async function adminListPracticeAttempts(params?: { page?: number; limit?
   if (params?.partKey) usp.set('partKey', params.partKey);
   if (params?.level) usp.set('level', String(params.level));
   const res = await fetch(`/api/admin/attempts/practice?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch practice attempts failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch practice attempts failed'); }
   return res.json() as Promise<{ items: AdminPracticeAttempt[]; total: number; page: number; limit: number; pages: number }>;
 }
 
 export async function adminDeletePlacementAttempt(id: string) {
   const res = await fetch(`/api/admin/attempts/placement/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete placement attempt failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Delete placement attempt failed'); }
   return res.json() as Promise<{ message: string }>;
 }
 
 export async function adminDeleteProgressAttempt(id: string) {
   const res = await fetch(`/api/admin/attempts/progress/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete progress attempt failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Delete progress attempt failed'); }
   return res.json() as Promise<{ message: string }>;
 }
 
 export async function adminDeletePracticeAttempt(id: string) {
   const res = await fetch(`/api/admin/attempts/practice/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete practice attempt failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Delete practice attempt failed'); }
   return res.json() as Promise<{ message: string }>;
 }
 
 export async function adminDeleteUserScore(userId: string) {
   const res = await fetch(`/api/admin/analytics/user-score/${encodeURIComponent(userId)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete user score failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Delete user score failed'); }
   return res.json() as Promise<{ message: string }>;
 }
 
 export async function adminDeleteUserToeicPred(userId: string) {
   const res = await fetch(`/api/admin/analytics/user-toeic-pred/${encodeURIComponent(userId)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete user TOEIC prediction failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Delete user TOEIC prediction failed'); }
   return res.json() as Promise<{ message: string }>;
 }
 
@@ -312,7 +312,7 @@ export async function adminListCommunityPosts(params?: { page?: number; limit?: 
   if (params?.limit) usp.set('limit', String(params.limit));
   if (params?.q) usp.set('q', params.q);
   const res = await fetch(`/api/admin/community/posts?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch posts failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch posts failed'); }
   return res.json() as Promise<{ items: AdminCommunityPost[]; total: number; page: number; limit: number; pages: number }>;
 }
 
@@ -323,13 +323,13 @@ export async function adminCreateCommunityPost(params: { content: string; userId
     credentials: 'include',
     body: JSON.stringify(params),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Create post failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Create post failed'); }
   return res.json() as Promise<AdminCommunityPost>;
 }
 
 export async function adminDeleteCommunityPost(id: string) {
   const res = await fetch(`/api/admin/community/posts/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete post failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Delete post failed'); }
   return res.json() as Promise<{ message: string }>;
 }
 
@@ -340,7 +340,7 @@ export async function adminToggleCommunityPostVisibility(id: string, isHidden: b
     credentials: 'include',
     body: JSON.stringify({ isHidden }),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Toggle post visibility failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Toggle post visibility failed'); }
   return res.json() as Promise<{ item: AdminCommunityPost }>;
 }
 
@@ -351,13 +351,13 @@ export async function adminListCommunityComments(params?: { page?: number; limit
   if (params?.q) usp.set('q', params.q);
   if (params?.postId) usp.set('postId', params.postId);
   const res = await fetch(`/api/admin/community/comments?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch comments failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch comments failed'); }
   return res.json() as Promise<{ items: AdminCommunityComment[]; total: number; page: number; limit: number; pages: number }>;
 }
 
 export async function adminDeleteCommunityComment(id: string) {
   const res = await fetch(`/api/admin/community/comments/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete comment failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Delete comment failed'); }
   return res.json() as Promise<{ message: string }>;
 }
 
@@ -564,6 +564,21 @@ export async function adminDeleteNews(id: string) {
   return res.json() as Promise<{ message: string }>;
 }
 
+export async function adminUploadNewsImage(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`/api/admin/news/upload`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Upload image failed");
+  }
+  return res.json() as Promise<{ url: string; key: string; type: string; name: string; size: number }>;
+}
+
 // Admin chat management
 export async function adminDeleteChatMessage(id: string) {
   const res = await fetch(`/api/admin-chat/admin/messages/${encodeURIComponent(id)}`, {
@@ -602,8 +617,10 @@ export type AdminPart = {
   stem?: string;
   options?: Record<string, any>;
   stimulusId?: string | null;
+  explain?: string | null;
   _id?: string;
 };
+
 
 export type AdminPartsStats = {
   total: number;
@@ -621,19 +638,19 @@ export async function adminListParts(params?: { page?: number; limit?: number; p
   if (params?.test) usp.set('test', String(params.test));
   if (params?.q) usp.set('q', params.q);
   const res = await fetch(`/api/admin/parts?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch parts failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch parts failed'); }
   return res.json() as Promise<{ items: AdminPart[]; total: number; page: number; limit: number; pages: number }>;
 }
 
-export async function adminGetPart(id: string) {
-  const res = await fetch(`/api/admin/parts/${encodeURIComponent(id)}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch part failed'); }
+export async function adminGetPart(mongoId: string) {
+  const res = await fetch(`/api/admin/parts/${encodeURIComponent(mongoId)}`, { credentials: 'include', cache: 'no-store' });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch part failed'); }
   return res.json() as Promise<{ item: AdminPart }>;
 }
 
 export async function adminGetPartsStats() {
   const res = await fetch(`/api/admin/parts/stats`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch parts stats failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch parts stats failed'); }
   return res.json() as Promise<AdminPartsStats>;
 }
 
@@ -644,24 +661,24 @@ export async function adminCreatePart(body: Partial<AdminPart>) {
     credentials: 'include',
     body: JSON.stringify(body),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Create part failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Create part failed'); }
   return res.json() as Promise<{ item: AdminPart }>;
 }
 
-export async function adminUpdatePart(id: string, body: Partial<AdminPart>) {
-  const res = await fetch(`/api/admin/parts/${encodeURIComponent(id)}`, {
+export async function adminUpdatePart(mongoId: string, body: Partial<AdminPart>) {
+  const res = await fetch(`/api/admin/parts/${encodeURIComponent(mongoId)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(body),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Update part failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Update part failed'); }
   return res.json() as Promise<{ item: AdminPart }>;
 }
 
-export async function adminDeletePart(id: string) {
-  const res = await fetch(`/api/admin/parts/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete part failed'); }
+export async function adminDeletePart(mongoId: string) {
+  const res = await fetch(`/api/admin/parts/${encodeURIComponent(mongoId)}`, { method: 'DELETE', credentials: 'include' });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Delete part failed'); }
   return res.json() as Promise<{ message: string }>;
 }
 
@@ -678,7 +695,7 @@ export async function adminListTests(params?: { part?: string; level?: number })
   if (params?.part) usp.set('part', params.part);
   if (params?.level) usp.set('level', String(params.level));
   const res = await fetch(`/api/admin/parts/tests?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch tests failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch tests failed'); }
   return res.json() as Promise<{ tests: AdminTest[] }>;
 }
 
@@ -688,7 +705,7 @@ export async function adminGetTestItems(params: { part: string; level: number; t
   usp.set('level', String(params.level));
   usp.set('test', String(params.test));
   const res = await fetch(`/api/admin/parts/test/items?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Fetch test items failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch test items failed'); }
   return res.json() as Promise<{ items: AdminPart[]; stimulusMap: Record<string, AdminStimulus> }>;
 }
 
@@ -698,7 +715,7 @@ export async function adminDeleteTest(params: { part: string; level: number; tes
   usp.set('level', String(params.level));
   usp.set('test', String(params.test));
   const res = await fetch(`/api/admin/parts/test?${usp.toString()}`, { method: 'DELETE', credentials: 'include' });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete test failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Delete test failed'); }
   return res.json() as Promise<{ message: string; deletedCount: number }>;
 }
 
@@ -722,7 +739,7 @@ export async function adminCreateTest(body: { part: string; level: number; test:
     credentials: 'include',
     body: JSON.stringify(body),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Create test failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Create test failed'); }
   return res.json() as Promise<{ message: string; count: number }>;
 }
 
@@ -733,25 +750,25 @@ export async function adminCreateOrUpdateItem(body: AdminPart) {
     credentials: 'include',
     body: JSON.stringify(body),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Create/update item failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Create/update item failed'); }
   return res.json() as Promise<{ item: AdminPart }>;
 }
 
 export async function adminUploadStimulusMedia(file: File) {
   const formData = new FormData();
   formData.append('file', file);
-  
+
   const res = await fetch(`/api/admin/parts/upload`, {
     method: 'POST',
     credentials: 'include',
     body: formData,
   });
-  
-  if (!res.ok) { 
-    const e = await res.json().catch(() => ({})); 
-    throw new Error(e.message || 'Upload failed'); 
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || 'Upload failed');
   }
-  
+
   return res.json() as Promise<{ url: string; key: string; type: string; name: string; size: number }>;
 }
 
@@ -762,7 +779,7 @@ export async function adminCreateStimulus(body: { id: string; part: string; leve
     credentials: 'include',
     body: JSON.stringify(body),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Create stimulus failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Create stimulus failed'); }
   return res.json() as Promise<{ stimulus: AdminStimulus }>;
 }
 
@@ -773,18 +790,43 @@ export async function adminUpdateStimulus(id: string, media: any) {
     credentials: 'include',
     body: JSON.stringify({ media }),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Update stimulus failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Update stimulus failed'); }
   return res.json() as Promise<{ stimulus: AdminStimulus }>;
 }
 
 export async function adminDeleteStimulus(id: string) {
-  const res = await fetch(`/api/admin/parts/stimulus/${encodeURIComponent(id)}`, { 
+  const res = await fetch(`/api/admin/parts/stimulus/${encodeURIComponent(id)}`, {
     method: 'DELETE',
-    credentials: 'include' 
+    credentials: 'include'
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete stimulus failed'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Delete stimulus failed'); }
   return res.json() as Promise<{ message: string }>;
 }
 
+export async function adminImportExcel(file: File, preview: boolean = false) {
+  const formData = new FormData();
+  formData.append('file', file);
 
+  const res = await fetch(`/api/admin/parts/import-excel?preview=${preview}`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
 
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || 'Import Excel failed');
+  }
+
+  return res.json() as Promise<{
+    message: string;
+    itemsCount: number;
+    stimuliCount: number;
+    preview?: boolean;
+    summary?: {
+      test: string;
+      items: any[];
+      stimuli: any[];
+    }[];
+  }>;
+}

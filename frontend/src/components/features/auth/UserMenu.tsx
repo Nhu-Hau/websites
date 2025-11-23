@@ -146,10 +146,10 @@ export default function UserMenu() {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     // Check immediately
     checkMobile();
-    
+
     // Listen for resize
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
@@ -377,12 +377,22 @@ export default function UserMenu() {
                       : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300 dark:border-zinc-700"
                   }`}
                 >
-                  {userRole === "admin" ? "Quản trị" : userRole === "teacher" ? "Giáo viên" : "Người dùng"}
+                  {userRole === "admin"
+                    ? "Quản trị"
+                    : userRole === "teacher"
+                    ? "Giáo viên"
+                    : "Người dùng"}
                 </span>
               </div>
 
               {/* Gói */}
-              <div className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200">
+              <Link
+                href={`${base}/pricing`}
+                onClick={() => {
+                  setOpenLocal(false);
+                }}
+                className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200 group cursor-pointer"
+              >
                 <div className="flex items-center gap-3">
                   {userAccess === "premium" ? (
                     <Crown className="w-4 h-4 text-yellow-500" />
@@ -393,16 +403,18 @@ export default function UserMenu() {
                     Gói
                   </span>
                 </div>
-                <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold border ${
-                    userAccess === "premium"
-                      ? "border-yellow-300 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700"
-                      : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-300 dark:border-zinc-700"
-                  }`}
-                >
-                  {userAccess === "premium" ? "Cao cấp" : "Miễn phí"}
-                </span>
-              </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold border ${
+                      userAccess === "premium"
+                        ? "border-yellow-300 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700"
+                        : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-300 dark:border-zinc-700"
+                    }`}
+                  >
+                    {userAccess === "premium" ? "Cao cấp" : "Miễn phí"}
+                  </span>
+                </div>
+              </Link>
 
               {/* TOEIC */}
               {/* <div className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all duration-200">

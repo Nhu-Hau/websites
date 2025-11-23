@@ -24,8 +24,10 @@ import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import MediaGallery from "./MediaGallery";
 import ActionBar from "./ActionBar";
 import CommentItem from "./CommentItem";
+import NewPostForm from "./NewPostForm";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 type Attachment = {
   type: "image" | "link" | "file";
@@ -99,6 +101,9 @@ export default function PostDetail({ postId }: { postId: string }) {
   const [loading, setLoading] = React.useState(true);
   const [cmtInput, setCmtInput] = React.useState("");
   const [cmtAttaches, setCmtAttaches] = React.useState<Attachment[]>([]);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [showRepostModal, setShowRepostModal] = React.useState(false);
+  const [repostCaption, setRepostCaption] = React.useState("");
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
@@ -257,7 +262,10 @@ export default function PostDetail({ postId }: { postId: string }) {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: content || "", attachments: cmtAttaches }),
+          body: JSON.stringify({
+            content: content || "",
+            attachments: cmtAttaches,
+          }),
         }
       );
       if (!res.ok) throw new Error("Failed to submit comment");
@@ -278,11 +286,46 @@ export default function PostDetail({ postId }: { postId: string }) {
     }
   };
 
+  const handleEdit = React.useCallback(() => {
+    setIsEditing(true);
+  }, []);
+
+  const handleEditSuccess = React.useCallback(() => {
+    setIsEditing(false);
+    loadPost();
+  }, [loadPost]);
+
+  const handleRepost = React.useCallback(() => {
+    setShowRepostModal(true);
+  }, []);
+
+  const handleRepostSubmit = React.useCallback(async () => {
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/community/posts/${postId}/repost`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ repostCaption: repostCaption.trim() }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to repost");
+      toast.success("Đã chia sẻ lại bài viết");
+      setShowRepostModal(false);
+      setRepostCaption("");
+      router.push(`${basePrefix}/community`);
+    } catch {
+      toast.error("Lỗi khi chia sẻ lại bài viết");
+    }
+  }, [postId, repostCaption, router, basePrefix]);
+
   const deletePost = async () => {
     show(
       {
         title: "Xóa bài viết?",
-        message: "Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.",
+        message:
+          "Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.",
         icon: "warning",
         confirmText: "Xóa",
         cancelText: "Hủy",
@@ -335,11 +378,12 @@ export default function PostDetail({ postId }: { postId: string }) {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-48" />
-          <div className="h-32 bg-zinc-200 dark:bg-zinc-700 rounded" />
-          <div className="h-24 bg-zinc-200 dark:bg-zinc-700 rounded" />
+      <div className="flex items-center justify-center py-12 sm:py-16">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Đang tải bài viết...
+          </p>
         </div>
       </div>
     );
@@ -347,262 +391,359 @@ export default function PostDetail({ postId }: { postId: string }) {
 
   if (!post) return null;
 
+  if (isEditing) {
+    return (
+      <div className="space-y-4 pb-8">
+        <article className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm mb-4 sm:mb-6">
+          <div className="px-4 sm:px-6 pt-4 pb-3 sm:pt-6 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                Chỉnh sửa bài viết
+              </h3>
+              <button
+                onClick={() => setIsEditing(false)}
+                className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+          <div className="px-4 sm:px-6 py-4 sm:py-6">
+            <NewPostForm
+              postId={post._id}
+              initialContent={post.content}
+              initialAttachments={post.attachments}
+              onSuccess={handleEditSuccess}
+            />
+          </div>
+        </article>
+        {ConfirmModal}
+      </div>
+    );
+  }
+
   return (
-    <div>
-        {/* Post */}
-        <article className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm mb-6">
-          {/* Header */}
-          <div className="p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-            <div className="flex items-start gap-3">
-              <Avatar url={post.user?.picture} name={post.user?.name} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
+    <div className="space-y-4 pb-8">
+      {/* Post */}
+      <article className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm mb-4 sm:mb-6">
+        {/* Header */}
+        <div className="px-4 sm:px-6 pt-4 pb-3 sm:pt-6 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-start gap-3">
+            <Avatar url={post.user?.picture} name={post.user?.name} />
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+                {/* Left: info */}
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <button
-                    onClick={() => router.push(`${basePrefix}/community/profile/${post.userId}`)}
-                    className="font-semibold text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    onClick={() =>
+                      router.push(
+                        `${basePrefix}/community/profile/${post.userId}`
+                      )
+                    }
+                    className="font-semibold text-sm sm:text-base text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
                     {post.user?.name || "User"}
                   </button>
-                  <time className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <time className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
                     {formatDate(post.createdAt)}
                   </time>
                   {post.isEdited && post.editedAt && (
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+                    <span className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 italic">
                       (Đã chỉnh sửa)
                     </span>
                   )}
                   {post.repostedFrom && originalPost && (
                     <button
-                      onClick={() => router.push(`${basePrefix}/community/post/${originalPost._id}`)}
-                      className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                      onClick={() =>
+                        router.push(
+                          `${basePrefix}/community/post/${originalPost._id}`
+                        )
+                      }
+                      className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                     >
                       <Share2 className="h-3 w-3" />
                       Đã chia sẻ - Xem bài gốc
                     </button>
                   )}
                   {post.repostedFrom && !originalPost && (
-                    <span className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                    <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-blue-600 dark:text-blue-400">
                       <Share2 className="h-3 w-3" />
                       Đã chia sẻ
                     </span>
                   )}
-                  {post.canDelete && (
-                    <button
-                      onClick={deletePost}
-                      className="ml-auto inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span>Xóa</span>
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Repost Caption */}
-          {post.repostedFrom && post.repostCaption && (
-            <div className="px-6 pt-4 pb-2">
-              <p className="text-sm text-zinc-700 dark:text-zinc-300 italic">
-                {post.repostCaption}
-              </p>
-            </div>
-          )}
+        {/* Repost Caption */}
+        {post.repostedFrom && post.repostCaption && (
+          <div className="px-4 sm:px-6 pt-3 sm:pt-4 pb-2">
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 italic">
+              {post.repostCaption}
+            </p>
+          </div>
+        )}
 
-          {/* Original Post (when reposted) */}
-          {post.repostedFrom && originalPost && (
-            <div className="mx-6 mb-4 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden bg-zinc-50 dark:bg-zinc-800/50">
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-3">
+        {/* Original Post (when reposted) */}
+        {post.repostedFrom && originalPost && (
+          <div className="mx-4 sm:mx-6 mb-4 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden bg-zinc-50 dark:bg-zinc-800/50">
+            <div className="p-3 sm:p-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-2.5 sm:mb-3">
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={() => router.push(`${basePrefix}/community/profile/${originalPost.userId}`)}
+                    onClick={() =>
+                      router.push(
+                        `${basePrefix}/community/profile/${originalPost.userId}`
+                      )
+                    }
                     className="flex-shrink-0"
                   >
-                    <Avatar url={originalPost.user?.picture} name={originalPost.user?.name} />
+                    <Avatar
+                      url={originalPost.user?.picture}
+                      name={originalPost.user?.name}
+                    />
                   </button>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                       <button
-                        onClick={() => router.push(`${basePrefix}/community/profile/${originalPost.userId}`)}
-                        className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        onClick={() =>
+                          router.push(
+                            `${basePrefix}/community/profile/${originalPost.userId}`
+                          )
+                        }
+                        className="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                       >
                         {originalPost.user?.name || "User"}
                       </button>
-                      <time className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <time className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
                         {formatDate(originalPost.createdAt)}
                       </time>
-                      <button
-                        onClick={() => router.push(`${basePrefix}/community/post/${originalPost._id}`)}
-                        className="ml-auto text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-                      >
-                        Xem bài viết →
-                      </button>
                     </div>
                   </div>
                 </div>
-                {originalPost.content && (
-                  <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap break-words mb-3">
-                    {originalPost.content}
-                  </p>
-                )}
-                {originalPost.attachments && originalPost.attachments.length > 0 && (
+
+                <button
+                  onClick={() =>
+                    router.push(
+                      `${basePrefix}/community/post/${originalPost._id}`
+                    )
+                  }
+                  className="self-start text-[11px] sm:text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                >
+                  Xem bài viết →
+                </button>
+              </div>
+
+              {originalPost.content && (
+                <p className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap break-words mb-3">
+                  {originalPost.content}
+                </p>
+              )}
+              {originalPost.attachments &&
+                originalPost.attachments.length > 0 && (
                   <MediaGallery attachments={originalPost.attachments} />
                 )}
-              </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Content (only show if not a repost or no original post yet) */}
-          {!post.repostedFrom && post.content && (
-            <div className="p-6 pb-4">
-              <p className="text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap break-words">
-                {post.content}
-              </p>
-            </div>
-          )}
+        {/* Content (only show if not a repost or no original post yet) */}
+        {!post.repostedFrom && post.content && (
+          <div className="px-4 sm:px-6 pt-3 sm:pt-6 pb-3 sm:pb-4">
+            <p className="text-sm sm:text-base text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-wrap break-words">
+              {post.content}
+            </p>
+          </div>
+        )}
 
-          {/* Media Gallery (only show if not a repost) */}
-          {!post.repostedFrom && post.attachments && post.attachments.length > 0 && (
-            <div className="px-6 pb-4">
+        {/* Media Gallery (only show if not a repost) */}
+        {!post.repostedFrom &&
+          post.attachments &&
+          post.attachments.length > 0 && (
+            <div className="px-4 sm:px-6 pb-3 sm:pb-4">
               <MediaGallery attachments={post.attachments} />
             </div>
           )}
 
-          {/* Actions */}
-          <div className="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800">
-            <ActionBar
-              postId={post._id}
-              liked={post.liked}
-              saved={post.saved}
-              likesCount={post.likesCount}
-              commentsCount={post.commentsCount}
-              savedCount={post.savedCount}
-              repostCount={post.repostCount}
-              canDelete={post.canDelete}
-              canEdit={post.canDelete}
-              onLikeChange={(liked, count) => {
-                // Update post state to keep in sync
-                setPost((p: any) => p ? { ...p, liked, likesCount: count } : p);
-              }}
-              onSaveChange={(saved, count) => {
-                // Update post state to keep in sync
-                setPost((p: any) => p ? { ...p, saved, savedCount: count } : p);
-              }}
-              onCommentClick={() => {}}
-              onShareClick={sharePost}
-            />
-          </div>
-        </article>
+        {/* Actions */}
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-zinc-100 dark:border-zinc-800">
+          <ActionBar
+            postId={post._id}
+            liked={post.liked}
+            saved={post.saved}
+            likesCount={post.likesCount}
+            commentsCount={post.commentsCount}
+            savedCount={post.savedCount}
+            repostCount={post.repostCount}
+            canDelete={post.canDelete}
+            canEdit={post.canDelete}
+            onLikeChange={(liked, count) => {
+              setPost((p: any) => (p ? { ...p, liked, likesCount: count } : p));
+            }}
+            onSaveChange={(saved, count) => {
+              setPost((p: any) => (p ? { ...p, saved, savedCount: count } : p));
+            }}
+            onCommentClick={() => {}}
+            onShareClick={sharePost}
+            onRepostClick={handleRepost}
+            onEditClick={handleEdit}
+            onDeleteClick={deletePost}
+          />
+        </div>
+      </article>
 
-        {/* Comments Section */}
-        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <div className="p-6 border-b border-zinc-100 dark:border-zinc-800">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Bình luận ({comments.length})
-            </h2>
-          </div>
+      {/* Comments Section */}
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-zinc-100 dark:border-zinc-800">
+          <h2 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            Bình luận ({comments.length})
+          </h2>
+        </div>
 
-          {/* Comments List */}
-          <div className="p-6 space-y-4">
-            {comments.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="mx-auto w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
-                  <MessageCircle className="h-8 w-8 text-zinc-400 dark:text-zinc-600" />
-                </div>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
-                </p>
+        {/* Comments List */}
+        <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4">
+          {comments.length === 0 ? (
+            <div className="text-center py-6 sm:py-8">
+              <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3 sm:mb-4">
+                <MessageCircle className="h-7 w-7 sm:h-8 sm:w-8 text-zinc-400 dark:text-zinc-600" />
               </div>
-            ) : (
-              comments.map((c: any) => (
-                <CommentItem
-                  key={c._id}
-                  comment={c}
-                  onDeleted={loadPost}
-                  onUpdated={loadPost}
-                />
-              ))
-            )}
-          </div>
-
-          {/* Comment Input */}
-          <div className="p-6 border-t border-zinc-100 dark:border-zinc-800">
-            {cmtAttaches.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {cmtAttaches.map((a, i) => (
-                  <div
-                    key={i}
-                    className="relative inline-flex items-center gap-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg"
-                  >
-                    {a.type === "image" ? (
-                      <img
-                        src={a.url.startsWith("http") ? a.url : `${API_BASE}${a.url}`}
-                        alt=""
-                        className="h-12 w-16 object-cover rounded"
-                      />
-                    ) : (
-                      <>
-                        <AttachmentIcon type={a.type} />
-                        <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate max-w-[100px]">
-                          {a.name || "File"}
-                        </span>
-                      </>
-                    )}
-                    <button
-                      onClick={() => removeAttachment(i)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <textarea
-                ref={textareaRef}
-                value={cmtInput}
-                onChange={(e) => {
-                  setCmtInput(e.target.value);
-                  const el = e.currentTarget;
-                  el.style.height = "auto";
-                  el.style.height = Math.min(el.scrollHeight, 160) + "px";
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    submitComment();
-                  }
-                }}
-                placeholder="Viết bình luận..."
-                className="flex-1 min-h-[60px] max-h-[160px] resize-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                rows={1}
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
+              </p>
+            </div>
+          ) : (
+            comments.map((c: any) => (
+              <CommentItem
+                key={c._id}
+                comment={c}
+                onDeleted={loadPost}
+                onUpdated={loadPost}
               />
+            ))
+          )}
+        </div>
+
+        {/* Comment Input */}
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-t border-zinc-100 dark:border-zinc-800">
+          {cmtAttaches.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {cmtAttaches.map((a, i) => (
+                <div
+                  key={i}
+                  className="relative inline-flex items-center gap-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+                >
+                  {a.type === "image" ? (
+                    <img
+                      src={
+                        a.url.startsWith("http") ? a.url : `${API_BASE}${a.url}`
+                      }
+                      alt=""
+                      className="h-12 w-16 object-cover rounded"
+                    />
+                  ) : (
+                    <>
+                      <AttachmentIcon type={a.type} />
+                      <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate max-w-[100px]">
+                        {a.name || "File"}
+                      </span>
+                    </>
+                  )}
+                  <button
+                    onClick={() => removeAttachment(i)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <textarea
+              ref={textareaRef}
+              value={cmtInput}
+              onChange={(e) => {
+                setCmtInput(e.target.value);
+                const el = e.currentTarget;
+                el.style.height = "auto";
+                el.style.height = Math.min(el.scrollHeight, 160) + "px";
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  submitComment();
+                }
+              }}
+              placeholder="Viết bình luận..."
+              className="flex-1 min-h-[60px] max-h-[160px] resize-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 sm:px-4 py-2.5 sm:py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              rows={1}
+            />
+            <div className="flex items-center justify-end gap-2">
               <input
                 type="file"
                 multiple
                 hidden
                 ref={fileInputRef}
-                onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                onChange={(e) =>
+                  e.target.files && handleFileUpload(e.target.files)
+                }
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                className="p-2.5 sm:p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                 aria-label="Attach file"
               >
-                <Paperclip className="h-5 w-5" />
+                <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               <button
                 onClick={submitComment}
                 disabled={!cmtInput.trim() && cmtAttaches.length === 0}
-                className="px-4 py-3 rounded-lg bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
               >
-                <Send className="h-5 w-5" />
+                <Send className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Repost Modal */}
+      {showRepostModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-xl ring-1 ring-black/[0.06] dark:border-zinc-800/80 dark:bg-zinc-900/95">
+            <h3 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              Chia sẻ lại bài viết
+            </h3>
+            <textarea
+              value={repostCaption}
+              onChange={(e) => setRepostCaption(e.target.value)}
+              placeholder="Thêm ghi chú của bạn (tùy chọn)..."
+              className="mb-4 min-h-[100px] w-full rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-sm outline-none transition-colors focus:border-sky-500 focus:ring-2 focus:ring-sky-500/70 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-400"
+              rows={4}
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowRepostModal(false);
+                  setRepostCaption("");
+                }}
+                className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleRepostSubmit}
+                className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600"
+              >
+                Chia sẻ lại
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirm Modal */}
       {ConfirmModal}

@@ -27,6 +27,8 @@ import {
   studyScheduleRoutes,
   newsRoutes,
   vocabularyRoutes,
+  teacherLeadRoutes,
+  profileRoutes,
 } from "./modules";
 
 import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
@@ -47,10 +49,28 @@ app.use(morgan("dev")); // Log format: :method :url :status :response-time ms
 //CORS
 const FRONTEND_ORIGIN = process.env.CLIENT_URL || "http://localhost:3000";
 const ADMIN_ORIGIN = process.env.ADMIN_URL || "http://localhost:3001";
+const MOBILE_ORIGINS = process.env.MOBILE_ORIGINS 
+  ? process.env.MOBILE_ORIGINS.split(",").map(origin => origin.trim())
+  : [];
+
+// Combine all allowed origins
+const allowedOrigins = [FRONTEND_ORIGIN, ADMIN_ORIGIN, ...MOBILE_ORIGINS];
 
 app.use(
   cors({
-    origin: [FRONTEND_ORIGIN, ADMIN_ORIGIN],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin is in allowed list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // For mobile apps, allow all origins (you can restrict this if needed)
+      // Mobile apps typically don't send Origin header
+      callback(null, true);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: [
@@ -62,6 +82,8 @@ app.use(
       "x-user-role",
       //thêm header này để tránh lỗi CORS khi FE gửi x-user-access
       "x-user-access",
+      // Header for mobile app identification
+      "x-client-type",
       // Thêm một số header phổ biến khác nếu cần
       "X-Requested-With",
     ],
@@ -141,6 +163,9 @@ app.use("/api/progress", progressRoutes);
 // Dashboard
 app.use("/api/dashboard", dashboardRoutes);
 
+// Profile
+app.use("/api/profile", profileRoutes);
+
 // Badges
 app.use("/api/badges", badgeRoutes);
 
@@ -152,6 +177,9 @@ app.use("/api/news", newsRoutes);
 
 // Vocabulary
 app.use("/api/vocabulary", vocabularyRoutes);
+
+// Teacher leads
+app.use("/api", teacherLeadRoutes);
 
 //404 CHO API (tuỳ chọn)
 app.use((req, res, next) => {

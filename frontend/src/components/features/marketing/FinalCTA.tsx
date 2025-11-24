@@ -19,13 +19,13 @@ export default function FinalCTA() {
         </p>
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="/signup"
+            href="/register"
             className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-500"
           >
             Bắt đầu miễn phí <FiArrowRight />
           </Link>
           <Link
-            href="/tests"
+            href="/practice/part.1?level=1"
             className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
           >
             Khám phá bộ đề

@@ -55,22 +55,22 @@ const LV_BADGE: Record<
   { bg: string; border: string; text: string; icon: string }
 > = {
   1: {
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    border: "border-amber-300 dark:border-amber-700",
-    text: "text-amber-800 dark:text-amber-300",
-    icon: "text-amber-600 dark:text-amber-400",
+    bg: "bg-[#4C9C43]/10 dark:bg-[#4C9C43]/20",
+    border: "border-[#4C9C43]/30 dark:border-[#4C9C43]/50",
+    text: "text-[#4C9C43] dark:text-[#4C9C43]/90",
+    icon: "text-[#4C9C43] dark:text-[#4C9C43]/90",
   },
   2: {
-    bg: "bg-sky-100 dark:bg-sky-900/30",
-    border: "border-sky-300 dark:border-sky-700",
-    text: "text-sky-800 dark:text-sky-300",
-    icon: "text-sky-600 dark:text-sky-400",
+    bg: "bg-[#2E5EB8]/10 dark:bg-[#2E5EB8]/20",
+    border: "border-[#2E5EB8]/30 dark:border-[#2E5EB8]/50",
+    text: "text-[#2E5EB8] dark:text-[#2E5EB8]/90",
+    icon: "text-[#2E5EB8] dark:text-[#2E5EB8]/90",
   },
   3: {
-    bg: "bg-violet-100 dark:bg-violet-900/30",
-    border: "border-violet-300 dark:border-violet-700",
-    text: "text-violet-800 dark:text-violet-300",
-    icon: "text-violet-600 dark:text-violet-400",
+    bg: "bg-[#C44E1D]/10 dark:bg-[#C44E1D]/20",
+    border: "border-[#C44E1D]/30 dark:border-[#C44E1D]/50",
+    text: "text-[#C44E1D] dark:text-[#C44E1D]/90",
+    icon: "text-[#C44E1D] dark:text-[#C44E1D]/90",
   },
 };
 

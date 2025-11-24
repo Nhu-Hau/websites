@@ -37,7 +37,22 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "s3.ap-southeast-2.amazonaws.com",
-        pathname: "/project.toeic/**",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.s3.ap-southeast-2.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "s3.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.s3.amazonaws.com",
+        pathname: "/**",
       },
     ],
   },

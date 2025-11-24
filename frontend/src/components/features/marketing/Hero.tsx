@@ -306,7 +306,7 @@ export default function Hero() {
                 <span>Cấu trúc bám sát đề thi TOEIC thật</span>
               </div>
 
-              <h1 className="font-bold tracking-tight text-white text-4xl sm:text-5xl lg:text-6xl">
+              <h1 className="font-bold tracking-tight text-white text-5xl lg:text-6xl">
                 Xây lộ trình{" "}
                 <span className="text-sky-300">TOEIC thông minh</span> cho riêng
                 bạn
@@ -485,15 +485,31 @@ export default function Hero() {
             preserveAspectRatio="none"
           >
             <defs>
-              <linearGradient id="hero-wave" x1="0" x2="0" y1="0" y2="1">
-                {/* cùng một màu ở mọi điểm → nhìn như màu phẳng */}
+              {/* Light mode */}
+              <linearGradient id="hero-wave-light" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0%" stopColor="#F5F7FF" stopOpacity="1" />
                 <stop offset="100%" stopColor="#F5F7FF" stopOpacity="1" />
               </linearGradient>
+
+              {/* Dark mode */}
+              <linearGradient id="hero-wave-dark" x1="0" x2="0" y1="0" y2="1">
+                {/* gần giống nền slate-950 / slate-900 */}
+                <stop offset="0%" stopColor="#020617" stopOpacity="1" />
+                <stop offset="100%" stopColor="#020617" stopOpacity="1" />
+              </linearGradient>
             </defs>
 
+            {/* Light */}
             <path
-              fill="url(#hero-wave)"
+              className="dark:hidden"
+              fill="url(#hero-wave-light)"
+              d="M0,256L60,245.3C120,235,240,213,360,197.3C480,181,600,171,720,181.3C840,192,960,224,1080,229.3C1200,235,1320,213,1380,202.7L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"
+            />
+
+            {/* Dark */}
+            <path
+              className="hidden dark:block"
+              fill="url(#hero-wave-dark)"
               d="M0,256L60,245.3C120,235,240,213,360,197.3C480,181,600,171,720,181.3C840,192,960,224,1080,229.3C1200,235,1320,213,1380,202.7L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"
             />
           </svg>

@@ -103,7 +103,7 @@ export default function ChatPanel({
 
   const isPremium = authUser?.access === "premium";
   const canUpload = me.role === "teacher" || me.role === "admin" || isPremium;
-  const commentLimit = isPremium ? Infinity : 5;
+  const commentLimit = isPremium ? Infinity : 10;
   const canDownload = isPremium || me.role === "teacher" || me.role === "admin";
 
   // ===== localStorage =====
@@ -359,7 +359,7 @@ export default function ChatPanel({
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         if (err.code === "COMMENT_LIMIT_REACHED") {
-          toast.error("Bạn đã đạt giới hạn 5 comment", {
+          toast.error("Bạn đã đạt giới hạn 10 comment", {
             description: "Nâng cấp Premium để comment không giới hạn.",
           });
           await loadCommentCount();

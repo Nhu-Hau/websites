@@ -49,10 +49,12 @@ function VideoPlayer({ attachment }: { attachment: Attachment }) {
         </div>
       )}
       {thumbnail && !playing && (
+        /* eslint-disable-next-line @next/next/no-img-element */
         <img
           src={thumbnail}
           alt="Video thumbnail"
           className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
         />
       )}
       <video
@@ -94,6 +96,7 @@ function ImageItem({
       {loading && (
         <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
       )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={url}
         alt={attachment.name || "Image"}
@@ -148,16 +151,18 @@ function CarouselGallery({ attachments }: { attachments: Attachment[] }) {
       {allMedia.length > 1 && (
         <>
           <button
+            type="button"
             onClick={goPrev}
             className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
-            aria-label="Previous"
+            aria-label="Previous image"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
+            type="button"
             onClick={goNext}
             className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
-            aria-label="Next"
+            aria-label="Next image"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -165,6 +170,7 @@ function CarouselGallery({ attachments }: { attachments: Attachment[] }) {
             {allMedia.map((_, idx) => (
               <button
                 key={idx}
+                type="button"
                 onClick={() => setCurrentIndex(idx)}
                 className={`h-1.5 rounded-full transition-all ${
                   idx === currentIndex
@@ -172,6 +178,7 @@ function CarouselGallery({ attachments }: { attachments: Attachment[] }) {
                     : "w-1.5 bg-white/50 hover:bg-white/75"
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
+                aria-current={idx === currentIndex ? "true" : undefined}
               />
             ))}
           </div>
@@ -258,6 +265,7 @@ export default function MediaGallery({
             </div>
           ) : (
             <div className="relative w-full flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={getFullUrl(media.url)}
                 alt={media.name || "Image"}

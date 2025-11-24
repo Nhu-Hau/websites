@@ -23,6 +23,7 @@ const metadata = genMeta({
   ],
   canonical: SITE_CONFIG.url,
   ogType: "website",
+  ogImage: SITE_CONFIG.ogImage, // Ensure default OG image is set
 });
 
 export { metadata };

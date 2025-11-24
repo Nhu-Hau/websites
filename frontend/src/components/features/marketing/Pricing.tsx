@@ -31,6 +31,7 @@ import {
   Users,
 } from "lucide-react";
 import { motion, Variants } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 type PayResp = {
   data?: { checkoutUrl: string; qrCode?: string; orderCode: number };
@@ -81,6 +82,7 @@ export default function Pricing() {
   const basePrefix = useBasePrefix("vi");
   const { user } = useAuth();
   const isPremium = user?.access === "premium";
+  const t = useTranslations("marketing.pricing");
 
   const [loading, setLoading] = useState(false);
 
@@ -96,6 +98,25 @@ export default function Pricing() {
 
   const monthlyBase = 79_000;
   const plusBase = 159_000;
+  const renderLocked = React.useCallback(
+    (label: string) => (
+      <span className="inline-flex items-center gap-1 text-slate-500">
+        <XCircle className="h-4 w-4" />
+        <span>{label}</span>
+      </span>
+    ),
+    []
+  );
+
+  const renderUnlocked = React.useCallback(
+    (label: string) => (
+      <span className="inline-flex items-center gap-1 text-emerald-400">
+        <CheckCircle2 className="h-4 w-4" />
+        <span>{label}</span>
+      </span>
+    ),
+    []
+  );
 
   const { monthlyPrice, plusPrice } = useMemo(() => {
     const monthlyFinal =
@@ -124,6 +145,24 @@ export default function Pricing() {
   const monthlyPromoActive =
     promo?.plan === "monthly_79" && monthlyPrice.hasPromo;
   const plusPromoActive = promo?.plan === "monthly_159" && plusPrice.hasPromo;
+  const monthlyUpgradeLabel = monthlyPromoActive
+    ? t("buttons.upgradeMonthlyPromo", {
+        price: Math.round(monthlyPrice.final / 1000),
+      })
+    : t("buttons.upgradeMonthly");
+  const quarterlyUpgradeLabel = plusPromoActive
+    ? t("buttons.upgradeQuarterlyPromo", {
+        price: Math.round(plusPrice.final / 1000),
+      })
+    : t("buttons.upgradeQuarterly");
+  const monthlyPriceAfterLabel = t("promo.priceAfter", {
+    price: `${Math.round(monthlyPrice.final / 1000)}.000đ`,
+  });
+  const quarterlyPriceAfterLabel = t("promo.priceAfter", {
+    price: `${Math.round(plusPrice.final / 1000)}.000đ`,
+  });
+  const processingLabel = t("buttons.processing");
+  const currentPlanLabel = t("buttons.currentPlan");
 
   async function onApplyCode(inputCode: string, planForPromo: PaymentPlan) {
     setPromoErr((prev) => ({ ...prev, [planForPromo]: null }));
@@ -147,7 +186,7 @@ export default function Pricing() {
       });
       const j = await r.json();
       if (!r.ok)
-        throw new Error(j?.message || "Mã không hợp lệ hoặc đã hết hạn");
+        throw new Error(j?.message || t("errors.promoInvalid"));
 
       const appliedPlan =
         (j?.data?.plan as PaymentPlan | undefined) ?? planForPromo;
@@ -171,7 +210,7 @@ export default function Pricing() {
       setPromo(null);
       setPromoErr((prev) => ({
         ...prev,
-        [planForPromo]: e?.message || "Không thể kiểm tra mã, vui lòng thử lại",
+        [planForPromo]: e?.message || t("errors.promoCheckFailed"),
       }));
     } finally {
       setCheckingPlan(null);
@@ -209,13 +248,13 @@ export default function Pricing() {
       const json: PayResp = await resp.json();
       if (!resp.ok)
         throw new Error(
-          (json as any)?.message || "Không thể tạo link thanh toán"
+          (json as any)?.message || t("errors.paymentLink")
         );
       const url = json?.data?.checkoutUrl;
-      if (!url) throw new Error("Thiếu checkoutUrl từ hệ thống thanh toán");
+      if (!url) throw new Error(t("errors.missingCheckout"));
       window.location.href = url;
     } catch (e: any) {
-      alert(e?.message || "Có lỗi xảy ra khi tạo link thanh toán");
+      alert(e?.message || t("errors.paymentGeneric"));
       console.error("Error creating payment:", e);
     } finally {
       setLoading(false);
@@ -227,163 +266,116 @@ export default function Pricing() {
     () => [
       {
         key: "practice",
-        label: "Practice Tests",
-        description: "Luyện đề theo Part & Level",
+        label: t("comparison.practice.label"),
+        description: t("comparison.practice.description"),
         icon: <Layers className="h-4 w-4" />,
-        free: <>20 bài/tháng</>,
+        free: <>{t("comparison.practice.free")}</>,
         pro: (
           <span className="inline-flex items-center gap-1">
             <InfinityIcon className="h-4 w-4 text-[#4063bb]" />
-            <span>Không giới hạn</span>
+            <span>{t("comparison.practice.pro")}</span>
           </span>
         ),
       },
       {
         key: "ai-chat",
-        label: "AI Chat (Gia sư TOEIC)",
-        description: "Trao đổi với AI về ngữ pháp, từ vựng, chiến lược làm bài",
+        label: t("comparison.aiChat.label"),
+        description: t("comparison.aiChat.description"),
         icon: <Bot className="h-4 w-4" />,
-        free: (
-          <span className="inline-flex items-center gap-1 text-slate-500">
-            <XCircle className="h-4 w-4" />
-            <span>Bị khóa</span>
-          </span>
-        ),
-        pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>Mở khóa</span>
-          </span>
-        ),
+        free: renderLocked(t("comparison.locked")),
+        pro: renderUnlocked(t("comparison.unlocked")),
       },
       {
         key: "admin-chat",
-        label: "Admin / Teacher Chat",
-        description: "Hỏi đáp trực tiếp với admin hoặc giảng viên",
+        label: t("comparison.adminChat.label"),
+        description: t("comparison.adminChat.description"),
         icon: <MessageSquare className="h-4 w-4" />,
-        free: (
-          <span className="inline-flex items-center gap-1 text-slate-500">
-            <XCircle className="h-4 w-4" />
-            <span>Bị khóa</span>
-          </span>
-        ),
-        pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>Mở khóa</span>
-          </span>
-        ),
+        free: renderLocked(t("comparison.locked")),
+        pro: renderUnlocked(t("comparison.unlocked")),
       },
       {
         key: "vocab-translate",
-        label: "Dịch từ vựng trên bài báo",
-        description: "Dịch & lưu từ vựng trực tiếp khi đọc news",
+        label: t("comparison.vocab.label"),
+        description: t("comparison.vocab.description"),
         icon: <Sparkles className="h-4 w-4" />,
-        free: (
-          <span className="inline-flex items-center gap-1 text-slate-500">
-            <XCircle className="h-4 w-4" />
-            <span>Bị khóa</span>
-          </span>
-        ),
-        pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>Mở khóa</span>
-          </span>
-        ),
+        free: renderLocked(t("comparison.locked")),
+        pro: renderUnlocked(t("comparison.unlocked")),
       },
       {
         key: "livestream-comments",
-        label: "Livestream Comments",
-        description: "Chat trong phòng học livestream",
+        label: t("comparison.livestream.label"),
+        description: t("comparison.livestream.description"),
         icon: <MessageCircle className="h-4 w-4" />,
-        free: (
-          <span>
-            10 comment/buổi{" "}
-            <span className="text-xs text-slate-500">(giới hạn)</span>
-          </span>
-        ),
-        pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>Không giới hạn</span>
-          </span>
-        ),
+        free: t.rich("comparison.livestream.free", {
+          note: (chunks) => (
+            <span className="text-xs text-slate-500">{chunks}</span>
+          ),
+        }),
+        pro: renderUnlocked(t("comparison.unlimited")),
       },
       {
         key: "download-files",
-        label: "Tải file giảng viên",
-        description: "Download tài liệu được gửi trong phòng học",
+        label: t("comparison.download.label"),
+        description: t("comparison.download.description"),
         icon: <FileDown className="h-4 w-4" />,
-        free: (
-          <span className="inline-flex items-center gap-1 text-slate-500">
-            <XCircle className="h-4 w-4" />
-            <span>Bị khóa</span>
-          </span>
-        ),
-        pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>Mở khóa</span>
-          </span>
-        ),
+        free: renderLocked(t("comparison.locked")),
+        pro: renderUnlocked(t("comparison.unlocked")),
       },
       {
         key: "upload-files",
-        label: "Upload file trong livestream",
-        description: "Upload tài liệu hỗ trợ buổi học trực tuyến",
+        label: t("comparison.upload.label"),
+        description: t("comparison.upload.description"),
         icon: <Upload className="h-4 w-4" />,
-        free: (
-          <span className="inline-flex items-center gap-1 text-slate-500">
-            <XCircle className="h-4 w-4" />
-            <span>Bị khóa</span>
-          </span>
-        ),
-        pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>Mở khóa</span>
-          </span>
-        ),
+        free: renderLocked(t("comparison.locked")),
+        pro: renderUnlocked(t("comparison.unlocked")),
       },
       {
         key: "learning-insight",
-        label: "Learning Insight",
-        description: "AI phân tích kết quả làm bài & thói quen học",
+        label: t("comparison.insight.label"),
+        description: t("comparison.insight.description"),
         icon: <Brain className="h-4 w-4" />,
-        free: (
-          <span className="inline-flex items-center gap-1 text-slate-500">
-            <XCircle className="h-4 w-4" />
-            <span>Bị khóa</span>
-          </span>
-        ),
-        pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>Mở khóa</span>
-          </span>
-        ),
+        free: renderLocked(t("comparison.locked")),
+        pro: renderUnlocked(t("comparison.unlocked")),
       },
       {
         key: "groups",
-        label: "Tạo Groups học chung",
-        description: "Tạo nhóm học, mời bạn bè vào học chung",
+        label: t("comparison.groups.label"),
+        description: t("comparison.groups.description"),
         icon: <Users className="h-4 w-4" />,
-        free: (
-          <span className="inline-flex items-center gap-1 text-slate-500">
-            <XCircle className="h-4 w-4" />
-            <span>Bị khóa</span>
-          </span>
-        ),
-        pro: (
-          <span className="inline-flex items-center gap-1 text-emerald-400">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>Mở khóa</span>
-          </span>
-        ),
+        free: renderLocked(t("comparison.locked")),
+        pro: renderUnlocked(t("comparison.unlocked")),
       },
     ],
-    []
+    [renderLocked, renderUnlocked, t]
+  );
+
+  const freeFeatures = useMemo(
+    () => [
+      t("plans.free.features.0"),
+      t("plans.free.features.1"),
+      t("plans.free.features.2"),
+      t("plans.free.features.3"),
+    ],
+    [t]
+  );
+
+  const premiumFeatures = useMemo(
+    () => [
+      t("plans.monthly.features.0"),
+      t("plans.monthly.features.1"),
+      t("plans.monthly.features.2"),
+      t("plans.monthly.features.3"),
+    ],
+    [t]
+  );
+
+  const premiumPlusFeatures = useMemo(
+    () => [
+      t("plans.quarterly.features.0"),
+      t("plans.quarterly.features.1"),
+      t("plans.quarterly.features.2"),
+    ],
+    [t]
   );
 
   return (
@@ -403,15 +395,14 @@ export default function Pricing() {
         >
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-sky-50 dark:bg-sky-950/50 px-4 py-1.5">
             <span className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
-              Nâng cấp trải nghiệm luyện thi
+              {t("eyebrow")}
             </span>
           </div>
           <h2 className="font-manrope text-3xl font-bold text-[#1f2a3d] sm:text-4xl lg:text-5xl dark:text-slate-50">
-            Gói học phù hợp với bạn
+            {t("title")}
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300">
-            Thử miễn phí, không cần thẻ. Khi sẵn sàng, bạn có thể nâng cấp lên
-            Premium với nhiều quyền lợi hơn.
+            {t("description")}
           </p>
         </motion.div>
 
@@ -435,47 +426,30 @@ export default function Pricing() {
                 </div>
               </div>
               <h3 className="mt-5 text-center font-manrope text-xl font-bold text-[#4063bb] dark:text-sky-200">
-                Gói Free
+                {t("plans.free.name")}
               </h3>
               <div className="mt-3 flex items-center justify-center">
                 <span className="font-manrope text-3xl font-semibold text-slate-900 dark:text-slate-50">
-                  0đ
+                  {t("plans.free.price")}
                 </span>
                 <span className="ml-2 text-sm text-slate-500 dark:text-slate-400">
-                  / tháng
+                  {t("plans.period.month")}
                 </span>
               </div>
               <p className="mt-3 text-center text-sm text-slate-600 dark:text-slate-300">
-                Làm placement test, luyện tập cơ bản và làm quen giao diện học
-                TOEIC.
+                {t("plans.free.description")}
               </p>
             </div>
 
             <ul className="mb-8 space-y-3 text-sm text-slate-700 dark:text-slate-200">
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
-                </span>
-                <span>20 Practice Tests mỗi tháng</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
-                </span>
-                <span>Lộ trình gợi ý cơ bản theo level</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
-                </span>
-                <span>Báo cáo điểm tổng quan sau mỗi bài</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
-                </span>
-                <span>Cập nhật đề & bài đọc thường xuyên</span>
-              </li>
+              {freeFeatures.map((feature) => (
+                <li key={feature} className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
+                  </span>
+                  <span>{feature}</span>
+                </li>
+              ))}
             </ul>
 
             <div className="mt-auto">
@@ -484,7 +458,7 @@ export default function Pricing() {
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4063bb] focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-950"
               >
                 <Star className="h-4 w-4" />
-                Bắt đầu miễn phí
+                {t("plans.free.cta")}
               </Link>
             </div>
           </motion.article>
@@ -501,7 +475,7 @@ export default function Pricing() {
                 </div>
               </div>
               <h3 className="mt-5 text-center font-manrope text-xl font-bold text-[#4063bb] dark:text-sky-200">
-                Premium
+                {t("plans.monthly.name")}
               </h3>
               <div className="mt-3 flex items-center justify-center">
                 {monthlyPromoActive ? (
@@ -515,21 +489,20 @@ export default function Pricing() {
                   </>
                 ) : (
                   <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                    79k
+                    {t("plans.monthly.price")}
                   </span>
                 )}
                 <span className="ml-2 text-sm font-medium text-slate-500 dark:text-slate-400">
-                  / tháng
+                  {t("plans.period.month")}
                 </span>
               </div>
               <p className="mt-3 text-center text-sm text-slate-600 dark:text-slate-300">
-                Mở khóa toàn bộ Practice Tests, AI Chat, livestream, tài liệu và
-                Learning Insight cá nhân hóa.
+                {t("plans.monthly.description")}
               </p>
               {monthlyPromoActive && (
                 <div className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200">
                   <BadgePercent className="h-3 w-3" />
-                  Đã áp dụng mã: {promo?.code}
+                  {t("promo.applied", { code: promo?.code ?? "" })}
                 </div>
               )}
             </div>
@@ -540,7 +513,7 @@ export default function Pricing() {
                 <input
                   value={code79}
                   onChange={(e) => setCode79(e.target.value.toUpperCase())}
-                  placeholder="Nhập mã khuyến mãi (nếu có)"
+                  placeholder={t("promo.placeholder")}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#4063bb] focus:outline-none focus:ring-2 focus:ring-[#4063bb]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
                   disabled={isPremium}
                 />
@@ -567,7 +540,7 @@ export default function Pricing() {
                 ) : (
                   <BadgePercent className="h-4 w-4" />
                 )}
-                Áp dụng
+                {t("promo.apply")}
               </button>
             </div>
 
@@ -578,38 +551,19 @@ export default function Pricing() {
             )}
             {monthlyPromoActive && (
               <p className="mb-3 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                Giá sau giảm:{" "}
-                <span className="text-sm">
-                  {Math.round(monthlyPrice.final / 1000)}.000đ
-                </span>
+                {monthlyPriceAfterLabel}
               </p>
             )}
 
             <ul className="mb-6 space-y-3 text-sm text-slate-700 dark:text-slate-200">
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
-                </span>
-                <span>Không giới hạn Practice Tests & mini tests</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
-                </span>
-                <span>Chat AI & Admin/Giảng viên bất cứ lúc nào</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
-                </span>
-                <span>Livestream không giới hạn bình luận & tài liệu</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
-                </span>
-                <span>Learning Insight cá nhân hoá theo kết quả học</span>
-              </li>
+              {premiumFeatures.map((feature) => (
+                <li key={feature} className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
+                  </span>
+                  <span>{feature}</span>
+                </li>
+              ))}
             </ul>
 
             <div className="mt-auto pt-1">
@@ -626,23 +580,17 @@ export default function Pricing() {
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Đang xử lý...
+                    {processingLabel}
                   </>
                 ) : isPremium ? (
                   <>
                     <Crown className="h-4 w-4" />
-                    Bạn đang dùng Premium
+                    {currentPlanLabel}
                   </>
                 ) : (
                   <>
                     <Sparkles className="h-4 w-4" />
-                    {monthlyPromoActive ? (
-                      <>
-                        Nâng cấp {Math.round(monthlyPrice.final / 1000)}k/tháng
-                      </>
-                    ) : (
-                      <>Nâng cấp 79k/tháng</>
-                    )}
+                    {monthlyUpgradeLabel}
                   </>
                 )}
               </button>
@@ -658,12 +606,12 @@ export default function Pricing() {
               {isPremium ? (
                 <>
                   <Crown className="h-3.5 w-3.5" />
-                  Bạn đang dùng
+                  {t("plans.quarterly.badge.current")}
                 </>
               ) : (
                 <>
                   <Zap className="h-3.5 w-3.5" />
-                  Gói khuyến nghị
+                  {t("plans.quarterly.badge.recommended")}
                 </>
               )}
             </div>
@@ -675,7 +623,7 @@ export default function Pricing() {
                 </div>
               </div>
               <h3 className="mt-5 text-center font-manrope text-xl font-bold text-[#4063bb] dark:text-sky-200">
-                Premium
+                {t("plans.quarterly.name")}
               </h3>
               <div className="mt-3 flex items-center justify-center">
                 {plusPromoActive ? (
@@ -689,24 +637,23 @@ export default function Pricing() {
                   </>
                 ) : (
                   <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                    159k
+                    {t("plans.quarterly.price")}
                   </span>
                 )}
                 <span className="ml-2 text-sm font-medium text-slate-500 dark:text-slate-400">
-                  / 3 tháng
+                  {t("plans.period.quarter")}
                 </span>
               </div>
               <p className="mt-2 text-center text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                Tiết kiệm hơn, phù hợp lộ trình ôn TOEIC 2–3 tháng liên tục
+                {t("plans.quarterly.highlight")}
               </p>
               <p className="mt-3 text-center text-sm text-slate-600 dark:text-slate-300">
-                Giữ toàn bộ quyền lợi Premium, ưu tiên cho những bạn luyện thi
-                giai đoạn nước rút với cường độ cao.
+                {t("plans.quarterly.description")}
               </p>
               {plusPromoActive && (
                 <div className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200">
                   <BadgePercent className="h-3 w-3" />
-                  Đã áp dụng mã: {promo?.code}
+                  {t("promo.applied", { code: promo?.code ?? "" })}
                 </div>
               )}
             </div>
@@ -717,7 +664,7 @@ export default function Pricing() {
                 <input
                   value={code159}
                   onChange={(e) => setCode159(e.target.value.toUpperCase())}
-                  placeholder="Nhập mã khuyến mãi (nếu có)"
+                  placeholder={t("promo.placeholder")}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#4063bb] focus:outline-none focus:ring-2 focus:ring-[#4063bb]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
                   disabled={isPremium}
                 />
@@ -744,7 +691,7 @@ export default function Pricing() {
                 ) : (
                   <BadgePercent className="h-4 w-4" />
                 )}
-                Áp dụng
+                {t("promo.apply")}
               </button>
             </div>
 
@@ -755,34 +702,19 @@ export default function Pricing() {
             )}
             {plusPromoActive && (
               <p className="mb-3 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                Giá sau giảm:{" "}
-                <span className="text-sm">
-                  {Math.round(plusPrice.final / 1000)}.000đ
-                </span>
+                {quarterlyPriceAfterLabel}
               </p>
             )}
 
             <ul className="mb-8 space-y-3 text-sm text-slate-700 dark:text-slate-200">
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
-                </span>
-                <span>Toàn bộ tính năng như Premium 79k/tháng</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
-                </span>
-                <span>
-                  Lý tưởng cho bạn học với tần suất cao, nhiều buổi livestream
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
-                </span>
-                <span>Ưu tiên hỗ trợ trong các buổi học online</span>
-              </li>
+              {premiumPlusFeatures.map((feature) => (
+                <li key={feature} className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
+                  </span>
+                  <span>{feature}</span>
+                </li>
+              ))}
             </ul>
 
             <div className="mt-auto">
@@ -795,18 +727,12 @@ export default function Pricing() {
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Đang xử lý...
+                    {processingLabel}
                   </>
                 ) : (
                   <>
                     <Crown className="h-4 w-4" />
-                    {plusPromoActive ? (
-                      <>
-                        Nâng cấp {Math.round(plusPrice.final / 1000)}k / 3 tháng
-                      </>
-                    ) : (
-                      <>Nâng cấp 159k / 3 tháng</>
-                    )}
+                    {isPremium ? currentPlanLabel : quarterlyUpgradeLabel}
                   </>
                 )}
               </button>
@@ -831,11 +757,10 @@ export default function Pricing() {
 
                 <div className="flex-1 space-y-1">
                   <h4 className="text-[15px] font-semibold text-slate-900 dark:text-slate-50 leading-snug sm:text-base">
-                    So sánh chi tiết tính năng Free vs Premium
+                    {t("comparison.heading")}
                   </h4>
                   <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 xs:text-[13px]">
-                    Dựa trên các module thật của hệ thống (Practice, AI Chat,
-                    Livestream, Learning Insight, Groups).
+                    {t("comparison.description")}
                   </p>
                 </div>
               </div>
@@ -845,13 +770,13 @@ export default function Pricing() {
           {/* Desktop table */}
           <div className="hidden text-sm text-slate-700 md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)] md:gap-x-4 dark:text-slate-200">
             <div className="pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Tính năng
+              {t("comparison.columns.feature")}
             </div>
             <div className="pb-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Free
+              {t("comparison.columns.free")}
             </div>
             <div className="pb-2 text-center text-xs font-semibold uppercase tracking-wide text-[#4063bb] dark:text-sky-300">
-              Premium
+              {t("comparison.columns.premium")}
             </div>
 
             {rows.map((row) => (
@@ -905,7 +830,7 @@ export default function Pricing() {
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div className="rounded-xl bg-white p-3 shadow-sm shadow-slate-900/5 dark:bg-slate-900">
                     <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                      Free
+                      {t("comparison.columns.free")}
                     </p>
                     <div className="text-[13px] text-slate-700 dark:text-slate-200">
                       {row.free}
@@ -913,7 +838,7 @@ export default function Pricing() {
                   </div>
                   <div className="rounded-xl bg-sky-50 p-3 shadow-sm shadow-slate-900/5 dark:bg-sky-900/20">
                     <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#4063bb] dark:text-sky-200">
-                      Premium
+                      {t("comparison.columns.premium")}
                     </p>
                     <div className="text-[13px] font-semibold text-[#4063bb] dark:text-sky-100">
                       {row.pro}
@@ -938,7 +863,7 @@ export default function Pricing() {
             className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4063bb] focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-950"
           >
             <PlayCircle className="h-4 w-4" />
-            Làm thử bài luyện miễn phí
+            {t("cta.practice")}
           </Link>
 
           <button
@@ -948,11 +873,21 @@ export default function Pricing() {
             className="inline-flex items-center justify-center gap-2 rounded-full bg-[#4063bb] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-600 disabled:opacity-60"
           >
             {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {processingLabel}
+              </>
+            ) : isPremium ? (
+              <>
+                <Crown className="h-4 w-4" />
+                {currentPlanLabel}
+              </>
             ) : (
-              <Crown className="h-4 w-4" />
+              <>
+                <Crown className="h-4 w-4" />
+                {t("cta.upgrade")}
+              </>
             )}
-            {isPremium ? "Bạn đang dùng Premium" : "Nâng cấp Premium ngay"}
           </button>
         </motion.div>
       </div>

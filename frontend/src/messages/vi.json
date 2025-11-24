@@ -1,1 +1,281 @@
-{}
+{
+  "marketing": {
+    "hero": {
+      "badge": "Cấu trúc bám sát đề thi TOEIC thật",
+      "title": "Xây lộ trình <highlight>TOEIC thông minh</highlight> cho riêng bạn",
+      "description": "Chỉ với <minutes>35 phút</minutes> làm <mini>Mini TOEIC 55 câu</mini>, hệ thống sẽ ước lượng <score>điểm TOEIC (0–990)</score>, xếp <level>Level 1–3</level> và đề xuất <highlight>lộ trình học cá nhân hóa</highlight>.",
+      "cta": {
+        "primary": "Bắt đầu Mini TOEIC 55 câu",
+        "primaryLoading": "Đang kiểm tra...",
+        "secondary": "Xem bộ đề luyện tập"
+      },
+      "meta": "* Sau khi làm bài sẽ nhận <report>báo cáo chi tiết</report> và <plan>lộ trình học cá nhân hóa</plan> gửi qua email.",
+      "stats": {
+        "mini": {
+          "number": "55 câu",
+          "label": "Mini TOEIC"
+        },
+        "time": {
+          "number": "35 phút",
+          "label": "Thời gian"
+        },
+        "score": {
+          "number": "0–990",
+          "label": "Điểm ước lượng"
+        }
+      },
+      "card": {
+        "eyebrow": "Bài kiểm tra đang chờ",
+        "title": "Mini TOEIC – Placement Test",
+        "duration": "35 phút",
+        "steps": [
+          "Làm bài Mini TOEIC rút gọn.",
+          "Hệ thống ước lượng điểm & xếp level.",
+          "Gợi ý lộ trình học phù hợp."
+        ],
+        "tags": {
+          "listening": {
+            "title": "Listening",
+            "meta": "Part 1–4"
+          },
+          "reading": {
+            "title": "Reading",
+            "meta": "Part 5–7"
+          },
+          "roadmap": {
+            "title": "Lộ trình",
+            "meta": "Tự động"
+          }
+        },
+        "cta": {
+          "default": "Bắt đầu ngay bây giờ",
+          "loading": "Đang kiểm tra..."
+        }
+      },
+      "notifications": {
+        "loginRequired": "Vui lòng đăng nhập để làm Mini TOEIC 55 câu",
+        "sessionExpired": "Phiên đăng nhập đã hết hạn",
+        "sessionExpiredAction": "Đăng nhập lại",
+        "startMessage": "Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt",
+        "attemptExists": "Bạn đã làm Placement Test rồi",
+        "attemptExistsAction": "Xem kết quả"
+      }
+    },
+    "workflow": {
+      "eyebrow": "Quy trình học",
+      "title": "Học TOEIC hiệu quả trong 4 bước đơn giản",
+      "description": "Từ việc xác định trình độ đến lúc chạm mục tiêu điểm số của bạn.",
+      "steps": [
+        {
+          "title": "Làm Placement Test",
+          "desc": "Hoàn thành bài Mini TOEIC 55 câu trong 35 phút để xác định trình độ hiện tại của bạn."
+        },
+        {
+          "title": "Nhận lộ trình học",
+          "desc": "Hệ thống ước lượng điểm TOEIC và đề xuất lộ trình cá nhân hóa dựa trên điểm yếu của bạn."
+        },
+        {
+          "title": "Luyện tập theo Part",
+          "desc": "Thực hành từng Part với bài tập được phân theo độ khó phù hợp với level của bạn."
+        },
+        {
+          "title": "Theo dõi tiến độ",
+          "desc": "Xem báo cáo chi tiết, phân tích lỗi và theo dõi sự tiến bộ theo thời gian."
+        }
+      ]
+    },
+    "testimonials": {
+      "eyebrow": "Cảm nhận người học",
+      "title": "Hàng nghìn người đã tăng điểm",
+      "description": "Kinh nghiệm thật – kết quả thật từ những học viên đã sử dụng nền tảng của chúng tôi.",
+      "items": [
+        {
+          "name": "Ngọc Hân",
+          "score": "+180 điểm",
+          "quote": "Sau bài placement test, hệ thống gợi ý level cho từng part — mình yếu Part 2 và 3 nên tập trung luyện ở đó. Cực kỳ hiệu quả!"
+        },
+        {
+          "name": "Trung Kiên",
+          "score": "+200 điểm",
+          "quote": "Web chia level rõ ràng, luyện đúng khả năng nên không bị nản. Sau 1 tháng mình tăng điểm Listening rõ rệt."
+        },
+        {
+          "name": "Mai Linh",
+          "score": "+165 điểm",
+          "quote": "Mỗi part đều có đề cập nhật, lời giải chi tiết và báo cáo tiến bộ sau từng buổi luyện. Mình cảm giác như được kèm riêng vậy!"
+        }
+      ],
+      "studentLabel": "Học viên TOEIC",
+      "impact": {
+        "summary": "<percent>98%</percent> học viên cải thiện điểm số sau <duration>4 tuần</duration> luyện tập đều đặn.",
+        "source": "Dữ liệu từ 12.000+ học viên"
+      }
+    },
+    "pricing": {
+      "eyebrow": "Nâng cấp trải nghiệm luyện thi",
+      "title": "Gói học phù hợp với bạn",
+      "description": "Thử miễn phí, không cần thẻ. Khi sẵn sàng, bạn có thể nâng cấp lên Premium với nhiều quyền lợi hơn.",
+      "plans": {
+        "period": {
+          "month": "/ tháng",
+          "quarter": "/ 3 tháng"
+        },
+        "free": {
+          "name": "Gói Free",
+          "price": "0đ",
+          "description": "Làm placement test, luyện tập cơ bản và làm quen giao diện học TOEIC.",
+          "features": [
+            "20 Practice Tests mỗi tháng",
+            "Lộ trình gợi ý cơ bản theo level",
+            "Báo cáo điểm tổng quan sau mỗi bài",
+            "Cập nhật đề & bài đọc thường xuyên"
+          ],
+          "cta": "Bắt đầu miễn phí"
+        },
+        "monthly": {
+          "name": "Premium",
+          "price": "79k",
+          "description": "Mở khóa toàn bộ Practice Tests, AI Chat, livestream, tài liệu và Learning Insight cá nhân hóa.",
+          "features": [
+            "Không giới hạn Practice Tests & mini tests",
+            "Chat AI & Admin/Giảng viên bất cứ lúc nào",
+            "Livestream không giới hạn bình luận & tài liệu",
+            "Learning Insight cá nhân hoá theo kết quả học"
+          ]
+        },
+        "quarterly": {
+          "name": "Premium",
+          "price": "159k",
+          "highlight": "Tiết kiệm hơn, phù hợp lộ trình ôn TOEIC 2–3 tháng liên tục",
+          "description": "Giữ toàn bộ quyền lợi Premium, ưu tiên cho những bạn luyện thi giai đoạn nước rút với cường độ cao.",
+          "badge": {
+            "current": "Bạn đang dùng",
+            "recommended": "Gói khuyến nghị"
+          },
+          "features": [
+            "Toàn bộ quyền lợi của Premium 79k/tháng",
+            "Lý tưởng khi học với tần suất cao, nhiều buổi livestream",
+            "Ưu tiên hỗ trợ trong các buổi học online"
+          ]
+        }
+      },
+      "promo": {
+        "applied": "Đã áp dụng mã: {code}",
+        "placeholder": "Nhập mã khuyến mãi (nếu có)",
+        "apply": "Áp dụng",
+        "priceAfter": "Giá sau giảm: {price}"
+      },
+      "buttons": {
+        "upgradeMonthly": "Nâng cấp 79k/tháng",
+        "upgradeMonthlyPromo": "Nâng cấp {price}k/tháng",
+        "upgradeQuarterly": "Nâng cấp 159k / 3 tháng",
+        "upgradeQuarterlyPromo": "Nâng cấp {price}k / 3 tháng",
+        "processing": "Đang xử lý...",
+        "currentPlan": "Bạn đang dùng Premium"
+      },
+      "errors": {
+        "promoInvalid": "Mã không hợp lệ hoặc đã hết hạn",
+        "promoCheckFailed": "Không thể kiểm tra mã, vui lòng thử lại",
+        "paymentLink": "Không thể tạo link thanh toán",
+        "missingCheckout": "Thiếu checkoutUrl từ hệ thống thanh toán",
+        "paymentGeneric": "Có lỗi xảy ra khi tạo link thanh toán"
+      },
+      "comparison": {
+        "heading": "So sánh chi tiết tính năng Free vs Premium",
+        "description": "Dựa trên các module thật của hệ thống (Practice, AI Chat, Livestream, Learning Insight, Groups).",
+        "columns": {
+          "feature": "Tính năng",
+          "free": "Free",
+          "premium": "Premium"
+        },
+        "locked": "Bị khóa",
+        "unlocked": "Mở khóa",
+        "unlimited": "Không giới hạn",
+        "practice": {
+          "label": "Practice Tests",
+          "description": "Luyện đề theo Part & Level",
+          "free": "20 bài/tháng",
+          "pro": "Không giới hạn"
+        },
+        "aiChat": {
+          "label": "AI Chat (Gia sư TOEIC)",
+          "description": "Trao đổi với AI về ngữ pháp, từ vựng, chiến lược làm bài"
+        },
+        "adminChat": {
+          "label": "Admin / Teacher Chat",
+          "description": "Hỏi đáp trực tiếp với admin hoặc giảng viên"
+        },
+        "vocab": {
+          "label": "Dịch từ vựng trên bài báo",
+          "description": "Dịch & lưu từ vựng trực tiếp khi đọc news"
+        },
+        "livestream": {
+          "label": "Livestream Comments",
+          "description": "Chat trong phòng học livestream",
+          "free": "10 comment/buổi <note>(giới hạn)</note>"
+        },
+        "download": {
+          "label": "Tải file giảng viên",
+          "description": "Download tài liệu được gửi trong phòng học"
+        },
+        "upload": {
+          "label": "Upload file trong livestream",
+          "description": "Upload tài liệu hỗ trợ buổi học trực tuyến"
+        },
+        "insight": {
+          "label": "Learning Insight",
+          "description": "AI phân tích kết quả làm bài & thói quen học"
+        },
+        "groups": {
+          "label": "Tạo Groups học chung",
+          "description": "Tạo nhóm học, mời bạn bè vào học chung"
+        }
+      },
+      "cta": {
+        "practice": "Làm thử bài luyện miễn phí",
+        "upgrade": "Nâng cấp Premium ngay"
+      }
+    },
+    "faq": {
+      "eyebrow": "Câu hỏi thường gặp",
+      "title": "Có thắc mắc? Chúng tôi sẵn sàng trả lời",
+      "description": "Tìm câu trả lời cho những câu hỏi phổ biến về nền tảng học TOEIC của chúng tôi.",
+      "items": [
+        {
+          "question": "Placement Test có mất phí không?",
+          "answer": "Không, Placement Test hoàn toàn miễn phí. Bạn có thể làm bài kiểm tra để xác định trình độ của mình mà không cần trả phí."
+        },
+        {
+          "question": "Tôi có thể làm Placement Test bao nhiêu lần?",
+          "answer": "Bạn có thể làm Placement Test một lần để nhận lộ trình học ban đầu. Nếu muốn đánh giá lại trình độ sau một thời gian học tập, vui lòng liên hệ bộ phận hỗ trợ."
+        },
+        {
+          "question": "Lộ trình học được cá nhân hóa như thế nào?",
+          "answer": "Dựa trên kết quả Placement Test, hệ thống phân tích điểm mạnh và điểm yếu rồi đề xuất lộ trình phù hợp cho từng Part và Level."
+        },
+        {
+          "question": "Gói Premium có gì khác biệt so với gói Miễn phí?",
+          "answer": "Gói Premium cung cấp luyện đề không giới hạn, Full Test với giải thích chi tiết, truy cập AI Chat và Admin Chat, tải file từ giảng viên, phân tích lỗi nâng cao và hỗ trợ ưu tiên."
+        },
+        {
+          "question": "Tôi có thể hủy gói Premium bất cứ lúc nào không?",
+          "answer": "Có, bạn có thể hủy gói Premium bất cứ lúc nào và vẫn dùng được các tính năng đến hết chu kỳ thanh toán."
+        },
+        {
+          "question": "Hệ thống có hỗ trợ tiếng Anh không?",
+          "answer": "Giao diện chính được thiết kế bằng tiếng Việt để phục vụ học viên Việt Nam, nhưng toàn bộ nội dung bài thi và câu hỏi vẫn bằng tiếng Anh như kỳ thi TOEIC thật."
+        }
+      ],
+      "contact": {
+        "prompt": "Vẫn còn thắc mắc?",
+        "cta": "Liên hệ hỗ trợ"
+      }
+    },
+    "finalCta": {
+      "title": "Sẵn sàng chinh phục mục tiêu TOEIC của bạn?",
+      "description": "Tham gia luyện tập hôm nay, theo dõi tiến bộ mỗi ngày và đạt điểm mong muốn.",
+      "primaryCta": "Bắt đầu miễn phí",
+      "secondaryCta": "Khám phá bộ đề"
+    }
+  }
+}

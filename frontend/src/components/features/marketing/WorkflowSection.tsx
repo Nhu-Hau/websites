@@ -4,34 +4,31 @@ import React, { useRef } from "react";
 import { FileText, Route, Target, TrendingUp, ArrowRight } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import SectionHeader from "./SectionHeader";
+import { useTranslations } from "next-intl";
 
 const steps = [
   {
+    key: "0",
     number: "01",
     icon: FileText,
-    title: "Làm Placement Test",
-    desc: "Hoàn thành bài Mini TOEIC 55 câu trong 35 phút để xác định trình độ hiện tại của bạn.",
     color: "emerald",
   },
   {
+    key: "1",
     number: "02",
     icon: Route,
-    title: "Nhận lộ trình học",
-    desc: "Hệ thống sẽ ước lượng điểm TOEIC và đề xuất lộ trình học cá nhân hóa dựa trên điểm yếu của bạn.",
     color: "sky",
   },
   {
+    key: "2",
     number: "03",
     icon: Target,
-    title: "Luyện tập theo Part",
-    desc: "Thực hành từng Part với bài tập được phân theo độ khó phù hợp với level của bạn.",
     color: "amber",
   },
   {
+    key: "3",
     number: "04",
     icon: TrendingUp,
-    title: "Theo dõi tiến độ",
-    desc: "Xem báo cáo chi tiết, phân tích lỗi và theo dõi sự tiến bộ của bạn theo thời gian.",
     color: "pink",
   },
 ];
@@ -84,6 +81,7 @@ function getColorClasses(color: string) {
 export default function WorkflowSection() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const t = useTranslations("marketing.workflow");
 
   const headerInView = useInView(containerRef, {
     once: true,
@@ -112,9 +110,9 @@ export default function WorkflowSection() {
           transition={{ duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}
         >
           <SectionHeader
-            eyebrow="Quy trình học"
-            title="Học TOEIC hiệu quả trong 4 bước đơn giản"
-            desc="Từ việc xác định trình độ đến lúc chạm mục tiêu điểm số của bạn."
+            eyebrow={t("eyebrow")}
+            title={t("title")}
+            desc={t("description")}
             align="center"
           />
         </motion.div>
@@ -128,10 +126,12 @@ export default function WorkflowSection() {
             {steps.map((step, index) => {
               const Icon = step.icon;
               const colors = getColorClasses(step.color);
+              const title = t(`steps.${index}.title`);
+              const desc = t(`steps.${index}.desc`);
 
               return (
                 <motion.div
-                  key={step.number}
+                  key={step.key}
                   initial={{ opacity: 0, y: -24 }}
                   animate={
                     listInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -24 }
@@ -163,10 +163,10 @@ export default function WorkflowSection() {
 
                     {/* nội dung */}
                     <h3 className="mb-2 text-base font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                      {step.title}
+                      {title}
                     </h3>
                     <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                      {step.desc}
+                      {desc}
                     </p>
                   </div>
 
@@ -186,10 +186,12 @@ export default function WorkflowSection() {
             {steps.map((step, index) => {
               const Icon = step.icon;
               const colors = getColorClasses(step.color);
+              const title = t(`steps.${index}.title`);
+              const desc = t(`steps.${index}.desc`);
 
               return (
                 <motion.div
-                  key={step.number}
+                  key={step.key}
                   initial={{ opacity: 0, y: -24 }}
                   animate={
                     listInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -24 }
@@ -225,10 +227,10 @@ export default function WorkflowSection() {
                       </div>
                       <div className="flex-1">
                         <h3 className="mb-1.5 text-sm font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                          {step.title}
+                          {title}
                         </h3>
                         <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                          {step.desc}
+                          {desc}
                         </p>
                       </div>
                     </div>

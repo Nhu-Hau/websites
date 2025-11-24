@@ -15,6 +15,7 @@ import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 const customToast = {
   success: (message: string, options?: any) => toast.success(message, options),
@@ -134,6 +135,68 @@ export default function Hero() {
   const { user } = useAuth();
   const base = useBasePrefix("vi");
   const router = useRouter();
+  const t = useTranslations("marketing.hero");
+
+  const stats = React.useMemo(
+    () => [
+      {
+        number: t("stats.mini.number"),
+        label: t("stats.mini.label"),
+        icon: <FiCheckCircle />,
+      },
+      {
+        number: t("stats.time.number"),
+        label: t("stats.time.label"),
+        icon: <FiClock />,
+      },
+      {
+        number: t("stats.score.number"),
+        label: t("stats.score.label"),
+        icon: <FiTarget />,
+      },
+    ],
+    [t]
+  );
+
+  const cardSteps = React.useMemo(
+    () => [
+      {
+        number: "1",
+        label: t("card.steps.0"),
+        badgeClass: "bg-emerald-500/20 text-emerald-300",
+      },
+      {
+        number: "2",
+        label: t("card.steps.1"),
+        badgeClass: "bg-sky-500/20 text-sky-200",
+      },
+      {
+        number: "3",
+        label: t("card.steps.2"),
+        badgeClass: "bg-violet-500/20 text-violet-200",
+      },
+    ],
+    [t]
+  );
+
+  const cardTags = React.useMemo(
+    () => [
+      {
+        title: t("card.tags.listening.title"),
+        meta: t("card.tags.listening.meta"),
+      },
+      {
+        title: t("card.tags.reading.title"),
+        meta: t("card.tags.reading.meta"),
+      },
+      {
+        title: t("card.tags.roadmap.title"),
+        meta: t("card.tags.roadmap.meta"),
+      },
+    ],
+    [t]
+  );
+  const startMessage = t("notifications.startMessage");
 
   React.useEffect(() => {
     try {
@@ -170,7 +233,7 @@ export default function Hero() {
     }
 
     if (!user) {
-      customToast.error("Vui lòng đăng nhập để làm Mini TOEIC 55 câu", {
+      customToast.error(t("notifications.loginRequired"), {
         duration: 2500,
       });
       setTimeout(() => {
@@ -188,25 +251,21 @@ export default function Hero() {
 
       if (!res.ok) {
         if (res.status === 401) {
-          customToast.error("Phiên đăng nhập đã hết hạn", {
+          customToast.error(t("notifications.sessionExpired"), {
             duration: 3000,
             action: {
-              label: "Đăng nhập lại",
+              label: t("notifications.sessionExpiredAction"),
               onClick: () => router.push(`${base}/login`),
             },
           });
           return;
         } else {
-          // Nếu không kiểm tra được trạng thái, vẫn cho phép vào làm bài (fail-safe)
           console.warn(
             "Không kiểm tra được trạng thái placement test, cho phép vào làm bài"
           );
-          customToast.info(
-            "Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt",
-            {
-              duration: 2500,
-            }
-          );
+          customToast.info(startMessage, {
+            duration: 2500,
+          });
           setTimeout(() => {
             router.push(`${base}/placement`);
           }, 2600);
@@ -218,14 +277,10 @@ export default function Hero() {
       try {
         data = await res.json();
       } catch (parseError) {
-        // Nếu parse JSON lỗi, vẫn cho phép vào làm bài
         console.warn("Lỗi parse response, cho phép vào làm bài", parseError);
-        customToast.info(
-          "Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt",
-          {
-            duration: 2500,
-          }
-        );
+        customToast.info(startMessage, {
+          duration: 2500,
+        });
         setTimeout(() => {
           router.push(`${base}/placement`);
         }, 2600);
@@ -236,10 +291,10 @@ export default function Hero() {
       const firstId = data?.items?.[0]?._id as string | undefined;
 
       if (total > 0 && firstId) {
-        customToast.error("Bạn đã làm Placement Test rồi", {
+        customToast.error(t("notifications.attemptExists"), {
           duration: 5000,
           action: {
-            label: "Xem kết quả",
+            label: t("notifications.attemptExistsAction"),
             onClick: () => {
               router.push(`${base}/placement/result/${firstId}`);
             },
@@ -248,8 +303,7 @@ export default function Hero() {
         return;
       }
 
-      // Chưa làm placement test hoặc không có attempt, cho phép vào làm
-      customToast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
+      customToast.info(startMessage, {
         duration: 2500,
       });
 
@@ -257,12 +311,11 @@ export default function Hero() {
         router.push(`${base}/placement`);
       }, 2600);
     } catch (error) {
-      // Nếu có lỗi network hoặc lỗi khác, vẫn cho phép vào làm bài (fail-safe)
       console.warn(
         "Lỗi khi kiểm tra trạng thái placement test, cho phép vào làm bài",
         error
       );
-      customToast.info("Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt", {
+      customToast.info(startMessage, {
         duration: 2500,
       });
       setTimeout(() => {
@@ -272,7 +325,7 @@ export default function Hero() {
       setChecking(false);
       setOpenPrompt(false);
     }
-  }, [user, checking, router, base]);
+  }, [user, checking, router, base, startMessage, t]);
 
   return (
     <>
@@ -303,24 +356,27 @@ export default function Hero() {
             <div className="lg:col-span-2 text-center lg:text-start">
               <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-sky-400/40 bg-sky-500/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-sky-100 backdrop-blur-sm xs:text-xs lg:mx-0">
                 <FiShield className="text-sm" />
-                <span>Cấu trúc bám sát đề thi TOEIC thật</span>
+                <span>{t("badge")}</span>
               </div>
 
               <h1 className="font-bold tracking-tight text-white text-5xl lg:text-6xl">
-                Xây lộ trình{" "}
-                <span className="text-sky-300">TOEIC thông minh</span> cho riêng
-                bạn
+                {t.rich("title", {
+                  highlight: (chunks) => (
+                    <span className="text-sky-300">{chunks}</span>
+                  ),
+                })}
               </h1>
 
               <p className="mt-4 text-xs leading-relaxed text-slate-300 xs:text-sm sm:mt-5 sm:text-base md:text-lg">
-                Chỉ với <strong>35 phút</strong> làm{" "}
-                <strong>Mini TOEIC 55 câu</strong>, hệ thống sẽ ước lượng{" "}
-                <strong>điểm TOEIC (0–990)</strong>, xếp{" "}
-                <strong>Level 1–3</strong> và đề xuất{" "}
-                <span className="font-semibold text-sky-200">
-                  lộ trình học cá nhân hóa
-                </span>
-                .
+                {t.rich("description", {
+                  minutes: (chunks) => <strong>{chunks}</strong>,
+                  mini: (chunks) => <strong>{chunks}</strong>,
+                  score: (chunks) => <strong>{chunks}</strong>,
+                  level: (chunks) => <strong>{chunks}</strong>,
+                  highlight: (chunks) => (
+                    <span className="font-semibold text-sky-200">{chunks}</span>
+                  ),
+                })}
               </p>
 
               {/* CTA */}
@@ -335,44 +391,40 @@ export default function Hero() {
                   ) : (
                     <FiPlayCircle className="text-base" />
                   )}
-                  {checking ? "Đang kiểm tra..." : "Bắt đầu Mini TOEIC 55 câu"}
+                  {checking ? t("cta.primaryLoading") : t("cta.primary")}
                 </button>
 
                 <button
                   onClick={() => router.push(`${base}/practice/part.1?level=1`)}
                   className="inline-flex w-full max-w-[260px] items-center justify-center gap-2 rounded-xl border border-slate-600 bg-slate-900/40 px-5 py-2.5 text-xs font-medium text-slate-100 transition-all hover:border-slate-400 hover:bg-slate-800/80 xs:w-auto sm:text-sm"
                 >
-                  Xem bộ đề luyện tập
+                  {t("cta.secondary")}
                   <FiArrowRight className="text-sm" />
                 </button>
               </div>
 
               {/* META */}
               <p className="mt-4 text-[11px] text-slate-400 xs:text-xs sm:text-sm">
-                * Sau khi làm bài sẽ nhận{" "}
-                <span className="font-semibold text-sky-200">
-                  báo cáo chi tiết
-                </span>{" "}
-                và{" "}
-                <span className="font-semibold text-sky-200">
-                  lộ trình học cá nhân hóa
-                </span>{" "}
-                gửi qua email.
+                {t.rich("meta", {
+                  report: (chunks) => (
+                    <span className="font-semibold text-sky-200">{chunks}</span>
+                  ),
+                  plan: (chunks) => (
+                    <span className="font-semibold text-sky-200">{chunks}</span>
+                  ),
+                })}
               </p>
 
               {/* STATS */}
               <div className="mt-7 grid max-w-md grid-cols-3 gap-3 xs:gap-4 xs:mt-8 mx-auto lg:mx-0">
-                <Stat
-                  number="55 câu"
-                  label="Mini TOEIC"
-                  icon={<FiCheckCircle />}
-                />
-                <Stat number="35 phút" label="Thời gian" icon={<FiClock />} />
-                <Stat
-                  number="0–990"
-                  label="Điểm ước lượng"
-                  icon={<FiTarget />}
-                />
+                {stats.map((stat) => (
+                  <Stat
+                    key={stat.label}
+                    number={stat.number}
+                    label={stat.label}
+                    icon={stat.icon}
+                  />
+                ))}
               </div>
             </div>
 
@@ -391,68 +443,44 @@ export default function Hero() {
                   <div className="mb-4 flex xl:flex-row lg:flex-col flex-row xl:items-center xl:justify-between lg:items-start items-center gap-3">
                     <div>
                       <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-300">
-                        Bài kiểm tra đang chờ
+                        {t("card.eyebrow")}
                       </span>
                       <div className="mt-1 text-sm font-semibold text-white xs:text-base">
-                        Mini TOEIC – Placement Test
+                        {t("card.title")}
                       </div>
                     </div>
                     <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/10 px-3 py-1 text-[10px] font-medium text-sky-200 xs:text-[11px]">
                       <FiClock className="text-xs" />
-                      35 phút
+                      {t("card.duration")}
                     </span>
                   </div>
 
                   {/* STEPS */}
                   <div className="space-y-2 text-[11px] text-slate-300 xs:text-xs">
-                    <p className="flex items-center gap-2">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 text-[10px] text-emerald-300">
-                        1
-                      </span>
-                      Làm bài Mini TOEIC rút gọn.
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/20 text-[10px] text-sky-200">
-                        2
-                      </span>
-                      Hệ thống ước lượng điểm & xếp level.
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-violet-500/20 text-[10px] text-violet-200">
-                        3
-                      </span>
-                      Gợi ý lộ trình học phù hợp.
-                    </p>
+                    {cardSteps.map((step) => (
+                      <p key={step.number} className="flex items-center gap-2">
+                        <span
+                          className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${step.badgeClass}`}
+                        >
+                          {step.number}
+                        </span>
+                        {step.label}
+                      </p>
+                    ))}
                   </div>
 
                   {/* TAGS */}
                   <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[10px] text-slate-300 xs:gap-3 xs:text-[11px]">
-                    <div className="rounded-2xl bg-slate-800/80 px-2 py-3">
-                      <div className="text-xs font-semibold text-slate-100">
-                        Listening
+                    {cardTags.map((tag) => (
+                      <div key={tag.title} className="rounded-2xl bg-slate-800/80 px-2 py-3">
+                        <div className="text-xs font-semibold text-slate-100">
+                          {tag.title}
+                        </div>
+                        <div className="mt-1 text-[10px] text-sky-200">
+                          {tag.meta}
+                        </div>
                       </div>
-                      <div className="mt-1 text-[10px] text-sky-200">
-                        Part 1–4
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl bg-slate-800/80 px-2 py-3">
-                      <div className="text-xs font-semibold text-slate-100">
-                        Reading
-                      </div>
-                      <div className="mt-1 text-[10px] text-sky-200">
-                        Part 5–7
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl bg-slate-800/80 px-2 py-3">
-                      <div className="text-xs font-semibold text-slate-100">
-                        Lộ trình
-                      </div>
-                      <div className="mt-1 text-[10px] text-sky-200">
-                        Tự động
-                      </div>
-                    </div>
+                    ))}
                   </div>
 
                   {/* CTA */}
@@ -466,7 +494,7 @@ export default function Hero() {
                     ) : (
                       <FiPlayCircle className="text-sm" />
                     )}
-                    {checking ? "Đang kiểm tra..." : "Bắt đầu ngay bây giờ"}
+                    {checking ? t("card.cta.loading") : t("card.cta.default")}
                   </button>
                 </div>
               </div>

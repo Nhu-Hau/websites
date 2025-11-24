@@ -1,1 +1,281 @@
-{}
+{
+  "marketing": {
+    "hero": {
+      "badge": "Built on authentic TOEIC structure",
+      "title": "Build a <highlight>smarter TOEIC plan</highlight> for yourself",
+      "description": "In just <minutes>35 minutes</minutes> with the <mini>55-question Mini TOEIC</mini>, we estimate your <score>TOEIC score (0–990)</score>, place you in <level>Level 1–3</level>, and recommend a <highlight>personalized study plan</highlight>.",
+      "cta": {
+        "primary": "Start the 55-question Mini TOEIC",
+        "primaryLoading": "Checking...",
+        "secondary": "Browse practice sets"
+      },
+      "meta": "* After the test you’ll receive a <report>detailed report</report> and a <plan>personalized roadmap</plan> via email.",
+      "stats": {
+        "mini": {
+          "number": "55 qs",
+          "label": "Mini TOEIC"
+        },
+        "time": {
+          "number": "35 min",
+          "label": "Duration"
+        },
+        "score": {
+          "number": "0–990",
+          "label": "Estimated score"
+        }
+      },
+      "card": {
+        "eyebrow": "Upcoming test",
+        "title": "Mini TOEIC – Placement Test",
+        "duration": "35 min",
+        "steps": [
+          "Complete the condensed Mini TOEIC.",
+          "We estimate your score & level.",
+          "Receive a tailored study roadmap."
+        ],
+        "tags": {
+          "listening": {
+            "title": "Listening",
+            "meta": "Part 1–4"
+          },
+          "reading": {
+            "title": "Reading",
+            "meta": "Part 5–7"
+          },
+          "roadmap": {
+            "title": "Roadmap",
+            "meta": "Auto"
+          }
+        },
+        "cta": {
+          "default": "Start now",
+          "loading": "Checking..."
+        }
+      },
+      "notifications": {
+        "loginRequired": "Please sign in to take the Mini TOEIC 55-question test",
+        "sessionExpired": "Your session has expired",
+        "sessionExpiredAction": "Sign in again",
+        "startMessage": "Mini TOEIC is starting—good luck!",
+        "attemptExists": "You’ve already taken the Placement Test",
+        "attemptExistsAction": "View result"
+      }
+    },
+    "workflow": {
+      "eyebrow": "Learning workflow",
+      "title": "Master TOEIC in four focused steps",
+      "description": "From gauging your level to finally hitting your target score.",
+      "steps": [
+        {
+          "title": "Take the Placement Test",
+          "desc": "Finish the Mini TOEIC 55-question test in 35 minutes to capture your current level."
+        },
+        {
+          "title": "Receive your roadmap",
+          "desc": "We estimate your TOEIC score and craft a personalized plan based on your weak spots."
+        },
+        {
+          "title": "Train by part",
+          "desc": "Practice each part with exercises filtered by the right difficulty for your level."
+        },
+        {
+          "title": "Track progress",
+          "desc": "Review detailed reports, analyze mistakes, and see improvements over time."
+        }
+      ]
+    },
+    "testimonials": {
+      "eyebrow": "Learner stories",
+      "title": "Thousands have boosted their scores",
+      "description": "Real experiences and real results from learners on our platform.",
+      "items": [
+        {
+          "name": "Ngọc Hân",
+          "score": "+180 pts",
+          "quote": "After the placement test the system showed my weak Parts 2 & 3, so I doubled down there. Super effective!"
+        },
+        {
+          "name": "Trung Kiên",
+          "score": "+200 pts",
+          "quote": "Levels are crystal clear, so I always practice at the right difficulty. Listening improved a ton after one month."
+        },
+        {
+          "name": "Mai Linh",
+          "score": "+165 pts",
+          "quote": "New tests, detailed explanations, and progress reports after every session—it feels like having a private coach."
+        }
+      ],
+      "studentLabel": "TOEIC learner",
+      "impact": {
+        "summary": "<percent>98%</percent> of learners improve their score after <duration>4 weeks</duration> of consistent practice.",
+        "source": "Data from 12,000+ learners"
+      }
+    },
+    "pricing": {
+      "eyebrow": "Upgrade your prep experience",
+      "title": "Choose the plan that fits you",
+      "description": "Start free—no card required. Upgrade to Premium whenever you want more power.",
+      "plans": {
+        "period": {
+          "month": "/ month",
+          "quarter": "/ 3 months"
+        },
+        "free": {
+          "name": "Free plan",
+          "price": "₫0",
+          "description": "Take the placement test, do basic drills, and explore the learning interface.",
+          "features": [
+            "20 practice tests each month",
+            "Level-based roadmap suggestions",
+            "High-level score reports after every test",
+            "Fresh tests & reading sets added regularly"
+          ],
+          "cta": "Get started free"
+        },
+        "monthly": {
+          "name": "Premium",
+          "price": "79k",
+          "description": "Unlock all Practice Tests, AI Chat, livestream tools, materials, and personalized Learning Insights.",
+          "features": [
+            "Unlimited Practice Tests & mini tests",
+            "Chat with AI tutors and admins anytime",
+            "Unlimited livestream comments & shared files",
+            "Learning Insight tailored to your results"
+          ]
+        },
+        "quarterly": {
+          "name": "Premium",
+          "price": "159k",
+          "highlight": "Better value for 2–3 months of focused TOEIC prep",
+          "description": "Keep every Premium benefit with priority support during your high-intensity sprint.",
+          "badge": {
+            "current": "You’re on this plan",
+            "recommended": "Recommended plan"
+          },
+          "features": [
+            "All Premium (79k/month) benefits included",
+            "Ideal for high-frequency study & livestreams",
+            "Priority support in every live class"
+          ]
+        }
+      },
+      "promo": {
+        "applied": "Code applied: {code}",
+        "placeholder": "Enter a promo code (optional)",
+        "apply": "Apply",
+        "priceAfter": "Price after discount: {price}"
+      },
+      "buttons": {
+        "upgradeMonthly": "Upgrade for 79k / month",
+        "upgradeMonthlyPromo": "Upgrade for {price}k / month",
+        "upgradeQuarterly": "Upgrade for 159k / 3 months",
+        "upgradeQuarterlyPromo": "Upgrade for {price}k / 3 months",
+        "processing": "Processing...",
+        "currentPlan": "You’re on Premium"
+      },
+      "errors": {
+        "promoInvalid": "The code is invalid or has expired",
+        "promoCheckFailed": "Couldn’t verify the code, please try again",
+        "paymentLink": "Unable to create the payment link",
+        "missingCheckout": "Missing checkoutUrl from the payment system",
+        "paymentGeneric": "Something went wrong while creating the payment link"
+      },
+      "comparison": {
+        "heading": "Detailed comparison: Free vs Premium",
+        "description": "Based on live modules inside the platform (Practice, AI Chat, Livestream, Learning Insight, Groups).",
+        "columns": {
+          "feature": "Feature",
+          "free": "Free",
+          "premium": "Premium"
+        },
+        "locked": "Locked",
+        "unlocked": "Unlocked",
+        "unlimited": "Unlimited",
+        "practice": {
+          "label": "Practice Tests",
+          "description": "Train by Part & Level",
+          "free": "20 tests/month",
+          "pro": "Unlimited"
+        },
+        "aiChat": {
+          "label": "AI Chat (TOEIC tutor)",
+          "description": "Ask AI about grammar, vocabulary, and test strategies"
+        },
+        "adminChat": {
+          "label": "Admin / Teacher Chat",
+          "description": "Message admins or instructors directly"
+        },
+        "vocab": {
+          "label": "Article vocabulary translate",
+          "description": "Translate & save vocab while reading news"
+        },
+        "livestream": {
+          "label": "Livestream comments",
+          "description": "Chat inside live study rooms",
+          "free": "10 comments/session <note>(limited)</note>"
+        },
+        "download": {
+          "label": "Download instructor files",
+          "description": "Save any materials shared in class"
+        },
+        "upload": {
+          "label": "Upload files in livestreams",
+          "description": "Share supporting docs during live sessions"
+        },
+        "insight": {
+          "label": "Learning Insight",
+          "description": "AI analysis of results & study habits"
+        },
+        "groups": {
+          "label": "Create study groups",
+          "description": "Create a group and invite friends to train together"
+        }
+      },
+      "cta": {
+        "practice": "Try a free practice test",
+        "upgrade": "Upgrade to Premium now"
+      }
+    },
+    "faq": {
+      "eyebrow": "FAQs",
+      "title": "Have questions? We’re ready to help",
+      "description": "Find quick answers about our TOEIC learning platform.",
+      "items": [
+        {
+          "question": "Is the Placement Test free?",
+          "answer": "Yes. Take the Placement Test for free to understand your current level."
+        },
+        {
+          "question": "How many times can I take the Placement Test?",
+          "answer": "You can take it once to get your initial roadmap. If you need another attempt later, contact support."
+        },
+        {
+          "question": "How is the roadmap personalized?",
+          "answer": "We analyze strengths and weaknesses from your Placement Test and recommend Parts/Levels that match your ability."
+        },
+        {
+          "question": "What makes Premium different from Free?",
+          "answer": "Premium unlocks unlimited practice, full test explanations, AI/Admin chat, file downloads, deeper analytics, and priority support."
+        },
+        {
+          "question": "Can I cancel Premium anytime?",
+          "answer": "Yes. Cancel whenever you want and keep Premium access until the billing cycle ends."
+        },
+        {
+          "question": "Is the platform available in English?",
+          "answer": "The interface is optimized for Vietnamese learners, but all tests and questions stay in English like the real TOEIC."
+        }
+      ],
+      "contact": {
+        "prompt": "Still need help?",
+        "cta": "Contact support"
+      }
+    },
+    "finalCta": {
+      "title": "Ready to own your TOEIC goal?",
+      "description": "Start training today, track your progress, and hit the score you’re aiming for.",
+      "primaryCta": "Start for free",
+      "secondaryCta": "Explore practice sets"
+    }
+  }
+}

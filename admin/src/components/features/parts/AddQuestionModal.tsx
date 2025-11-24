@@ -17,7 +17,7 @@ interface AddQuestionModalProps {
 
 export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, level, test, itemsCount }: AddQuestionModalProps) {
   const toast = useToast();
-  // Generate auto IDs
+  // Tạo ID tự động
   const generateAutoIds = () => {
     const partNum = part.split('.')[1] || part;
     const questionNumber = String(itemsCount + 1).padStart(3, "0");
@@ -46,7 +46,7 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
 
   const [form, setForm] = React.useState(initialForm);
 
-  // Reset form when modal opens with new values
+  // Reset form khi modal mở với giá trị mới
   React.useEffect(() => {
     if (isOpen) {
       setForm(initialForm);

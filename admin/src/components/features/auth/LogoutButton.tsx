@@ -23,7 +23,7 @@ export default function LogoutButton() {
     <button
       onClick={handleLogout}
       disabled={busy}
-      className="px-3 py-1.5 text-sm rounded border hover:bg-zinc-50 disabled:opacity-60"
+      className="px-3 py-1.5 text-sm rounded-full border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-60"
     >
       {busy ? "Đang đăng xuất…" : "Đăng xuất"}
     </button>

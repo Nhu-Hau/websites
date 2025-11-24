@@ -69,11 +69,11 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
     };
 
     const parseFilename = (filename: string): { id: string; part: string; level: number; test: number } | null => {
-        // Remove extension and suffix (_1, _2, etc.)
+        // Xóa phần mở rộng và hậu tố (_1, _2, etc.)
         const nameWithoutExt = filename.replace(/\.(jpg|jpeg|png|mp3)$/i, "");
         const baseId = nameWithoutExt.replace(/_\d+$/, "");
 
-        // Parse: lv{level}_t{test}_p{part}_{suffix}
+        // Phân tích: lv{level}_t{test}_p{part}_{suffix}
         const match = baseId.match(/^lv(\d+)_t(\d+)_p(\d+)_(.+)$/);
         if (!match) return null;
 
@@ -88,7 +88,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
     const handleSmartUpload = async () => {
         setUploading(true);
 
-        // Step 1: Upload all files
+        // Bước 1: Upload tất cả các file
         const uploaded: { file: File; url: string }[] = [];
         const updatedFiles = [...files];
 
@@ -119,7 +119,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
             setFiles([...updatedFiles]);
         }
 
-        // Step 2: Group by stimulus ID
+        // Bước 2: Nhóm theo ID stimulus
         const groups = new Map<string, StimulusGroup>();
 
         for (const { file, url } of uploaded) {
@@ -150,7 +150,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
 
         const groupsArray = Array.from(groups.values());
 
-        // Step 3: Check which stimuli exist in database and have media
+        // Bước 3: Kiểm tra xem stimulus nào tồn tại trong database và có media chưa
         try {
             const checkPromises = groupsArray.map(async (group) => {
                 try {
@@ -175,10 +175,10 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
                             group.status = hasMedia ? 'update' : 'new';
                         }
                     } else {
-                        group.status = 'new'; // If can't check, assume new
+                        group.status = 'new'; // Nếu không kiểm tra được, giả định là mới
                     }
                 } catch {
-                    group.status = 'new'; // If error, assume new
+                    group.status = 'new'; // Nếu lỗi, giả định là mới
                 }
             });
 
@@ -353,7 +353,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
                             <h3 className="font-semibold text-zinc-900">Stimuli đã phân tích ({stimulusGroups.length})</h3>
                             <div className="max-h-64 overflow-auto space-y-2">
                                 {(() => {
-                                    // Group stimuli by part-level-test
+                                    // Nhóm stimuli theo part-level-test
                                     const testGroups = new Map<string, typeof stimulusGroups>();
                                     stimulusGroups.forEach(group => {
                                         const key = `${group.part}-${group.level}-${group.test}`;

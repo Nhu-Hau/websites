@@ -90,7 +90,7 @@ export default function ToeicPredTab({
                                                         await adminDeleteUserToeicPred(u._id);
                                                         setUserToeicPred(userToeicPred.filter((s) => s._id !== u._id));
                                                         setError(undefined);
-                                                        // Reload data
+                                                        // Tải lại dữ liệu
                                                         const toeicPred = await adminUserToeicPred();
                                                         setUserToeicPred(toeicPred.users);
                                                     } catch (e: any) {

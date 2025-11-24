@@ -44,24 +44,17 @@ export default function AdminNavItem({ item }: Props) {
             href={item.href}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "relative inline-flex items-center text-sm font-medium text-zinc-700",
-              "transition-colors duration-200 hover:text-amber-600 focus-visible:outline-none",
-              "focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
-              "group/nav"
+              "relative inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200",
+              isActive
+                ? "text-white bg-white/10"
+                : "text-zinc-400 hover:text-white hover:bg-white/5",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
             )}
           >
-            <span className="relative z-10">{item.label}</span>
-            <span
-              className={cn(
-                "pointer-events-none absolute -bottom-1 left-0 h-0.5 w-0 rounded-full",
-                "bg-gradient-to-r from-amber-600 to-amber-500 transition-all duration-300",
-                "group-hover/nav:w-full",
-                isActive && "w-full"
-              )}
-            />
+            {item.label}
           </Link>
         ) : (
-          <span className="text-sm font-medium text-zinc-700">{item.label}</span>
+          <span className="px-3 py-1.5 text-sm font-medium text-zinc-400">{item.label}</span>
         )}
       </li>
     );
@@ -87,8 +80,9 @@ export default function AdminNavItem({ item }: Props) {
         type={isMobile ? "button" : undefined}
         onClick={handleMobileToggle}
         className={cn(
-          "flex h-full items-center gap-1 cursor-pointer select-none text-sm font-medium text-zinc-700",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          "flex h-full items-center gap-1 cursor-pointer select-none text-sm font-medium px-3 py-1.5 rounded-full transition-all duration-200",
+          open || isActive ? "text-white bg-white/10" : "text-zinc-400 hover:text-white hover:bg-white/5",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
         )}
         aria-haspopup="menu"
         aria-expanded={open}
@@ -99,7 +93,7 @@ export default function AdminNavItem({ item }: Props) {
             aria-current={isActive ? "page" : undefined}
             className={cn(
               "relative inline-flex items-center text-sm font-medium",
-              "transition-colors duration-200 hover:text-amber-600 group/label"
+              "transition-colors duration-200"
             )}
             onClick={(e) => {
               if (isMobile) {
@@ -108,14 +102,7 @@ export default function AdminNavItem({ item }: Props) {
               }
             }}
           >
-            <span className="relative z-10">{item.label}</span>
-            <span
-              className={cn(
-                "pointer-events-none absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 transition-all",
-                "group-hover/label:w-full group-hover/nav:w-full",
-                isActive && "w-full"
-              )}
-            />
+            {item.label}
           </Link>
         ) : (
           <span className="inline-flex items-center text-sm font-medium">{item.label}</span>
@@ -123,9 +110,9 @@ export default function AdminNavItem({ item }: Props) {
 
         <ChevronDown
           className={cn(
-            "h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-300",
-            open && "rotate-180",
-            !isMobile && "group-hover/nav:rotate-180"
+            "h-4 w-4 shrink-0 transition-transform duration-300",
+            open ? "text-white rotate-180" : "text-zinc-500 group-hover/nav:text-white",
+            !isMobile && open && "rotate-180"
           )}
         />
       </RootTag>
@@ -147,8 +134,8 @@ export default function AdminNavItem({ item }: Props) {
               )}
             >
               <div className="relative">
-                <div className="absolute -top-1 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 bg-white shadow-lg ring-1 ring-black/5" />
-                <div className="relative pointer-events-auto rounded-2xl p-2 bg-white/95 backdrop-blur-xl shadow-2xl ring-1 ring-black/5">
+                <div className="absolute -top-1 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 bg-black shadow-lg ring-1 ring-white/10" />
+                <div className="relative pointer-events-auto rounded-2xl p-2 bg-black shadow-2xl ring-1 ring-white/10">
                   <AdminNavDropdown items={item.children} />
                 </div>
               </div>

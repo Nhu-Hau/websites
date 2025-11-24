@@ -61,7 +61,7 @@ export default function PracticeTab({
                             </thead>
                             <tbody>
                                 {(() => {
-                                    // Group practice attempts theo user
+                                    // Nhóm practice attempts theo user
                                     const userMap = new Map<
                                         string,
                                         {
@@ -124,7 +124,7 @@ export default function PracticeTab({
                                                                 );
                                                                 setPracticeTotal(practiceTotal - user.attempts.length);
                                                                 setError(undefined);
-                                                                // Reload data
+                                                                // Tải lại dữ liệu
                                                                 const result = await adminListPracticeAttempts({
                                                                     page: practicePage,
                                                                     limit: 1000,
@@ -253,10 +253,10 @@ export default function PracticeTab({
                                                             <td className="p-4">
                                                                 <span
                                                                     className={`px-2 py-1 rounded text-xs font-medium ${a.acc >= 0.8
-                                                                            ? "bg-green-100 text-green-700"
-                                                                            : a.acc >= 0.6
-                                                                                ? "bg-yellow-100 text-yellow-700"
-                                                                                : "bg-red-100 text-red-700"
+                                                                        ? "bg-green-100 text-green-700"
+                                                                        : a.acc >= 0.6
+                                                                            ? "bg-yellow-100 text-yellow-700"
+                                                                            : "bg-red-100 text-red-700"
                                                                         }`}
                                                                 >
                                                                     {(a.acc * 100).toFixed(1)}%
@@ -289,20 +289,20 @@ export default function PracticeTab({
                                                                                     (item) => item._id !== a._id
                                                                                 )
                                                                             );
-                                                                            // Update main list
+                                                                            // Cập nhật danh sách chính
                                                                             setPracticeAttempts(
                                                                                 practiceAttempts.filter((item) => item._id !== a._id)
                                                                             );
                                                                             setPracticeTotal(practiceTotal - 1);
                                                                             setError(undefined);
-                                                                            // Reload data
+                                                                            // Tải lại dữ liệu
                                                                             const result = await adminListPracticeAttempts({
                                                                                 page: practicePage,
                                                                                 limit: 1000,
                                                                             });
                                                                             setPracticeAttempts(result.items);
                                                                             setPracticeTotal(result.total);
-                                                                            // Reload selected user practices
+                                                                            // Tải lại practice của user đã chọn
                                                                             if (selectedUserId) {
                                                                                 const userResult = await adminListPracticeAttempts({
                                                                                     userId: selectedUserId,

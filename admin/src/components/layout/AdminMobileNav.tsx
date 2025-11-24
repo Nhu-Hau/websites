@@ -42,7 +42,7 @@ export default function AdminMobileNav({ open, setOpen, menuRef, items }: Props)
       ref={menuRef}
       aria-label={open ? "Đóng menu" : "Mở menu"}
       className={cn(
-        "lg:hidden overflow-hidden transition-all duration-300 ease-out border-t border-zinc-200 bg-white",
+        "lg:hidden overflow-hidden transition-all duration-300 ease-out border-t border-white/10 bg-black",
         open ? "max-h-[32rem] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
       )}
     >

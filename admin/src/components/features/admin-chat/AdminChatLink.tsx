@@ -8,7 +8,7 @@ export default function AdminChatLink() {
   const { socket } = useSocket();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Load unread count
+  // Tải số lượng tin nhắn chưa đọc
   const loadUnreadCount = useCallback(async () => {
     try {
       const response = await fetch("/api/admin-chat/admin/conversations", {
@@ -28,12 +28,12 @@ export default function AdminChatLink() {
     }
   }, []);
 
-  // Load unread count when component mounts
+  // Tải số lượng tin nhắn chưa đọc khi component mount
   useEffect(() => {
     loadUnreadCount();
   }, [loadUnreadCount]);
 
-  // Listen for admin viewed messages event
+  // Lắng nghe sự kiện admin đã xem tin nhắn
   useEffect(() => {
     console.log("AdminChatLink: Setting up admin-viewed-messages event listener");
 
@@ -44,7 +44,7 @@ export default function AdminChatLink() {
       // Reset unread count ngay lập tức
       setUnreadCount(0);
 
-      // Reload unread count để cập nhật chính xác
+      // Tải lại số lượng tin nhắn chưa đọc để cập nhật chính xác
       loadUnreadCount();
     };
 
@@ -56,7 +56,7 @@ export default function AdminChatLink() {
     };
   }, [loadUnreadCount]);
 
-  // Real-time listeners
+  // Lắng nghe sự kiện thời gian thực
   useEffect(() => {
     if (!socket) {
       console.log("AdminChatLink: No socket available");
@@ -65,7 +65,7 @@ export default function AdminChatLink() {
 
     console.log("AdminChatLink: Setting up socket listeners");
 
-    // Join admin room để nhận tin nhắn
+    // Tham gia phòng admin để nhận tin nhắn
     socket.emit("admin:join-conversation", "admin");
 
     const handleNewMessage = (data: { message?: { role?: string } }) => {
@@ -74,14 +74,14 @@ export default function AdminChatLink() {
         console.log("Admin navigation: Incrementing unread count");
         setUnreadCount(prev => prev + 1);
 
-        // Reload unread count để cập nhật chính xác
+        // Tải lại số lượng tin nhắn chưa đọc để cập nhật chính xác
         loadUnreadCount();
       }
     };
 
     const handleConversationUpdate = (_data: unknown) => {
       console.log("Admin navigation received conversation-updated:", _data);
-      // Reload unread count when conversation is updated
+      // Tải lại số lượng tin nhắn chưa đọc khi cuộc trò chuyện được cập nhật
       loadUnreadCount();
     };
 

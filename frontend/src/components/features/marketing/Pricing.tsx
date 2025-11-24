@@ -822,19 +822,22 @@ export default function Pricing() {
           viewport={{ once: true, amount: 0.2 }}
           className="rounded-3xl border border-slate-200 bg-white px-4 py-6 shadow-sm shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 sm:px-6 sm:py-7"
         >
-          <div className="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-sky-500 shadow-lg shadow-[#4063bb4d] xs:h-10 xs:w-10 text-white">
-                <BarChart3 className="h-4 w-4" />
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-50 sm:text-base">
-                  So sánh chi tiết tính năng Free vs Premium
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Dựa trên các module thật của hệ thống (Practice, AI Chat,
-                  Livestream, Learning Insight, Groups).
-                </p>
+          <div className="mb-5 border-b border-slate-200 pb-4 dark:border-slate-800">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-sky-500 text-white shadow-lg shadow-[#4063bb4d] xs:h-10 xs:w-10">
+                  <BarChart3 className="h-4 w-4 xs:h-5 xs:w-5" />
+                </div>
+
+                <div className="flex-1 space-y-1">
+                  <h4 className="text-[15px] font-semibold text-slate-900 dark:text-slate-50 leading-snug sm:text-base">
+                    So sánh chi tiết tính năng Free vs Premium
+                  </h4>
+                  <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 xs:text-[13px]">
+                    Dựa trên các module thật của hệ thống (Practice, AI Chat,
+                    Livestream, Learning Insight, Groups).
+                  </p>
+                </div>
               </div>
             </div>
           </div>

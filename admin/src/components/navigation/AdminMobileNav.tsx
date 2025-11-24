@@ -34,7 +34,7 @@ export default function AdminMobileNav({ open, setOpen, menuRef, items }: Props)
     if (open) {
       setOpen(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Bỏ qua warning exhaustive-deps
   }, [pathname]);
 
   return (

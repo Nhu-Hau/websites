@@ -15,7 +15,7 @@ interface AddQuestionModalProps {
 }
 
 export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, level, test, itemsCount }: AddQuestionModalProps) {
-  // Generate auto IDs
+  // Tự động tạo IDs
   const generateAutoIds = () => {
     const partNum = part.split('.')[1];
     const itemNum = String(itemsCount + 1).padStart(3, '0');
@@ -43,7 +43,7 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
 
   const [form, setForm] = React.useState(initialForm);
 
-  // Reset form when modal opens with new values
+  // Reset form khi modal mở với giá trị mới
   React.useEffect(() => {
     if (isOpen) {
       setForm(initialForm);
@@ -63,7 +63,7 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!form.id.trim()) {
       alert("Vui lòng nhập ID câu hỏi");
       return;
@@ -121,16 +121,16 @@ export default function AddQuestionModal({ isOpen, onClose, onSuccess, part, lev
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col">
-            <label className="text-sm font-medium text-zinc-600 mb-1">ID (bắt buộc) - Tự động điền</label>
-            <input
-              value={form.id}
-              onChange={(e) => handleUpdateField("id", e.target.value)}
-              className="border px-3 py-2 rounded text-sm bg-zinc-50"
-              placeholder="Tự động điền ID..."
-              required
-            />
-          </div>
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-zinc-600 mb-1">ID (bắt buộc) - Tự động điền</label>
+              <input
+                value={form.id}
+                onChange={(e) => handleUpdateField("id", e.target.value)}
+                className="border px-3 py-2 rounded text-sm bg-zinc-50"
+                placeholder="Tự động điền ID..."
+                required
+              />
+            </div>
             <div className="flex flex-col">
               <label className="text-sm font-medium text-zinc-600 mb-1">Answer</label>
               <select

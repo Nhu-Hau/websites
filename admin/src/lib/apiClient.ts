@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// Use relative paths to leverage Next.js rewrites for cookie forwarding
+// Sử dụng relative paths để tận dụng Next.js rewrites cho cookie forwarding
 const API_BASE = '';
 
 export type AdminUser = {
@@ -361,7 +361,7 @@ export async function adminDeleteCommunityComment(id: string) {
   return res.json() as Promise<{ message: string }>;
 }
 
-// Study room management
+// Quản lý study room
 export type AdminStudyRoom = {
   roomName: string;
   createdBy?: { id?: string; name?: string; role?: string };
@@ -478,7 +478,7 @@ export async function adminDeleteRoomDocument(roomName: string, docId: string) {
   return res.json() as Promise<{ message: string }>;
 }
 
-// News management
+// Quản lý tin tức
 export type AdminNewsItem = {
   _id: string;
   title: string;
@@ -579,7 +579,7 @@ export async function adminUploadNewsImage(file: File) {
   return res.json() as Promise<{ url: string; key: string; type: string; name: string; size: number }>;
 }
 
-// Admin chat management
+// Quản lý admin chat
 export async function adminDeleteChatMessage(id: string) {
   const res = await fetch(`/api/admin-chat/admin/messages/${encodeURIComponent(id)}`, {
     method: 'DELETE',
@@ -604,7 +604,7 @@ export async function adminDeleteChatConversation(sessionId: string) {
   return res.json() as Promise<{ message: string }>;
 }
 
-// Parts management
+// Quản lý parts
 export type AdminPart = {
   id: string;
   part: string;

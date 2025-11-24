@@ -68,12 +68,12 @@ export default function CreateTestPage() {
   const handlePartChange = (newPart: string) => {
     const isPart2 = newPart === "part.2";
 
-    // Update items based on new part
+    // Cập nhật items dựa trên part mới
     let updatedItems = form.items.map((item) => {
-      // If switching to Part 2, remove choice D if it exists
+      // Nếu chuyển sang Part 2, xóa lựa chọn D nếu có
       if (isPart2) {
         const filteredChoices = item.choices.filter((c) => c.id !== "D");
-        // If answer was D, change it to A
+        // Nếu đáp án là D, đổi thành A
         const newAnswer = item.answer === "D" ? "A" : item.answer;
         return {
           ...item,
@@ -81,7 +81,7 @@ export default function CreateTestPage() {
           choices: filteredChoices,
         };
       }
-      // If switching away from Part 2, add choice D if it doesn't exist
+      // Nếu chuyển ra khỏi Part 2, thêm lựa chọn D nếu chưa có
       else {
         const hasD = item.choices.some((c) => c.id === "D");
         if (!hasD) {
@@ -97,7 +97,7 @@ export default function CreateTestPage() {
       return item;
     });
 
-    // Update IDs
+    // Cập nhật IDs
     const { items, stimuli } = updateIds(newPart);
     updatedItems = items;
 

@@ -15,7 +15,7 @@ interface AddStimulusModalProps {
 }
 
 export default function AddStimulusModal({ isOpen, onClose, onSuccess, part, level, test, stimuliCount }: AddStimulusModalProps) {
-  // Generate auto stimulus ID
+  // Tự động tạo ID stimulus
   const generateAutoStimulusId = React.useMemo(() => {
     const partNum = part.split('.')[1];
     const stimulusNum = stimuliCount + 1;
@@ -23,7 +23,7 @@ export default function AddStimulusModal({ isOpen, onClose, onSuccess, part, lev
   }, [part, level, test, stimuliCount]);
 
   const [uploading, setUploading] = React.useState<{ type: 'image' | 'audio' | null; uploading: boolean }>({ type: null, uploading: false });
-  
+
   const initialForm = React.useMemo(() => ({
     id: generateAutoStimulusId,
     media: {
@@ -36,7 +36,7 @@ export default function AddStimulusModal({ isOpen, onClose, onSuccess, part, lev
 
   const [form, setForm] = React.useState(initialForm);
 
-  // Reset form when modal opens with new values
+  // Reset form khi modal mở với giá trị mới
   React.useEffect(() => {
     if (isOpen) {
       setForm(initialForm);
@@ -66,7 +66,7 @@ export default function AddStimulusModal({ isOpen, onClose, onSuccess, part, lev
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!form.id.trim()) {
       alert("Vui lòng nhập ID stimulus");
       return;

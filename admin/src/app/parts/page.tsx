@@ -48,7 +48,7 @@ export default function PartsPage() {
   const [confirmDialog, setConfirmDialog] = React.useState<ConfirmDialogState | null>(null);
   const [confirmLoading, setConfirmLoading] = React.useState(false);
 
-  // Modal states
+  // Trạng thái các modal
   const [editStimulus, setEditStimulus] = React.useState<AdminStimulus | null>(null);
   const [editQuestion, setEditQuestion] = React.useState<AdminPart | null>(null);
   const [addQuestionModal, setAddQuestionModal] = React.useState<{ isOpen: boolean; part: string; level: number; test: number; itemsCount: number }>({
@@ -66,7 +66,7 @@ export default function PartsPage() {
     stimuliCount: 0,
   });
 
-  // Filters
+  // Bộ lọc
   const [part, setPart] = React.useState("");
   const [level, setLevel] = React.useState("");
 
@@ -468,7 +468,7 @@ export default function PartsPage() {
                                     try {
                                       await adminDeleteStimulus(stimulus.id);
                                       toast.success("Đã xóa stimulus thành công");
-                                      // Reload test data
+                                      // Tải lại dữ liệu test
                                       const [part, level, test] = key.split('-');
                                       const result = await adminGetTestItems({
                                         part,
@@ -569,7 +569,7 @@ export default function PartsPage() {
         isOpen={editStimulus !== null}
         onClose={() => setEditStimulus(null)}
         onUpdate={() => {
-          // Reload test data
+          // Tải lại dữ liệu test
           if (expandedTest) {
             const [part, level, test] = expandedTest.split('-');
             adminGetTestItems({
@@ -589,7 +589,7 @@ export default function PartsPage() {
         isOpen={editQuestion !== null}
         onClose={() => setEditQuestion(null)}
         onUpdate={() => {
-          // Reload test data
+          // Tải lại dữ liệu test
           if (expandedTest) {
             const [part, level, test] = expandedTest.split('-');
             adminGetTestItems({
@@ -608,7 +608,7 @@ export default function PartsPage() {
         isOpen={addQuestionModal.isOpen}
         onClose={() => setAddQuestionModal({ isOpen: false, part: "", level: 0, test: 0, itemsCount: 0 })}
         onSuccess={() => {
-          // Reload test data
+          // Tải lại dữ liệu test
           if (expandedTest) {
             const [part, level, test] = expandedTest.split('-');
             adminGetTestItems({
@@ -690,7 +690,7 @@ export default function PartsPage() {
         isOpen={addStimulusModal.isOpen}
         onClose={() => setAddStimulusModal({ isOpen: false, part: "", level: 0, test: 0, stimuliCount: 0 })}
         onSuccess={() => {
-          // Reload test data
+          // Tải lại dữ liệu test
           if (expandedTest) {
             const [part, level, test] = expandedTest.split('-');
             adminGetTestItems({

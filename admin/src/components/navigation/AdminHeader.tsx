@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import LogoutButton from "@/components/LogoutButton";
+import LogoutButton from "@/components/features/auth/LogoutButton";
 import AdminNavMenu from "./AdminNavMenu";
 import AdminMobileNav from "./AdminMobileNav";
 import { adminNavItems } from "@/lib/navigation/adminNav";

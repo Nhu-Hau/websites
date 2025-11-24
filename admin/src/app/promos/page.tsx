@@ -360,7 +360,7 @@ function EditPromoModal({
 
       await onSave(data);
     } catch {
-      // error handled in parent
+      // Lỗi được xử lý ở parent
     } finally {
       setBusy(false);
     }

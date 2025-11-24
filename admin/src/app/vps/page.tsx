@@ -29,10 +29,10 @@ export default function VpsPage() {
     })();
   }, []);
 
-  // Fetch VPS stats
+  // Tải thống tin VPS
   React.useEffect(() => {
     if (me?.role !== 'admin') return;
-    
+
     const fetchVpsStats = async () => {
       try {
         const stats = await adminVpsStats();
@@ -45,15 +45,15 @@ export default function VpsPage() {
     };
 
     fetchVpsStats();
-    const interval = setInterval(fetchVpsStats, 5000); // Refresh every 5 seconds
+    const interval = setInterval(fetchVpsStats, 5000); // Làm mới mỗi 5 giây
 
     return () => clearInterval(interval);
   }, [me]);
 
-  // Fetch PM2 logs
+  // Tải PM2 logs
   const fetchPm2Logs = React.useCallback(async (app: 'admin' | 'frontend' | 'api') => {
     if (me?.role !== 'admin') return;
-    
+
     setLoadingLogs(prev => ({ ...prev, [app]: true }));
     try {
       const result = await adminPm2Logs(app, 100); // Lấy 100 dòng cuối
@@ -69,12 +69,12 @@ export default function VpsPage() {
   // Fetch logs khi component mount
   React.useEffect(() => {
     if (me?.role !== 'admin') return;
-    
+
     // Fetch logs lần đầu
     fetchPm2Logs('admin');
     fetchPm2Logs('frontend');
     fetchPm2Logs('api');
-    
+
     // Refresh logs mỗi 10 giây
     const interval = setInterval(() => {
       fetchPm2Logs('admin');
@@ -206,23 +206,23 @@ export default function VpsPage() {
   );
 }
 
-// Log Viewer Component
-function LogViewer({ 
-  title, 
-  app, 
-  logs, 
-  loading, 
-  onRefresh 
-}: { 
-  title: string; 
-  app: string; 
-  logs: string; 
-  loading: boolean; 
+// Component hiển thị logs
+function LogViewer({
+  title,
+  app,
+  logs,
+  loading,
+  onRefresh
+}: {
+  title: string;
+  app: string;
+  logs: string;
+  loading: boolean;
   onRefresh: () => void;
 }) {
   const logRef = React.useRef<HTMLDivElement>(null);
 
-  // Auto scroll to bottom when logs update
+  // Tự động cuộn xuống cuối khi logs cập nhật
   React.useEffect(() => {
     if (logRef.current) {
       logRef.current.scrollTop = logRef.current.scrollHeight;
@@ -265,7 +265,7 @@ function LogViewer({
   );
 }
 
-// Circular Gauge Component
+// Component gauge hình tròn
 function CircularGauge({ label, value }: { label: string; value: number }) {
   const size = 200;
   const strokeWidth = 16;

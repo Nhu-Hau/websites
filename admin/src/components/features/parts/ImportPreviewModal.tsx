@@ -18,6 +18,7 @@ interface ImportPreviewModalProps {
                 id: string;
                 status: 'new' | 'update';
                 question: string;
+                stimulusId?: string;
                 answer: string;
                 choices: number;
             }>;
@@ -104,8 +105,8 @@ export default function ImportPreviewModal({ isOpen, onClose, onConfirm, data, b
                                     <button
                                         onClick={() => setActiveTab('items')}
                                         className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'items'
-                                                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
-                                                : 'text-zinc-600 hover:bg-zinc-50'
+                                            ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
+                                            : 'text-zinc-600 hover:bg-zinc-50'
                                             }`}
                                     >
                                         Items
@@ -113,8 +114,8 @@ export default function ImportPreviewModal({ isOpen, onClose, onConfirm, data, b
                                     <button
                                         onClick={() => setActiveTab('stimuli')}
                                         className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'stimuli'
-                                                ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50/50'
-                                                : 'text-zinc-600 hover:bg-zinc-50'
+                                            ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50/50'
+                                            : 'text-zinc-600 hover:bg-zinc-50'
                                             }`}
                                     >
                                         Stimuli
@@ -135,7 +136,7 @@ export default function ImportPreviewModal({ isOpen, onClose, onConfirm, data, b
                                                         <tr>
                                                             <th className="px-4 py-3 rounded-tl-lg">Status</th>
                                                             <th className="px-4 py-3">ID</th>
-                                                            <th className="px-4 py-3">Question / Stem</th>
+                                                            <th className="px-4 py-3">Stimulus ID</th>
                                                             <th className="px-4 py-3 rounded-tr-lg">Answer</th>
                                                         </tr>
                                                     </thead>
@@ -154,8 +155,8 @@ export default function ImportPreviewModal({ isOpen, onClose, onConfirm, data, b
                                                                     )}
                                                                 </td>
                                                                 <td className="px-4 py-3 font-mono text-xs text-zinc-600">{item.id}</td>
-                                                                <td className="px-4 py-3 max-w-xs truncate" title={item.question}>
-                                                                    {item.question || <span className="italic text-zinc-400">No content</span>}
+                                                                <td className="px-4 py-3 max-w-xs truncate" title={item.stimulusId || '-'}>
+                                                                    {item.stimulusId || <span className="italic text-zinc-400">-</span>}
                                                                 </td>
                                                                 <td className="px-4 py-3 font-bold text-zinc-700">{item.answer}</td>
                                                             </tr>

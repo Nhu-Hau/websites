@@ -26,6 +26,7 @@ import EditQuestionModal from "@/components/features/parts/EditQuestionModal";
 import AddQuestionModal from "@/components/features/parts/AddQuestionModal";
 import AddStimulusModal from "@/components/features/parts/AddStimulusModal";
 import ImportPreviewModal from "@/components/features/parts/ImportPreviewModal";
+import BulkUploadModal from "@/components/features/parts/BulkUploadModal";
 import { useToast } from "@/components/common/ToastProvider";
 
 type ConfirmDialogState = {
@@ -71,6 +72,7 @@ export default function PartsPage() {
     test: 0,
     stimuliCount: 0,
   });
+  const [showBulkUpload, setShowBulkUpload] = React.useState(false);
 
   // Filters
   const [part, setPart] = React.useState("");
@@ -314,6 +316,12 @@ export default function PartsPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowBulkUpload(true)}
+              className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all shadow-md flex items-center gap-2 font-medium"
+            >
+              <Upload className="h-4 w-4" /> Upload Media
+            </button>
             <Link
               href="/parts/create"
               className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-2 font-medium"
@@ -851,6 +859,11 @@ export default function PartsPage() {
         level={addStimulusModal.level}
         test={addStimulusModal.test}
         stimuliCount={addStimulusModal.stimuliCount}
+      />
+
+      <BulkUploadModal
+        isOpen={showBulkUpload}
+        onClose={() => setShowBulkUpload(false)}
       />
     </div>
   );

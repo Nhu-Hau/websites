@@ -27,7 +27,8 @@ import {
   updateStimulus,
   deleteStimulus,
   uploadStimulusMedia,
-  importExcel
+  importExcel,
+  batchUpsertStimuli
 } from "./admin-parts.controller";
 
 
@@ -106,6 +107,7 @@ router.post("/parts/import-excel", upload.single("file"), importExcel);
 router.post("/parts/stimulus", createStimulus);
 router.patch("/parts/stimulus/:id", updateStimulus);
 router.delete("/parts/stimulus/:id", deleteStimulus);
+router.post("/parts/stimuli/batch-upsert", batchUpsertStimuli);
 router.get("/parts/:id", getPart);
 router.post("/parts", createPart);
 router.patch("/parts/:id", updatePart);

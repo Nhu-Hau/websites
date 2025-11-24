@@ -754,11 +754,15 @@ export async function adminCreateOrUpdateItem(body: AdminPart) {
   return res.json() as Promise<{ item: AdminPart }>;
 }
 
-export async function adminUploadStimulusMedia(file: File) {
+export async function adminUploadStimulusMedia(file: File, folder?: string) {
   const formData = new FormData();
   formData.append('file', file);
 
-  const res = await fetch(`/api/admin/parts/upload`, {
+  const url = folder
+    ? `/api/admin/parts/upload?folder=${encodeURIComponent(folder)}`
+    : '/api/admin/parts/upload';
+
+  const res = await fetch(url, {
     method: 'POST',
     credentials: 'include',
     body: formData,

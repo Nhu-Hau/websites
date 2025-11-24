@@ -108,9 +108,9 @@ export async function uploadBufferToS3(opts: {
   const folder = opts.folder
     ? opts.folder.replace(/^\/|\/$/g, "") + "/"
     : PREFIX;
-  const key = `${folder}${Date.now()}_${crypto
-    .randomBytes(4)
-    .toString("hex")}_${base}${ext}`;
+
+  // Giữ nguyên tên file gốc (không thêm timestamp/random)
+  const key = `${folder}${base}${ext}`;
 
   await s3.send(
     new PutObjectCommand({

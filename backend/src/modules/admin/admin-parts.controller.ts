@@ -564,12 +564,15 @@ export async function uploadStimulusMedia(req: Request, res: Response) {
       return res.status(400).json({ message: "Chỉ chấp nhận file ảnh (image/*) hoặc audio (audio/*)" });
     }
 
-    // Upload to S3 with folder "Upload/"
+    // Get folder from query parameter or use default
+    const folder = (req.query.folder as string) || "Upload";
+
+    // Upload to S3 with specified folder
     const { url, key } = await uploadBufferToS3({
       buffer: f.buffer,
       mime: f.mimetype,
       originalName: f.originalname,
-      folder: "Upload",
+      folder,
     });
 
     return res.json({
@@ -753,6 +756,7 @@ export async function importExcel(req: Request, res: Response) {
           id: item.id,
           status: existingItemKeys.has(itemKey) ? 'update' : 'new',
           question: item.question || item.stem,
+          stimulusId: item.stimulusId,
           answer: item.answer,
           choices: item.choices?.length || 0
         });
@@ -841,16 +845,11 @@ export async function importExcel(req: Request, res: Response) {
           test: stim.test,
         };
 
-        // Only include media fields that have values
-        const media: any = {};
-        if (stim.media.image !== undefined && stim.media.image !== '') media.image = stim.media.image;
-        if (stim.media.audio !== undefined && stim.media.audio !== '') media.audio = stim.media.audio;
-        if (stim.media.script !== undefined && stim.media.script !== '') media.script = stim.media.script;
-        if (stim.media.explain !== undefined && stim.media.explain !== '') media.explain = stim.media.explain;
-
-        if (Object.keys(media).length > 0) {
-          updateFields.media = media;
-        }
+        // Only include media fields that have values and use dot notation to merge
+        if (stim.media.image) updateFields['media.image'] = stim.media.image;
+        if (stim.media.audio) updateFields['media.audio'] = stim.media.audio;
+        if (stim.media.script) updateFields['media.script'] = stim.media.script;
+        if (stim.media.explain) updateFields['media.explain'] = stim.media.explain;
 
         return {
           updateOne: {
@@ -877,5 +876,76 @@ export async function importExcel(req: Request, res: Response) {
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ message: e.message || "Lỗi import Excel" });
+  }
+}
+
+// POST /api/admin/parts/stimuli/batch-upsert - Batch create/update stimuli
+export async function batchUpsertStimuli(req: Request, res: Response) {
+  try {
+    const { items } = req.body;
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "Thiếu trường 'items' hoặc mảng trống" });
+    }
+
+    const db = mongoose.connection;
+    const stimCol = db.collection(STIMULI_COLL);
+
+    // Validate all items
+    const errors: string[] = [];
+    for (const [index, item] of items.entries()) {
+      if (!item.id || !item.part || item.level === undefined || item.test === undefined) {
+        errors.push(`Item ${index + 1}: Thiếu trường bắt buộc (id, part, level, test)`);
+      }
+      if (!item.media || typeof item.media !== 'object') {
+        errors.push(`Item ${index + 1}: Thiếu trường media`);
+      }
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({ message: "Lỗi dữ liệu", errors: errors.slice(0, 10) });
+    }
+
+    // Prepare bulk operations
+    const bulkOps = items.map((item: any) => {
+      const updateFields: any = {
+        id: item.id,
+        part: item.part,
+        level: item.level,
+        test: item.test,
+      };
+
+      // Build media object with only non-empty fields and use dot notation
+      if (item.media.image) updateFields['media.image'] = item.media.image;
+      if (item.media.audio) updateFields['media.audio'] = item.media.audio;
+      if (item.media.script) updateFields['media.script'] = item.media.script;
+      if (item.media.explain) updateFields['media.explain'] = item.media.explain;
+
+      return {
+        updateOne: {
+          filter: {
+            id: item.id,
+            part: item.part,
+            level: item.level,
+            test: item.test,
+          },
+          update: { $set: updateFields },
+          upsert: true
+        }
+      };
+    });
+
+    const result = await stimCol.bulkWrite(bulkOps);
+
+    return res.json({
+      message: "Batch upsert thành công",
+      totalProcessed: items.length,
+      upsertedCount: result.upsertedCount,
+      modifiedCount: result.modifiedCount,
+    });
+
+  } catch (e: any) {
+    console.error("[batchUpsertStimuli] ERROR", e);
+    return res.status(500).json({ message: e.message || "Lỗi batch upsert" });
   }
 }

@@ -1,5 +1,6 @@
 // app/[locale]/layout.tsx
 import { NextIntlClientProvider, hasLocale } from "next-intl";
+import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/routing";
 import { cookies } from "next/headers";
@@ -27,10 +28,11 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
 
   const theme = (await cookies()).get("theme")?.value === "dark" ? "dark" : "light";
+  const messages = await getMessages();
 
   return (
     <ThemeProvider defaultTheme={theme}>
-      <NextIntlClientProvider locale={locale}>
+      <NextIntlClientProvider locale={locale} messages={messages}>
         <AuthProvider>
           <MobileAvatarSheetProvider>
             <ChatProvider>

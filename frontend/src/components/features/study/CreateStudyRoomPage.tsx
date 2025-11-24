@@ -380,13 +380,13 @@ export default function CreateStudyRoomPage() {
       });
       setRooms(data.rooms || []);
     } catch (e: any) {
-      const msg = e?.message || t("toast.listError");
+      const msg = e?.message || createT("toast.listError");
       setErr(msg);
       toast.error(msg);
     } finally {
       setBusy(null);
     }
-  }, [user]);
+  }, [user, createT]);
 
   useEffect(() => {
     if (user) reload();
@@ -418,7 +418,7 @@ export default function CreateStudyRoomPage() {
                   name: user.name || "",
                   role: user.role || "admin",
                 });
-                toast.info(t("toast.autoDelete", { room: room.roomName }));
+                toast.info(createT("toast.autoDelete", { room: room.roomName }));
                 setTimeout(() => reload(), 1000);
               } catch (e: any) {
                 console.error("Auto-delete failed:", e);
@@ -439,11 +439,11 @@ export default function CreateStudyRoomPage() {
 
     show(
       {
-        title: t("dialogs.delete.title"),
-        message: t("dialogs.delete.message", { room: roomName }),
+        title: createT("dialogs.delete.title"),
+        message: createT("dialogs.delete.message", { room: roomName }),
         icon: "warning",
-        confirmText: t("dialogs.delete.confirm"),
-        cancelText: t("dialogs.delete.cancel"),
+        confirmText: createT("dialogs.delete.confirm"),
+        cancelText: createT("dialogs.delete.cancel"),
         confirmColor: "red",
       },
       async () => {
@@ -454,13 +454,13 @@ export default function CreateStudyRoomPage() {
             name: user.name || "",
             role: user.role || "admin",
           });
-          toast.success(t("toast.deleteSuccess", { room: roomName }));
+          toast.success(createT("toast.deleteSuccess", { room: roomName }));
           await reload();
         } catch (e: any) {
           const errorMsg =
             e?.message ||
             e?.response?.data?.message ||
-            t("toast.deleteError");
+            createT("toast.deleteError");
           toast.error(errorMsg);
           console.error("Delete room error:", e);
         } finally {
@@ -478,7 +478,7 @@ export default function CreateStudyRoomPage() {
             <Loader2 className="h-6 w-6 animate-spin text-sky-600 dark:text-sky-400" />
           </div>
           <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            {t("page.loading")}
+            {createT("page.loading")}
           </p>
         </div>
       </div>

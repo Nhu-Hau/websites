@@ -36,7 +36,13 @@ const baseMetadata = genMeta({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_CONFIG.url),
   ...baseMetadata,
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
   openGraph: {
     ...(baseMetadata.openGraph ?? {}),
     images: [

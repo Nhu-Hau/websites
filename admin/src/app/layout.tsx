@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import AdminHeader from "@/components/navigation/AdminHeader";
+import AdminHeader from "@/components/layout/AdminHeader";
 import { ToastProvider } from "@/components/common/ToastProvider";
 import "./globals.css";
 

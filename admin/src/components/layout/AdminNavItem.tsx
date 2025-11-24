@@ -72,7 +72,7 @@ export default function AdminNavItem({ item }: Props) {
   };
 
   const handleMobileToggle = () => {
-    if (isMobile) setOpen((prev) => !prev);
+    setOpen((prev) => !prev);
   };
 
   const RootTag = (isMobile ? "button" : "div") as "button" | "div";
@@ -140,8 +140,10 @@ export default function AdminNavItem({ item }: Props) {
           {!isMobile && (
             <div
               className={cn(
-                "pointer-events-none absolute left-1/2 top-full z-40 w-64 -translate-x-1/2 opacity-0 invisible translate-y-2",
-                "group-hover/nav:visible group-hover/nav:opacity-100 group-hover/nav:translate-y-0 transition-all duration-250"
+                "absolute left-1/2 top-full z-40 w-64 -translate-x-1/2 translate-y-2 transition-all duration-250",
+                open
+                  ? "visible opacity-100 translate-y-0 pointer-events-auto"
+                  : "invisible opacity-0 pointer-events-none"
               )}
             >
               <div className="relative">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSocket } from "../../hooks/useSocket";
+import { useSocket } from "@/hooks/useSocket";
 import { useState, useEffect, useCallback } from "react";
 
 export default function AdminChatLink() {
@@ -15,10 +15,10 @@ export default function AdminChatLink() {
         credentials: "include",
       });
       const data = await response.json();
-      
+
       if (data?.data) {
         // Tính tổng unread count từ tất cả conversations
-        const totalUnread = (data.data || []).reduce((sum: number, conv: { unreadCount?: number }) => 
+        const totalUnread = (data.data || []).reduce((sum: number, conv: { unreadCount?: number }) =>
           sum + (conv.unreadCount || 0), 0
         );
         setUnreadCount(totalUnread);
@@ -36,14 +36,14 @@ export default function AdminChatLink() {
   // Listen for admin viewed messages event
   useEffect(() => {
     console.log("AdminChatLink: Setting up admin-viewed-messages event listener");
-    
+
     const handleAdminViewedMessages = (event: CustomEvent) => {
       console.log("AdminChatLink: Received admin-viewed-messages event:", event.detail);
       console.log("AdminChatLink: Admin viewed messages, reloading unread count");
-      
+
       // Reset unread count ngay lập tức
       setUnreadCount(0);
-      
+
       // Reload unread count để cập nhật chính xác
       loadUnreadCount();
     };
@@ -64,7 +64,7 @@ export default function AdminChatLink() {
     }
 
     console.log("AdminChatLink: Setting up socket listeners");
-    
+
     // Join admin room để nhận tin nhắn
     socket.emit("admin:join-conversation", "admin");
 
@@ -73,7 +73,7 @@ export default function AdminChatLink() {
       if (data.message && data.message.role === 'user') {
         console.log("Admin navigation: Incrementing unread count");
         setUnreadCount(prev => prev + 1);
-        
+
         // Reload unread count để cập nhật chính xác
         loadUnreadCount();
       }
@@ -107,3 +107,7 @@ export default function AdminChatLink() {
     </Link>
   );
 }
+
+
+
+

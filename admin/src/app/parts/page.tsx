@@ -21,11 +21,11 @@ import { ChevronDown, ChevronRight, FileText, BarChart3, Plus, Edit, Trash2, Hom
 
 
 import Link from "next/link";
-import EditStimulusModal from "@/components/parts/EditStimulusModal";
-import EditQuestionModal from "@/components/parts/EditQuestionModal";
-import AddQuestionModal from "@/components/parts/AddQuestionModal";
-import AddStimulusModal from "@/components/parts/AddStimulusModal";
-import ImportPreviewModal from "@/components/parts/ImportPreviewModal";
+import EditStimulusModal from "@/components/features/parts/EditStimulusModal";
+import EditQuestionModal from "@/components/features/parts/EditQuestionModal";
+import AddQuestionModal from "@/components/features/parts/AddQuestionModal";
+import AddStimulusModal from "@/components/features/parts/AddStimulusModal";
+import ImportPreviewModal from "@/components/features/parts/ImportPreviewModal";
 import { useToast } from "@/components/common/ToastProvider";
 
 type ConfirmDialogState = {
@@ -52,6 +52,7 @@ export default function PartsPage() {
   const [confirmLoading, setConfirmLoading] = React.useState(false);
   const [importPreviewData, setImportPreviewData] = React.useState<any>(null);
   const [showImportPreview, setShowImportPreview] = React.useState(false);
+  const [importErrors, setImportErrors] = React.useState<string[]>([]);
 
   // Modal states
   const [editStimulus, setEditStimulus] = React.useState<AdminStimulus | null>(null);
@@ -96,7 +97,12 @@ export default function PartsPage() {
       }
 
     } catch (error: any) {
-      toast.error(error.message || "Lỗi import Excel");
+      if (error.errors && Array.isArray(error.errors)) {
+        setImportErrors(error.errors);
+        toast.error("Có lỗi dữ liệu trong file Excel");
+      } else {
+        toast.error(error.message || "Lỗi import Excel");
+      }
     } finally {
       setBusy(false);
     }
@@ -115,7 +121,12 @@ export default function PartsPage() {
       void load();
       void loadStats();
     } catch (error: any) {
-      toast.error(error.message || "Lỗi import Excel");
+      if (error.errors && Array.isArray(error.errors)) {
+        setImportErrors(error.errors);
+        toast.error("Có lỗi dữ liệu trong file Excel");
+      } else {
+        toast.error(error.message || "Lỗi import Excel");
+      }
     } finally {
       setBusy(false);
       if (fileInputRef.current) {
@@ -653,6 +664,33 @@ export default function PartsPage() {
           </div>
         )}
       </div>
+
+      {/* Import Errors Modal */}
+      {importErrors.length > 0 && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[80vh] flex flex-col">
+            <div className="flex items-center gap-3 text-red-600">
+              <AlertTriangle className="h-6 w-6" />
+              <h3 className="text-lg font-semibold">Lỗi dữ liệu Import</h3>
+            </div>
+            <div className="flex-1 overflow-auto border border-red-100 rounded-lg bg-red-50 p-4">
+              <ul className="list-disc list-inside space-y-1 text-sm text-red-700 font-mono">
+                {importErrors.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setImportErrors([])}
+                className="px-4 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-medium transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       {/* Modals */}

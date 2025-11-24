@@ -815,7 +815,9 @@ export async function adminImportExcel(file: File, preview: boolean = false) {
 
   if (!res.ok) {
     const e = await res.json().catch(() => ({}));
-    throw new Error(e.message || 'Import Excel failed');
+    const error = new Error(e.message || 'Import Excel failed');
+    (error as any).errors = e.errors;
+    throw error;
   }
 
   return res.json() as Promise<{

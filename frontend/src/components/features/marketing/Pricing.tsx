@@ -87,9 +87,12 @@ export default function Pricing() {
   // promo code: tách riêng 2 input
   const [code79, setCode79] = useState("");
   const [code159, setCode159] = useState("");
-  const [checking, setChecking] = useState(false);
+  const [checkingPlan, setCheckingPlan] = useState<PaymentPlan | null>(null);
   const [promo, setPromo] = useState<PromoPreview | null>(null);
-  const [promoErr, setPromoErr] = useState<string | null>(null);
+  const [promoErr, setPromoErr] = useState<Record<PaymentPlan, string | null>>({
+    monthly_79: null,
+    monthly_159: null,
+  });
 
   const monthlyBase = 79_000;
   const plusBase = 159_000;
@@ -123,7 +126,7 @@ export default function Pricing() {
   const plusPromoActive = promo?.plan === "monthly_159" && plusPrice.hasPromo;
 
   async function onApplyCode(inputCode: string, planForPromo: PaymentPlan) {
-    setPromoErr(null);
+    setPromoErr((prev) => ({ ...prev, [planForPromo]: null }));
     if (!user) {
       router.push(`${basePrefix}/login`);
       return;
@@ -131,7 +134,7 @@ export default function Pricing() {
     const trimmed = inputCode.trim();
     if (!trimmed) return;
 
-    setChecking(true);
+    setCheckingPlan(planForPromo);
     try {
       const r = await fetch(`${apiBase()}/api/payments/promo/validate`, {
         method: "POST",
@@ -157,22 +160,34 @@ export default function Pricing() {
         value: j.data.value,
         plan: appliedPlan,
       });
+
+      // ✅ Clear đúng input theo plan sau khi áp dụng thành công
+      if (appliedPlan === "monthly_79") {
+        setCode79("");
+      } else if (appliedPlan === "monthly_159") {
+        setCode159("");
+      }
     } catch (e: any) {
       setPromo(null);
-      setPromoErr(e?.message || "Không thể kiểm tra mã, vui lòng thử lại");
+      setPromoErr((prev) => ({
+        ...prev,
+        [planForPromo]: e?.message || "Không thể kiểm tra mã, vui lòng thử lại",
+      }));
     } finally {
-      setChecking(false);
+      setCheckingPlan(null);
     }
   }
 
   function clearCode() {
     setPromo(null);
-    setPromoErr(null);
+    setPromoErr({
+      monthly_79: null,
+      monthly_159: null,
+    });
     setCode79("");
     setCode159("");
   }
 
-  // plan: "monthly_79" | "monthly_159"
   const handleUpgrade = async (plan: PaymentPlan) => {
     if (!user) {
       router.push(`${basePrefix}/login`);
@@ -527,12 +542,12 @@ export default function Pricing() {
                   onChange={(e) => setCode79(e.target.value.toUpperCase())}
                   placeholder="Nhập mã khuyến mãi (nếu có)"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#4063bb] focus:outline-none focus:ring-2 focus:ring-[#4063bb]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
-                  disabled={!!promo || isPremium}
+                  disabled={isPremium}
                 />
-                {promo && (
+                {code79 && !checkingPlan && (
                   <button
                     type="button"
-                    onClick={clearCode}
+                    onClick={() => setCode79("")}
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
                     <X className="h-4 w-4 text-slate-500" />
@@ -542,10 +557,12 @@ export default function Pricing() {
               <button
                 type="button"
                 onClick={() => onApplyCode(code79, "monthly_79")}
-                disabled={!!promo || !code79.trim() || checking || isPremium}
+                disabled={
+                  !code79.trim() || checkingPlan === "monthly_79" || isPremium
+                }
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#4063bb] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-600 disabled:opacity-60"
               >
-                {checking ? (
+                {checkingPlan === "monthly_79" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <BadgePercent className="h-4 w-4" />
@@ -554,9 +571,9 @@ export default function Pricing() {
               </button>
             </div>
 
-            {promoErr && (
+            {promoErr.monthly_79 && (
               <p className="mb-2 text-xs font-medium text-red-600 dark:text-red-400">
-                {promoErr}
+                {promoErr.monthly_79}
               </p>
             )}
             {monthlyPromoActive && (
@@ -619,7 +636,13 @@ export default function Pricing() {
                 ) : (
                   <>
                     <Sparkles className="h-4 w-4" />
-                    Nâng cấp 79k/tháng
+                    {monthlyPromoActive ? (
+                      <>
+                        Nâng cấp {Math.round(monthlyPrice.final / 1000)}k/tháng
+                      </>
+                    ) : (
+                      <>Nâng cấp 79k/tháng</>
+                    )}
                   </>
                 )}
               </button>
@@ -696,12 +719,12 @@ export default function Pricing() {
                   onChange={(e) => setCode159(e.target.value.toUpperCase())}
                   placeholder="Nhập mã khuyến mãi (nếu có)"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#4063bb] focus:outline-none focus:ring-2 focus:ring-[#4063bb]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
-                  disabled={!!promo || isPremium}
+                  disabled={isPremium}
                 />
-                {promo && (
+                {code159 && !checkingPlan && (
                   <button
                     type="button"
-                    onClick={clearCode}
+                    onClick={() => setCode159("")}
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
                     <X className="h-4 w-4 text-slate-500" />
@@ -711,10 +734,12 @@ export default function Pricing() {
               <button
                 type="button"
                 onClick={() => onApplyCode(code159, "monthly_159")}
-                disabled={!!promo || !code159.trim() || checking || isPremium}
+                disabled={
+                  !code159.trim() || checkingPlan === "monthly_159" || isPremium
+                }
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#4063bb] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-600 disabled:opacity-60"
               >
-                {checking ? (
+                {checkingPlan === "monthly_159" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <BadgePercent className="h-4 w-4" />
@@ -723,9 +748,9 @@ export default function Pricing() {
               </button>
             </div>
 
-            {promoErr && (
+            {promoErr.monthly_159 && (
               <p className="mb-2 text-xs font-medium text-red-600 dark:text-red-400">
-                {promoErr}
+                {promoErr.monthly_159}
               </p>
             )}
             {plusPromoActive && (
@@ -775,7 +800,13 @@ export default function Pricing() {
                 ) : (
                   <>
                     <Crown className="h-4 w-4" />
-                    Nâng cấp 159k / 3 tháng
+                    {plusPromoActive ? (
+                      <>
+                        Nâng cấp {Math.round(plusPrice.final / 1000)}k / 3 tháng
+                      </>
+                    ) : (
+                      <>Nâng cấp 159k / 3 tháng</>
+                    )}
                   </>
                 )}
               </button>

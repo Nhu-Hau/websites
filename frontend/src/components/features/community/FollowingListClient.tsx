@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
@@ -59,12 +60,19 @@ export default function FollowingListClient({
   function Avatar({ url, name }: { url?: string; name?: string }) {
     if (url) {
       const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
-      return
-        <img
-          src={fullUrl}
-          alt={name || "avatar"}
-          className="h-10 w-10 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-700"
-        />;
+      return (
+        <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-zinc-200 dark:ring-zinc-700">
+          <Image
+            src={fullUrl}
+            alt={name || "Ảnh đại diện"}
+            fill
+            className="object-cover"
+            sizes="40px"
+            unoptimized
+            priority={false}
+          />
+        </div>
+      );
     }
     return (
       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-sky-600 text-sm font-semibold text-white ring-2 ring-zinc-200 dark:ring-zinc-700">
@@ -135,8 +143,10 @@ export default function FollowingListClient({
       {following.length > 0 && (
         <div className="pt-2 text-right">
           <button
+            type="button"
             onClick={loadFollowing}
             className="text-xs font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+            aria-label="Làm mới danh sách đang theo dõi"
           >
             Làm mới danh sách
           </button>

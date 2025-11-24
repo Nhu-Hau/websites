@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import {
@@ -171,6 +172,8 @@ function NewsCard({ item, basePrefix }: { item: NewsItem; basePrefix: string }) 
       year: "numeric",
     });
   };
+  const placeholder = "https://via.placeholder.com/400x300?text=News";
+  const [imgSrc, setImgSrc] = useState(() => getImageUrl(item.image));
 
   return (
     <Link
@@ -182,15 +185,16 @@ function NewsCard({ item, basePrefix }: { item: NewsItem; basePrefix: string }) 
       <div className="pointer-events-none absolute -right-10 top-4 h-20 w-20 rounded-full bg-[#4063bb1a] blur-3xl dark:bg-[#4063bb33]" />
 
       {/* Image */}
-      <div className="relative w-full h-48 xs:h-56 overflow-hidden">
-        <img
-          src={getImageUrl(item.image)}
+      <div className="relative h-48 w-full overflow-hidden xs:h-56">
+        <Image
+          src={imgSrc}
           alt={item.title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-          onError={(e) => {
-            e.currentTarget.src =
-              "https://via.placeholder.com/400x300?text=News";
-          }}
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-110"
+          sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 33vw"
+          onError={() => setImgSrc(placeholder)}
+          unoptimized
+          priority={false}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <span className="absolute top-3 left-3 px-3 py-1 bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] text-white text-xs font-semibold rounded-full shadow-lg backdrop-blur-sm">
@@ -334,6 +338,7 @@ export function NewsListClient() {
         {totalPages > 1 && (
           <div className="mt-8 xs:mt-10 flex items-center justify-center gap-2 xs:gap-3">
             <button
+              type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               className="inline-flex h-10 w-10 xs:h-11 xs:w-11 items-center justify-center rounded-xl border border-[#4063bb]/20 bg-white/90 text-[#4063bb] transition-all duration-200 hover:border-[#4063bb]/40 hover:bg-gradient-to-br hover:from-[#4063bb]/10 hover:to-sky-500/10 hover:shadow-md hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none dark:border-[#4063bb]/30 dark:bg-zinc-900/80 dark:text-sky-300"
@@ -353,6 +358,7 @@ export function NewsListClient() {
               </span>
             </div>
             <button
+              type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="inline-flex h-10 w-10 xs:h-11 xs:w-11 items-center justify-center rounded-xl border border-[#4063bb]/20 bg-white/90 text-[#4063bb] transition-all duration-200 hover:border-[#4063bb]/40 hover:bg-gradient-to-br hover:from-[#4063bb]/10 hover:to-sky-500/10 hover:shadow-md hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none dark:border-[#4063bb]/30 dark:bg-zinc-900/80 dark:text-sky-300"

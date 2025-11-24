@@ -1,7 +1,25 @@
 import { Suspense } from "react";
 import { getCommunityPosts, getMe } from "@/lib/server/api";
 import CommunityPageClient from "@/components/features/community/CommunityPageClient";
+import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
 import { PageMotion } from "@/components/layout/PageMotion";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const path = locale === "vi" ? "/community" : `/${locale}/community`;
+
+  return genMeta(
+    {
+      title: "Cộng đồng TOEIC – Thảo luận, chia sẻ kinh nghiệm luyện thi",
+      description:
+        "Cập nhật bài viết mới nhất từ cộng đồng TOEIC, đặt câu hỏi, chia sẻ chiến lược và nhận góp ý từ hàng nghìn học viên đang luyện thi.",
+      keywords: ["cộng đồng TOEIC", "thảo luận TOEIC", "kinh nghiệm luyện thi TOEIC"],
+      canonical: generateCanonical(path, locale),
+      ogType: "website",
+    },
+    locale
+  );
+}
 
 // Loading skeleton
 function CommunityPostsSkeleton() {

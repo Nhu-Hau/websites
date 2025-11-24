@@ -1,17 +1,33 @@
 //frontend/src/app/[locale]/(marketing)/home/page.tsx
 import React from "react";
-import {
-  Hero,
-  WorkflowSection,
-  Testimonials,
-  Pricing,
-  FAQSection,
-  FinalCTA,
-} from "@/components/features/marketing";
+import dynamic from "next/dynamic";
+import { Hero } from "@/components/features/marketing";
 import { GoogleAuthEffect } from "@/components/features/auth/GoogleAuthEffect";
 import { generateMetadata as genMeta, generateCanonical, SITE_CONFIG } from "@/lib/seo";
 import { generateWebSiteSchema, generateFAQPageSchema, renderJsonLd } from "@/lib/seo/structured-data";
 import { PageMotion } from "@/components/layout/PageMotion";
+
+const SectionSkeleton = ({ label }: { label: string }) => (
+  <section className="mx-auto my-10 w-full max-w-6xl animate-pulse rounded-3xl border border-slate-200/70 bg-white/60 p-6 text-sm text-slate-400 dark:border-zinc-800/70 dark:bg-zinc-900/50 dark:text-zinc-500">
+    Đang tải {label}...
+  </section>
+);
+
+const WorkflowSection = dynamic(() => import("@/components/features/marketing/WorkflowSection"), {
+  loading: () => <SectionSkeleton label="quy trình" />,
+});
+const Testimonials = dynamic(() => import("@/components/features/marketing/Testimonials"), {
+  loading: () => <SectionSkeleton label="cảm nhận học viên" />,
+});
+const Pricing = dynamic(() => import("@/components/features/marketing/Pricing"), {
+  loading: () => <SectionSkeleton label="bảng giá" />,
+});
+const FAQSection = dynamic(() => import("@/components/features/marketing/FAQSection"), {
+  loading: () => <SectionSkeleton label="FAQ" />,
+});
+const FinalCTA = dynamic(() => import("@/components/features/marketing/FinalCTA"), {
+  loading: () => <SectionSkeleton label="lời kêu gọi hành động" />,
+});
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

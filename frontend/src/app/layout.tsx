@@ -3,8 +3,16 @@
 // @ts-ignore
 import "./globals.css";
 import "@livekit/components-styles";
+import { Mulish } from "next/font/google";
 import { SITE_CONFIG, generateMetadata as genMeta } from "@/lib/seo";
 import { generateWebSiteSchema, renderJsonLd } from "@/lib/seo/structured-data";
+
+const mulish = Mulish({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-mulish",
+});
 
 const metadata = genMeta({
   title: SITE_CONFIG.name,
@@ -44,7 +52,7 @@ export default function RootLayout({
 
   return (
     <html suppressHydrationWarning lang="vi">
-      <body>
+      <body className={`${mulish.variable} font-sans`}>
         {renderJsonLd(websiteSchema)}
         {children}
       </body>

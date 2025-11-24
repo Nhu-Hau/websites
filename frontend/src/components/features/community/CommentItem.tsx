@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Edit2, Trash2, X, Check } from "lucide-react";
 import { toast } from "@/lib/toast";
 import type { CommunityComment } from "@/types/community.types";
@@ -19,11 +20,17 @@ function Avatar({ url, name }: { url?: string; name?: string }) {
   if (url) {
     const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
     return (
-      <img
-        src={fullUrl}
-        alt={name || "avatar"}
-        className="h-10 w-10 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-700"
-      />
+      <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-zinc-200 dark:ring-zinc-700">
+        <Image
+          src={fullUrl}
+          alt={name || "Ảnh đại diện"}
+          fill
+          className="object-cover"
+          sizes="40px"
+          unoptimized
+          priority={false}
+        />
+      </div>
     );
   }
   return (
@@ -122,6 +129,7 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
           </span>
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={handleSaveEdit}
               disabled={saving}
               className="text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 p-1.5 rounded-lg transition-colors disabled:opacity-50"
@@ -130,11 +138,13 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
               <Check className="h-4 w-4" />
             </button>
             <button
+              type="button"
               onClick={() => {
                 setIsEditing(false);
                 setEditContent(comment.content);
               }}
               className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+              aria-label="Hủy chỉnh sửa bình luận"
             >
               <X className="h-4 w-4" />
             </button>
@@ -175,6 +185,7 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
             {comment.canDelete && (
               <div className="ml-auto flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={() => setIsEditing(true)}
                   className="text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                   aria-label="Edit comment"
@@ -182,6 +193,7 @@ export default function CommentItem({ comment, onDeleted, onUpdated }: CommentIt
                   <Edit2 className="h-3.5 w-3.5" />
                 </button>
                 <button
+                  type="button"
                   onClick={handleDelete}
                   className="text-zinc-500 hover:text-red-600 dark:hover:text-red-400 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   aria-label="Delete comment"

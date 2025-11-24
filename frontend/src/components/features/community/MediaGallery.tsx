@@ -1,11 +1,13 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import type { Attachment } from "@/types/community.types";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const MEDIA_SIZES = "(max-width: 768px) 100vw, 480px";
 
 type MediaGalleryProps = {
   attachments: Attachment[];
@@ -39,23 +41,29 @@ function VideoPlayer({ attachment }: { attachment: Attachment }) {
   return (
     <div className="relative w-full h-full group">
       {!playing && (
-        <div
-          className="absolute inset-0 flex items-center justify-center bg-zinc-900/50 cursor-pointer z-10"
+        <button
+          type="button"
+          className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center bg-zinc-900/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
           onClick={handlePlay}
+          aria-label="Phát video"
         >
-          <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg hover:bg-white transition-colors">
-            <Play className="w-8 h-8 text-zinc-900 ml-1" fill="currentColor" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 shadow-lg transition-colors hover:bg-white">
+            <Play className="ml-1 h-8 w-8 text-zinc-900" fill="currentColor" />
           </div>
-        </div>
+        </button>
       )}
       {thumbnail && !playing && (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
-          src={thumbnail}
-          alt="Video thumbnail"
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="lazy"
-        />
+        <div className="absolute inset-0">
+          <Image
+            src={thumbnail}
+            alt="Video thumbnail"
+            fill
+            className="object-cover"
+            sizes={MEDIA_SIZES}
+            unoptimized
+            priority={false}
+          />
+        </div>
       )}
       <video
         ref={videoRef}
@@ -96,17 +104,19 @@ function ImageItem({
       {loading && (
         <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
       )}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={url}
-        alt={attachment.name || "Image"}
-        className="w-full h-full object-contain"
-        onLoad={() => setLoading(false)}
+        alt={attachment.name || "Hình ảnh đính kèm"}
+        fill
+        className="object-contain"
+        sizes={MEDIA_SIZES}
+        onLoadingComplete={() => setLoading(false)}
         onError={() => {
           setLoading(false);
           setError(true);
         }}
-        loading="lazy"
+        unoptimized
+        priority={false}
       />
     </div>
   );
@@ -264,14 +274,18 @@ export default function MediaGallery({
               <VideoPlayer attachment={media} />
             </div>
           ) : (
-            <div className="relative w-full flex items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={getFullUrl(media.url)}
-                alt={media.name || "Image"}
-                className="w-full h-auto object-contain"
-                loading="lazy"
-              />
+            <div className="relative w-full">
+              <div className="relative aspect-[4/3] w-full">
+                <Image
+                  src={getFullUrl(media.url)}
+                  alt={media.name || "Hình ảnh đính kèm"}
+                  fill
+                  className="object-contain"
+                  sizes={MEDIA_SIZES}
+                  unoptimized
+                  priority={false}
+                />
+              </div>
             </div>
           )}
         </div>

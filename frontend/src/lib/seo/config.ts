@@ -16,14 +16,19 @@ function getBaseUrl(): string {
   );
 }
 
+const OG_IMAGE_PATH = "/images/bannerTOEICPREP.png";
+
 export const SITE_CONFIG = {
   name: "TOEICPREP",
   description: "Luyện thi TOEIC trực tuyến, thi thử đề thật, chấm điểm nhanh, giải thích chi tiết. Học từ vựng, luyện nghe, đọc hiểu TOEIC hiệu quả.",
   // Base URL is computed dynamically to support different environments
   get url() {
-    return getBaseUrl();
+    return getBaseUrl().replace(/\/$/, "");
   },
-  ogImage: "/images/bannerTOEICPREP.png",
+  get ogImage() {
+    const siteUrl = getBaseUrl().replace(/\/$/, "");
+    return `${siteUrl}${OG_IMAGE_PATH}`;
+  },
   twitterHandle: "@toeicprep",
   locale: "vi_VN",
   alternateLocales: ["en_US"],

@@ -1,25 +1,32 @@
 import { Suspense } from "react";
+import { Trophy } from "lucide-react";
 import BadgesServer from "./BadgesServer";
+import DashboardChartLoaderCard from "./DashboardChartLoaderCard";
 
-function BadgesSkeleton() {
+function BadgesLoader() {
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 animate-pulse">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="h-10 w-10 rounded-lg bg-zinc-100 dark:bg-zinc-800" />
-        <div className="flex-1 space-y-2">
-          <div className="h-5 w-32 bg-zinc-100 dark:bg-zinc-800 rounded" />
-          <div className="h-4 w-48 bg-zinc-100 dark:bg-zinc-800 rounded" />
+    <DashboardChartLoaderCard
+      accentClass="bg-gradient-to-r from-[#4063bb] to-[#35519a]"
+      title="Bộ sưu tập huy hiệu"
+      subtitle="Đếm huy hiệu đã mở khóa và chờ đồng bộ dữ liệu mới nhất."
+      badgeLabel="Badges"
+      heightClass="h-48 sm:h-52"
+      icon={
+        <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#4063bb]/60 via-[#35519a]/40 to-[#4063bb]/40 blur-xl" />
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4063bb] to-[#35519a] shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
+            <Trophy className="h-5 w-5 text-white" />
+          </div>
         </div>
-      </div>
-      <div className="h-40 bg-zinc-50 dark:bg-zinc-950 rounded-lg" />
-    </div>
+      }
+    />
   );
 }
 
 export default function BadgesTabContent() {
   return (
     <div className="space-y-6">
-      <Suspense fallback={<BadgesSkeleton />}>
+      <Suspense fallback={<BadgesLoader />}>
         <BadgesServer />
       </Suspense>
     </div>

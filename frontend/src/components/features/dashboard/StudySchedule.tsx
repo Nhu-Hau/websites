@@ -678,7 +678,12 @@ export default function StudyScheduleClient({
       {/* ===== UPCOMING CARD ===== */}
       {loadingUpcoming ? (
         <div className="rounded-2xl border border-gray-200/70 bg-white/95 p-6 text-center shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-900/95">
-          <Loader2 className="mx-auto h-6 w-6 animate-spin text-gray-400 dark:text-zinc-500" />
+          <div className="flex flex-col items-center justify-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin text-gray-400 dark:text-zinc-500" />
+            <p className="text-xs font-medium text-gray-500 dark:text-zinc-400">
+              Đang tải lịch học gần nhất...
+            </p>
+          </div>
         </div>
       ) : !upcoming ? (
         <div className="rounded-2xl border border-dashed border-gray-200/80 bg-white/90 p-6 shadow-sm backdrop-blur-xl dark:border-zinc-800/70 dark:bg-zinc-900/60">

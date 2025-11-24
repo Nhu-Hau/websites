@@ -380,11 +380,11 @@ export default function Hero() {
               </p>
 
               {/* CTA */}
-              <div className="mt-7 flex flex-col items-center gap-3 xs:flex-row xs:justify-center xs:gap-4 lg:justify-start">
+              <div className="mt-7 flex flex-col items-center gap-3 xs:flex-row xs:justify-center xs:gap-4 lg:justify-start whitespace-nowrap">
                 <button
                   onClick={handleStart}
                   disabled={checking}
-                  className="group inline-flex w-full max-w-[280px] items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-xs font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-400 hover:shadow-emerald-400/40 disabled:opacity-70 xs:w-auto sm:text-sm"
+                  className="group inline-flex w-full max-w-[300px] items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-xs font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-400 hover:shadow-emerald-400/40 disabled:opacity-70 xs:w-auto sm:text-sm"
                 >
                   {checking ? (
                     <FiLoader className="animate-spin text-base" />

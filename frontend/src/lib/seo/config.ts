@@ -111,6 +111,8 @@ export function generateOpenGraph(metadata: PageMetadata, locale = "vi"): {
       {
         url: ogImageUrl,
         alt: metadata.title,
+        width: 1200,
+        height: 630,
       },
     ],
     locale: locale === "vi" ? "vi_VN" : "en_US",
@@ -196,5 +198,7 @@ export function generateMetadata(metadata: PageMetadata, locale = "vi"): {
     },
   };
 }
+
+
 
 

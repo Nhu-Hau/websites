@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import PracticeHistoryClient from "@/components/features/practice/PracticeHistory";
 import { getPracticeHistory } from "@/lib/server/api";
-import { PageMotion } from "@/components/layout/PageMotion";
 
 async function PracticeHistoryData({
   searchParams,
@@ -44,23 +43,24 @@ export default function Page({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 transition-colors duration-300">
-      <PageMotion>
-        <Suspense
-          fallback={
-            <div className="mx-auto max-w-[1350px] px-6 py-10 mt-16">
-              <div className="flex flex-col items-center justify-center py-24 text-center">
-                <div className="h-12 w-12 rounded-full border-4 border-blue-600 dark:border-blue-400 border-t-transparent animate-spin" />
-                <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-                  Đang tải...
-                </p>
-              </div>
+    <div className="relative min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-hidden">
+      {/* subtle grid background */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_#e5e7eb_0,_#fafafa_40%,_#f4f4f5_100%)] dark:bg-[radial-gradient(circle_at_top,_#18181b_0,_#09090b_40%,_#0a0a0a_100%)]" />
+      
+      <Suspense
+        fallback={
+          <div className="relative mx-auto max-w-6xl xl:max-w-7xl px-4 xs:px-6 py-10 pt-20">
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <div className="h-12 w-12 rounded-full border-4 border-blue-600 dark:border-blue-400 border-t-transparent animate-spin" />
+              <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+                Đang tải...
+              </p>
             </div>
-          }
-        >
-          <PracticeHistoryData searchParams={searchParams} />
-        </Suspense>
-      </PageMotion>
+          </div>
+        }
+      >
+        <PracticeHistoryData searchParams={searchParams} />
+      </Suspense>
     </div>
   );
 }

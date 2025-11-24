@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import type { Stimulus, Item, ChoiceId } from "@/types/tests.types";
 import { Volume2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -389,14 +388,19 @@ function CardSticky(props: BaseProps) {
             {imgs.length > 0 && (
               <div className="space-y-3">
                 {imgs.map((url, i) => (
-                  <div key={i} className="relative w-full max-h-[70vh] rounded-lg sm:rounded-xl border border-zinc-200/80 dark:border-zinc-700/80" style={{ aspectRatio: 'auto' }}>
-                    <Image
+                  <div key={i} className="w-full rounded-lg sm:rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 overflow-hidden bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center" style={{ minHeight: '200px', maxHeight: '70vh' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={url}
-                      alt=""
-                      fill
-                      className="object-contain rounded-lg sm:rounded-xl"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      unoptimized
+                      alt={`Test image ${i + 1}`}
+                      className="w-full h-auto max-h-[70vh] object-contain rounded-lg sm:rounded-xl"
+                      loading="lazy"
+                      onError={(e) => {
+                        // Silently handle error - don't log in production
+                        if (process.env.NODE_ENV === 'development') {
+                          console.error('Image load error:', url, e);
+                        }
+                      }}
                     />
                   </div>
                 ))}

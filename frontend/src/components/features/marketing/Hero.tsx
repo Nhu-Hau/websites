@@ -306,7 +306,7 @@ export default function Hero() {
                 <span>Cấu trúc bám sát đề thi TOEIC thật</span>
               </div>
 
-              <h1 className="font-bold tracking-tight text-white text-4xl sm:text-5xl lg:text-6xl">
+              <h1 className="font-bold tracking-tight text-white text-5xl lg:text-6xl">
                 Xây lộ trình{" "}
                 <span className="text-sky-300">TOEIC thông minh</span> cho riêng
                 bạn

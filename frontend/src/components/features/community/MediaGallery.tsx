@@ -7,8 +7,6 @@ import type { Attachment } from "@/types/community.types";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
-const MEDIA_SIZES = "(max-width: 768px) 100vw, 480px";
-
 type MediaGalleryProps = {
   attachments: Attachment[];
   className?: string;
@@ -38,8 +36,30 @@ function VideoPlayer({ attachment }: { attachment: Attachment }) {
     ? getFullUrl(attachment.thumbnail)
     : null;
 
+  const showThumbnail = !!thumbnail && !playing;
+
   return (
-    <div className="relative w-full h-full group">
+    <div className="relative w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900 group">
+      {showThumbnail && (
+        <Image
+          src={thumbnail}
+          alt="Video thumbnail"
+          width={0}
+          height={0}
+          sizes="100vw"
+          className="w-full h-auto object-contain"
+          priority={false}
+        />
+      )}
+      <video
+        ref={videoRef}
+        src={url}
+        controls={playing}
+        className={`w-full h-auto ${showThumbnail ? "hidden" : "block"}`}
+        onPlay={handlePlay}
+        onPause={handlePause}
+        playsInline
+      />
       {!playing && (
         <button
           type="button"
@@ -52,28 +72,6 @@ function VideoPlayer({ attachment }: { attachment: Attachment }) {
           </div>
         </button>
       )}
-      {thumbnail && !playing && (
-        <div className="absolute inset-0">
-          <Image
-            src={thumbnail}
-            alt="Video thumbnail"
-            fill
-            className="object-cover"
-            sizes={MEDIA_SIZES}
-            unoptimized
-            priority={false}
-          />
-        </div>
-      )}
-      <video
-        ref={videoRef}
-        src={url}
-        controls={playing}
-        className="w-full h-full object-contain"
-        onPlay={handlePlay}
-        onPause={handlePause}
-        playsInline
-      />
     </div>
   );
 }
@@ -92,7 +90,7 @@ function ImageItem({
   if (error) {
     return (
       <div
-        className={`bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center ${className}`}
+        className={`bg-zinc-100 dark:bg-zinc-800 flex w-full items-center justify-center rounded-xl ${className}`}
       >
         <span className="text-xs text-zinc-500">Failed to load image</span>
       </div>
@@ -100,22 +98,22 @@ function ImageItem({
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative w-full overflow-hidden rounded-xl ${className}`}>
       {loading && (
-        <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+        <div className="absolute inset-0 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-800" />
       )}
       <Image
         src={url}
         alt={attachment.name || "Hình ảnh đính kèm"}
-        fill
-        className="object-contain"
-        sizes={MEDIA_SIZES}
+        width={0}
+        height={0}
+        className="w-full h-auto rounded-xl object-contain"
+        sizes="100vw"
         onLoadingComplete={() => setLoading(false)}
         onError={() => {
           setLoading(false);
           setError(true);
         }}
-        unoptimized
         priority={false}
       />
     </div>
@@ -141,42 +139,37 @@ function CarouselGallery({ attachments }: { attachments: Attachment[] }) {
 
   if (allMedia.length === 0) return null;
 
+  const activeMedia = allMedia[currentIndex];
+  const renderMedia = (media: Attachment) =>
+    media.type === "video" ? (
+      <VideoPlayer attachment={media} />
+    ) : (
+      <ImageItem attachment={media} />
+    );
+
   return (
-    <div className="relative w-full aspect-square bg-zinc-100 dark:bg-zinc-900 rounded-lg overflow-hidden">
-      {allMedia.map((media, idx) => (
-        <div
-          key={idx}
-          className={`absolute inset-0 transition-opacity duration-300 ${
-            idx === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
-          }`}
-        >
-          {media.type === "video" ? (
-            <VideoPlayer attachment={media} />
-          ) : (
-            <ImageItem attachment={media} className="w-full h-full" />
-          )}
-        </div>
-      ))}
+    <div className="relative w-full rounded-lg bg-zinc-100 dark:bg-zinc-900">
+      <div className="w-full">{renderMedia(activeMedia)}</div>
 
       {allMedia.length > 1 && (
         <>
           <button
             type="button"
             onClick={goPrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
             aria-label="Previous image"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="h-5 w-5" />
           </button>
           <button
             type="button"
             onClick={goNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
             aria-label="Next image"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="h-5 w-5" />
           </button>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1">
+          <div className="absolute bottom-2 left-1/2 z-20 flex -translate-x-1/2 gap-1">
             {allMedia.map((_, idx) => (
               <button
                 key={idx}
@@ -211,16 +204,16 @@ function GridGallery({ attachments }: { attachments: Attachment[] }) {
   // Grid 2x2
   if (allMedia.length === 4) {
     return (
-      <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
+      <div className="grid grid-cols-2 gap-1 rounded-lg">
         {allMedia.map((media, idx) => (
           <div
             key={idx}
-            className="relative aspect-square bg-zinc-100 dark:bg-zinc-900"
+            className="rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900"
           >
             {media.type === "video" ? (
               <VideoPlayer attachment={media} />
             ) : (
-              <ImageItem attachment={media} className="w-full h-full" />
+              <ImageItem attachment={media} />
             )}
           </div>
         ))}
@@ -230,18 +223,18 @@ function GridGallery({ attachments }: { attachments: Attachment[] }) {
 
   // Less than 4 items - still use grid but adjust
   return (
-    <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
+    <div className="grid grid-cols-2 gap-1 rounded-lg">
       {allMedia.map((media, idx) => (
         <div
           key={idx}
-          className={`relative bg-zinc-100 dark:bg-zinc-900 ${
-            allMedia.length === 1 ? "col-span-2 aspect-square" : "aspect-square"
+          className={`rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900 ${
+            allMedia.length === 1 ? "col-span-2" : ""
           }`}
         >
           {media.type === "video" ? (
             <VideoPlayer attachment={media} />
           ) : (
-            <ImageItem attachment={media} className="w-full h-full" />
+            <ImageItem attachment={media} />
           )}
         </div>
       ))}
@@ -268,24 +261,22 @@ export default function MediaGallery({
     const media = allMedia[0];
     return (
       <div className={`w-full ${className}`}>
-        <div className="w-full rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+        <div className="w-full overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
           {media.type === "video" ? (
             <div className="aspect-video">
               <VideoPlayer attachment={media} />
             </div>
           ) : (
-            <div className="relative w-full">
-              <div className="relative aspect-[4/3] w-full">
-                <Image
-                  src={getFullUrl(media.url)}
-                  alt={media.name || "Hình ảnh đính kèm"}
-                  fill
-                  className="object-contain"
-                  sizes={MEDIA_SIZES}
-                  unoptimized
-                  priority={false}
-                />
-              </div>
+            <div className="w-full">
+              <Image
+                src={getFullUrl(media.url)}
+                alt={media.name || "Hình ảnh đính kèm"}
+                width={0}
+                height={0}
+                sizes="100vw"
+                className="w-full h-auto rounded-lg object-contain"
+                priority={false}
+              />
             </div>
           )}
         </div>

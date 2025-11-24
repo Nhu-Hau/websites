@@ -391,16 +391,15 @@ function CardSticky(props: BaseProps) {
                 {imgs.map((url, i) => (
                   <div
                     key={i}
-                    className="relative flex w-full items-center justify-center overflow-hidden rounded-lg border border-zinc-200/80 bg-zinc-50 dark:border-zinc-700/80 dark:bg-zinc-900 sm:rounded-xl"
-                    style={{ minHeight: "200px", maxHeight: "70vh" }}
+                    className="w-full overflow-hidden rounded-lg border border-zinc-200/80 bg-zinc-50 dark:border-zinc-700/80 dark:bg-zinc-900 sm:rounded-xl"
                   >
                     <Image
                       src={url}
                       alt={`Hình minh họa câu hỏi ${i + 1}`}
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 768px) 100vw, 720px"
-                      unoptimized
+                      width={0}
+                      height={0}
+                      sizes="100vw"
+                      className="w-full h-auto object-contain"
                       priority={false}
                       onError={() => {
                         if (process.env.NODE_ENV === "development") {

@@ -113,13 +113,34 @@ export default function ExploreClient() {
 
         <Link
           href={`${basePrefix}/community/groups`}
-          className="group flex flex-col justify-between rounded-2xl border border-zinc-200/80 bg-gradient-to-br from-sky-50 to-sky-100 p-5 text-zinc-900 shadow-sm ring-1 ring-sky-100/70 transition-all duration-150 hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white hover:shadow-lg dark:border-zinc-800/80 dark:bg-zinc-900/95 dark:ring-sky-900/40"
+          className="
+    group flex flex-col justify-between rounded-2xl border 
+    border-zinc-200/80 bg-gradient-to-br from-sky-50 to-sky-100 
+    p-5 text-zinc-900 shadow-sm ring-1 ring-sky-100/70 
+    transition-all duration-150 hover:-translate-y-0.5 
+    hover:border-sky-300 hover:bg-white hover:shadow-lg
+
+    /* DARK */
+    dark:border-zinc-800/70 
+    dark:bg-gradient-to-br dark:from-[#0f172a] dark:via-[#0b1a33] dark:to-[#082032]
+    dark:text-zinc-100
+    dark:ring-[#4063bb33]
+    dark:hover:border-[#4063bb66]
+    dark:hover:bg-[#0f1d34]
+  "
         >
           <div className="mb-4 flex items-center justify-between gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300">
+            <div
+              className="
+        flex h-10 w-10 items-center justify-center rounded-xl 
+        bg-sky-100 text-sky-600 
+        dark:bg-[#4063bb33] dark:text-sky-300
+      "
+            >
               <Users className="h-6 w-6" />
             </div>
           </div>
+
           <div>
             <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
               Nhóm học

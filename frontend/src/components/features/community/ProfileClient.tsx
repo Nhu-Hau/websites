@@ -232,7 +232,13 @@ export default function ProfileClient({
     <div className="space-y-8">
       {/* Cover + uploading badge */}
       <div className="relative mb-4 overflow-hidden rounded-2xl border border-zinc-200/80 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 shadow-sm ring-1 ring-black/[0.04] dark:border-zinc-800/80">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.30),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.75),_transparent_55%)]" />
+        <div
+          className="
+    absolute inset-0
+    bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.28),transparent_60%)]
+    dark:bg-[radial-gradient(circle_at_top,rgba(125,211,252,0.18),transparent_65%)]
+  "
+        />
         {coverUrl && (
           <div className="relative h-48 xs:h-56 sm:h-64 w-full">
             <Image

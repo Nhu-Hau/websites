@@ -1,6 +1,7 @@
 // backend/src/modules/teacher-lead/teacher-lead.routes.ts
 import { Router } from "express";
 import { sendMail } from "../../shared/services/email.service";
+import { emailTemplates } from "../../shared/templates/email-templates";
 
 const router = Router();
 
@@ -72,32 +73,34 @@ router.post("/teacher-leads", async (req, res) => {
     });
   }
 
-  const rows = Object.entries(leadData)
-    .map(
-      ([key, value]) => `
-        <tr>
-          <td style="padding: 4px 8px; font-weight: 600; text-transform: capitalize; background:#f7f7f7">${key}</td>
-          <td style="padding: 4px 8px;">${value || "<i>Không có</i>"}</td>
-        </tr>`
-    )
-    .join("");
-
-  const html = `
-    <div style="font-family: Inter, Roboto, Arial, sans-serif; line-height: 1.5;">
-      <h2>Thông tin đăng ký giáo viên mới</h2>
-      <p>Người dùng vừa gửi form đăng ký trở thành giáo viên trên nền tảng TOEIC Practice.</p>
-      <table style="border-collapse: collapse; width: 100%; max-width: 640px;" border="1" cellpadding="0" cellspacing="0">
-        ${rows}
-      </table>
-      <p style="margin-top:16px; font-size: 13px; color:#555;">Email này được gửi tự động từ hệ thống. Vui lòng trả lời trực tiếp cho ứng viên qua email hoặc số điện thoại ở trên.</p>
-    </div>
-  `;
-
   try {
+    // 1. Gửi email cho admin
+    const adminEmailHtml = emailTemplates.teacherRegistrationAdmin({
+      fullName: leadData.fullName,
+      email: leadData.email,
+      phone: leadData.phone,
+      scoreOrCert: leadData.scoreOrCert,
+      experience: leadData.experience,
+      availability: leadData.availability,
+      message: leadData.message,
+    });
+
     await sendMail({
       to: recipients.length === 1 ? recipients[0] : recipients,
       subject: `[Teacher Lead] ${leadData.fullName} (${leadData.email})`,
-      html,
+      html: adminEmailHtml,
+    });
+
+    // 2. Tự động phản hồi email cho user
+    const userEmailHtml = emailTemplates.teacherRegistrationUser({
+      fullName: leadData.fullName,
+      email: leadData.email,
+    });
+
+    await sendMail({
+      to: leadData.email,
+      subject: "✅ Đăng ký giáo viên thành công - TOEIC Practice",
+      html: userEmailHtml,
     });
 
     return res.json({ message: "Lead submitted" });

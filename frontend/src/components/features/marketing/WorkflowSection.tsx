@@ -36,7 +36,7 @@ const steps = [
   },
 ];
 
-// Brand chính #2E5EB8, giữ API color cũ nhưng đổi toàn bộ palette sang cùng tone
+// Brand chính #2E5EB8
 const colorMap: Record<
   string,
   {
@@ -122,8 +122,8 @@ export default function WorkflowSection() {
         <div className="mt-14 lg:mt-18" ref={listRef}>
           {/* Desktop: timeline ngang */}
           <div className="relative hidden lg:grid lg:grid-cols-4 lg:gap-7 xl:gap-8">
-            {/* line nối */}
-            <div className="pointer-events-none absolute inset-x-10 top-[4.5rem] h-px bg-gradient-to-r from-slate-200 via-[#2E5EB8]/35 to-slate-200 dark:from-slate-800 dark:via-[#2E5EB8]/40 dark:to-slate-800" />
+            {/* line nối (đặt hơi cao để trùng với tâm badge) */}
+            <div className="pointer-events-none absolute inset-x-10 top-[2.75rem] h-px bg-gradient-to-r from-slate-200 via-[#2E5EB8]/40 to-slate-200 dark:from-slate-800 dark:via-[#2E5EB8]/50 dark:to-slate-800" />
 
             {steps.map((step, index) => {
               const Icon = step.icon;
@@ -141,23 +141,22 @@ export default function WorkflowSection() {
                     ease: [0.22, 0.61, 0.36, 1],
                     delay: listInView ? index * 0.1 : 0,
                   }}
-                  className="relative"
+                  className="relative flex flex-col items-center"
                 >
-                  <div
-                    className="relative flex h-full flex-col rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-sm 
-                               transition-all duration-300 hover:-translate-y-2 hover:border-[#2E5EB8]/40 hover:shadow-lg 
-                               dark:border-slate-800 dark:bg-slate-900/95 dark:hover:border-[#2E5EB8]/50"
-                  >
-                    {/* số bước */}
-                    <div
-                      className={`absolute -top-4 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border text-xs font-semibold ${colors.chipBg} ${colors.chipBorder} ${colors.chipText}`}
-                    >
-                      {step.number}
-                    </div>
+                  {/* số bước – badge đậm, đứng trên line, không bị cắt */}
+                  <div className="z-20 flex h-10 w-10 items-center justify-center rounded-full bg-[#2E5EB8] text-xs font-semibold text-white shadow-lg shadow-[#2E5EB880]">
+                    {step.number}
+                  </div>
 
+                  {/* card */}
+                  <div
+                    className="mt-6 w-full flex-1 rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-sm
+                               transition-all duration-300 hover:-translate-y-2 hover:border-[#2E5EB8]/40 hover:shadow-lg
+                               dark:border-slate-800 dark:bg-slate-900/95 dark:hover:border-[#2E5EB8]/60"
+                  >
                     {/* icon */}
                     <div
-                      className={`mt-4 mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl ${colors.iconBg}`}
+                      className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl ${colors.iconBg}`}
                     >
                       <Icon className={`h-6 w-6 ${colors.iconText}`} />
                     </div>
@@ -173,7 +172,7 @@ export default function WorkflowSection() {
 
                   {/* mũi tên nối (trừ bước cuối) */}
                   {index < steps.length - 1 && (
-                    <div className="pointer-events-none absolute right-0 top-[4.6rem] z-10 translate-x-1/2 -translate-y-1/2">
+                    <div className="pointer-events-none absolute right-0 top-[2.8rem] z-10 translate-x-1/2 -translate-y-1/2">
                       <ArrowRight className="h-5 w-5 text-slate-300 dark:text-slate-600" />
                     </div>
                   )}
@@ -204,9 +203,7 @@ export default function WorkflowSection() {
                 >
                   {/* cột số bước */}
                   <div className="flex flex-col items-center">
-                    <div
-                      className={`flex h-9 w-9 items-center justify-center rounded-full border text-xs font-semibold ${colors.chipBg} ${colors.chipBorder} ${colors.chipText}`}
-                    >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2E5EB8] text-xs font-semibold text-white shadow-md shadow-[#2E5EB880]">
                       {step.number}
                     </div>
                     {step.number !== "04" && (
@@ -218,7 +215,7 @@ export default function WorkflowSection() {
                   <div
                     className="flex-1 rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm 
                                transition-all duration-300 hover:-translate-y-1 hover:border-[#2E5EB8]/40 hover:shadow-md 
-                               dark:border-slate-800 dark:bg-slate-900/95 dark:hover:border-[#2E5EB8]/50"
+                               dark:border-slate-800 dark:bg-slate-900/95 dark:hover:border-[#2E5EB8]/60"
                   >
                     <div className="flex items-start gap-3">
                       <div

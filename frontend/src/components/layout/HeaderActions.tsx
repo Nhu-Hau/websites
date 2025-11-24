@@ -11,6 +11,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useNotifications } from "@/hooks/common/useNotifications";
 import ProgressEligibilityWatcher from "@/components/features/progress/ProgressEligibility";
 import PracticeInactivityWatcher from "@/components/features/practice/PracticeInactivity";
+import { useTranslations } from "next-intl";
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -31,6 +32,7 @@ export function LanguageSwitcher() {
   const { locale, hrefFor } = useLocaleSwitch();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("HeaderActions.language");
 
   useClickOutside(wrapperRef, () => {
     if (open) setOpen(false);
@@ -40,13 +42,13 @@ return (
   <div className="relative flex-shrink-0" ref={wrapperRef}>
     <button
       type="button"
-      aria-label="Chọn ngôn ngữ"
+      aria-label={t("aria")}
       onClick={() => setOpen((prev) => !prev)}
       className={cn(iconButtonBase)}
       {...(!open
         ? {
             "data-tooltip-id": "language-tooltip",
-            "data-tooltip-content": "Chọn ngôn ngữ",
+            "data-tooltip-content": t("tooltip"),
           }
         : {})}
     >
@@ -65,7 +67,7 @@ return (
         )}
       >
         <div className="mb-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-          Chọn ngôn ngữ
+          {t("title")}
         </div>
         <ul className="space-y-2">
           {/* Tiếng Việt */}
@@ -83,9 +85,9 @@ return (
             >
               <Flag code="vn" className="h-5 w-7 rounded-sm object-cover" />
               <div className="flex flex-col">
-                <span className="font-medium">Tiếng Việt</span>
+                <span className="font-medium">{t("vi.label")}</span>
                 <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Ngôn ngữ Việt Nam
+                  {t("vi.desc")}
                 </span>
               </div>
             </Link>
@@ -106,9 +108,9 @@ return (
             >
               <Flag code="gb" className="h-5 w-7 rounded-sm object-cover" />
               <div className="flex flex-col">
-                <span className="font-medium">Tiếng Anh</span>
+                <span className="font-medium">{t("en.label")}</span>
                 <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Ngôn ngữ quốc tế
+                  {t("en.desc")}
                 </span>
               </div>
             </Link>
@@ -135,6 +137,7 @@ return (
 export function Notification() {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("HeaderActions.notification");
   useClickOutside(wrapperRef, () => {
     if (open) setOpen(false);
   });
@@ -152,13 +155,13 @@ export function Notification() {
     <div className="relative flex-shrink-0" ref={wrapperRef}>
       <button
         type="button"
-        aria-label="Thông báo"
+        aria-label={t("aria")}
         onClick={handleToggle}
         className={cn(iconButtonBase, "relative")}
         {...(!open
           ? {
               "data-tooltip-id": "notification-tooltip",
-              "data-tooltip-content": "Xem thông báo",
+              "data-tooltip-content": t("tooltip"),
             }
           : {})}
       >
@@ -185,21 +188,21 @@ export function Notification() {
         >
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-              Thông báo
+              {t("title")}
             </div>
             {items.length > 0 && (
               <button
                 onClick={clearAll}
                 className="text-xs font-medium text-amber-700 hover:text-amber-600 dark:text-amber-300 dark:hover:text-amber-200 underline-offset-2 hover:underline"
               >
-                Xoá tất cả
+                {t("clearAll")}
               </button>
             )}
           </div>
 
           {items.length === 0 ? (
             <div className="py-2 text-sm text-zinc-500 dark:text-zinc-400">
-              Chưa có thông báo
+              {t("empty")}
             </div>
           ) : (
             <ul className="max-h-80 space-y-2 overflow-y-auto pr-1">
@@ -246,15 +249,16 @@ export function Notification() {
 /* ================= ThemeToggle ================= */
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const t = useTranslations("HeaderActions.theme");
 
   const nextLabel =
-    theme === "light" ? "Chuyển sang chế độ tối" : "Chuyển sang chế độ sáng";
+    theme === "light" ? t("dark") : t("light");
 
   return (
     <div className="flex-shrink-0">
       <button
         type="button"
-        aria-label="Chuyển đổi giao diện"
+        aria-label={t("aria")}
         onClick={(e) => {
           e.stopPropagation();
           setTheme(theme === "light" ? "dark" : "light");

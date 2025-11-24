@@ -30,6 +30,7 @@ import {
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
 import ImageCropper from "@/components/features/community/ImageCropper";
+import { useTranslations } from "next-intl";
 
 /* ================= Types ================= */
 type Role = "user" | "admin" | "teacher";
@@ -91,43 +92,11 @@ const PARTS: PartKey[] = [
   "part.6",
   "part.7",
 ];
-const PART_LABEL: Record<PartKey, string> = {
-  "part.1": "Phần 1",
-  "part.2": "Phần 2",
-  "part.3": "Phần 3",
-  "part.4": "Phần 4",
-  "part.5": "Phần 5",
-  "part.6": "Phần 6",
-  "part.7": "Phần 7",
-};
 
-const ACCESS_LABEL: Record<Access, string> = {
-  free: "Free",
-  premium: "Premium",
-};
 const ACCESS_BADGE: Record<Access, string> = {
   free: "border-zinc-300 bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200 dark:border-zinc-600",
   premium:
     "border-yellow-300 bg-yellow-100 text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900 dark:text-yellow-200",
-};
-const LEVEL_BADGE: Record<Lvl, string> = {
-  1: "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900 dark:text-emerald-200",
-  2: "border-sky-300 bg-sky-100 text-sky-800 dark:border-sky-700 dark:bg-sky-900 dark:text-sky-200",
-  3: "border-violet-300 bg-violet-100 text-violet-800 dark:border-violet-700 dark:bg-violet-900 dark:text-violet-200",
-};
-const LV_TONES: Record<Lvl, { chip: string; btn: string }> = {
-  1: {
-    chip: "bg-emerald-100 text-emerald-800",
-    btn: "bg-emerald-600 hover:bg-emerald-500 text-white",
-  },
-  2: {
-    chip: "bg-sky-100 text-sky-800",
-    btn: "bg-sky-600 hover:bg-sky-500 text-white",
-  },
-  3: {
-    chip: "bg-violet-100 text-violet-800",
-    btn: "bg-violet-600 hover:bg-violet-500 text-white",
-  },
 };
 
 /* ================= Utils ================= */
@@ -160,54 +129,9 @@ function fileToDataURL(file: File): Promise<string> {
   });
 }
 
-async function getCroppedBlob(
-  imageSrc: string,
-  cropPixels: { x: number; y: number; width: number; height: number },
-  targetSize = 512
-): Promise<Blob> {
-  const img = await new Promise<HTMLImageElement>((res, rej) => {
-    const image = new window.Image();
-    image.onload = () => res(image);
-    image.onerror = rej;
-    image.src = imageSrc;
-  });
-
-  const canvas = document.createElement("canvas");
-  canvas.width = cropPixels.width;
-  canvas.height = cropPixels.height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas not supported");
-
-  ctx.drawImage(
-    img,
-    cropPixels.x,
-    cropPixels.y,
-    cropPixels.width,
-    cropPixels.height,
-    0,
-    0,
-    cropPixels.width,
-    cropPixels.height
-  );
-
-  const dest = document.createElement("canvas");
-  dest.width = targetSize;
-  dest.height = targetSize;
-  const dctx = dest.getContext("2d");
-  if (!dctx) throw new Error("Canvas not supported");
-
-  dctx.imageSmoothingEnabled = true;
-  dctx.imageSmoothingQuality = "high";
-  dctx.drawImage(canvas, 0, 0, targetSize, targetSize);
-
-  const blob: Blob = await new Promise((resolve) =>
-    dest.toBlob((b) => resolve(b as Blob), "image/jpeg", 0.9)
-  );
-  return blob;
-}
-
 /* ================= Component ================= */
 export default function Account() {
+  const t = useTranslations("Account");
   const base = useBasePrefix("vi");
   const locale = base.slice(1) || "vi";
   const router = useRouter();
@@ -247,7 +171,7 @@ export default function Account() {
             cache: "no-store",
           });
           if (!res.ok) {
-            toast.error("Vui lòng đăng nhập");
+            toast.error(t("toast.loginRequired"));
             router.push(`${base}/login`);
             return;
           }
@@ -292,7 +216,7 @@ export default function Account() {
         }
       } catch {
         if (alive) {
-          toast.error("Không thể tải hồ sơ");
+          toast.error(t("toast.loadError"));
           router.push(`${base}/login`);
         }
       } finally {
@@ -302,7 +226,7 @@ export default function Account() {
     return () => {
       alive = false;
     };
-  }, [ctxUser, router, base]);
+  }, [ctxUser, router, base, t]);
 
   async function onPickAvatar(files: FileList | null) {
     if (!files || !files[0]) return;
@@ -315,7 +239,7 @@ export default function Account() {
       [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"].includes(fileExtension);
     
     if (!isImage) {
-      toast.error("Vui lòng chọn file ảnh hợp lệ");
+      toast.error(t("toast.invalidImage"));
       return;
     }
     
@@ -325,23 +249,23 @@ export default function Account() {
       setShowCropper(true);
     } catch (error) {
       console.error("[onPickAvatar] Error:", error);
-      toast.error("Không thể đọc file ảnh");
+      toast.error(t("toast.readError"));
     }
   }
 
   async function handleDeleteAvatar() {
     if (!user?.picture) {
-      toast.error("Bạn chưa có ảnh đại diện");
+      toast.error(t("toast.noAvatar"));
       return;
     }
 
     show(
       {
-        title: "Xóa ảnh đại diện?",
-        message: "Bạn có chắc muốn xoá ảnh đại diện không?",
+        title: t("confirm.deleteAvatar.title"),
+        message: t("confirm.deleteAvatar.message"),
         icon: "warning",
-        confirmText: "Xóa",
-        cancelText: "Hủy",
+        confirmText: t("confirm.deleteAvatar.confirm"),
+        cancelText: t("confirm.deleteAvatar.cancel"),
         confirmColor: "red",
       },
       async () => {
@@ -352,7 +276,7 @@ export default function Account() {
             credentials: "include",
           });
           if (!r.ok) throw new Error("Xoá thất bại");
-          toast.success("Đã xoá ảnh đại diện");
+          toast.success(t("toast.deleteSuccess"));
 
           setUser((prev) => (prev ? { ...prev, picture: undefined } : prev));
           if (setCtxUser)
@@ -360,7 +284,7 @@ export default function Account() {
               prev ? { ...prev, picture: undefined } : prev
             );
         } catch {
-          toast.error("Không thể xoá ảnh đại diện");
+          toast.error(t("toast.deleteError"));
         } finally {
           setDeleting(false);
         }
@@ -386,10 +310,10 @@ export default function Account() {
         <div className="w-full md:w-auto">
           <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2 sm:gap-3">
             <Settings className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400" />
-            Cài đặt tài khoản
+            {t("header.title")}
           </h1>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-            Quản lý thông tin cá nhân và cài đặt tài khoản của bạn
+            {t("header.desc")}
           </p>
         </div>
         <Link
@@ -397,7 +321,7 @@ export default function Account() {
           className="w-full md:w-auto inline-flex justify-center items-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm sm:text-base font-medium hover:bg-blue-700 transition-colors gap-2"
         >
           <User className="h-4 w-4" />
-          Xem hồ sơ công khai
+          {t("header.viewProfile")}
         </Link>
       </div>
 
@@ -415,14 +339,14 @@ export default function Account() {
               />
             ) : (
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs sm:text-sm text-zinc-500">
-                No Avatar
+                {t("profile.noAvatar")}
               </div>
             )}
             <button
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
               className="absolute bottom-0 right-0 p-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-500 shadow"
-              title="Đổi avatar"
+              title={t("profile.changeAvatar")}
             >
               <Camera className="w-4 h-4" />
             </button>
@@ -452,29 +376,29 @@ export default function Account() {
               <span className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs capitalize border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 {user.role === "admin"
-                  ? "Admin"
+                  ? t("profile.role.admin")
                   : user.role === "teacher"
-                  ? "Teacher"
-                  : "User"}
+                  ? t("profile.role.teacher")
+                  : t("profile.role.user")}
               </span>
 
               <span
                 className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs ${
                   ACCESS_BADGE[user.access]
                 }`}
-                title="Gói truy cập"
+                title={t("profile.access.title")}
               >
                 {user.access === "premium" ? (
                   <Crown className="w-3.5 h-3.5" />
                 ) : (
                   <Star className="w-3.5 h-3.5" />
                 )}
-                {ACCESS_LABEL[user.access]}
+                {user.access === "premium" ? t("profile.access.premium") : t("profile.access.free")}
               </span>
             </div>
 
             <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              Cập nhật:{" "}
+              {t("profile.updatedAt")}{" "}
               {user.levelUpdatedAt
                 ? new Date(user.levelUpdatedAt).toLocaleString()
                 : "—"}
@@ -485,7 +409,7 @@ export default function Account() {
           <div className="w-fit sm:self-start rounded-xl border border-zinc-200 dark:border-zinc-700 px-3 py-2 text-sm bg-white/70 dark:bg-zinc-800/50 flex flex-col items-end">
             <div className="flex items-center gap-2 dark:text-white">
               <Gauge className="w-4 h-4" />
-              <span>TOEIC ước lượng</span>
+              <span>{t("profile.toeicEstimate")}</span>
             </div>
             <div className="mt-1 text-right font-semibold dark:text-zinc-100">
               {toeicOverall ?? "—"}{" "}
@@ -502,7 +426,7 @@ export default function Account() {
               href={`${base}/pricing`}
               className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 dark:text-zinc-100"
             >
-              Nâng cấp gói để mở thêm bài luyện{" "}
+              {t("profile.upgradePrompt")}{" "}
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -514,7 +438,7 @@ export default function Account() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
-              Thời gian tạo
+              {t("stats.createdAt")}
             </div>
             <div className="font-medium text-zinc-900 dark:text-zinc-100">
               {user.createdAt
@@ -525,7 +449,7 @@ export default function Account() {
 
           <div>
             <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
-              Placement gần nhất
+              {t("stats.lastPlacement")}
             </div>
             <div className="font-medium">
               {user.lastPlacementAttemptId ? (
@@ -535,11 +459,11 @@ export default function Account() {
                     user.lastPlacementAttemptId
                   )}`}
                 >
-                  Xem kết quả
+                  {t("stats.viewResult")}
                 </Link>
               ) : (
                 <span className="text-zinc-500 dark:text-zinc-400">
-                  Chưa có
+                  {t("stats.noResult")}
                 </span>
               )}
             </div>
@@ -547,28 +471,28 @@ export default function Account() {
 
           <div>
             <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
-              Lịch sử luyện tập
+              {t("stats.practiceHistory")}
             </div>
             <div className="font-medium">
               <Link
                 className="underline text-sky-700 dark:text-sky-300 hover:text-sky-600 dark:hover:text-sky-200"
                 href={`${base}/practice/history`}
               >
-                Xem lịch sử
+                {t("stats.viewHistory")}
               </Link>
             </div>
           </div>
 
           <div>
             <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
-              Lịch học sắp tới
+              {t("stats.upcomingSchedule")}
             </div>
             <div className="font-medium">
               <Link
                 className="underline text-sky-700 dark:text-sky-300 hover:text-sky-600 dark:hover:text-sky-200"
                 href={`${base}/dashboard`}
               >
-                Xem lịch học
+                {t("stats.viewSchedule")}
               </Link>
             </div>
           </div>
@@ -580,7 +504,7 @@ export default function Account() {
         <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 sm:p-5 bg-white/90 dark:bg-zinc-900/80 backdrop-blur-sm">
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3 flex items-center gap-2">
             <Activity className="w-4 h-4" />
-            Hoạt động gần đây
+            {t("activity.title")}
           </h3>
           <div className="space-y-2">
             {recent.slice(0, 5).map((attempt) => (
@@ -592,10 +516,10 @@ export default function Account() {
                   <BookOpen className="w-4 h-4 text-zinc-500" />
                   <span className="text-zinc-700 dark:text-zinc-300">
                     {attempt.partKey
-                      ? `Part ${attempt.partKey.split(".")[1]}`
+                      ? t("activity.part", { number: attempt.partKey.split(".")[1] })
                       : attempt.test
-                      ? `Test ${attempt.test}`
-                      : "Practice"}
+                      ? t("activity.test", { number: attempt.test })
+                      : t("activity.practice")}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 justify-between sm:justify-end">
@@ -618,7 +542,7 @@ export default function Account() {
               href={`${base}/practice/history`}
               className="mt-3 inline-flex items-center gap-1 text-sm text-sky-700 dark:text-sky-300 hover:underline"
             >
-              Xem tất cả <ChevronRight className="w-4 h-4" />
+              {t("activity.viewAll")} <ChevronRight className="w-4 h-4" />
             </Link>
           )}
         </section>
@@ -675,10 +599,10 @@ export default function Account() {
                 );
               }
 
-              toast.success("Đã cập nhật ảnh đại diện");
+              toast.success(t("toast.updateSuccess"));
             } catch (error: any) {
               console.error("[Account] Upload error:", error);
-              toast.error(error?.message || "Lỗi khi cập nhật ảnh đại diện");
+              toast.error(error?.message || t("toast.updateError"));
             } finally {
               setUploading(false);
               setCropperImage(null);

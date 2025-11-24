@@ -24,6 +24,7 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/lib/toast";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { useMobileAvatarSheet } from "@/context/MobileAvatarSheetContext";
+import { useTranslations } from "next-intl";
 
 /* ================= Types ================= */
 type Role = "user" | "admin" | "teacher";
@@ -126,6 +127,7 @@ function pickUserFromMe(json: any): SafeUser | null {
 
 /* ================= Main ================= */
 export default function UserMenu() {
+  const t = useTranslations("UserMenu");
   const { user: ctxUser, logout } = useAuth();
   const router = useRouter();
   const { locale } = useLocaleSwitch();
@@ -211,10 +213,10 @@ export default function UserMenu() {
     setOpen(false); // Update context
     try {
       await logout();
-      toast.success("Đăng xuất thành công");
+      toast.success(t("toast.logoutSuccess"));
       router.push(`${base}/login`);
     } catch {
-      toast.error("Lỗi khi đăng xuất");
+      toast.error(t("toast.logoutError"));
     }
   };
 
@@ -235,7 +237,7 @@ export default function UserMenu() {
   // 👇 BUILD LINK THEO LEVEL HIỆN TẠI (param ?level=), dùng base prefix
   const partRows = PARTS.map((key) => {
     const lv = levels?.[key] as Lvl | undefined;
-    const label = `Part ${key.split(".")[1]}`;
+    const label = t("part", { number: key.split(".")[1] });
     const href = lv
       ? `${base}/practice/${encodeURIComponent(key)}?level=${lv}`
       : `${base}/practice/${encodeURIComponent(key)}`;
@@ -250,7 +252,7 @@ export default function UserMenu() {
       <div className="md:hidden">
         <button
           type="button"
-          aria-label={ctxUser ? "Quản lý tài khoản" : "Đăng nhập/Đăng ký"}
+          aria-label={ctxUser ? t("aria.manage") : t("aria.login")}
           onClick={() => {
             const newOpen = !open;
             setOpenLocal(newOpen);
@@ -288,11 +290,11 @@ export default function UserMenu() {
       ref={wrapperRef}
       className="relative hidden md:block"
       data-tooltip-id={open ? undefined : "user-tooltip"}
-      data-tooltip-content={ctxUser ? "Quản lý tài khoản" : "Đăng nhập/Đăng ký"}
+      data-tooltip-content={ctxUser ? t("tooltip.manage") : t("tooltip.login")}
     >
       <button
         type="button"
-        aria-label={ctxUser ? "Quản lý tài khoản" : "Đăng nhập/Đăng ký"}
+        aria-label={ctxUser ? t("aria.manage") : t("aria.login")}
         onClick={() => {
           const newOpen = !open;
           setOpenLocal(newOpen);
@@ -347,7 +349,7 @@ export default function UserMenu() {
                 )}
                 <div>
                   <p className="font-semibold text-sm text-zinc-900 dark:text-white">
-                    {me?.name || (ctxUser as any)?.name || "Người dùng"}
+                    {me?.name || (ctxUser as any)?.name || t("fallbackName")}
                   </p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     {me?.email || (ctxUser as any)?.email || "—"}
@@ -365,7 +367,7 @@ export default function UserMenu() {
               >
                 <IdCard className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                  Trang cá nhân
+                  {t("profile")}
                 </span>
                 <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
                   <ArrowRight className="w-3.5 h-3.5 text-zinc-400" />
@@ -377,7 +379,7 @@ export default function UserMenu() {
                 <div className="flex items-center gap-3">
                   <ShieldCheck className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                   <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                    Quyền
+                    {t("role.label")}
                   </span>
                 </div>
                 <span
@@ -390,10 +392,10 @@ export default function UserMenu() {
                   }`}
                 >
                   {userRole === "admin"
-                    ? "Quản trị"
+                    ? t("role.admin")
                     : userRole === "teacher"
-                    ? "Giáo viên"
-                    : "Người dùng"}
+                    ? t("role.teacher")
+                    : t("role.user")}
                 </span>
               </div>
 
@@ -412,7 +414,7 @@ export default function UserMenu() {
                     <Star className="w-4 h-4 text-zinc-400" />
                   )}
                   <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                    Gói
+                    {t("access.label")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -423,7 +425,7 @@ export default function UserMenu() {
                         : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-300 dark:border-zinc-700"
                     }`}
                   >
-                    {userAccess === "premium" ? "Cao cấp" : "Miễn phí"}
+                    {userAccess === "premium" ? t("access.premium") : t("access.free")}
                   </span>
                 </div>
               </Link>
@@ -448,7 +450,7 @@ export default function UserMenu() {
               {/* Gợi ý theo phần */}
               <div className="mt-3 mb-1 px-3">
                 <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  Gợi ý theo phần
+                  {t("suggestions")}
                 </p>
               </div>
 
@@ -471,7 +473,7 @@ export default function UserMenu() {
                         className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold border ${config.bg} ${config.border} ${config.text}`}
                       >
                         <Zap className={`w-3 h-3 ${config.icon}`} />
-                        Level {row.lv}
+                        {t("level", { level: row.lv ?? 0 })}
                       </span>
                     ) : (
                       <span className="text-xs text-zinc-400">—</span>
@@ -487,7 +489,7 @@ export default function UserMenu() {
                   className="flex w-full items-center gap-3 px-3 py-1.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition-all duration-200 text-red-600 dark:text-red-400"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span className="text-sm font-medium">Đăng xuất</span>
+                  <span className="text-sm font-medium">{t("logout")}</span>
                 </button>
               </div>
             </>
@@ -496,7 +498,7 @@ export default function UserMenu() {
               {/* === PHẦN CHƯA ĐĂNG NHẬP === */}
               <div className="px-1">
                 <div className="text-sm font-bold text-zinc-800 dark:text-zinc-100 mb-3 text-start">
-                  Tài khoản
+                  {t("account")}
                 </div>
 
                 <div className="space-y-2">
@@ -513,10 +515,10 @@ export default function UserMenu() {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                        Đăng nhập
+                        {t("loginAction.title")}
                       </p>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Đã có tài khoản
+                        {t("loginAction.desc")}
                       </p>
                     </div>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -537,10 +539,10 @@ export default function UserMenu() {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                        Đăng ký
+                        {t("registerAction.title")}
                       </p>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Tạo tài khoản mới
+                        {t("registerAction.desc")}
                       </p>
                     </div>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">

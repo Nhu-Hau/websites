@@ -14,29 +14,11 @@ import { Button, Input } from "@/components/ui";
 import { usePasswordToggle } from "@/hooks/auth/usePasswordToggle";
 import { useAuthSubmit } from "@/hooks/auth/useAuthSubmit";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
-
-const LOGIN_COPY = {
-  title: "Đăng nhập",
-  noAccount: "Chưa có tài khoản?",
-  register: "Đăng ký",
-  continueWithGoogle: "Tiếp tục với Google",
-  email: "Email",
-  emailPlaceholder: "Nhập email của bạn",
-  password: "Mật khẩu",
-  passwordPlaceholder: "Nhập mật khẩu của bạn",
-  forgotPassword: "Quên mật khẩu?",
-  processing: "Đang xử lý...",
-  login: "Đăng nhập",
-  errorEmailRequired: "Vui lòng nhập email",
-  errorEmailInvalid: "Email không hợp lệ",
-  errorPasswordRequired: "Vui lòng nhập mật khẩu",
-  errorPasswordLen: "Mật khẩu phải có tối thiểu 8 ký tự",
-} as const;
+import { useTranslations } from "next-intl";
 
 export default function LoginForm() {
   const basePrefix = useBasePrefix(); // -> "/vi" | "/en" | ...
-  const translate = (key: string) =>
-    LOGIN_COPY[key as keyof typeof LOGIN_COPY] ?? key;
+  const t = useTranslations("auth.login");
   const router = useRouter();
   const [gLoading, setGLoading] = useState(false);
   const pw = usePasswordToggle(false);
@@ -45,14 +27,14 @@ export default function LoginForm() {
   const { onSubmit, loading, errors, setErrors } = useAuthSubmit({
     kind: "login",
     url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`,
-    t: translate,
+    t: (key) => t(key),
     onSuccess: async () => {
       const res = await fetch("/api/auth/me", {
         credentials: "include",
       });
       const profile = res.ok ? await res.json() : null;
       if (profile) login(profile);
-      toast.success("Đăng nhập thành công!");
+      toast.success(t("success"));
       router.push(basePrefix);
     },
   });
@@ -64,22 +46,22 @@ export default function LoginForm() {
 
   return (
     <AuthLayout
-      title={translate("title")}
+      title={t("title")}
       subtitle={
         <>
-          {translate("noAccount")}{" "}
+          {t("noAccount")}{" "}
           <Link
             href={`${basePrefix}/register`}
             className="underline underline-offset-2 hover:no-underline text-sky-600 dark:text-sky-400"
           >
-            {translate("register")}
+            {t("register")}
           </Link>
         </>
       }
       below={
         <>
           <GoogleButton
-            text={translate("continueWithGoogle")}
+            text={t("continueWithGoogle")}
             loading={gLoading}
             onClick={onGoogle}
           />
@@ -93,7 +75,7 @@ export default function LoginForm() {
             htmlFor="email"
             className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
           >
-            {translate("email")}
+            {t("email")}
           </label>
           <Input
             id="email"
@@ -103,7 +85,7 @@ export default function LoginForm() {
             autoComplete="email"
             aria-invalid={!!errors.email}
             error={!!errors.email}
-            placeholder={translate("emailPlaceholder")}
+            placeholder={t("emailPlaceholder")}
             onChange={() =>
               errors.email && setErrors((e) => ({ ...e, email: undefined }))
             }
@@ -116,8 +98,8 @@ export default function LoginForm() {
           <PasswordField
             id="password"
             name="password"
-            label={translate("password")}
-            placeholder={translate("passwordPlaceholder") || "Nhập mật khẩu của bạn"}
+            label={t("password")}
+            placeholder={t("passwordPlaceholder")}
             className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm
                  text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400
                  focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500
@@ -142,7 +124,7 @@ export default function LoginForm() {
                  underline underline-offset-4 decoration-dashed hover:no-underline 
                  transition-colors duration-200"
           >
-            {translate("forgotPassword")}
+            {t("forgotPassword")}
           </Link>
         </div>
 
@@ -154,7 +136,7 @@ export default function LoginForm() {
           isLoading={loading}
           className="w-full"
         >
-          {loading ? translate("processing") : translate("login")}
+          {loading ? t("processing") : t("submit")}
         </Button>
       </form>
     </AuthLayout>

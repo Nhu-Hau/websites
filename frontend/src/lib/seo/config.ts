@@ -10,9 +10,11 @@
  */
 function getBaseUrl(): string {
   return (
-    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_API_BASE ||
     process.env.NEXT_PUBLIC_SITE_URL ||
-    (process.env.NODE_ENV === "production" ? "https://toeicprep.vn" : "http://localhost:3000")
+    (process.env.NODE_ENV === "production"
+      ? "https://toeicprep.com.vn"
+      : "http://localhost:3000")
   );
 }
 
@@ -20,7 +22,8 @@ const OG_IMAGE_PATH = "/images/bannerTOEICPREP.png";
 
 export const SITE_CONFIG = {
   name: "TOEICPREP",
-  description: "Luyện thi TOEIC trực tuyến, thi thử đề thật, chấm điểm nhanh, giải thích chi tiết. Học từ vựng, luyện nghe, đọc hiểu TOEIC hiệu quả.",
+  description:
+    "Luyện thi TOEIC trực tuyến, thi thử đề thật, chấm điểm nhanh, giải thích chi tiết. Học từ vựng, luyện nghe, đọc hiểu TOEIC hiệu quả.",
   // Base URL is computed dynamically to support different environments
   get url() {
     return getBaseUrl().replace(/\/$/, "");
@@ -48,7 +51,10 @@ export type PageMetadata = {
 /**
  * Generate full page title with site name
  */
-export function generateTitle(pageTitle: string, includeSiteName = true): string {
+export function generateTitle(
+  pageTitle: string,
+  includeSiteName = true
+): string {
   if (!includeSiteName) return pageTitle;
   return `${pageTitle} | ${SITE_CONFIG.name}`;
 }
@@ -66,10 +72,12 @@ export function generateCanonical(path: string, locale?: string): string {
 /**
  * Generate hreflang tags for multi-language support
  */
-export function generateHreflang(path: string): Array<{ hreflang: string; href: string }> {
+export function generateHreflang(
+  path: string
+): Array<{ hreflang: string; href: string }> {
   const baseUrl = SITE_CONFIG.url.replace(/\/$/, "");
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
-  
+
   return [
     { hreflang: "vi", href: `${baseUrl}${cleanPath}` },
     { hreflang: "en", href: `${baseUrl}/en${cleanPath}` },
@@ -94,7 +102,10 @@ function getAbsoluteImageUrl(imagePath: string): string {
  * Generate Open Graph metadata
  * Returns format compatible with Next.js App Router metadata API
  */
-export function generateOpenGraph(metadata: PageMetadata, locale = "vi"): {
+export function generateOpenGraph(
+  metadata: PageMetadata,
+  locale = "vi"
+): {
   title: string;
   description: string;
   type: string;
@@ -105,7 +116,7 @@ export function generateOpenGraph(metadata: PageMetadata, locale = "vi"): {
 } {
   const ogImage = metadata.ogImage || SITE_CONFIG.ogImage;
   const ogImageUrl = getAbsoluteImageUrl(ogImage);
-  
+
   return {
     title: metadata.title,
     description: metadata.description,
@@ -138,7 +149,7 @@ export function generateTwitterCard(metadata: PageMetadata): {
 } {
   const ogImage = metadata.ogImage || SITE_CONFIG.ogImage;
   const ogImageUrl = getAbsoluteImageUrl(ogImage);
-  
+
   return {
     card: "summary_large_image",
     title: metadata.title,
@@ -153,7 +164,10 @@ export function generateTwitterCard(metadata: PageMetadata): {
  * Generate Next.js metadata object
  * Compatible with Next.js App Router metadata API (Next.js 13+)
  */
-export function generateMetadata(metadata: PageMetadata, locale = "vi"): {
+export function generateMetadata(
+  metadata: PageMetadata,
+  locale = "vi"
+): {
   title: string;
   description: string;
   keywords?: string;
@@ -167,7 +181,12 @@ export function generateMetadata(metadata: PageMetadata, locale = "vi"): {
     type: string;
     url: string;
     siteName: string;
-    images: Array<{ url: string; width?: number; height?: number; alt?: string }>;
+    images: Array<{
+      url: string;
+      width?: number;
+      height?: number;
+      alt?: string;
+    }>;
     locale: string;
   };
   twitter?: {
@@ -184,16 +203,14 @@ export function generateMetadata(metadata: PageMetadata, locale = "vi"): {
   };
 } {
   const hreflang = generateHreflang(metadata.canonical || "");
-  
+
   return {
     title: metadata.title,
     description: metadata.description,
     keywords: metadata.keywords?.join(", "),
     alternates: {
       canonical: metadata.canonical || generateCanonical("", locale),
-      languages: Object.fromEntries(
-        hreflang.map((h) => [h.hreflang, h.href])
-      ),
+      languages: Object.fromEntries(hreflang.map((h) => [h.hreflang, h.href])),
     },
     openGraph: generateOpenGraph(metadata, locale),
     twitter: generateTwitterCard(metadata),
@@ -203,7 +220,3 @@ export function generateMetadata(metadata: PageMetadata, locale = "vi"): {
     },
   };
 }
-
-
-
-

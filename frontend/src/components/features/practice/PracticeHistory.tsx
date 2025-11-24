@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Variants } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 type Attempt = {
   _id: string;
@@ -106,6 +107,7 @@ export default function PracticeHistoryClient({
   page,
   limit,
 }: PracticeHistoryClientProps) {
+  const t = useTranslations("Practice.history");
   const base = useBasePrefix("vi");
   const hasData = items.length > 0;
   const locale = base.slice(1) || "vi";
@@ -129,7 +131,7 @@ export default function PracticeHistoryClient({
                 <History className="h-5 w-5 text-white relative z-10" />
               </div>
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-700 dark:text-blue-300">
-                Lịch sử luyện tập
+                {t("badge")}
               </span>
             </div>
 
@@ -137,12 +139,12 @@ export default function PracticeHistoryClient({
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-3xl sm:text-4xl font-black tracking-tight dark:text-zinc-100">
-                  Lịch sử luyện tập
+                  {t("title")}
                 </h1>
               </div>
 
               <p className="text-sm sm:text-base text-zinc-700 dark:text-zinc-300 max-w-xl leading-relaxed">
-                Theo dõi tiến trình, xem lại kết quả và cải thiện từng ngày.
+                {t("description")}
               </p>
             </div>
 
@@ -155,7 +157,7 @@ export default function PracticeHistoryClient({
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
-                      Tổng câu đúng
+                      {t("stats.totalCorrect")}
                     </p>
                     <p className="text-[15px] font-bold text-zinc-900 dark:text-zinc-50">
                       {items.reduce((s, a) => s + a.correct, 0)}
@@ -169,7 +171,7 @@ export default function PracticeHistoryClient({
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
-                      Trung bình
+                      {t("stats.average")}
                     </p>
                     <p className="text-[15px] font-bold text-zinc-900 dark:text-zinc-50">
                       {Math.round(
@@ -187,7 +189,7 @@ export default function PracticeHistoryClient({
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
-                      Tổng thời gian
+                      {t("stats.totalTime")}
                     </p>
                     <p className="text-[15px] font-bold text-zinc-900 dark:text-zinc-50">
                       {fmtTime(items.reduce((s, a) => s + a.timeSec, 0))}
@@ -221,17 +223,16 @@ export default function PracticeHistoryClient({
               </div>
             </div>
             <h3 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
-              Chưa có lịch sử
+              {t("empty.title")}
             </h3>
             <p className="mt-2 text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-md">
-              Bạn chưa làm bài nào. Hãy vào phần luyện tập và bắt đầu ngay hôm
-              nay!
+              {t("empty.description")}
             </p>
             <Link
               href={`${base}/practice`}
               className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
             >
-              Bắt đầu luyện tập <ChevronRight className="h-4 w-4" />
+              {t("empty.startButton")} <ChevronRight className="h-4 w-4" />
             </Link>
           </motion.div>
         ) : (
@@ -239,10 +240,10 @@ export default function PracticeHistoryClient({
             {/* Header */}
             <div className="flex flex-col gap-1 xs:flex-row xs:items-center xs:justify-between">
               <h2 className="text-base xs:text-lg font-semibold text-zinc-800 dark:text-zinc-200">
-                Các bài đã làm
+                {t("list.title")}
               </h2>
               <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {total} bài • Trang {page}
+                {t("list.pagination", { count: total, page })}
               </span>
             </div>
 
@@ -355,7 +356,7 @@ export default function PracticeHistoryClient({
                         {/* Right: call to action */}
                         <div className="flex items-center justify-end gap-1.5 sm:gap-2">
                           <span className="text-xs xs:text-sm font-medium text-zinc-500 dark:text-zinc-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                            Xem chi tiết
+                            {t("list.viewDetails")}
                           </span>
                           <ChevronRight className="h-4 w-4 xs:h-5 xs:w-5 text-zinc-400 dark:text-zinc-500 transition-all group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-1" />
                         </div>
@@ -368,7 +369,7 @@ export default function PracticeHistoryClient({
 
             {total > items.length && (
               <div className="mt-5 text-center text-xs xs:text-sm text-zinc-500 dark:text-zinc-400">
-                Hiển thị {items.length} trong {total} bài • Trang {page}
+                {t("list.showing", { shown: items.length, total, page })}
               </div>
             )}
           </>

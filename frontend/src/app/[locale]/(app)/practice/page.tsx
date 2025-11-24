@@ -1,16 +1,17 @@
 import { redirect } from "next/navigation";
 import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
+import { getTranslations } from "next-intl/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "pages.practice.meta" });
   const path = locale === "vi" ? "/practice" : `/${locale}/practice`;
 
   return genMeta(
     {
-      title: "Luyện đề TOEIC theo Part & Level",
-      description:
-        "Truy cập ngay thư viện đề luyện TOEIC được chia theo Part và Level. Bắt đầu với Part 1 và nâng cấp dần để cải thiện điểm Listening & Reading.",
-      keywords: ["TOEIC practice", "luyện đề TOEIC", "TOEIC part 1", "ôn luyện TOEIC"],
+      title: t("title"),
+      description: t("description"),
+      keywords: t("keywords").split(", "),
       canonical: generateCanonical(path, locale),
       ogType: "website",
     },

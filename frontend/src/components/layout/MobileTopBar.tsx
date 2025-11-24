@@ -9,11 +9,13 @@ import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { cn } from "@/lib/utils";
 import UserMenu from "@/components/features/auth/UserMenu";
 import MobileNotificationSheet from "@/components/layout/MobileNotificationSheet";
+import { useTranslations } from "next-intl";
 
 export default function MobileTopBar() {
   const base = useBasePrefix();
   const { unread } = useNotifications();
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const t = useTranslations("MobileTopBar");
 
   return (
     <header
@@ -29,12 +31,12 @@ export default function MobileTopBar() {
           {/* Logo */}
           <Link
             href={`${base}`}
-            aria-label="Về trang chủ ToeicPrep"
+            aria-label={t("logoAria")}
             className="flex items-center gap-2"
           >
             <Image
               src="/images/logotoeic.png"
-              alt="Logo ToeicPrep"
+              alt={t("logoAlt")}
               width={32}
               height={32}
               className="size-8 rounded-full object-contain"
@@ -47,7 +49,7 @@ export default function MobileTopBar() {
             {/* Notification Button */}
             <button
               type="button"
-              aria-label="Thông báo"
+              aria-label={t("notificationsAria")}
               onClick={() => setNotificationOpen(true)}
               className={cn(
                 "relative inline-flex h-9 w-9 items-center justify-center rounded-full",

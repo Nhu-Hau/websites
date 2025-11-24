@@ -7,17 +7,19 @@ import ActivityTabContent from "@/components/features/dashboard/ActivityTabConte
 import BadgesTabContent from "@/components/features/dashboard/BadgesTabContent";
 import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
 import { PageMotion } from "@/components/layout/PageMotion";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "pages.dashboard.meta" });
   const path = locale === "vi" ? "/dashboard" : `/${locale}/dashboard`;
   
   return genMeta({
-    title: "Dashboard - Theo dõi tiến độ học TOEIC",
-    description: "Theo dõi tiến độ học tập, kết quả thi thử, và hoạt động của bạn trên TOEIC PREP. Xem thống kê chi tiết về điểm số, thời gian luyện tập, và thành tích.",
-    keywords: ["dashboard TOEIC", "tiến độ học TOEIC", "thống kê TOEIC", "kết quả thi TOEIC"],
+    title: t("title"),
+    description: t("description"),
+    keywords: t("keywords").split(", "),
     canonical: generateCanonical(path, locale),
     ogType: "website",
   }, locale);

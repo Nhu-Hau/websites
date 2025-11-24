@@ -374,7 +374,11 @@
     "metadata": {
       "title": "TOEIC Community – Discussions and study tips",
       "description": "See the latest posts from the TOEIC community, ask questions, share strategies, and learn from other learners.",
-      "keywords": ["toeic community", "toeic discussion", "toeic study tips"]
+      "keywords": [
+        "toeic community",
+        "toeic discussion",
+        "toeic study tips"
+      ]
     },
     "page": {
       "title": "Community feed",
@@ -1096,6 +1100,624 @@
         "next": "Next page",
         "of": "of {total}"
       }
+    }
+  },
+  "Header": {
+    "logoAria": "Back to ToeicPrep homepage",
+    "logoAlt": "ToeicPrep Logo"
+  },
+  "HomePage": {
+    "loading": "Loading {label}...",
+    "labels": {
+      "workflow": "workflow",
+      "testimonials": "testimonials",
+      "pricing": "pricing",
+      "faq": "FAQ",
+      "cta": "call to action"
+    },
+    "meta": {
+      "title": "Online TOEIC Preparation - Real Tests, Instant Scoring",
+      "description": "Practice TOEIC online with thousands of real questions. Take mock tests, get instant scores, and detailed explanations. Learn vocabulary, listening, and reading effectively.",
+      "keywords": "TOEIC, TOEIC preparation, mock TOEIC, learn TOEIC online, TOEIC practice test, TOEIC listening, TOEIC reading, TOEIC vocabulary, TOEIC online, TOEIC test preparation"
+    },
+    "jsonLd": {
+      "faq": [
+        {
+          "question": "What is TOEIC PREP?",
+          "answer": "TOEIC PREP is an online TOEIC preparation platform with thousands of real questions to help you best prepare for the TOEIC exam."
+        },
+        {
+          "question": "How do I start preparing for TOEIC?",
+          "answer": "You can sign up for a free account and start taking mock TOEIC tests immediately. The system will assess your level and suggest a suitable study plan."
+        },
+        {
+          "question": "What are the parts of the TOEIC test?",
+          "answer": "The TOEIC test consists of 7 parts: Part 1 (Photographs), Part 2 (Question-Response), Part 3 (Conversations), Part 4 (Talks), Part 5 (Incomplete Sentences), Part 6 (Text Completion), Part 7 (Reading Comprehension)."
+        }
+      ]
+    }
+  },
+  "MobileTopBar": {
+    "logoAria": "Back to ToeicPrep homepage",
+    "logoAlt": "ToeicPrep Logo",
+    "notificationsAria": "Notifications"
+  },
+  "HeaderActions": {
+    "language": {
+      "aria": "Select language",
+      "tooltip": "Select language",
+      "title": "Select language",
+      "vi": {
+        "label": "Vietnamese",
+        "desc": "Vietnam Language"
+      },
+      "en": {
+        "label": "English",
+        "desc": "International Language"
+      }
+    },
+    "notification": {
+      "aria": "Notifications",
+      "tooltip": "View notifications",
+      "title": "Notifications",
+      "clearAll": "Clear all",
+      "empty": "No notifications"
+    },
+    "theme": {
+      "aria": "Toggle theme",
+      "light": "Switch to light mode",
+      "dark": "Switch to dark mode"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "noAccount": "No account?",
+      "register": "Register",
+      "continueWithGoogle": "Continue with Google",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "forgotPassword": "Forgot password?",
+      "processing": "Processing...",
+      "submit": "Login",
+      "success": "Login successful!",
+      "errors": {
+        "emailRequired": "Please enter email",
+        "emailInvalid": "Invalid email",
+        "passwordRequired": "Please enter password",
+        "passwordLen": "Password must be at least 8 characters"
+      }
+    },
+    "register": {
+      "title": "Create Account",
+      "alreadyAccount": "Already have an account?",
+      "login": "Login",
+      "google": "Continue with Google",
+      "name": "Full Name",
+      "placeholderName": "Enter your full name",
+      "email": "Email",
+      "placeholderEmail": "Enter your email",
+      "password": "Password",
+      "placeholderPassword": "Minimum 8 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPlaceholder": "Re-enter password",
+      "submitting": "Processing...",
+      "submit": "Register",
+      "success": "Registration successful!",
+      "verification": {
+        "label": "Email Verification Code",
+        "placeholder": "Enter 6-digit code",
+        "sending": "Sending...",
+        "resend": "Resend code ({seconds}s)",
+        "send": "Send code",
+        "help": "If you don't receive the code, you can request a resend after 30 seconds.",
+        "errorEmailRequired": "Please enter email first",
+        "errorEmailInvalid": "Invalid email",
+        "sentSuccess": "Code sent",
+        "sentCooldown": "You just sent a code. Please try again in {seconds}s",
+        "sendFailed": "Failed to send code",
+        "sendError": "Could not send code. Please try again."
+      },
+      "errors": {
+        "emailRequired": "Please enter email",
+        "emailInvalid": "Invalid email",
+        "nameRequired": "Please enter full name",
+        "nameInvalid": "Name must contain only letters, spaces, hyphens, apostrophes, and dots (2–50 characters)",
+        "passwordRequired": "Please enter password",
+        "passwordWeak": "Password must be at least 8 characters, with letters and numbers, no leading/trailing spaces",
+        "confirmRequired": "Please re-enter password",
+        "confirmMismatch": "Passwords do not match"
+      }
+    }
+  },
+  "UserMenu": {
+    "aria": {
+      "manage": "Manage Account",
+      "login": "Login/Register"
+    },
+    "tooltip": {
+      "manage": "Manage Account",
+      "login": "Login/Register"
+    },
+    "fallbackName": "User",
+    "profile": "Profile",
+    "role": {
+      "label": "Role",
+      "admin": "Admin",
+      "teacher": "Teacher",
+      "user": "User"
+    },
+    "access": {
+      "label": "Plan",
+      "premium": "Premium",
+      "free": "Free"
+    },
+    "suggestions": "Suggestions by Part",
+    "part": "Part {number}",
+    "level": "Level {level}",
+    "logout": "Logout",
+    "account": "Account",
+    "loginAction": {
+      "title": "Login",
+      "desc": "Already have an account"
+    },
+    "registerAction": {
+      "title": "Register",
+      "desc": "Create new account"
+    },
+    "toast": {
+      "logoutSuccess": "Logout successful",
+      "logoutError": "Logout failed"
+    }
+  },
+  "SideNav": {
+    "feed": "Feed",
+    "following": "Following",
+    "trending": "Trending",
+    "saved": "Saved",
+    "profile": "Profile",
+    "groups": "Groups",
+    "classrooms": "Classrooms",
+    "explore": "Explore",
+    "settings": "Settings",
+    "newPost": "New Post"
+  },
+  "MobileAvatarSheet": {
+    "header": "Account",
+    "closeAria": "Close",
+    "fallbackName": "User",
+    "profile": "Profile",
+    "role": {
+      "label": "Role",
+      "admin": "Admin",
+      "teacher": "Teacher",
+      "user": "User"
+    },
+    "access": {
+      "label": "Plan",
+      "premium": "Premium",
+      "free": "Free"
+    },
+    "partLevel": "Level by Part",
+    "part": "Part {number}",
+    "level": "Lv{level}",
+    "language": {
+      "en": "English",
+      "vi": "Tiếng Việt"
+    },
+    "theme": {
+      "dark": "Dark Mode",
+      "light": "Light Mode"
+    },
+    "logout": "Logout",
+    "guest": {
+      "message": "Please login to view account information",
+      "login": "Login",
+      "register": "Register"
+    },
+    "toast": {
+      "logoutSuccess": "Logout successful",
+      "logoutError": "Logout failed"
+    }
+  },
+  "BottomTabBar": {
+    "practice": "Practice L&R",
+    "study": "Study",
+    "community": "Community",
+    "dashboard": "Dashboard"
+  },
+  "Account": {
+    "header": {
+      "title": "Account Settings",
+      "desc": "Manage your personal information and account settings",
+      "viewProfile": "View Public Profile"
+    },
+    "profile": {
+      "noAvatar": "No Avatar",
+      "changeAvatar": "Change Avatar",
+      "role": {
+        "admin": "Admin",
+        "teacher": "Teacher",
+        "user": "User"
+      },
+      "access": {
+        "title": "Access Plan",
+        "free": "Free",
+        "premium": "Premium"
+      },
+      "updatedAt": "Updated:",
+      "toeicEstimate": "Estimated TOEIC",
+      "upgradePrompt": "Upgrade plan to unlock more practice"
+    },
+    "stats": {
+      "createdAt": "Created At",
+      "lastPlacement": "Last Placement",
+      "viewResult": "View Result",
+      "noResult": "None",
+      "practiceHistory": "Practice History",
+      "viewHistory": "View History",
+      "upcomingSchedule": "Upcoming Schedule",
+      "viewSchedule": "View Schedule"
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "part": "Part {number}",
+      "test": "Test {number}",
+      "practice": "Practice",
+      "viewAll": "View All"
+    },
+    "toast": {
+      "loginRequired": "Please login",
+      "loadError": "Cannot load profile",
+      "invalidImage": "Please select a valid image file",
+      "readError": "Cannot read image file",
+      "noAvatar": "You do not have an avatar",
+      "deleteSuccess": "Avatar deleted",
+      "deleteError": "Cannot delete avatar",
+      "updateSuccess": "Avatar updated",
+      "updateError": "Error updating avatar"
+    },
+    "confirm": {
+      "deleteAvatar": {
+        "title": "Delete Avatar?",
+        "message": "Are you sure you want to delete your avatar?",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      }
+    }
+  },
+  "Practice": {
+    "meta": {
+      "part1": "Part 1",
+      "part2": "Part 2",
+      "part3": "Part 3",
+      "part4": "Part 4",
+      "part5": "Part 5",
+      "part6": "Part 6",
+      "part7": "Part 7"
+    },
+    "levels": {
+      "level1": "Level 1",
+      "level1Desc": "Beginner",
+      "level2": "Level 2",
+      "level2Desc": "Intermediate",
+      "level3": "Level 3",
+      "level3Desc": "Advanced"
+    },
+    "start": {
+      "loginRequired": "Please login to start practice",
+      "badge": "TOEIC Practice • {part} • Level {level} • Test {test}",
+      "title": "{part} Practice",
+      "listeningDesc": "Practice <highlight>Listening skills</highlight> at <bold>Level {level}</bold> – <bold>Test {test}</bold>. Complete to see detailed analysis.",
+      "readingDesc": "Practice <highlight>Reading skills</highlight> at <bold>Level {level}</bold> – Test <bold>{test}</bold>. Complete to see results and explanations.",
+      "loading": "Loading practice test…",
+      "checking": "Checking...",
+      "retakeDesc": "This is a <bold>retake</bold> of <bold>{part} - Level {level} - Test {test}</bold>. Score will not affect your level",
+      "firstTimeDesc": "This is your <bold>first time</bold> taking <bold>{part} - Level {level} - Test {test}</bold>. Score will be used to assess level",
+      "startButton": "Start Practice"
+    },
+    "result": {
+      "notFoundHistory": "History not found",
+      "loadError": "Failed to load history data",
+      "loading": "Loading data…",
+      "notFound": "Attempt not found",
+      "notFoundDesc": "The record may have been deleted or does not exist.",
+      "badge": "Practice",
+      "title": "Review Attempt",
+      "completedAt": "Completed at <bold>{time}</bold>.",
+      "heading": "RESULTS",
+      "correct": "Correct Answers",
+      "accuracy": "Accuracy",
+      "time": "Time",
+      "hideDetails": "Hide Details",
+      "showDetails": "Show Answer Details"
+    },
+    "history": {
+      "badge": "Practice History",
+      "title": "Practice History",
+      "description": "Track progress, review results, and improve every day.",
+      "stats": {
+        "totalCorrect": "Total Correct",
+        "average": "Average",
+        "totalTime": "Total Time"
+      },
+      "empty": {
+        "title": "No History Yet",
+        "description": "You haven't completed any exercises yet. Start practicing today!",
+        "startButton": "Start Practice"
+      },
+      "list": {
+        "title": "Completed Exercises",
+        "pagination": "{count} exercises • Page {page}",
+        "showing": "Showing {shown} of {total} exercises • Page {page}",
+        "viewDetails": "View Details"
+      }
+    },
+    "inactivity": {
+      "title": "Haven't practiced in a while",
+      "message": "Start practicing to maintain your learning momentum!",
+      "dbMessage": "Haven't practiced in a while. Start practicing now!"
+    }
+  },
+  "Common": {
+    "ConfirmModal": {
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "close": "Close",
+      "processing": "Processing...",
+      "processingShort": "Processing"
+    },
+    "CornerToast": {
+      "closeNotification": "Close notification"
+    },
+    "Loading": {
+      "defaultText": "Loading...",
+      "loading": "Loading"
+    }
+  },
+  "pages": {
+    "pricing": {
+      "meta": {
+        "title": "TOEIC Premium Plans - Upgrade Your Account",
+        "description": "Upgrade to Premium to unlock all features: unlimited Practice Tests, AI Chat, Admin Chat, Livestream, Learning Insights and more.",
+        "keywords": "TOEIC Premium, TOEIC upgrade, TOEIC plans, TOEIC subscription, TOEIC learning"
+      }
+    },
+    "news": {
+      "meta": {
+        "title": "TOEIC News - Latest Updates on TOEIC Exam",
+        "description": "Get the latest TOEIC news, test-taking tips, learning strategies, and important information from ETS. Read in-depth articles about TOEIC.",
+        "keywords": "TOEIC news, TOEIC tips, TOEIC strategy, TOEIC updates, TOEIC information"
+      }
+    },
+    "dashboard": {
+      "meta": {
+        "title": "Dashboard - Track Your TOEIC Learning Progress",
+        "description": "View your learning progress overview, score statistics, practice history and TOEIC study plan.",
+        "keywords": "TOEIC dashboard, learning progress, TOEIC statistics, practice history"
+      }
+    },
+    "practice": {
+      "meta": {
+        "title": "TOEIC Practice - Practice Tests by Part",
+        "description": "Practice TOEIC with thousands of questions by Part, categorized by Level. Automatic scoring and detailed analysis.",
+        "keywords": "TOEIC practice, practice test, TOEIC part, TOEIC exercises"
+      }
+    },
+    "study": {
+      "meta": {
+        "create": {
+          "title": "Create TOEIC Study Room - Learn with Friends",
+          "description": "Create an online study room to learn TOEIC with friends, share materials and discuss.",
+          "keywords": "TOEIC study room, group learning, online TOEIC"
+        },
+        "teacher": {
+          "title": "Teacher Registration - Join Our Teaching Team",
+          "description": "Register to become a TOEIC teacher, share knowledge and experience with students.",
+          "keywords": "TOEIC teacher, teaching registration, online TOEIC teaching"
+        }
+      }
+    },
+    "vocabulary": {
+      "meta": {
+        "title": "TOEIC Vocabulary - Learn Vocabulary by Topic",
+        "description": "Learn TOEIC vocabulary by topic with flashcards, quizzes and practice exercises. Smart memory system.",
+        "keywords": "TOEIC vocabulary, vocabulary learning, TOEIC flashcards, TOEIC words"
+      }
+    },
+    "payment": {
+      "success": {
+        "meta": {
+          "title": "Payment Successful - TOEIC Premium",
+          "description": "Payment successful. Your Premium account has been activated."
+        }
+      },
+      "cancel": {
+        "meta": {
+          "title": "Payment Cancelled",
+          "description": "Payment not completed. You can try again anytime."
+        }
+      }
+    }
+  },
+  "vocabularyComponents": {
+    "card": {
+      "status": {
+        "notStarted": "Not Started",
+        "learning": "Learning",
+        "goodProgress": "Good Progress",
+        "nearComplete": "Nearly Complete"
+      },
+      "badge": "Vocabulary Set",
+      "terms": "terms",
+      "sessions": "sessions",
+      "actions": {
+        "viewDetail": "View Details",
+        "duplicate": "Duplicate",
+        "edit": "Edit",
+        "delete": "Delete Set",
+        "moreActions": "More actions"
+      },
+      "buttons": {
+        "flashcard": "Flashcard",
+        "quiz": "Quiz"
+      },
+      "empty": {
+        "noTerms": "No terms in this set yet",
+        "addFirst": "Click to open and add your first term.",
+        "noTermsShort": "No terms yet"
+      },
+      "hasTerms": {
+        "title": "{count} terms in this set",
+        "subtitle": "Click \"Study Flashcards\" to start tracking progress."
+      },
+      "progress": {
+        "label": "Learning Progress",
+        "mastered": "mastered",
+        "needReview": "need review"
+      },
+      "toast": {
+        "noTermsInfo": "This set has no terms. Add vocabulary to start learning!"
+      }
+    },
+    "modal": {
+      "createSet": {
+        "title": "Create Set",
+        "editTitle": "Edit Set",
+        "badge": "Compose Set",
+        "editBadge": "Edit",
+        "description": "Create a vocabulary set for a specific topic or context.",
+        "editDescription": "Edit details to keep your set clear and organized.",
+        "fields": {
+          "title": "Set Name",
+          "titlePlaceholder": "e.g., TOEIC Part 1 Vocabulary",
+          "description": "Description (optional)",
+          "descriptionPlaceholder": "Brief description of set content",
+          "topic": "Topic (optional)",
+          "topicPlaceholder": "e.g., Business, Travel, Technology"
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "create": "Create Set",
+          "update": "Update"
+        }
+      },
+      "addTerm": {
+        "createTitle": "Add New Term",
+        "editTitle": "Update Term",
+        "createBadge": "Add Term",
+        "editBadge": "Edit",
+        "fields": {
+          "term": "Term / Phrase",
+          "termPlaceholder": "e.g., accomplish",
+          "definition": "Definition",
+          "definitionPlaceholder": "e.g., to complete, achieve",
+          "example": "Example (optional)",
+          "examplePlaceholder": "e.g., She accomplished her goal."
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "add": "Add Term",
+          "update": "Update"
+        }
+      }
+    },
+    "study": {
+      "switchToQuiz": "Switch to Quiz",
+      "controls": {
+        "previous": "Previous",
+        "next": "Next",
+        "flip": "Flip Card"
+      },
+      "actions": {
+        "difficult": "Not Yet",
+        "mastered": "Mastered"
+      },
+      "progress": {
+        "current": "Current",
+        "mastered": "Mastered",
+        "needReview": "Need Review"
+      }
+    },
+    "quiz": {
+      "switchToFlashcard": "Switch to Flashcard",
+      "question": "Question",
+      "complete": {
+        "title": "Complete!",
+        "score": "Score",
+        "correct": "Correct",
+        "incorrect": "Incorrect"
+      }
+    },
+    "setDetail": {
+      "actions": {
+        "editSet": "Edit Set",
+        "deleteSet": "Delete Set",
+        "addTerm": "Add Term",
+        "quickQuiz": "Quick Quiz",
+        "editTerm": "Edit",
+        "deleteTerm": "Delete"
+      },
+      "confirm": {
+        "deleteSet": {
+          "title": "Delete this set?",
+          "message": "Are you sure you want to delete this set?",
+          "confirm": "Delete"
+        },
+        "deleteTerm": {
+          "title": "Delete this term?",
+          "message": "Are you sure you want to delete this term?",
+          "confirm": "Delete Term"
+        }
+      }
+    }
+  },
+  "testComponents": {
+    "start": {
+      "button": "Start Test"
+    },
+    "loading": {
+      "message": "Loading test..."
+    },
+    "card": {
+      "notStarted": "Not Started",
+      "notStartedDesc": "Start now to track your progress."
+    },
+    "sidebar": {
+      "time": "Time",
+      "timeSpent": "Time Spent",
+      "questions": "Questions",
+      "question": "Question"
+    },
+    "stimulus": {
+      "question": "Question",
+      "skipped": "Skipped",
+      "selected": "Selected",
+      "notSelected": "Not Selected"
+    },
+    "header": {
+      "time": "Time"
+    },
+    "result": {
+      "time": "Time",
+      "timeSpent": "Time Spent"
+    },
+    "ai": {
+      "loading": "Loading...",
+      "noInsight": "No insights yet. Try reloading."
+    },
+    "focus": {
+      "start": "Start",
+      "question": "Question"
+    },
+    "level": {
+      "continueWith": "Continue with Level",
+      "noTests": "No tests available for Level"
+    },
+    "mobile": {
+      "question": "Question"
     }
   }
 }

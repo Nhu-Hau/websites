@@ -4,6 +4,7 @@
 
 import React, { useEffect } from "react";
 import { X, AlertTriangle, AlertCircle, CheckCircle, Info } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 export type ConfirmModalIcon = "warning" | "error" | "info" | "success";
@@ -80,11 +81,15 @@ export function ConfirmModal({
   title,
   message,
   icon = "warning",
-  confirmText = "Xác nhận",
-  cancelText = "Hủy",
+  confirmText,
+  cancelText,
   confirmColor = "red",
   loading = false,
 }: ConfirmModalProps) {
+  const t = useTranslations("Common.ConfirmModal");
+  const finalConfirmText = confirmText || t("confirm");
+  const finalCancelText = cancelText || t("cancel");
+
   const IconComponent = iconConfig[icon].icon;
   const iconStyles = iconConfig[icon];
   const buttonStyles = buttonConfig[confirmColor];
@@ -180,7 +185,7 @@ export function ConfirmModal({
             onClick={onClose}
             disabled={loading}
             className="h-8 w-8 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-300 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 xs:h-9 xs:w-9 sm:h-10 sm:w-10"
-            aria-label="Đóng"
+            aria-label={t("close")}
           >
             <X className="w-4 h-4 xs:w-5 xs:h-5 sm:w-5 sm:h-5 md:w-6 md:h-6" />
           </button>
@@ -203,7 +208,7 @@ export function ConfirmModal({
               "transition-colors"
             )}
           >
-            {cancelText}
+            {finalCancelText}
           </button>
 
           <button
@@ -243,11 +248,11 @@ export function ConfirmModal({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                <span className="hidden xs:inline">Đang xử lý...</span>
-                <span className="xs:hidden">Đang xử lý</span>
+                <span className="hidden xs:inline">{t("processing")}</span>
+                <span className="xs:hidden">{t("processingShort")}</span>
               </>
             ) : (
-              confirmText
+              finalConfirmText
             )}
           </button>
         </div>

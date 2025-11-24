@@ -22,6 +22,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type AttemptDoc = {
   _id: string;
@@ -70,6 +71,7 @@ function fmtTime(totalSec: number) {
 }
 
 export default function PracticeAttempt() {
+  const t = useTranslations("Practice");
   const { attemptId } = useParams<{ attemptId: string }>();
   const { user } = useAuth();
 
@@ -107,7 +109,7 @@ export default function PracticeAttempt() {
 
         if (!mounted) return;
         if (!found) {
-          toast.error("Không tìm thấy lịch sử này");
+          toast.error(t("result.notFoundHistory"));
           setAtt(null);
           setItems([]);
           setStimulusMap({});
@@ -167,7 +169,7 @@ export default function PracticeAttempt() {
       } catch (e) {
         console.error(e);
         if (mounted) {
-          toast.error("Không tải được dữ liệu lịch sử");
+          toast.error(t("result.loadError"));
           setAtt(null);
           setItems([]);
           setStimulusMap({});
@@ -234,7 +236,7 @@ export default function PracticeAttempt() {
   if (loading) {
     return (
       <div className="mt-16 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50/70 dark:bg-zinc-950/80">
-        <TestLoadingState message="Đang tải dữ liệu…" />
+        <TestLoadingState message={t("result.loading")} />
       </div>
     );
   }
@@ -244,10 +246,10 @@ export default function PracticeAttempt() {
       <div className="mt-16 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50/70 dark:bg-zinc-950/80">
         <div className="max-w-md w-full rounded-2xl border border-zinc-200/70 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-900/95 px-5 py-6 shadow-lg text-center">
           <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-            Không tìm thấy bài làm
+            {t("result.notFound")}
           </h3>
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            Có thể bản ghi đã bị xóa hoặc không tồn tại.
+            {t("result.notFoundDesc")}
           </p>
         </div>
       </div>
@@ -271,20 +273,17 @@ export default function PracticeAttempt() {
         {/* Header */}
         <ResultHeader
           badge={{
-            label: "Luyện tập",
+            label: t("result.badge"),
             dotColor: "bg-blue-500",
           }}
-          title="Xem lại bài đã làm"
+          title={t("result.title")}
           description={
             <>
               {atTime && (
-                <>
-                  Hoàn thành lúc{" "}
-                  <span className="font-medium">
-                    {new Date(atTime).toLocaleString()}
-                  </span>
-                  .{" "}
-                </>
+                t.rich("result.completedAt", {
+                  time: new Date(atTime).toLocaleString(),
+                  bold: (chunks) => <span className="font-medium">{chunks}</span>
+                })
               )}
               Level {att.level}
               {typeof att.test === "number" && ` • Test ${att.test}`}
@@ -299,13 +298,13 @@ export default function PracticeAttempt() {
           {/* Tổng quan */}
           <section className="mb-8 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-6 shadow-lg">
             <h2 className="text-2xl font-extrabold text-center bg-gradient-to-r from-emerald-600 to-sky-600 bg-clip-text text-transparent mb-6">
-              KẾT QUẢ
+              {t("result.heading")}
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="text-center p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700">
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  Số câu đúng
+                  {t("result.correct")}
                 </p>
                 <p className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">
                   {respFake?.correct}
@@ -317,7 +316,7 @@ export default function PracticeAttempt() {
 
               <div className="text-center p-4 rounded-2xl bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-700">
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  Độ chính xác
+                  {t("result.accuracy")}
                 </p>
                 <p className="text-3xl font-extrabold text-sky-700 dark:text-sky-300">
                   {respFake ? (respFake.acc * 100).toFixed(1) : "--"}%
@@ -326,7 +325,7 @@ export default function PracticeAttempt() {
 
               <div className="text-center p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  Thời gian
+                  {t("result.time")}
                 </p>
                 <p className="text-3xl font-extrabold text-amber-700 dark:text-amber-300">
                   {respFake ? fmtTime(respFake.timeSec) : "--:--"}
@@ -343,7 +342,7 @@ export default function PracticeAttempt() {
               ) : (
                 <ChevronDown className="h-5 w-5" />
               )}
-              {showDetails ? "Ẩn chi tiết" : "Xem chi tiết đáp án"}
+              {showDetails ? t("result.hideDetails") : t("result.showDetails")}
             </button>
           </section>
 

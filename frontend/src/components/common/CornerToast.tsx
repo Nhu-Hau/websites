@@ -113,7 +113,7 @@ export default function CornerToast() {
                     type="button"
                     onClick={() => handleClose(t.id)}
                     className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900/70 text-slate-400 transition hover:bg-slate-800/90 hover:text-slate-100"
-                    aria-label="Đóng thông báo"
+                    aria-label="Close notification"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>

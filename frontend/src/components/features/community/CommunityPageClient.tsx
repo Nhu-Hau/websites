@@ -3,6 +3,7 @@
 
 import React from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import PostCard from "@/components/features/community/PostCard";
 import Pagination from "@/components/features/community/Pagination";
 import type { CommunityPost } from "@/types/community.types";
@@ -33,6 +34,7 @@ export default function CommunityPageClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const t = useTranslations("community.page");
 
   const [posts, setPosts] = React.useState<CommunityPost[]>(initialPosts.items);
   const [page, setPage] = React.useState(initialPage);
@@ -71,12 +73,12 @@ export default function CommunityPageClient({
       })));
       setPosts(postsWithAttachments);
     } catch (e) {
-      toast.error("Lỗi khi tải bài viết");
+      toast.error(t("loadError"));
       console.error("[load] ERROR", e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   React.useEffect(() => {
     if (initialCurrentUserId) {
@@ -196,11 +198,10 @@ export default function CommunityPageClient({
       {/* Header */}
       <div className="mb-2">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Bảng tin
+          {t("title")}
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Bạn có thể đăng câu hỏi, kinh nghiệm luyện TOEIC, hoặc chia sẻ tài
-          liệu hữu ích cho các bạn khác.
+          {t("description")}
         </p>
       </div>
       {/* Posts List */}
@@ -212,7 +213,7 @@ export default function CommunityPageClient({
           <div className="flex flex-col items-center gap-3">
             <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Đang tải bài viết...
+              {t("loading")}
             </p>
           </div>
         </div>
@@ -225,11 +226,10 @@ export default function CommunityPageClient({
             <MessagesSquare className="h-7 w-7 sm:h-8 sm:w-8" />
           </div>
           <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-            Chưa có bài viết nào
+            {t("emptyTitle")}
           </h3>
           <p className="mb-1 max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
-            Bảng tin cộng đồng đang trống. Hãy chia sẻ bài viết đầu tiên với mọi
-            người.
+            {t("emptyDescription")}
           </p>
         </div>
       )}

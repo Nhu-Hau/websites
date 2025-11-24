@@ -3,15 +3,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import Cropper from "react-easy-crop";
 import { X, Check } from "lucide-react";
-
-const CROP_COPY = {
-  title: "Cắt ảnh",
-  zoom: "Phóng to",
-  rotation: "Xoay",
-  cancel: "Hủy",
-  done: "Xong",
-  processing: "Đang xử lý...",
-};
+import { useTranslations } from "next-intl";
 
 interface ImageCropperProps {
   image: string;
@@ -31,6 +23,7 @@ export default function ImageCropper({
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [processing, setProcessing] = useState(false);
+  const t = useTranslations("community.imageCropper");
 
   // Ẩn ChatFAB khi đang crop ảnh
   useEffect(() => {
@@ -181,7 +174,7 @@ export default function ImageCropper({
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-zinc-200 dark:border-zinc-800">
           <h2 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            {CROP_COPY.title}
+            {t("title")}
           </h2>
           <button
             onClick={onCancel}
@@ -213,7 +206,7 @@ export default function ImageCropper({
           {/* Zoom */}
           <div>
             <label className="block text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5 sm:mb-2">
-              {CROP_COPY.zoom}: {Math.round(zoom * 100)}%
+              {t("zoomLabel", { percent: Math.round(zoom * 100) })}
             </label>
             <input
               type="range"
@@ -229,7 +222,7 @@ export default function ImageCropper({
           {/* Rotation */}
           <div>
             <label className="block text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5 sm:mb-2">
-              {CROP_COPY.rotation}: {rotation}°
+              {t("rotationLabel", { degrees: rotation })}
             </label>
             <input
               type="range"
@@ -249,7 +242,7 @@ export default function ImageCropper({
               disabled={processing}
               className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 text-sm sm:text-base font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
             >
-              {CROP_COPY.cancel}
+              {t("cancel")}
             </button>
             <button
               onClick={handleDone}
@@ -259,13 +252,13 @@ export default function ImageCropper({
               {processing ? (
                 <>
                   <div className="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 border-2 border-white border-t-transparent" />
-                  <span className="hidden sm:inline">{CROP_COPY.processing}</span>
+                  <span className="hidden sm:inline">{t("processing")}</span>
                   <span className="sm:hidden">...</span>
                 </>
               ) : (
                 <>
                   <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  {CROP_COPY.done}
+                  {t("done")}
                 </>
               )}
             </button>

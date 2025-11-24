@@ -12,6 +12,7 @@ import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import MediaGallery from "./MediaGallery";
 import ActionBar from "./ActionBar";
 import NewPostForm from "./NewPostForm";
+import { useTranslations, useLocale } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -23,14 +24,25 @@ type Props = {
   currentUserId?: string;
 };
 
-function Avatar({ name, url }: { name?: string; url?: string }) {
+function Avatar({
+  name,
+  url,
+  alt,
+  fallback,
+}: {
+  name?: string;
+  url?: string;
+  alt: string;
+  fallback: string;
+}) {
+  const displayName = name || fallback;
   if (url) {
     const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
     return (
       <div className="relative h-12 w-12 overflow-hidden rounded-full ring-2 ring-zinc-200 dark:ring-zinc-700">
         <Image
           src={fullUrl}
-          alt={name || "Ảnh đại diện"}
+          alt={name || alt}
           fill
           className="object-cover"
           sizes="48px"
@@ -42,30 +54,17 @@ function Avatar({ name, url }: { name?: string; url?: string }) {
   }
   return (
     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-400 text-white text-sm font-semibold ring-2 ring-zinc-200 dark:ring-zinc-700">
-      {(name?.[0] ?? "?").toUpperCase()}
+      {(displayName?.[0] ?? "?").toUpperCase()}
     </div>
   );
-}
-
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return "Vừa xong";
-  if (diffInSeconds < 3600)
-    return `${Math.floor(diffInSeconds / 60)} phút trước`;
-  if (diffInSeconds < 86400)
-    return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
-  if (diffInSeconds < 604800)
-    return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
-  return date.toLocaleDateString("vi-VN");
 }
 
 function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const { show, Modal: ConfirmModal } = useConfirmModal();
+  const locale = useLocale();
+  const t = useTranslations("community.post");
 
   const [isEditing, setIsEditing] = React.useState(false);
   const [reporting, setReporting] = React.useState(false);
@@ -74,6 +73,24 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
   const [repostCaption, setRepostCaption] = React.useState("");
   const [originalPost, setOriginalPost] = React.useState<any>(null);
   const [loadingOriginal, setLoadingOriginal] = React.useState(false);
+  const formatDate = React.useCallback(
+    (dateString: string) => {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+      if (diffInSeconds < 60) return t("time.justNow");
+      if (diffInSeconds < 3600)
+        return t("time.minutes", { count: Math.floor(diffInSeconds / 60) });
+      if (diffInSeconds < 86400)
+        return t("time.hours", { count: Math.floor(diffInSeconds / 3600) });
+      if (diffInSeconds < 604800)
+        return t("time.days", { count: Math.floor(diffInSeconds / 86400) });
+      const localeTag = locale === "vi" ? "vi-VN" : "en-US";
+      return new Intl.DateTimeFormat(localeTag).format(date);
+    },
+    [locale, t]
+  );
 
   const getInitialLiked = () => {
     if (typeof post.liked === "boolean") return post.liked;
@@ -212,15 +229,14 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
     }
   }, [router, basePrefix, post._id, post.repostedFrom, originalPost, isEditing]);
 
-  const handleDelete = React.useCallback(async () => {
+  const handleDelete = React.useCallback(() => {
     show(
       {
-        title: "Xóa bài viết?",
-        message:
-          "Bạn có chắc muốn xóa bài viết này? Hành động này không thể hoàn tác.",
+        title: t("confirmDelete.title"),
+        message: t("confirmDelete.message"),
         icon: "warning",
-        confirmText: "Xóa",
-        cancelText: "Hủy",
+        confirmText: t("confirmDelete.confirm"),
+        cancelText: t("confirmDelete.cancel"),
         confirmColor: "red",
       },
       async () => {
@@ -230,14 +246,14 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
             credentials: "include",
           });
           if (!r.ok) throw new Error();
-          toast.success("Đã xóa bài viết");
+          toast.success(t("toast.deleteSuccess"));
           onChanged();
         } catch {
-          toast.error("Lỗi khi xóa bài viết");
+          toast.error(t("toast.deleteError"));
         }
       }
     );
-  }, [post._id, apiBase, onChanged, show]);
+  }, [apiBase, onChanged, post._id, show, t]);
 
   const handleEdit = React.useCallback(() => {
     setIsEditing(true);
@@ -264,33 +280,33 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         }
       );
       if (!res.ok) throw new Error("Failed to repost");
-      toast.success("Đã chia sẻ lại bài viết");
+      toast.success(t("toast.repostSuccess"));
       setShowRepostModal(false);
       setRepostCaption("");
       onChanged();
     } catch {
-      toast.error("Lỗi khi chia sẻ lại bài viết");
+      toast.error(t("toast.repostError"));
     }
-  }, [post._id, apiBase, repostCaption, onChanged]);
+  }, [apiBase, onChanged, post._id, repostCaption, t]);
 
   const handleShare = React.useCallback(async () => {
     try {
       await navigator.share({
-        title: "Community Post",
+        title: t("shareTitle"),
         text: post.content?.slice(0, 100) || "",
         url: `${window.location.origin}${basePrefix}/community/post/${post._id}`,
       });
     } catch {}
-  }, [post._id, post.content, basePrefix]);
+  }, [basePrefix, post._id, post.content, t]);
 
   const handleReport = React.useCallback(() => {
     show(
       {
-        title: "Báo cáo bài viết?",
-        message: "Bạn có chắc muốn báo cáo bài viết này?",
+        title: t("confirmReport.title"),
+        message: t("confirmReport.message"),
         icon: "warning",
-        confirmText: "Báo cáo",
-        cancelText: "Hủy",
+        confirmText: t("confirmReport.confirm"),
+        cancelText: t("confirmReport.cancel"),
         confirmColor: "blue",
       },
       async () => {
@@ -305,20 +321,20 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
           );
           const j = await r.json().catch(() => ({}));
           if (r.ok) {
-            toast.success(j.message || "Đã báo cáo bài viết");
+            toast.success(j.message || t("toast.reportSuccess"));
             setReportedOnce(true);
             onChanged();
           } else {
-            toast.error(j.message || "Lỗi khi báo cáo bài viết");
+            toast.error(j.message || t("toast.reportError"));
           }
         } catch {
-          toast.error("Lỗi khi báo cáo bài viết");
+          toast.error(t("toast.reportError"));
         } finally {
           setReporting(false);
         }
       }
     );
-  }, [post._id, apiBase, onChanged, show]);
+  }, [apiBase, onChanged, post._id, show, t]);
 
   const handleCommentClick = React.useCallback(() => {
     router.push(`${basePrefix}/community/post/${post._id}`);
@@ -329,14 +345,14 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
       <article className="rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Chỉnh sửa bài viết
+            {t("editTitle")}
           </h3>
           <button
             type="button"
             onClick={() => setIsEditing(false)}
             className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
           >
-            Hủy
+            {t("repostModal.cancel")}
           </button>
         </div>
         <NewPostForm
@@ -366,7 +382,12 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
               }}
               className="flex-shrink-0"
             >
-              <Avatar name={post.user?.name} url={post.user?.picture} />
+              <Avatar
+                name={post.user?.name}
+                url={post.user?.picture}
+                alt={t("avatarAlt")}
+                fallback={t("fallbackUser")}
+              />
             </button>
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -380,20 +401,20 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                   }}
                   className="text-base font-semibold text-zinc-900 transition-colors hover:text-sky-600 dark:text-zinc-100 dark:hover:text-sky-400"
                 >
-                  {post.user?.name || "User"}
+                  {post.user?.name || t("fallbackUser")}
                 </button>
                 <time className="text-xs text-zinc-500 dark:text-zinc-400">
                   {formatDate(post.createdAt)}
                 </time>
                 {post.isEdited && post.editedAt && (
                   <span className="text-xs italic text-zinc-500 dark:text-zinc-400">
-                    (Đã chỉnh sửa)
+                    {t("labels.edited")}
                   </span>
                 )}
                 {post.repostedFrom && (
                   <span className="inline-flex items-center gap-1 text-xs text-sky-600 dark:text-sky-400">
                     <Repeat2 className="h-3 w-3" />
-                    Đã chia sẻ lại
+                    {t("labels.reposted")}
                   </span>
                 )}
               </div>
@@ -407,7 +428,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                 }}
                 disabled={reporting || reportedOnce}
                 className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-sky-50 hover:text-sky-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-sky-900/20 dark:hover:text-sky-400"
-                aria-label="Report post"
+                aria-label={t("reportAria")}
               >
                 <Flag className="h-4 w-4" />
               </button>
@@ -442,6 +463,8 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                   <Avatar
                     name={originalPost.user?.name}
                     url={originalPost.user?.picture}
+                    alt={t("avatarAlt")}
+                    fallback={t("fallbackUser")}
                   />
                 </button>
                 <div className="min-w-0 flex-1">
@@ -455,7 +478,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                     }}
                     className="text-sm font-semibold text-zinc-900 transition-colors hover:text-sky-600 dark:text-zinc-100 dark:hover:text-sky-400"
                   >
-                    {originalPost.user?.name || "User"}
+                    {originalPost.user?.name || t("fallbackUser")}
                   </button>
                   <time className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
                     {formatDate(originalPost.createdAt)}
@@ -481,7 +504,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
             <div className="py-4 text-center">
               <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Đang tải bài viết gốc...
+                {t("labels.originalLoading")}
               </p>
             </div>
           </div>
@@ -566,12 +589,12 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4">
           <div className="w-full max-w-md rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-xl ring-1 ring-black/[0.06] dark:border-zinc-800/80 dark:bg-zinc-900/95">
             <h3 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Chia sẻ lại bài viết
+              {t("repostModal.title")}
             </h3>
             <textarea
               value={repostCaption}
               onChange={(e) => setRepostCaption(e.target.value)}
-              placeholder="Thêm ghi chú của bạn (tùy chọn)..."
+              placeholder={t("repostModal.placeholder")}
               className="mb-4 min-h-[100px] w-full rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-sm outline-none transition-colors focus:border-sky-500 focus:ring-2 focus:ring-sky-500/70 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-400"
               rows={4}
             />
@@ -584,14 +607,14 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                 }}
                 className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
-                Hủy
+                {t("repostModal.cancel")}
               </button>
               <button
                 type="button"
                 onClick={handleRepostSubmit}
                 className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600"
               >
-                Chia sẻ lại
+                {t("repostModal.submit")}
               </button>
             </div>
           </div>

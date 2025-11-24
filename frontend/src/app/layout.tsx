@@ -3,6 +3,7 @@
 // @ts-ignore
 import "./globals.css";
 import "@livekit/components-styles";
+import type { Metadata } from "next";
 import { Mulish } from "next/font/google";
 import { SITE_CONFIG, generateMetadata as genMeta } from "@/lib/seo";
 import { generateWebSiteSchema, renderJsonLd } from "@/lib/seo/structured-data";
@@ -14,7 +15,7 @@ const mulish = Mulish({
   variable: "--font-mulish",
 });
 
-const metadata = genMeta({
+const baseMetadata = genMeta({
   title: SITE_CONFIG.name,
   description: SITE_CONFIG.description,
   keywords: [
@@ -34,7 +35,25 @@ const metadata = genMeta({
   ogImage: SITE_CONFIG.ogImage, // Ensure default OG image is set
 });
 
-export { metadata };
+export const metadata: Metadata = {
+  ...baseMetadata,
+  openGraph: {
+    ...(baseMetadata.openGraph ?? {}),
+    images: [
+      {
+        url: SITE_CONFIG.ogImage,
+        width: 1200,
+        height: 630,
+        alt: SITE_CONFIG.name,
+      },
+    ],
+  },
+  twitter: {
+    ...(baseMetadata.twitter ?? {}),
+    card: "summary_large_image",
+    images: [SITE_CONFIG.ogImage],
+  },
+};
 
 export const viewport = {
   width: "device-width",

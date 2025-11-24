@@ -277,5 +277,529 @@
       "primaryCta": "Start for free",
       "secondaryCta": "Explore practice sets"
     }
+  },
+  "navbar": {
+    "practice": {
+      "label": "Practice L&R",
+      "parts": {
+        "part1": "Part 1: Photo description",
+        "part2": "Part 2: Q&A",
+        "part3": "Part 3: Conversations",
+        "part4": "Part 4: Short talks",
+        "part5": "Part 5: Incomplete sentences",
+        "part6": "Part 6: Text completion",
+        "part7": "Part 7: Reading"
+      }
+    },
+    "learn": {
+      "label": "Learn",
+      "community": "Community",
+      "vocabulary": "Vocabulary",
+      "news": "Study with news"
+    },
+    "dashboard": "Dashboard"
+  },
+  "community": {
+    "metadata": {
+      "title": "TOEIC Community – Discussions and study tips",
+      "description": "See the latest posts from the TOEIC community, ask questions, share strategies, and learn from other learners.",
+      "keywords": ["toeic community", "toeic discussion", "toeic study tips"]
+    },
+    "page": {
+      "title": "Community feed",
+      "description": "Share questions, TOEIC study experiences, or helpful resources with everyone.",
+      "loading": "Loading posts...",
+      "emptyTitle": "No posts yet",
+      "emptyDescription": "The community feed is empty. Start the conversation by sharing the first post.",
+      "loadError": "Failed to load posts"
+    },
+    "post": {
+      "editTitle": "Edit post",
+      "avatarAlt": "Profile photo",
+      "fallbackUser": "User",
+      "shareTitle": "Community post",
+      "reportAria": "Report post",
+      "labels": {
+        "edited": "(Edited)",
+        "reposted": "Reposted",
+        "originalLoading": "Loading the original post..."
+      },
+      "confirmDelete": {
+        "title": "Delete this post?",
+        "message": "Are you sure you want to delete this post? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "confirmReport": {
+        "title": "Report this post?",
+        "message": "Are you sure you want to report this post?",
+        "confirm": "Report",
+        "cancel": "Cancel"
+      },
+      "repostModal": {
+        "title": "Share this post",
+        "placeholder": "Add your note (optional)...",
+        "cancel": "Cancel",
+        "submit": "Share"
+      },
+      "toast": {
+        "deleteSuccess": "Post deleted",
+        "deleteError": "Couldn't delete the post",
+        "repostSuccess": "Post shared again",
+        "repostError": "Couldn't share the post",
+        "reportSuccess": "Post reported",
+        "reportError": "Couldn't report the post"
+      },
+      "time": {
+        "justNow": "Just now",
+        "minutes": "{count} min ago",
+        "hours": "{count} h ago",
+        "days": "{count} d ago"
+      }
+    },
+    "actionBar": {
+      "toast": {
+        "likeError": "Couldn't update like",
+        "save": "Post saved",
+        "unsave": "Post removed from saved",
+        "saveError": "Couldn't save the post"
+      },
+      "aria": {
+        "like": "Like",
+        "unlike": "Remove like",
+        "comment": "Comments",
+        "repost": "Repost",
+        "share": "Share",
+        "save": "Save",
+        "unsave": "Unsave",
+        "edit": "Edit",
+        "delete": "Delete"
+      }
+    },
+    "media": {
+      "playVideo": "Play video",
+      "videoThumbnailAlt": "Video thumbnail",
+      "imageAlt": "Attachment image",
+      "loadError": "Failed to load image",
+      "prevImage": "Previous media",
+      "nextImage": "Next media",
+      "goToSlide": "Go to slide {index}"
+    },
+    "pagination": {
+      "ariaLabel": "Pagination",
+      "prev": "Previous page",
+      "next": "Next page"
+    },
+    "form": {
+      "placeholder": "What are you thinking about?",
+      "fileLimit": "You can upload up to {max} files. {remaining} slots left.",
+      "invalidType": "{name} is not a supported image or video.",
+      "emptyFile": "{name} is empty.",
+      "fileTooLarge": "{name} is too large. Max size is 50MB.",
+      "previewError": "Cannot create a preview for {name}.",
+      "unknownError": "Unknown error",
+      "uploadFailed": "Couldn't upload {name}: {error}",
+      "missingContent": "Please enter content or attach a file.",
+      "partialUpload": "Some files failed to upload. Please try again.",
+      "updateSuccess": "Post updated!",
+      "createSuccess": "Post created!",
+      "submitError": "Couldn't publish the post.",
+      "removeFile": "Remove file",
+      "chooseFile": "Choose files",
+      "uploading": "Uploading...",
+      "posting": "Posting...",
+      "update": "Update",
+      "post": "Post",
+      "previewAlt": "Preview {index}"
+    },
+    "newPost": {
+      "title": "Create a new post",
+      "description": "Share your thoughts, study hacks, or resources with the TOEIC community."
+    },
+    "groups": {
+      "header": {
+        "title": "Study groups",
+        "description": "Join TOEIC study groups to practice together."
+      },
+      "actions": {
+        "searchPlaceholder": "Search groups by name...",
+        "create": "Create group"
+      },
+      "loading": "Loading groups...",
+      "delete": {
+        "button": "Delete group",
+        "confirm": {
+          "title": "Delete this group?",
+          "message": "Are you sure you want to delete this group? This action cannot be undone.",
+          "confirm": "Delete group",
+          "cancel": "Cancel"
+        },
+        "toast": {
+          "success": "Group deleted",
+          "error": "Couldn't delete the group"
+        }
+      },
+      "card": {
+        "memberCount": "{count} members",
+        "visibility": {
+          "private": "Private",
+          "public": "Public"
+        }
+      },
+      "empty": {
+        "title": "No matching groups",
+        "description": "You haven't joined or created any group yet. Start one to study TOEIC with friends."
+      }
+    },
+    "createGroup": {
+      "header": {
+        "title": "Create a new group",
+        "description": "Set up a shared space to learn TOEIC together, discuss, and trade resources."
+      },
+      "cover": {
+        "label": "Cover image",
+        "help": "Suggested 16:9 ratio, under 5MB. A great cover helps your group stand out.",
+        "previewAlt": "Cover preview",
+        "remove": "Remove cover",
+        "upload": {
+          "title": "Upload cover",
+          "description": "Click to pick an image from your device"
+        },
+        "errors": {
+          "invalidType": "Please upload an image file",
+          "upload": "Couldn't upload the cover image"
+        }
+      },
+      "form": {
+        "name": {
+          "label": "Group name",
+          "placeholder": "Example: Listening practice 500+"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Describe the goal, activity style, or rules..."
+        },
+        "cancel": "Cancel",
+        "submit": "Create group",
+        "submitting": "Creating..."
+      },
+      "toast": {
+        "success": "Group created",
+        "error": "Couldn't create the group",
+        "nameRequired": "Please enter a group name"
+      }
+    },
+    "comment": {
+      "avatarAlt": "Profile photo",
+      "fallbackUser": "User",
+      "confirm": {
+        "title": "Delete this comment?",
+        "message": "Are you sure you want to delete this comment?",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "toast": {
+        "deleteSuccess": "Comment deleted",
+        "deleteError": "Couldn't delete the comment",
+        "updateSuccess": "Comment updated",
+        "updateError": "Couldn't update the comment"
+      },
+      "edit": {
+        "title": "Edit comment",
+        "saveAria": "Save comment",
+        "cancelAria": "Cancel editing"
+      },
+      "labels": {
+        "edited": "(edited)"
+      },
+      "aria": {
+        "edit": "Edit comment",
+        "delete": "Delete comment"
+      }
+    },
+    "explore": {
+      "header": {
+        "title": "Explore community",
+        "description": "Find trending topics and study groups to join."
+      },
+      "hashtags": {
+        "title": "Trending hashtags",
+        "description": "See what the community is talking about most today",
+        "postCount": "{count} posts",
+        "empty": "No trending hashtags right now."
+      },
+      "quickLinks": {
+        "trending": {
+          "title": "Trending",
+          "description": "See the most engaged posts in the last 24 hours."
+        },
+        "groups": {
+          "title": "Study groups",
+          "description": "Join TOEIC groups by goal and level."
+        }
+      }
+    },
+    "followersModal": {
+      "title": "Followers",
+      "closeAria": "Close followers list",
+      "avatarAlt": "Follower avatar",
+      "fallbackUser": "User",
+      "followerCount": "{count} followers",
+      "empty": {
+        "title": "No followers yet",
+        "description": "When someone follows you, you'll see them here."
+      }
+    },
+    "followingModal": {
+      "title": "Following",
+      "closeAria": "Close following list",
+      "avatarAlt": "Following avatar",
+      "fallbackUser": "User",
+      "followerCount": "{count} followers",
+      "empty": {
+        "title": "Not following anyone",
+        "description": "Explore the community and follow learners you find helpful."
+      }
+    },
+    "followingList": {
+      "header": {
+        "title": "Following",
+        "description": "Accounts you're keeping up with"
+      },
+      "avatarAlt": "Following avatar",
+      "fallbackUser": "User",
+      "followerCount": "{count} followers",
+      "empty": {
+        "title": "Not following anyone",
+        "description": "Discover more learners in the community and follow the ones you like."
+      },
+      "reload": {
+        "label": "Refresh list",
+        "aria": "Refresh following list"
+      }
+    },
+    "followingFeed": {
+      "header": {
+        "title": "Following feed",
+        "description": "Latest posts from people you follow"
+      },
+      "loading": "Loading following posts...",
+      "empty": {
+        "title": "No posts yet",
+        "description": "Follow more accounts to see their posts here."
+      }
+    },
+    "saved": {
+      "header": {
+        "title": "Saved posts",
+        "description": "Posts you bookmarked to revisit later."
+      },
+      "toast": {
+        "authRequired": "Please log in to view saved posts",
+        "loadError": "Couldn't load saved posts",
+        "genericError": "Something went wrong while loading saved posts"
+      },
+      "loading": "Loading saved posts...",
+      "empty": {
+        "title": "No saved posts",
+        "description": "Save the posts you find helpful to access them quickly."
+      }
+    },
+    "trending": {
+      "header": {
+        "title": "Trending",
+        "description": "Most engaged posts in the last 24 hours."
+      },
+      "loading": "Loading trending posts...",
+      "empty": {
+        "title": "No trending posts",
+        "description": "Trending posts will appear here once engagement picks up."
+      }
+    },
+    "hashtag": {
+      "stats": {
+        "postCount": "{count} posts"
+      },
+      "empty": {
+        "title": "No posts yet",
+        "description": "Nobody has used this hashtag yet."
+      }
+    },
+    "reactionPicker": {
+      "toast": {
+        "authRequired": "Please log in to react",
+        "error": "Couldn't update reaction"
+      }
+    },
+    "poll": {
+      "toast": {
+        "authRequired": "Please log in to vote",
+        "voteFailed": "Couldn't submit your vote",
+        "genericError": "Something went wrong while voting"
+      },
+      "status": {
+        "ended": "Poll ended",
+        "votersCount": "{count} votes"
+      },
+      "prompt": {
+        "select": "Pick an option"
+      }
+    },
+    "imageCropper": {
+      "title": "Crop image",
+      "zoomLabel": "Zoom: {percent}%",
+      "rotationLabel": "Rotation: {degrees}°",
+      "cancel": "Cancel",
+      "done": "Done",
+      "processing": "Processing..."
+    },
+    "groupDetail": {
+      "toast": {
+        "notFound": "Group not found",
+        "loadGroupError": "Couldn't load the group",
+        "loadPostsError": "Couldn't load posts",
+        "authRequired": "Please log in",
+        "joinError": "Couldn't join the group",
+        "joinSuccess": "Joined the group",
+        "leaveError": "Couldn't leave the group",
+        "leaveSuccess": "Left the group",
+        "deleteError": "Couldn't delete the group",
+        "deleteSuccess": "Group deleted"
+      },
+      "confirmDelete": {
+        "title": "Delete this group?",
+        "message": "Deleting the group removes every post inside. This action cannot be undone.",
+        "confirm": "Delete group",
+        "cancel": "Cancel"
+      },
+      "loading": {
+        "group": "Loading group details..."
+      },
+      "backLink": "Back to groups",
+      "stats": {
+        "membersLabel": "members",
+        "postsLabel": "posts",
+        "adminLabel": "Admin:",
+        "unknownAdmin": "Unknown"
+      },
+      "actions": {
+        "delete": {
+          "button": "Delete group",
+          "loading": "Deleting group..."
+        },
+        "leave": {
+          "button": "Leave group",
+          "loading": "Leaving..."
+        },
+        "join": {
+          "button": "Join group",
+          "loading": "Joining..."
+        }
+      },
+      "composer": {
+        "title": "Post to this group"
+      },
+      "posts": {
+        "loading": "Loading posts...",
+        "empty": {
+          "title": "No posts yet",
+          "memberDescription": "Be the first to share something with the group!",
+          "guestDescription": "This group doesn't have any posts yet."
+        }
+      }
+    }
+  },
+  "vocabulary": {
+    "page": {
+      "header": {
+        "badge": "Vocabulary lab",
+        "title": "Build a TOEIC-ready vocabulary roadmap",
+        "description": "Manage sets, study flashcards by level, and jump into quick quizzes to lock in new words every day.",
+        "stats": {
+          "sets": "Word sets",
+          "terms": "Total terms"
+        },
+        "cta": "Create new set"
+      },
+      "filters": {
+        "searchLabel": "Quick search",
+        "searchPlaceholder": "Enter keywords, topics, or notes...",
+        "sortLabel": "Sort & filter",
+        "sortOptions": {
+          "recent": "Recently updated",
+          "alphabetical": "Alphabetical",
+          "terms": "Most terms"
+        }
+      },
+      "empty": {
+        "title": "No sets yet",
+        "description": "Create your first set or import a list to start studying—Quizlet-style, but optimized for TOEIC."
+      },
+      "duplicateSuffix": "(copy)"
+    },
+    "toast": {
+      "duplicateSuccess": "Set duplicated",
+      "setCreateSuccess": "Set created",
+      "setUpdateSuccess": "Set updated",
+      "setDeleteSuccess": "Set deleted",
+      "termCreateSuccess": "Term added",
+      "termUpdateSuccess": "Term updated",
+      "termDeleteSuccess": "Term removed"
+    },
+    "errors": {
+      "saveSet": "Couldn't save the set",
+      "saveTerm": "Couldn't save the term",
+      "deleteSet": "Couldn't delete the set",
+      "deleteTerm": "Couldn't delete the term"
+    },
+    "confirm": {
+      "deleteSet": {
+        "title": "Delete this vocabulary set?",
+        "message": "This action cannot be undone.",
+        "confirm": "Delete"
+      },
+      "deleteTerm": {
+        "title": "Delete this term?",
+        "message": "Remove the term from the set?",
+        "confirm": "Delete term"
+      }
+    }
+  },
+  "news": {
+    "page": {
+      "header": {
+        "badge": "Reading lab",
+        "title": "Read curated English news",
+        "description": "Pick an article, read it in context, tap words for instant translations, and save new vocabulary for later review.",
+        "totalLabel": "Total articles",
+        "categoryLabel": "Category"
+      },
+      "categories": {
+        "all": "All",
+        "education": "Education",
+        "politics": "Politics",
+        "travel": "Travel",
+        "technology": "Technology",
+        "sports": "Sports",
+        "entertainment": "Entertainment",
+        "business": "Business",
+        "society": "Society",
+        "health": "Health",
+        "culture": "Culture"
+      },
+      "card": {
+        "hint": "Tap to read and learn vocabulary directly in the article."
+      },
+      "empty": {
+        "title": "No articles yet",
+        "description": "Try switching to another category to keep practicing your reading."
+      },
+      "pagination": {
+        "label": "Page",
+        "prev": "Previous page",
+        "next": "Next page",
+        "of": "of {total}"
+      }
+    }
   }
 }

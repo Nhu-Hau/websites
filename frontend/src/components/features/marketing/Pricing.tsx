@@ -309,7 +309,7 @@ export default function Pricing() {
         free: t.rich("comparison.livestream.free", {
           note: (chunks) => (
             <span className="text-xs text-slate-500">{chunks}</span>
-          ),
+        ),
         }),
         pro: renderUnlocked(t("comparison.unlimited")),
       },
@@ -444,11 +444,11 @@ export default function Pricing() {
             <ul className="mb-8 space-y-3 text-sm text-slate-700 dark:text-slate-200">
               {freeFeatures.map((feature) => (
                 <li key={feature} className="flex items-start gap-2">
-                  <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
-                  </span>
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-300" />
+                </span>
                   <span>{feature}</span>
-                </li>
+              </li>
               ))}
             </ul>
 
@@ -558,11 +558,11 @@ export default function Pricing() {
             <ul className="mb-6 space-y-3 text-sm text-slate-700 dark:text-slate-200">
               {premiumFeatures.map((feature) => (
                 <li key={feature} className="flex items-start gap-2">
-                  <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
-                  </span>
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
+                </span>
                   <span>{feature}</span>
-                </li>
+              </li>
               ))}
             </ul>
 
@@ -709,11 +709,11 @@ export default function Pricing() {
             <ul className="mb-8 space-y-3 text-sm text-slate-700 dark:text-slate-200">
               {premiumPlusFeatures.map((feature) => (
                 <li key={feature} className="flex items-start gap-2">
-                  <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
-                  </span>
+                <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-50 dark:bg-slate-800">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[#4063bb] dark:text-sky-200" />
+                </span>
                   <span>{feature}</span>
-                </li>
+              </li>
               ))}
             </ul>
 
@@ -874,7 +874,7 @@ export default function Pricing() {
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
                 {processingLabel}
               </>
             ) : isPremium ? (
@@ -884,7 +884,7 @@ export default function Pricing() {
               </>
             ) : (
               <>
-                <Crown className="h-4 w-4" />
+              <Crown className="h-4 w-4" />
                 {t("cta.upgrade")}
               </>
             )}

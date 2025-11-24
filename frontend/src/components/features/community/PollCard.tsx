@@ -4,6 +4,7 @@ import React from "react";
 import { Check } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslations } from "next-intl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
@@ -39,13 +40,14 @@ export default function PollCard({
   const [localHasVoted, setLocalHasVoted] = React.useState(hasVoted);
   const [localVotersCount, setLocalVotersCount] = React.useState(votersCount);
   const [voting, setVoting] = React.useState(false);
+  const t = useTranslations("community.poll");
 
   const totalVotes = localOptions.reduce((sum, opt) => sum + opt.votesCount, 0);
   const hasEnded = endsAt ? new Date(endsAt) < new Date() : false;
 
   const handleVote = async (optionIndex: number) => {
     if (!user) {
-      toast.error("Vui lòng đăng nhập để bình chọn");
+      toast.error(t("toast.authRequired"));
       return;
     }
 
@@ -62,7 +64,7 @@ export default function PollCard({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.message || "Không thể bình chọn");
+        throw new Error(data.message || t("toast.voteFailed"));
       }
 
       const data = await res.json();
@@ -71,7 +73,7 @@ export default function PollCard({
       setLocalVotersCount(data.votersCount);
       onVote?.();
     } catch (error: any) {
-      toast.error(error.message || "Lỗi khi bình chọn");
+      toast.error(error.message || t("toast.genericError"));
     } finally {
       setVoting(false);
     }
@@ -85,12 +87,12 @@ export default function PollCard({
         </h3>
         {hasEnded && (
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Đã kết thúc
+            {t("status.ended")}
           </p>
         )}
         {!hasEnded && localVotersCount > 0 && (
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {localVotersCount} người đã bình chọn
+            {t("status.votersCount", { count: localVotersCount })}
           </p>
         )}
       </div>
@@ -160,7 +162,7 @@ export default function PollCard({
 
       {!localHasVoted && !hasEnded && user && (
         <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 text-center">
-          Chọn một phương án
+          {t("prompt.select")}
         </p>
       )}
     </div>

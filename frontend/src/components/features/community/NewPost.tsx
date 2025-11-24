@@ -5,10 +5,12 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import NewPostForm from "./NewPostForm";
+import { useTranslations } from "next-intl";
 
 export default function NewPost() {
   const router = useRouter();
   const basePrefix = useBasePrefix();
+  const t = useTranslations("community.newPost");
 
   const handleSuccess = () => {
     router.push(`${basePrefix}/community`);
@@ -19,10 +21,10 @@ export default function NewPost() {
       {/* Header nhỏ phía trên (optional) */}
       <div>
         <h1 className="mb-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Tạo bài viết mới
+          {t("title")}
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Chia sẻ suy nghĩ, mẹo học tập hoặc tài nguyên của bạn với cộng đồng TOEIC.
+          {t("description")}
         </p>
       </div>
 

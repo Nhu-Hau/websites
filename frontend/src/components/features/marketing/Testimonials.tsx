@@ -8,22 +8,22 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 
 const testimonialConfigs = [
-  {
+    {
     key: "0",
-    avatar:
-      "https://s3.ap-southeast-2.amazonaws.com/project.toeic/avatar/z7203367134559_612727cf573abc8ec005237bed66d4e5.jpg",
-  },
-  {
+      avatar:
+        "https://s3.ap-southeast-2.amazonaws.com/project.toeic/avatar/z7203367134559_612727cf573abc8ec005237bed66d4e5.jpg",
+    },
+    {
     key: "1",
-    avatar:
-      "https://s3.ap-southeast-2.amazonaws.com/project.toeic/avatar/z7203365126878_782dbc071de3ae09c786b97567af1258.jpg",
-  },
-  {
+      avatar:
+        "https://s3.ap-southeast-2.amazonaws.com/project.toeic/avatar/z7203365126878_782dbc071de3ae09c786b97567af1258.jpg",
+    },
+    {
     key: "2",
-    avatar:
-      "https://s3.ap-southeast-2.amazonaws.com/project.toeic/avatar/z7203369078456_b4b64b073b9f5a6ffc067aaceb87f379.jpg",
-  },
-];
+      avatar:
+        "https://s3.ap-southeast-2.amazonaws.com/project.toeic/avatar/z7203369078456_b4b64b073b9f5a6ffc067aaceb87f379.jpg",
+    },
+  ];
 
 export default function Testimonials() {
   const t = useTranslations("marketing.testimonials");
@@ -54,7 +54,7 @@ export default function Testimonials() {
             const quote = t(`items.${index}.quote`);
 
             return (
-              <motion.figure
+            <motion.figure
               key={item.key}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -102,7 +102,7 @@ export default function Testimonials() {
                   {score}
                 </span>
               </figcaption>
-              </motion.figure>
+            </motion.figure>
             );
           })}
         </div>
@@ -118,12 +118,12 @@ export default function Testimonials() {
           <p className="text-base font-medium text-zinc-700 dark:text-zinc-300">
             {t.rich("impact.summary", {
               percent: (chunks) => (
-                <span className="text-2xl font-bold text-sky-600 dark:text-sky-400">
+            <span className="text-2xl font-bold text-sky-600 dark:text-sky-400">
                   {chunks}
                 </span>
               ),
               duration: (chunks) => (
-                <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                   {chunks}
                 </span>
               ),

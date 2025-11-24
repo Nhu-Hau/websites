@@ -1,62 +1,64 @@
 "use client";
 import type { NavItemType } from "../../types/nav.types";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useTranslations } from "next-intl";
 
 export function MenuNav(): NavItemType[] {
   const basePrefix = useBasePrefix();
+  const t = useTranslations("navbar");
 
   const items: NavItemType[] = [
     {
-      label: "Luyện L&R",
+      label: t("practice.label"),
       children: [
         {
-          label: "Part 1: Mô tả tranh",
+          label: t("practice.parts.part1"),
           href: `${basePrefix}/practice/part.1?level=1`,
         },
         {
-          label: "Part 2: Hỏi - đáp",
+          label: t("practice.parts.part2"),
           href: `${basePrefix}/practice/part.2?level=1`,
         },
         {
-          label: "Part 3: Đoạn hội thoại",
+          label: t("practice.parts.part3"),
           href: `${basePrefix}/practice/part.3?level=1`,
         },
         {
-          label: "Part 4: Bài nói ngắn",
+          label: t("practice.parts.part4"),
           href: `${basePrefix}/practice/part.4?level=1`,
         },
         {
-          label: "Part 5: Hoàn thành câu",
+          label: t("practice.parts.part5"),
           href: `${basePrefix}/practice/part.5?level=1`,
         },
         {
-          label: "Part 6: Hoàn thành đoạn văn",
+          label: t("practice.parts.part6"),
           href: `${basePrefix}/practice/part.6?level=1`,
         },
         {
-          label: "Part 7: Đọc hiểu",
+          label: t("practice.parts.part7"),
           href: `${basePrefix}/practice/part.7?level=1`,
         },
       ],
     },
     {
-      label: "Học tập",
+      label: t("learn.label"),
       children: [
         {
-          label: "Cộng đồng",
+          label: t("learn.community"),
           href: `${basePrefix}/community`,
         },
         {
-          label: "Học từ vựng",
+          label: t("learn.vocabulary"),
           href: `${basePrefix}/vocabulary`,
         },
         {
-          label: "Học qua tin tức",
+          label: t("learn.news"),
           href: `${basePrefix}/news`,
         },
       ],
     },
-    { label: "Bảng điều khiển", href: `${basePrefix}/dashboard` },
+    { label: t("dashboard"), href: `${basePrefix}/dashboard` },
   ];
 
   return items;

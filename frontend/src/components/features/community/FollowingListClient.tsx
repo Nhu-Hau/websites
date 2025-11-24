@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useTranslations } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -30,6 +31,7 @@ export default function FollowingListClient({
 }: FollowingListClientProps) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
+  const t = useTranslations("community.followingList");
 
   const [following, setFollowing] = React.useState(
     initialFollowing?.items || []
@@ -64,7 +66,7 @@ export default function FollowingListClient({
         <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-zinc-200 dark:ring-zinc-700">
           <Image
             src={fullUrl}
-            alt={name || "Ảnh đại diện"}
+            alt={name || t("avatarAlt")}
             fill
             className="object-cover"
             sizes="40px"
@@ -86,10 +88,10 @@ export default function FollowingListClient({
       {/* Header */}
       <div className="mb-2">
         <h1 className="mb-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Đang theo dõi
+          {t("header.title")}
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Danh sách tài khoản bạn đang theo dõi
+          {t("header.description")}
         </p>
       </div>
 
@@ -112,7 +114,7 @@ export default function FollowingListClient({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-zinc-900 transition-colors hover:text-sky-600 dark:text-zinc-100 dark:hover:text-sky-400">
-                  {user.name || "User"}
+                  {user.name || t("fallbackUser")}
                 </div>
                 {user.bio && (
                   <p className="mt-1 truncate text-xs text-zinc-600 dark:text-zinc-400">
@@ -121,7 +123,9 @@ export default function FollowingListClient({
                 )}
                 {user.followersCount !== undefined && (
                   <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
-                    {user.followersCount} người theo dõi
+                    {t("followerCount", {
+                      count: user.followersCount ?? 0,
+                    })}
                   </p>
                 )}
               </div>
@@ -131,10 +135,10 @@ export default function FollowingListClient({
       ) : (
         <div className="rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 py-10 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
           <p className="mb-2 text-sm font-medium text-zinc-800 dark:text-zinc-100">
-            Chưa theo dõi ai
+            {t("empty.title")}
           </p>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Hãy khám phá cộng đồng và theo dõi những người học mà bạn quan tâm.
+            {t("empty.description")}
           </p>
         </div>
       )}
@@ -146,9 +150,9 @@ export default function FollowingListClient({
             type="button"
             onClick={loadFollowing}
             className="text-xs font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
-            aria-label="Làm mới danh sách đang theo dõi"
+            aria-label={t("reload.aria")}
           >
-            Làm mới danh sách
+            {t("reload.label")}
           </button>
         </div>
       )}

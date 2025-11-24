@@ -277,5 +277,529 @@
       "primaryCta": "Bắt đầu miễn phí",
       "secondaryCta": "Khám phá bộ đề"
     }
+  },
+  "navbar": {
+    "practice": {
+      "label": "Luyện L&R",
+      "parts": {
+        "part1": "Part 1: Mô tả tranh",
+        "part2": "Part 2: Hỏi - đáp",
+        "part3": "Part 3: Đoạn hội thoại",
+        "part4": "Part 4: Bài nói ngắn",
+        "part5": "Part 5: Hoàn thành câu",
+        "part6": "Part 6: Hoàn thành đoạn văn",
+        "part7": "Part 7: Đọc hiểu"
+      }
+    },
+    "learn": {
+      "label": "Học tập",
+      "community": "Cộng đồng",
+      "vocabulary": "Học từ vựng",
+      "news": "Học qua tin tức"
+    },
+    "dashboard": "Bảng điều khiển"
+  },
+  "community": {
+    "metadata": {
+      "title": "Cộng đồng TOEIC – Thảo luận và chia sẻ kinh nghiệm",
+      "description": "Cập nhật bài viết mới nhất từ cộng đồng TOEIC, đặt câu hỏi, chia sẻ chiến lược và nhận góp ý từ hàng nghìn học viên đang luyện thi.",
+      "keywords": ["cộng đồng toeic", "thảo luận toeic", "kinh nghiệm luyện thi toeic"]
+    },
+    "page": {
+      "title": "Bảng tin",
+      "description": "Bạn có thể đăng câu hỏi, kinh nghiệm luyện TOEIC, hoặc chia sẻ tài liệu hữu ích cho các bạn khác.",
+      "loading": "Đang tải bài viết...",
+      "emptyTitle": "Chưa có bài viết nào",
+      "emptyDescription": "Bảng tin cộng đồng đang trống. Hãy chia sẻ bài viết đầu tiên với mọi người.",
+      "loadError": "Lỗi khi tải bài viết"
+    },
+    "post": {
+      "editTitle": "Chỉnh sửa bài viết",
+      "avatarAlt": "Ảnh đại diện",
+      "fallbackUser": "Người dùng",
+      "shareTitle": "Bài viết cộng đồng",
+      "reportAria": "Báo cáo bài viết",
+      "labels": {
+        "edited": "(Đã chỉnh sửa)",
+        "reposted": "Đã chia sẻ lại",
+        "originalLoading": "Đang tải bài viết gốc..."
+      },
+      "confirmDelete": {
+        "title": "Xóa bài viết?",
+        "message": "Bạn có chắc muốn xóa bài viết này? Hành động này không thể hoàn tác.",
+        "confirm": "Xóa",
+        "cancel": "Hủy"
+      },
+      "confirmReport": {
+        "title": "Báo cáo bài viết?",
+        "message": "Bạn có chắc muốn báo cáo bài viết này?",
+        "confirm": "Báo cáo",
+        "cancel": "Hủy"
+      },
+      "repostModal": {
+        "title": "Chia sẻ lại bài viết",
+        "placeholder": "Thêm ghi chú của bạn (tùy chọn)...",
+        "cancel": "Hủy",
+        "submit": "Chia sẻ lại"
+      },
+      "toast": {
+        "deleteSuccess": "Đã xóa bài viết",
+        "deleteError": "Lỗi khi xóa bài viết",
+        "repostSuccess": "Đã chia sẻ lại bài viết",
+        "repostError": "Lỗi khi chia sẻ lại bài viết",
+        "reportSuccess": "Đã báo cáo bài viết",
+        "reportError": "Lỗi khi báo cáo bài viết"
+      },
+      "time": {
+        "justNow": "Vừa xong",
+        "minutes": "{count} phút trước",
+        "hours": "{count} giờ trước",
+        "days": "{count} ngày trước"
+      }
+    },
+    "actionBar": {
+      "toast": {
+        "likeError": "Lỗi khi thích bài viết",
+        "save": "Đã lưu bài viết",
+        "unsave": "Đã bỏ lưu bài viết",
+        "saveError": "Lỗi khi lưu bài viết"
+      },
+      "aria": {
+        "like": "Thích",
+        "unlike": "Bỏ thích",
+        "comment": "Bình luận",
+        "repost": "Chia sẻ lại",
+        "share": "Chia sẻ",
+        "save": "Lưu",
+        "unsave": "Bỏ lưu",
+        "edit": "Chỉnh sửa",
+        "delete": "Xóa"
+      }
+    },
+    "media": {
+      "playVideo": "Phát video",
+      "videoThumbnailAlt": "Ảnh xem trước video",
+      "imageAlt": "Hình ảnh đính kèm",
+      "loadError": "Không thể tải ảnh",
+      "prevImage": "Media trước",
+      "nextImage": "Media tiếp theo",
+      "goToSlide": "Chuyển đến slide {index}"
+    },
+    "pagination": {
+      "ariaLabel": "Phân trang",
+      "prev": "Trang trước",
+      "next": "Trang sau"
+    },
+    "form": {
+      "placeholder": "Bạn đang nghĩ gì?",
+      "fileLimit": "Bạn chỉ có thể tải lên tối đa {max} tệp. Còn {remaining} chỗ trống.",
+      "invalidType": "{name} không phải là tệp hình ảnh hoặc video được hỗ trợ.",
+      "emptyFile": "{name} là tệp rỗng.",
+      "fileTooLarge": "{name} quá lớn. Kích thước tối đa là 50MB.",
+      "previewError": "Không thể tạo preview cho {name}.",
+      "unknownError": "Lỗi không xác định",
+      "uploadFailed": "Không thể tải lên {name}: {error}",
+      "missingContent": "Vui lòng nhập nội dung hoặc đính kèm tệp.",
+      "partialUpload": "Một số tệp tải lên thất bại. Vui lòng thử lại.",
+      "updateSuccess": "Đã cập nhật bài viết!",
+      "createSuccess": "Đã tạo bài viết!",
+      "submitError": "Lỗi khi đăng bài viết.",
+      "removeFile": "Xóa tệp",
+      "chooseFile": "Chọn tệp",
+      "uploading": "Đang tải lên...",
+      "posting": "Đang đăng...",
+      "update": "Cập nhật",
+      "post": "Đăng",
+      "previewAlt": "Xem trước {index}"
+    },
+    "newPost": {
+      "title": "Tạo bài viết mới",
+      "description": "Chia sẻ suy nghĩ, mẹo học tập hoặc tài nguyên của bạn với cộng đồng TOEIC."
+    },
+    "groups": {
+      "header": {
+        "title": "Nhóm học",
+        "description": "Tham gia các nhóm học TOEIC để luyện tập cùng mọi người."
+      },
+      "actions": {
+        "searchPlaceholder": "Tìm nhóm theo tên...",
+        "create": "Tạo nhóm"
+      },
+      "loading": "Đang tải danh sách nhóm...",
+      "delete": {
+        "button": "Xóa nhóm",
+        "confirm": {
+          "title": "Xác nhận xóa nhóm",
+          "message": "Bạn có chắc muốn xóa nhóm này? Hành động này không thể hoàn tác.",
+          "confirm": "Xóa nhóm",
+          "cancel": "Hủy"
+        },
+        "toast": {
+          "success": "Đã xóa nhóm",
+          "error": "Không thể xóa nhóm"
+        }
+      },
+      "card": {
+        "memberCount": "{count} thành viên",
+        "visibility": {
+          "private": "Riêng tư",
+          "public": "Công khai"
+        }
+      },
+      "empty": {
+        "title": "Chưa có nhóm phù hợp",
+        "description": "Bạn chưa tham gia hoặc tạo nhóm nào. Hãy tạo nhóm đầu tiên để học TOEIC cùng bạn bè."
+      }
+    },
+    "createGroup": {
+      "header": {
+        "title": "Tạo nhóm mới",
+        "description": "Tạo không gian để cùng học TOEIC, thảo luận và chia sẻ tài nguyên."
+      },
+      "cover": {
+        "label": "Ảnh bìa",
+        "help": "Gợi ý tỉ lệ 16:9, dung lượng dưới 5MB. Ảnh bìa đẹp giúp nhóm của bạn nổi bật hơn.",
+        "previewAlt": "Ảnh bìa xem trước",
+        "remove": "Xóa ảnh bìa",
+        "upload": {
+          "title": "Tải lên ảnh bìa",
+          "description": "Nhấn để chọn ảnh từ thiết bị của bạn"
+        },
+        "errors": {
+          "invalidType": "Vui lòng chọn tệp ảnh hợp lệ",
+          "upload": "Lỗi khi tải lên ảnh bìa"
+        }
+      },
+      "form": {
+        "name": {
+          "label": "Tên nhóm",
+          "placeholder": "Ví dụ: Nhóm luyện nghe TOEIC 500+"
+        },
+        "description": {
+          "label": "Mô tả",
+          "placeholder": "Giới thiệu mục tiêu, cách hoạt động hoặc quy định của nhóm..."
+        },
+        "cancel": "Hủy",
+        "submit": "Tạo nhóm",
+        "submitting": "Đang tạo..."
+      },
+      "toast": {
+        "success": "Đã tạo nhóm",
+        "error": "Lỗi khi tạo nhóm",
+        "nameRequired": "Vui lòng nhập tên nhóm"
+      }
+    },
+    "comment": {
+      "avatarAlt": "Ảnh đại diện",
+      "fallbackUser": "Người dùng",
+      "confirm": {
+        "title": "Xóa bình luận?",
+        "message": "Bạn có chắc chắn muốn xóa bình luận này?",
+        "confirm": "Xóa",
+        "cancel": "Hủy"
+      },
+      "toast": {
+        "deleteSuccess": "Đã xóa bình luận",
+        "deleteError": "Lỗi khi xóa bình luận",
+        "updateSuccess": "Đã cập nhật bình luận",
+        "updateError": "Lỗi khi cập nhật bình luận"
+      },
+      "edit": {
+        "title": "Chỉnh sửa bình luận",
+        "saveAria": "Lưu bình luận",
+        "cancelAria": "Hủy chỉnh sửa bình luận"
+      },
+      "labels": {
+        "edited": "(đã chỉnh sửa)"
+      },
+      "aria": {
+        "edit": "Chỉnh sửa bình luận",
+        "delete": "Xóa bình luận"
+      }
+    },
+    "explore": {
+      "header": {
+        "title": "Khám phá",
+        "description": "Tìm những chủ đề và nhóm học thú vị trong cộng đồng TOEIC."
+      },
+      "hashtags": {
+        "title": "Hashtag đang thịnh hành",
+        "description": "Xem các chủ đề được cộng đồng tương tác nhiều nhất",
+        "postCount": "{count} bài viết",
+        "empty": "Chưa có hashtag nào đang thịnh hành."
+      },
+      "quickLinks": {
+        "trending": {
+          "title": "Xu hướng",
+          "description": "Xem những bài viết được quan tâm nhất 24 giờ qua."
+        },
+        "groups": {
+          "title": "Nhóm học",
+          "description": "Tham gia các nhóm học theo mục tiêu và trình độ."
+        }
+      }
+    },
+    "followersModal": {
+      "title": "Người theo dõi",
+      "closeAria": "Đóng danh sách người theo dõi",
+      "avatarAlt": "Ảnh người theo dõi",
+      "fallbackUser": "Người dùng",
+      "followerCount": "{count} người theo dõi",
+      "empty": {
+        "title": "Chưa có người theo dõi",
+        "description": "Khi người khác theo dõi bạn, họ sẽ xuất hiện ở đây."
+      }
+    },
+    "followingModal": {
+      "title": "Đang theo dõi",
+      "closeAria": "Đóng danh sách đang theo dõi",
+      "avatarAlt": "Ảnh người đang theo dõi",
+      "fallbackUser": "Người dùng",
+      "followerCount": "{count} người theo dõi",
+      "empty": {
+        "title": "Chưa theo dõi ai",
+        "description": "Hãy khám phá cộng đồng và theo dõi những người dùng khác."
+      }
+    },
+    "followingList": {
+      "header": {
+        "title": "Đang theo dõi",
+        "description": "Danh sách tài khoản bạn đang theo dõi"
+      },
+      "avatarAlt": "Ảnh người đang theo dõi",
+      "fallbackUser": "Người dùng",
+      "followerCount": "{count} người theo dõi",
+      "empty": {
+        "title": "Chưa theo dõi ai",
+        "description": "Hãy khám phá cộng đồng và theo dõi những người học mà bạn quan tâm."
+      },
+      "reload": {
+        "label": "Làm mới danh sách",
+        "aria": "Làm mới danh sách đang theo dõi"
+      }
+    },
+    "followingFeed": {
+      "header": {
+        "title": "Bảng tin đang theo dõi",
+        "description": "Bài viết mới nhất từ những tài khoản bạn quan tâm"
+      },
+      "loading": "Đang tải bài viết...",
+      "empty": {
+        "title": "Chưa có bài viết nào",
+        "description": "Hãy theo dõi thêm một số người dùng để xem bài viết của họ tại đây."
+      }
+    },
+    "saved": {
+      "header": {
+        "title": "Bài viết đã lưu",
+        "description": "Những bài viết bạn lưu lại để xem sau."
+      },
+      "toast": {
+        "authRequired": "Vui lòng đăng nhập để xem bài viết đã lưu",
+        "loadError": "Không thể tải bài viết đã lưu",
+        "genericError": "Có lỗi xảy ra khi tải bài viết đã lưu"
+      },
+      "loading": "Đang tải bài viết đã lưu...",
+      "empty": {
+        "title": "Chưa có bài viết nào",
+        "description": "Hãy lưu những bài viết hữu ích để truy cập nhanh hơn."
+      }
+    },
+    "trending": {
+      "header": {
+        "title": "Xu hướng",
+        "description": "Những bài viết được tương tác nhiều nhất trong 24 giờ qua."
+      },
+      "loading": "Đang tải bài viết xu hướng...",
+      "empty": {
+        "title": "Chưa có bài viết nào trong xu hướng",
+        "description": "Khi bài viết nhận được nhiều tương tác hơn, chúng sẽ xuất hiện tại đây."
+      }
+    },
+    "hashtag": {
+      "stats": {
+        "postCount": "{count} bài viết"
+      },
+      "empty": {
+        "title": "Chưa có bài viết nào",
+        "description": "Chưa có ai sử dụng hashtag này."
+      }
+    },
+    "reactionPicker": {
+      "toast": {
+        "authRequired": "Vui lòng đăng nhập để thả cảm xúc",
+        "error": "Không thể cập nhật reaction"
+      }
+    },
+    "poll": {
+      "toast": {
+        "authRequired": "Vui lòng đăng nhập để bình chọn",
+        "voteFailed": "Không thể bình chọn",
+        "genericError": "Có lỗi xảy ra khi bình chọn"
+      },
+      "status": {
+        "ended": "Đã kết thúc",
+        "votersCount": "{count} lượt bình chọn"
+      },
+      "prompt": {
+        "select": "Chọn một phương án"
+      }
+    },
+    "imageCropper": {
+      "title": "Cắt ảnh",
+      "zoomLabel": "Phóng to: {percent}%",
+      "rotationLabel": "Xoay: {degrees}°",
+      "cancel": "Hủy",
+      "done": "Xong",
+      "processing": "Đang xử lý..."
+    },
+    "groupDetail": {
+      "toast": {
+        "notFound": "Không tìm thấy nhóm",
+        "loadGroupError": "Không thể tải thông tin nhóm",
+        "loadPostsError": "Không thể tải bài viết",
+        "authRequired": "Vui lòng đăng nhập",
+        "joinError": "Không thể tham gia nhóm",
+        "joinSuccess": "Đã tham gia nhóm",
+        "leaveError": "Không thể rời nhóm",
+        "leaveSuccess": "Đã rời nhóm",
+        "deleteError": "Không thể xóa nhóm",
+        "deleteSuccess": "Đã xóa nhóm"
+      },
+      "confirmDelete": {
+        "title": "Xóa nhóm này?",
+        "message": "Xóa nhóm sẽ xóa toàn bộ bài viết bên trong. Hành động này không thể hoàn tác.",
+        "confirm": "Xóa nhóm",
+        "cancel": "Hủy"
+      },
+      "loading": {
+        "group": "Đang tải thông tin nhóm..."
+      },
+      "backLink": "Quay lại danh sách nhóm",
+      "stats": {
+        "membersLabel": "thành viên",
+        "postsLabel": "bài viết",
+        "adminLabel": "Quản trị viên:",
+        "unknownAdmin": "Không xác định"
+      },
+      "actions": {
+        "delete": {
+          "button": "Xóa nhóm",
+          "loading": "Đang xóa nhóm..."
+        },
+        "leave": {
+          "button": "Rời nhóm",
+          "loading": "Đang rời nhóm..."
+        },
+        "join": {
+          "button": "Tham gia nhóm",
+          "loading": "Đang tham gia..."
+        }
+      },
+      "composer": {
+        "title": "Tạo bài viết trong nhóm"
+      },
+      "posts": {
+        "loading": "Đang tải bài viết...",
+        "empty": {
+          "title": "Chưa có bài viết nào",
+          "memberDescription": "Hãy là người đầu tiên chia sẻ bài viết cho nhóm nhé!",
+          "guestDescription": "Hiện chưa có bài viết nào trong nhóm này."
+        }
+      }
+    }
+  },
+  "vocabulary": {
+    "page": {
+      "header": {
+        "badge": "Vocabulary lab",
+        "title": "Tạo lộ trình từ vựng chuẩn TOEIC",
+        "description": "Quản lý bộ từ, luyện flashcard theo cấp độ và quiz nhanh để khóa kiến thức mỗi ngày.",
+        "stats": {
+          "sets": "Bộ từ",
+          "terms": "Tổng từ"
+        },
+        "cta": "Tạo bộ từ mới"
+      },
+      "filters": {
+        "searchLabel": "Tìm kiếm nhanh",
+        "searchPlaceholder": "Nhập từ khóa, chủ đề hoặc ghi chú...",
+        "sortLabel": "Sắp xếp & lọc",
+        "sortOptions": {
+          "recent": "Mới cập nhật",
+          "alphabetical": "Theo A–Z",
+          "terms": "Nhiều từ nhất"
+        }
+      },
+      "empty": {
+        "title": "Chưa có bộ từ nào",
+        "description": "Tạo bộ từ đầu tiên hoặc import danh sách từ để bắt đầu học giống Quizlet nhưng tối ưu cho TOEIC."
+      },
+      "duplicateSuffix": "(bản sao)"
+    },
+    "toast": {
+      "duplicateSuccess": "Đã nhân bản bộ từ",
+      "setCreateSuccess": "Đã tạo bộ từ mới",
+      "setUpdateSuccess": "Đã cập nhật bộ từ",
+      "setDeleteSuccess": "Đã xóa bộ từ",
+      "termCreateSuccess": "Đã thêm từ",
+      "termUpdateSuccess": "Đã cập nhật từ",
+      "termDeleteSuccess": "Đã xóa từ"
+    },
+    "errors": {
+      "saveSet": "Không thể lưu bộ từ",
+      "saveTerm": "Không thể lưu từ vựng",
+      "deleteSet": "Không thể xóa bộ từ",
+      "deleteTerm": "Không thể xóa từ"
+    },
+    "confirm": {
+      "deleteSet": {
+        "title": "Xóa bộ từ vựng?",
+        "message": "Thao tác này không thể hoàn tác.",
+        "confirm": "Xóa"
+      },
+      "deleteTerm": {
+        "title": "Xóa từ?",
+        "message": "Bạn chắc chắn muốn xóa từ khỏi bộ?",
+        "confirm": "Xóa từ"
+      }
+    }
+  },
+  "news": {
+    "page": {
+      "header": {
+        "badge": "Reading lab",
+        "title": "Đọc báo luyện tiếng Anh",
+        "description": "Chọn bài báo tiếng Anh, đọc trong ngữ cảnh, nhấn vào từ để xem nghĩa và lưu từ mới.",
+        "totalLabel": "Tổng bài viết",
+        "categoryLabel": "Danh mục"
+      },
+      "categories": {
+        "all": "Tất cả",
+        "education": "Giáo dục",
+        "politics": "Chính trị",
+        "travel": "Du lịch",
+        "technology": "Công nghệ",
+        "sports": "Thể thao",
+        "entertainment": "Giải trí",
+        "business": "Kinh doanh",
+        "society": "Xã hội",
+        "health": "Sức khỏe",
+        "culture": "Văn hóa"
+      },
+      "card": {
+        "hint": "Nhấn để đọc bài và học từ mới trực tiếp trên văn bản."
+      },
+      "empty": {
+        "title": "Chưa có bài đọc nào",
+        "description": "Thử chuyển sang danh mục khác để tiếp tục luyện đọc và học từ vựng."
+      },
+      "pagination": {
+        "label": "Trang",
+        "prev": "Trang trước",
+        "next": "Trang sau",
+        "of": "/ {total}"
+      }
+    }
   }
 }

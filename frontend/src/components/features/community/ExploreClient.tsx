@@ -5,6 +5,7 @@ import React from "react";
 import { Hash, Users, TrendingUp } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -13,6 +14,7 @@ export default function ExploreClient() {
   const basePrefix = useBasePrefix();
   const [trendingHashtags, setTrendingHashtags] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const t = useTranslations("community.explore");
 
   React.useEffect(() => {
     fetch(`${API_BASE}/api/community/hashtags/trending`)
@@ -31,10 +33,10 @@ export default function ExploreClient() {
       {/* Header */}
       <div className="mb-2">
         <h1 className="mb-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Khám phá
+          {t("header.title")}
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Tìm những chủ đề và nhóm học thú vị trong cộng đồng TOEIC.
+          {t("header.description")}
         </p>
       </div>
 
@@ -47,10 +49,10 @@ export default function ExploreClient() {
             </div>
             <div>
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                Hashtag đang thịnh hành
+                {t("hashtags.title")}
               </h2>
               <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                Xem các chủ đề được cộng đồng tương tác nhiều nhất
+                {t("hashtags.description")}
               </p>
             </div>
           </div>
@@ -74,7 +76,7 @@ export default function ExploreClient() {
                     {tag.name}
                   </span>
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {tag.postsCount} bài viết
+                    {t("hashtags.postCount", { count: tag.postsCount })}
                   </span>
                 </div>
                 {tag.samplePost && (
@@ -87,7 +89,7 @@ export default function ExploreClient() {
           </div>
         ) : (
           <div className="py-8 text-center text-sm text-zinc-600 dark:text-zinc-400">
-            Chưa có hashtag nào đang thịnh hành.
+            {t("hashtags.empty")}
           </div>
         )}
       </section>
@@ -104,9 +106,11 @@ export default function ExploreClient() {
             </div>
           </div>
           <div>
-            <h3 className="mb-1 text-base font-semibold">Xu hướng</h3>
+            <h3 className="mb-1 text-base font-semibold">
+              {t("quickLinks.trending.title")}
+            </h3>
             <p className="text-xs text-sky-50/90">
-              Xem những bài viết đang được quan tâm nhiều nhất.
+              {t("quickLinks.trending.description")}
             </p>
           </div>
         </Link>
@@ -143,10 +147,10 @@ export default function ExploreClient() {
 
           <div>
             <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-              Nhóm học
+              {t("quickLinks.groups.title")}
             </h3>
             <p className="text-xs text-zinc-600 dark:text-zinc-400">
-              Tham gia các nhóm học TOEIC theo mục tiêu và trình độ.
+              {t("quickLinks.groups.description")}
             </p>
           </div>
         </Link>

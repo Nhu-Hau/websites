@@ -3,6 +3,7 @@
 import React from "react";
 import { Heart, MessageCircle, Share2, Bookmark, Repeat2, Edit2, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { useTranslations } from "next-intl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
@@ -51,6 +52,8 @@ export default function ActionBar({
   const [saves, setSaves] = React.useState(savedCount);
   const [acting, setActing] = React.useState(false);
 
+  const t = useTranslations("community.actionBar");
+
   React.useEffect(() => {
     // Ensure liked is always a boolean
     setIsLiked(typeof liked === "boolean" ? liked : false);
@@ -87,7 +90,7 @@ export default function ActionBar({
       setIsLiked(!newLiked);
       setLikes(likes);
       onLikeChange?.(liked, likes);
-      toast.error("Lỗi khi thích bài viết");
+      toast.error(t("toast.likeError"));
     } finally {
       setActing(false);
     }
@@ -117,11 +120,7 @@ export default function ActionBar({
           setIsSaved(data.saved);
           onSaveChange?.(data.saved, data.savedCount);
           // Show toast
-          if (data.saved) {
-            toast.success("Đã lưu bài viết");
-          } else {
-            toast.success("Đã bỏ lưu bài viết");
-          }
+          toast.success(data.saved ? t("toast.save") : t("toast.unsave"));
           // Trigger custom event to refresh saved posts page (saved state is now in DB)
           if (typeof window !== "undefined" && window.location.pathname.includes("/community/saved")) {
             window.dispatchEvent(new CustomEvent("savedPostsChanged"));
@@ -131,7 +130,7 @@ export default function ActionBar({
       setIsSaved(!newSaved);
       setSaves(saves);
       onSaveChange?.(saved, saves);
-      toast.error("Lỗi khi lưu bài viết");
+      toast.error(t("toast.saveError"));
     } finally {
       setActing(false);
     }
@@ -161,7 +160,7 @@ export default function ActionBar({
             ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20"
             : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         }`}
-        aria-label={isLiked ? "Unlike" : "Like"}
+        aria-label={isLiked ? t("aria.unlike") : t("aria.like")}
       >
         <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
         <span>{likes}</span>
@@ -170,7 +169,7 @@ export default function ActionBar({
       <button
         onClick={handleComment}
         className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-        aria-label="Comment"
+        aria-label={t("aria.comment")}
       >
         <MessageCircle className="h-5 w-5" />
         <span>{commentsCount}</span>
@@ -179,7 +178,7 @@ export default function ActionBar({
       <button
         onClick={handleRepost}
         className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-        aria-label="Repost"
+        aria-label={t("aria.repost")}
       >
         <Repeat2 className="h-5 w-5" />
         {repostCount > 0 && <span>{repostCount}</span>}
@@ -188,7 +187,7 @@ export default function ActionBar({
       <button
         onClick={handleShare}
         className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-        aria-label="Share"
+        aria-label={t("aria.share")}
       >
         <Share2 className="h-5 w-5" />
       </button>
@@ -200,7 +199,7 @@ export default function ActionBar({
             ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
             : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         }`}
-        aria-label={isSaved ? "Bỏ lưu" : "Lưu"}
+        aria-label={isSaved ? t("aria.unsave") : t("aria.save")}
       >
         <Bookmark className={`h-5 w-5 ${isSaved ? "fill-current" : ""}`} />
         {saves > 0 && <span>{saves}</span>}
@@ -213,7 +212,7 @@ export default function ActionBar({
             onEditClick?.();
           }}
           className="px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          aria-label="Edit"
+          aria-label={t("aria.edit")}
         >
           <Edit2 className="h-5 w-5" />
         </button>
@@ -226,7 +225,7 @@ export default function ActionBar({
             onDeleteClick?.();
           }}
           className="px-3 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-          aria-label="Delete"
+          aria-label={t("aria.delete")}
         >
           <Trash2 className="h-5 w-5" />
         </button>

@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Flag, Repeat2 } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -26,11 +27,17 @@ function Avatar({ name, url }: { name?: string; url?: string }) {
   if (url) {
     const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
     return (
-      <img
-        src={fullUrl}
-        alt={name || "avatar"}
-        className="h-12 w-12 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-700"
-      />
+      <div className="relative h-12 w-12 overflow-hidden rounded-full ring-2 ring-zinc-200 dark:ring-zinc-700">
+        <Image
+          src={fullUrl}
+          alt={name || "Ảnh đại diện"}
+          fill
+          className="object-cover"
+          sizes="48px"
+          unoptimized
+          priority={false}
+        />
+      </div>
     );
   }
   return (
@@ -325,6 +332,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
             Chỉnh sửa bài viết
           </h3>
           <button
+            type="button"
             onClick={() => setIsEditing(false)}
             className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
           >
@@ -351,6 +359,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         <div className="border-b border-zinc-100/80 px-5 py-4 dark:border-zinc-800/80">
           <div className="flex items-start gap-3">
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 router.push(`${basePrefix}/community/profile/${post.userId}`);
@@ -362,6 +371,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     router.push(
@@ -390,6 +400,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
             </div>
             {!post.canDelete && (
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleReport();
@@ -419,6 +430,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
             <div className="p-4">
               <div className="mb-3 flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     router.push(
@@ -434,6 +446,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                 </button>
                 <div className="min-w-0 flex-1">
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(
@@ -564,6 +577,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
             />
             <div className="flex justify-end gap-3">
               <button
+                type="button"
                 onClick={() => {
                   setShowRepostModal(false);
                   setRepostCaption("");
@@ -573,6 +587,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                 Hủy
               </button>
               <button
+                type="button"
                 onClick={handleRepostSubmit}
                 className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600"
               >

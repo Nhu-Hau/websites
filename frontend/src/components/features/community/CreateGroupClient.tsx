@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Camera, X } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -127,11 +128,17 @@ export default function CreateGroupClient() {
             <div className="group relative h-48 w-full overflow-hidden rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 transition-all hover:border-sky-300 hover:bg-zinc-50/80 dark:border-zinc-700 dark:bg-zinc-900/80 dark:hover:border-sky-700">
               {coverPreview ? (
                 <>
-                  <img
-                    src={coverPreview}
-                    alt="Cover preview"
-                    className="h-full w-full object-cover"
-                  />
+                  <div className="relative h-full w-full">
+                    <Image
+                      src={coverPreview}
+                      alt="Ảnh bìa xem trước"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 720px"
+                      unoptimized
+                      priority={false}
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
@@ -139,6 +146,7 @@ export default function CreateGroupClient() {
                       setCoverPreview(null);
                     }}
                     className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900 text-zinc-50 shadow-md transition-colors hover:bg-red-600"
+                    aria-label="Xóa ảnh bìa"
                   >
                     <X className="h-4 w-4" />
                   </button>

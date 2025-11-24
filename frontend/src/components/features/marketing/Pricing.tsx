@@ -407,7 +407,7 @@ export default function Pricing() {
             </span>
           </div>
           <h2 className="font-manrope text-3xl font-bold text-[#1f2a3d] sm:text-4xl lg:text-5xl dark:text-slate-50">
-            Gói học TOEIC phù hợp với bạn
+            Gói học phù hợp với bạn
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300">
             Thử miễn phí, không cần thẻ. Khi sẵn sàng, bạn có thể nâng cấp lên

@@ -640,12 +640,16 @@ export default function PostDetail({ postId }: { postId: string }) {
                   className="relative inline-flex items-center gap-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg"
                 >
                   {a.type === "image" ? (
-                    <img
+                    <Image
                       src={
                         a.url.startsWith("http") ? a.url : `${API_BASE}${a.url}`
                       }
-                      alt=""
-                      className="h-12 w-16 object-cover rounded"
+                      alt={a.name || "Ảnh đính kèm"}
+                      width={64}
+                      height={48}
+                      className="h-12 w-16 rounded object-cover"
+                      sizes="64px"
+                      unoptimized
                     />
                   ) : (
                     <>
@@ -656,8 +660,10 @@ export default function PostDetail({ postId }: { postId: string }) {
                     </>
                   )}
                   <button
+                    type="button"
                     onClick={() => removeAttachment(i)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                    className="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 text-white transition-colors hover:bg-red-600"
+                    aria-label="Xóa đính kèm"
                   >
                     <X className="h-3 w-3" />
                   </button>

@@ -28,6 +28,7 @@ import {
 import { toast } from "@/lib/toast";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useTranslations, useLocale } from "next-intl";
 
 type Role = "user" | "teacher" | "admin";
 
@@ -61,12 +62,14 @@ function slugifyRoom(input: string): string {
     .slice(0, 32);
 }
 
-function validateRoom(slug: string): string | null {
-  if (!slug) return "Tên phòng không được để trống.";
-  if (slug.length < 3) return "Tên phòng phải có ít nhất 3 ký tự.";
-  if (slug.length > 32) return "Tên phòng tối đa 32 ký tự.";
+type RoomValidationKey = "empty" | "min" | "max" | "pattern";
+
+function validateRoom(slug: string): RoomValidationKey | null {
+  if (!slug) return "empty";
+  if (slug.length < 3) return "min";
+  if (slug.length > 32) return "max";
   if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
-    return "Chỉ dùng chữ thường, số và dấu gạch (-), không bắt đầu bằng dấu gạch.";
+    return "pattern";
   }
   return null;
 }
@@ -78,6 +81,7 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const { user: authUser, loading: authLoading } = useAuth();
+  const t = useTranslations("study.createRoom");
 
   const role: Role = (authUser?.role as Role) || "user";
   const displayName = authUser?.name || "Guest";
@@ -91,8 +95,9 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
 
   const normalized = useMemo(() => slugifyRoom(input), [input]);
   const finalSlug = normalized;
-  const errorMsg = useMemo(() => validateRoom(finalSlug), [finalSlug]);
-  const isValid = !errorMsg && finalSlug.length >= 3;
+  const errorKey = useMemo(() => validateRoom(finalSlug), [finalSlug]);
+  const errorMsg = errorKey ? t(`validation.${errorKey}`) : null;
+  const isValid = !errorKey;
 
   const canCreateRoom = role === "teacher" || role === "admin";
 
@@ -111,14 +116,13 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
 
   const onCreate = useCallback(async () => {
     if (!isValid) {
-      toast.error(errorMsg || "Tên phòng không hợp lệ");
+      toast.error(errorMsg || t("toast.invalidName"));
       return;
     }
 
     if (!canCreateRoom) {
-      toast.error("Bạn không có quyền tạo phòng học", {
-        description:
-          "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
+      toast.error(t("toast.noPermission.title"), {
+        description: t("toast.noPermission.description"),
       });
       return;
     }
@@ -128,20 +132,19 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
       const u = { id: userId, name: displayName, role };
       await createRoom(finalSlug, u);
       onCreated?.();
-      toast.success("Phòng đã được tạo!", {
-        description: "Đang chuyển đến phòng học…",
+      toast.success(t("toast.createSuccess.title"), {
+        description: t("toast.createSuccess.description"),
         duration: 1800,
       });
       router.push(`${basePrefix}/study/${finalSlug}`);
     } catch (e: any) {
-      const message = e?.message || "Không thể tạo phòng. Vui lòng thử lại.";
+      const message = e?.message || t("toast.createError");
       if (message.includes("teacher") || message.includes("admin")) {
-        toast.error("Bạn không có quyền tạo phòng học", {
-          description:
-            "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream.",
+        toast.error(t("toast.noPermission.title"), {
+          description: t("toast.noPermission.description"),
         });
       } else {
-        toast.error("Tạo phòng thất bại", { description: message });
+        toast.error(t("toast.genericError"), { description: message });
       }
     } finally {
       setLoading(false);
@@ -178,11 +181,10 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
           </div>
           <div className="flex-1">
             <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-white">
-              Yêu cầu đăng nhập
+              {t("states.unauthenticated.title")}
             </h3>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Vui lòng đăng nhập để tạo phòng học. Chỉ giáo viên và quản trị
-              viên mới có thể tạo phòng.
+              {t("states.unauthenticated.description")}
             </p>
           </div>
         </div>
@@ -199,16 +201,16 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
           </div>
           <div className="flex-1">
             <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-white">
-              Không có quyền tạo phòng
+              {t("states.forbidden.title")}
             </h3>
             <p className="mb-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Vai trò hiện tại:{" "}
+              {t("states.forbidden.roleLabel")}{" "}
               <span className="capitalize font-medium text-rose-600 dark:text-rose-400">
                 {role}
               </span>
             </p>
             <p className="text-xs text-zinc-500 dark:text-zinc-500">
-              Liên hệ quản trị viên để được cấp quyền giáo viên.
+              {t("states.forbidden.contact")}
             </p>
           </div>
         </div>
@@ -218,17 +220,16 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
 
   return (
     <div className="w-full max-w-md rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-900/95 shadow-2xl shadow-black/30">
-      {/* Header: Icon + Title + Mô tả */}
       <div className="flex items-start gap-3 px-6 pt-6 pb-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 dark:bg-sky-900/20">
           <Hash className="h-6 w-6 text-sky-600 dark:text-sky-400" />
         </div>
         <div>
           <h2 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            Tạo phòng học mới
+            {t("form.title")}
           </h2>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Nhập tên phòng học để bắt đầu buổi học trực tuyến.
+            {t("form.description")}
           </p>
         </div>
       </div>
@@ -240,7 +241,7 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
             htmlFor={fieldId}
             className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
           >
-            Tên phòng học
+            {t("form.nameLabel")}
           </label>
           <div className="relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -251,7 +252,7 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
               value={input}
               onChange={onInputChange}
               onKeyDown={onKeyDown}
-              placeholder="toeic-lr-class"
+              placeholder={t("form.placeholder")}
               className={cn(
                 "block w-full rounded-xl border bg-white px-10 py-3 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition-all duration-200 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500",
                 isValid
@@ -274,7 +275,7 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
                 className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400"
               >
                 <CheckCircle className="h-4 w-4" />
-                Tên phòng hợp lệ.
+                {t("form.helperValid")}
               </p>
             ) : errorMsg ? (
               <p
@@ -306,7 +307,7 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
             "disabled:opacity-50 disabled:cursor-not-allowed"
           )}
         >
-          Hủy
+          {t("form.cancel")}
         </button>
 
         <button
@@ -327,10 +328,10 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Đang tạo…
+              {t("form.submitting")}
             </>
           ) : (
-            "Tạo phòng"
+            t("form.submit")
           )}
         </button>
       </div>
@@ -354,6 +355,18 @@ export default function CreateStudyRoomPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const basePrefix = useBasePrefix();
+  const pageT = useTranslations("study.rooms");
+  const headerT = useTranslations("study.header");
+  const createT = useTranslations("study.createRoom");
+  const locale = useLocale();
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(
+        locale === "vi" ? "vi-VN" : "en-US",
+        { dateStyle: "medium", timeStyle: "short" }
+      ),
+    [locale]
+  );
 
   const reload = useCallback(async () => {
     if (!user?.id || !user?.name) return;
@@ -367,7 +380,7 @@ export default function CreateStudyRoomPage() {
       });
       setRooms(data.rooms || []);
     } catch (e: any) {
-      const msg = e?.message || "Không thể tải danh sách phòng";
+      const msg = e?.message || t("toast.listError");
       setErr(msg);
       toast.error(msg);
     } finally {
@@ -405,9 +418,7 @@ export default function CreateStudyRoomPage() {
                   name: user.name || "",
                   role: user.role || "admin",
                 });
-                toast.info(
-                  `Đã tự động xóa phòng trống sau 5 phút: ${room.roomName}`
-                );
+                toast.info(t("toast.autoDelete", { room: room.roomName }));
                 setTimeout(() => reload(), 1000);
               } catch (e: any) {
                 console.error("Auto-delete failed:", e);
@@ -428,11 +439,11 @@ export default function CreateStudyRoomPage() {
 
     show(
       {
-        title: "Xác nhận xóa",
-        message: `Bạn có chắc muốn xóa phòng "${roomName}"? Hành động này không thể hoàn tác.`,
+        title: t("dialogs.delete.title"),
+        message: t("dialogs.delete.message", { room: roomName }),
         icon: "warning",
-        confirmText: "Xóa",
-        cancelText: "Hủy",
+        confirmText: t("dialogs.delete.confirm"),
+        cancelText: t("dialogs.delete.cancel"),
         confirmColor: "red",
       },
       async () => {
@@ -443,11 +454,13 @@ export default function CreateStudyRoomPage() {
             name: user.name || "",
             role: user.role || "admin",
           });
-          toast.success(`Đã xóa phòng "${roomName}"`);
+          toast.success(t("toast.deleteSuccess", { room: roomName }));
           await reload();
         } catch (e: any) {
           const errorMsg =
-            e?.message || e?.response?.data?.message || "Xóa phòng thất bại";
+            e?.message ||
+            e?.response?.data?.message ||
+            t("toast.deleteError");
           toast.error(errorMsg);
           console.error("Delete room error:", e);
         } finally {
@@ -465,7 +478,7 @@ export default function CreateStudyRoomPage() {
             <Loader2 className="h-6 w-6 animate-spin text-sky-600 dark:text-sky-400" />
           </div>
           <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            Đang tải…
+            {t("page.loading")}
           </p>
         </div>
       </div>
@@ -481,10 +494,10 @@ export default function CreateStudyRoomPage() {
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-                  Phòng học
+                  {pageT("hero.title")}
                 </h1>
                 <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  Theo dõi phòng đang mở, tạo phòng hoặc tham gia khi có liên kết.
+                  {pageT("hero.description")}
                 </p>
               </div>
 
@@ -496,8 +509,10 @@ export default function CreateStudyRoomPage() {
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
                   >
                     <Plus className="h-4 w-4" />
-                    <span className="hidden sm:inline">Tạo phòng</span>
-                    <span className="sm:hidden">Tạo</span>
+                    <span className="hidden sm:inline">
+                      {headerT("create.full")}
+                    </span>
+                    <span className="sm:hidden">{headerT("create.short")}</span>
                   </button>
                 )}
 
@@ -516,8 +531,12 @@ export default function CreateStudyRoomPage() {
                   ) : (
                     <RefreshCw className="h-4 w-4" />
                   )}
-                  <span className="hidden sm:inline">Làm mới</span>
-                  <span className="sm:hidden">Refresh</span>
+                  <span className="hidden sm:inline">
+                    {headerT("refresh.full")}
+                  </span>
+                  <span className="sm:hidden">
+                    {headerT("refresh.short")}
+                  </span>
                 </button>
               </div>
             </div>
@@ -538,7 +557,7 @@ export default function CreateStudyRoomPage() {
                   onCreated={() => {
                     setShowCreateModal(false);
                     reload();
-                    toast.success("Tạo phòng thành công!");
+                    toast.success(createT("toast.modalSuccess"));
                   }}
                   onCancel={() => setShowCreateModal(false)}
                 />
@@ -560,29 +579,27 @@ export default function CreateStudyRoomPage() {
                   {/* Phần cho học viên */}
                   <div className="space-y-1">
                     <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700/90 dark:text-amber-300">
-                      Dành cho học viên
+                      {pageT("notice.student.badge")}
                     </p>
                     <h3 className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white">
-                      Tài khoản của bạn chỉ dùng để tham gia phòng học
+                      {pageT("notice.student.title")}
                     </h3>
                     <p className="text-xs sm:text-sm leading-relaxed text-zinc-800 dark:text-zinc-300">
-                      Chỉ <strong>giáo viên</strong> và{" "}
-                      <strong>quản trị viên</strong> mới có thể tạo phòng trực
-                      tuyến. Khi giáo viên mở phòng, bạn có thể:
+                      {pageT.rich("notice.student.description", {
+                        strong: (chunks) => <strong>{chunks}</strong>,
+                      })}
                     </p>
                     <ul className="mt-1 space-y-1 text-xs sm:text-sm text-zinc-800 dark:text-zinc-300">
                       <li className="flex gap-2">
                         <span className="mt-[5px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
-                        <span>
-                          Nhận link tham gia phòng từ giáo viên (qua chat,
-                          email,…).
-                        </span>
+                        <span>{pageT("notice.student.tips.link")}</span>
                       </li>
                       <li className="flex gap-2">
                         <span className="mt-[5px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
                         <span>
-                          Hoặc chọn phòng trong mục <b>“Danh sách phòng”</b> bên
-                          dưới nếu đang mở.
+                          {pageT.rich("notice.student.tips.list", {
+                            highlight: (chunks) => <b>{chunks}</b>,
+                          })}
                         </span>
                       </li>
                     </ul>
@@ -594,12 +611,10 @@ export default function CreateStudyRoomPage() {
                   {/* Phần cho giáo viên – gom chung trong nền vàng */}
                   <div className="space-y-2 text-xs sm:text-sm">
                     <p className="font-medium text-zinc-900 dark:text-zinc-50">
-                      Bạn là giáo viên TOEIC / IELTS?
+                      {pageT("notice.teacher.title")}
                     </p>
                     <p className="text-[11px] sm:text-xs leading-relaxed text-zinc-800 dark:text-zinc-300">
-                      Nếu bạn có kinh nghiệm giảng dạy và muốn mở lớp trên nền
-                      tảng này, hãy gửi thông tin để admin xem xét và cấp quyền
-                      giáo viên nếu hồ sơ phù hợp.
+                      {pageT("notice.teacher.description")}
                     </p>
 
                     <Link
@@ -607,7 +622,7 @@ export default function CreateStudyRoomPage() {
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 hover:shadow-md dark:bg-amber-500 dark:hover:bg-amber-400"
                     >
                       <Users className="h-4 w-4" />
-                      Gửi thông tin đăng ký giáo viên
+                      {pageT("notice.teacher.cta")}
                     </Link>
                   </div>
                 </div>
@@ -628,7 +643,7 @@ export default function CreateStudyRoomPage() {
                     onClick={reload}
                     className="text-xs text-red-600 dark:text-red-400 hover:underline"
                   >
-                    Thử lại ngay
+                    {pageT("errors.retry")}
                   </button>
                 </div>
               </div>
@@ -640,7 +655,7 @@ export default function CreateStudyRoomPage() {
             {/* Header */}
             <div className="flex items-center gap-2">
               <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-                Danh sách phòng
+                {pageT("list.title")}
               </h2>
               <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                 {rooms.length}
@@ -655,14 +670,13 @@ export default function CreateStudyRoomPage() {
                 </div>
 
                 <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-                  Chưa có phòng nào
+                  {pageT("list.empty.title")}
                 </h3>
 
                 {canCreate ? (
                   <>
                     <p className="mb-4 max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
-                      Bạn chưa tạo phòng học nào. Hãy mở phòng đầu tiên để học
-                      TOEIC cùng học viên.
+                      {pageT("list.empty.creator")}
                     </p>
                     {/* <button
                       onClick={() => setShowCreateModal(true)}
@@ -674,8 +688,7 @@ export default function CreateStudyRoomPage() {
                   </>
                 ) : (
                   <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
-                    Hiện chưa có phòng học nào được mở. Hãy quay lại sau hoặc
-                    liên hệ giáo viên/quản trị viên.
+                    {pageT("list.empty.student")}
                   </p>
                 )}
               </div>
@@ -696,13 +709,15 @@ export default function CreateStudyRoomPage() {
                           </h3>
                           <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
                             <Activity className="h-3 w-3" />
-                            {r.numParticipants} online
+                            {pageT("list.card.online", {
+                              count: r.numParticipants,
+                            })}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-500">
                           <Clock className="h-3.5 w-3.5" />
-                          {new Date(r.createdAt).toLocaleString("vi-VN")}
+                          {dateFormatter.format(new Date(r.createdAt))}
                         </div>
                       </div>
 
@@ -713,7 +728,7 @@ export default function CreateStudyRoomPage() {
                           className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400 sm:w-auto"
                         >
                           <ExternalLink className="h-4 w-4" />
-                          Vào phòng
+                          {pageT("list.card.join")}
                         </Link>
 
                         {canDelete && (
@@ -730,12 +745,14 @@ export default function CreateStudyRoomPage() {
                             {deleting === r.roomName ? (
                               <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Đang xóa
+                                {pageT("list.card.deleting")}
                               </>
                             ) : (
                               <>
                                 <Trash2 className="h-4 w-4" />
-                                <span className="hidden sm:inline">Xóa</span>
+                                <span className="hidden sm:inline">
+                                  {pageT("list.card.delete")}
+                                </span>
                               </>
                             )}
                           </button>

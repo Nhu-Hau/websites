@@ -278,6 +278,186 @@
       "secondaryCta": "Khám phá bộ đề"
     }
   },
+  "study": {
+    "header": {
+      "create": {
+        "full": "Tạo phòng",
+        "short": "Tạo"
+      },
+      "refresh": {
+        "full": "Làm mới",
+        "short": "Refresh"
+      }
+    },
+    "createRoom": {
+      "validation": {
+        "empty": "Tên phòng không được để trống.",
+        "min": "Tên phòng phải có ít nhất 3 ký tự.",
+        "max": "Tên phòng tối đa 32 ký tự.",
+        "pattern": "Chỉ dùng chữ thường, số và dấu gạch (-), không bắt đầu bằng dấu gạch."
+      },
+      "toast": {
+        "invalidName": "Tên phòng không hợp lệ",
+        "noPermission": {
+          "title": "Bạn không có quyền tạo phòng học",
+          "description": "Chỉ giáo viên và quản trị viên mới có thể tạo phòng học livestream."
+        },
+        "createSuccess": {
+          "title": "Phòng đã được tạo",
+          "description": "Đang chuyển đến phòng học..."
+        },
+        "createError": "Không thể tạo phòng. Vui lòng thử lại.",
+        "genericError": "Có lỗi xảy ra",
+        "modalSuccess": "Tạo phòng thành công!",
+        "listError": "Không thể tải danh sách phòng",
+        "autoDelete": "Đã tự động xóa phòng trống sau 5 phút: {room}",
+        "deleteSuccess": "Đã xóa phòng \"{room}\"",
+        "deleteError": "Không thể xóa phòng"
+      },
+      "dialogs": {
+        "delete": {
+          "title": "Xóa phòng học?",
+          "message": "Bạn có chắc muốn xóa phòng \"{room}\"? Hành động này không thể hoàn tác.",
+          "confirm": "Xóa",
+          "cancel": "Hủy"
+        }
+      },
+      "states": {
+        "unauthenticated": {
+          "title": "Vui lòng đăng nhập",
+          "description": "Đăng nhập để tạo phòng. Chỉ giáo viên và quản trị viên mới có thể mở phòng."
+        },
+        "forbidden": {
+          "title": "Bạn chưa được cấp quyền",
+          "roleLabel": "Vai trò hiện tại:",
+          "contact": "Liên hệ quản trị viên để được cấp quyền giáo viên."
+        }
+      },
+      "form": {
+        "title": "Tạo phòng học mới",
+        "description": "Nhập tên phòng để bắt đầu buổi học trực tuyến.",
+        "nameLabel": "Tên phòng học",
+        "placeholder": "toeic-lr-class",
+        "helperValid": "Tên phòng hợp lệ.",
+        "cancel": "Hủy",
+        "submit": "Tạo phòng",
+        "submitting": "Đang tạo..."
+      },
+      "page": {
+        "loading": "Đang tải..."
+      }
+    },
+    "rooms": {
+      "hero": {
+        "title": "Phòng học",
+        "description": "Theo dõi phòng đang mở, tạo phòng mới hoặc tham gia bằng liên kết."
+      },
+      "notice": {
+        "student": {
+          "badge": "Dành cho học viên",
+          "title": "Tài khoản của bạn chỉ dùng để tham gia phòng",
+          "description": "Chỉ <strong>giáo viên</strong> và <strong>quản trị viên</strong> mới có thể tạo phòng livestream. Khi giáo viên mở phòng, bạn có thể:",
+          "tips": {
+            "link": "Nhận link tham gia phòng từ giáo viên (chat, email,...).",
+            "list": "Hoặc chọn phòng trong mục <highlight>“Danh sách phòng”</highlight> bên dưới nếu đang mở."
+          }
+        },
+        "teacher": {
+          "title": "Bạn là giáo viên TOEIC / IELTS?",
+          "description": "Nếu bạn có kinh nghiệm giảng dạy và muốn mở lớp trên nền tảng này, hãy gửi thông tin để admin xem xét và cấp quyền giáo viên.",
+          "cta": "Gửi đăng ký giáo viên"
+        }
+      },
+      "errors": {
+        "retry": "Thử lại ngay"
+      },
+      "list": {
+        "title": "Danh sách phòng",
+        "empty": {
+          "title": "Chưa có phòng nào",
+          "creator": "Bạn chưa tạo phòng học nào. Hãy mở phòng đầu tiên để học TOEIC cùng học viên.",
+          "student": "Hiện chưa có phòng học nào được mở. Hãy quay lại sau hoặc liên hệ giáo viên."
+        },
+        "card": {
+          "online": "{count} đang online",
+          "join": "Vào phòng",
+          "deleting": "Đang xóa...",
+          "delete": "Xóa"
+        }
+      }
+    }
+  },
+  "layout": {
+    "footer": {
+      "brand": {
+        "tagline": "Luyện TOEIC cá nhân hóa",
+        "description": "ToeicPrep kết hợp Placement Test, luyện tập thích ứng và phòng học trực tuyến để bạn luôn biết nên học gì tiếp theo.",
+        "stats": {
+          "learners": "35.000+ học viên",
+          "scoreGain": "+180 điểm trung bình"
+        }
+      },
+      "contact": {
+        "title": "Liên hệ",
+        "emailLabel": "Email",
+        "emailValue": "hi@toeicprep.com",
+        "addressLabel": "Studio",
+        "addressValue": "TP. Hồ Chí Minh, Việt Nam",
+        "hoursLabel": "Giờ hỗ trợ",
+        "hoursValue": "09:00–21:00 (GMT+7)"
+      },
+      "socials": {
+        "title": "Kết nối",
+        "twitter": "Twitter",
+        "youtube": "YouTube",
+        "instagram": "Instagram",
+        "github": "GitHub",
+        "aria": "ToeicPrep trên {network}"
+      },
+      "sections": {
+        "product": {
+          "title": "Sản phẩm",
+          "links": {
+            "placement": "Bài Placement Test",
+            "practice": "Luyện theo Part",
+            "vocabulary": "Phòng từ vựng",
+            "progress": "Báo cáo tiến độ",
+            "pricing": "Gói giá"
+          }
+        },
+        "study": {
+          "title": "Chế độ học",
+          "links": {
+            "studyRooms": "Phòng học live",
+            "createRoom": "Tạo phòng học",
+            "teacherRegister": "Đăng ký giáo viên",
+            "mobileStudy": "Chế độ học mobile",
+            "mobilePractice": "Chế độ luyện tập mobile"
+          }
+        },
+        "community": {
+          "title": "Cộng đồng & nội dung",
+          "links": {
+            "feed": "Bảng tin cộng đồng",
+            "groups": "Nhóm học",
+            "explore": "Khám phá chủ đề",
+            "trending": "Bài viết nổi bật",
+            "news": "Tin tức"
+          }
+        }
+      },
+      "language": {
+        "title": "Ngôn ngữ",
+        "options": {
+          "vi": "Tiếng Việt",
+          "en": "English"
+        }
+      },
+      "legal": {
+        "rights": "© {year} ToeicPrep. Giữ toàn quyền."
+      }
+    }
+  },
   "navbar": {
     "practice": {
       "label": "Luyện L&R",
@@ -517,6 +697,40 @@
         "delete": "Xóa bình luận"
       }
     },
+    "postDetail": {
+      "toast": {
+        "loadError": "Không thể tải bài viết",
+        "likeError": "Không thể thích bài viết",
+        "commentSuccess": "Đã đăng bình luận",
+        "commentError": "Không thể đăng bình luận",
+        "deleteError": "Không thể xóa bài viết"
+      },
+      "commentInput": {
+        "required": "Vui lòng nhập nội dung hoặc đính kèm tệp",
+        "imageAlt": "Ảnh đính kèm bình luận",
+        "fileFallback": "Tệp",
+        "removeAttachmentAria": "Xóa đính kèm",
+        "placeholder": "Viết bình luận...",
+        "attachAria": "Đính kèm tệp",
+        "submitAria": "Đăng bình luận"
+      },
+      "loading": "Đang tải bài viết...",
+      "edit": {
+        "cancel": "Hủy"
+      },
+      "shared": {
+        "viewOriginal": "Đã chia sẻ · Xem bài gốc",
+        "label": "Đã chia sẻ"
+      },
+      "original": {
+        "viewPost": "Xem bài gốc →"
+      },
+      "comments": {
+        "title": "Bình luận ({count})",
+        "emptyTitle": "Chưa có bình luận",
+        "emptyDescription": "Hãy là người đầu tiên lên tiếng nhé."
+      }
+    },
     "explore": {
       "header": {
         "title": "Khám phá",
@@ -706,6 +920,88 @@
           "memberDescription": "Hãy là người đầu tiên chia sẻ bài viết cho nhóm nhé!",
           "guestDescription": "Hiện chưa có bài viết nào trong nhóm này."
         }
+      }
+    },
+    "profile": {
+      "loading": "Đang tải hồ sơ...",
+      "avatarAlt": "Ảnh đại diện",
+      "fallbackName": "Người dùng",
+      "uploading": "Đang cập nhật ảnh...",
+      "toast": {
+        "follow": {
+          "success": "Đã theo dõi",
+          "error": "Không thể theo dõi người dùng này"
+        },
+        "unfollow": {
+          "success": "Đã bỏ theo dõi",
+          "error": "Không thể bỏ theo dõi người dùng này"
+        },
+        "cover": {
+          "removeSuccess": "Đã xóa ảnh bìa",
+          "removeError": "Không thể xóa ảnh bìa",
+          "updateSuccess": "Đã cập nhật ảnh bìa",
+          "updateError": "Không thể cập nhật ảnh bìa"
+        },
+        "avatar": {
+          "removeSuccess": "Đã xóa ảnh đại diện",
+          "removeError": "Không thể xóa ảnh đại diện",
+          "updateSuccess": "Đã cập nhật ảnh đại diện",
+          "updateError": "Không thể cập nhật ảnh đại diện"
+        }
+      },
+      "upload": {
+        "invalidImage": "Vui lòng chọn tệp ảnh hợp lệ",
+        "readError": "Không thể đọc tệp ảnh"
+      },
+      "cover": {
+        "removeConfirm": {
+          "title": "Xóa ảnh bìa?",
+          "message": "Ảnh bìa sẽ được xóa khỏi hồ sơ của bạn.",
+          "confirm": "Xóa",
+          "cancel": "Hủy"
+        }
+      },
+      "avatar": {
+        "actions": {
+          "update": "Cập nhật ảnh",
+          "remove": "Xóa ảnh"
+        },
+        "removeConfirm": {
+          "title": "Xóa ảnh đại diện?",
+          "message": "Bạn có chắc muốn xóa ảnh đại diện?",
+          "confirm": "Xóa",
+          "cancel": "Hủy"
+        }
+      },
+      "actions": {
+        "editProfile": "Chỉnh sửa hồ sơ",
+        "processing": "Đang xử lý...",
+        "unfollow": "Bỏ theo dõi",
+        "follow": "Theo dõi"
+      },
+      "stats": {
+        "posts": "bài viết",
+        "followers": "người theo dõi",
+        "following": "đang theo dõi"
+      },
+      "goal": {
+        "title": "Mục tiêu TOEIC",
+        "current": "Điểm hiện tại",
+        "target": "Mục tiêu"
+      },
+      "badges": {
+        "title": "Bộ sưu tập huy hiệu",
+        "progress": "{unlocked} / {total} huy hiệu đã mở khóa",
+        "pill": "{count} huy hiệu",
+        "emptyTitle": "Chưa có huy hiệu nào",
+        "emptyDescription": "Luyện tập đều đặn, giữ streak để mở khóa huy hiệu đầu tiên.",
+        "lockedTitle": "Huy hiệu chưa mở",
+        "lockedTooltip": "Chưa đạt: {description}"
+      },
+      "posts": {
+        "title": "Bài viết",
+        "emptyTitle": "Chưa có bài viết",
+        "emptyDescription": "Người dùng này chưa đăng bài nào trong cộng đồng."
       }
     }
   },

@@ -26,6 +26,7 @@ import ImageCropper from "./ImageCropper";
 import FollowingModal from "./FollowingModal";
 import FollowersModal from "./FollowersModal";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
+import { useTranslations } from "next-intl";
 import {
   BADGE_CONFIG,
   type BadgeType,
@@ -76,6 +77,7 @@ export default function ProfileClient({
   const basePrefix = useBasePrefix();
   const { user: currentUser, refresh } = useAuth();
   const isOwnProfile = currentUser?.id === userId;
+  const t = useTranslations("community.profile");
 
   const [profile, setProfile] = React.useState<Profile | null | undefined>(
     initialProfile
@@ -137,12 +139,12 @@ export default function ProfileClient({
             followersCount: (p.followersCount || 0) + 1,
           };
         });
-        toast.success("Đã theo dõi");
+        toast.success(t("toast.follow.success"));
       } else {
-        toast.error("Có lỗi xảy ra khi theo dõi");
+        toast.error(t("toast.follow.error"));
       }
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi theo dõi");
+      toast.error(t("toast.follow.error"));
     } finally {
       setFollowLoading(false);
     }
@@ -168,12 +170,12 @@ export default function ProfileClient({
             followersCount: Math.max(0, (p.followersCount || 0) - 1),
           };
         });
-        toast.success("Đã bỏ theo dõi");
+        toast.success(t("toast.unfollow.success"));
       } else {
-        toast.error("Có lỗi xảy ra khi bỏ theo dõi");
+        toast.error(t("toast.unfollow.error"));
       }
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi bỏ theo dõi");
+      toast.error(t("toast.unfollow.error"));
     } finally {
       setFollowLoading(false);
     }
@@ -199,7 +201,7 @@ export default function ProfileClient({
         <div className="flex flex-col items-center gap-3">
           <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Đang tải hồ sơ...
+            {t("loading")}
           </p>
         </div>
       </div>
@@ -254,7 +256,7 @@ export default function ProfileClient({
 
         {uploading && (
           <div className="pointer-events-none absolute left-4 top-4 rounded-full bg-zinc-900/70 px-3 py-1.5 text-xs font-medium text-zinc-50 backdrop-blur">
-            Đang cập nhật ảnh...
+            {t("uploading")}
           </div>
         )}
 
@@ -265,11 +267,11 @@ export default function ProfileClient({
                 onClick={() => {
                   confirmModal.show(
                     {
-                      title: "Xóa ảnh bìa?",
-                      message: "Bạn có chắc muốn xóa ảnh bìa?",
+                      title: t("cover.removeConfirm.title"),
+                      message: t("cover.removeConfirm.message"),
                       icon: "warning",
-                      confirmText: "Xóa",
-                      cancelText: "Hủy",
+                      confirmText: t("cover.removeConfirm.confirm"),
+                      cancelText: t("cover.removeConfirm.cancel"),
                       confirmColor: "red",
                     },
                     async () => {
@@ -284,12 +286,14 @@ export default function ProfileClient({
                           }
                         );
                         if (!res.ok) {
-                          throw new Error("Failed to delete cover image");
+                          throw new Error("FAILED_DELETE_COVER");
                         }
                         setProfile((p) => (p ? { ...p, coverImage: null } : p));
-                        toast.success("Đã xóa ảnh bìa");
+                        toast.success(t("toast.cover.removeSuccess"));
                       } catch (error: any) {
-                        toast.error(error?.message || "Lỗi khi xóa ảnh bìa");
+                        toast.error(
+                          error?.message || t("toast.cover.removeError")
+                        );
                       }
                     }
                   );
@@ -328,7 +332,7 @@ export default function ProfileClient({
                     ].includes(fileExtension);
 
                   if (!isImage) {
-                    toast.error("Vui lòng chọn file ảnh hợp lệ");
+                    toast.error(t("upload.invalidImage"));
                     return;
                   }
 
@@ -339,7 +343,7 @@ export default function ProfileClient({
                     setShowCropper(true);
                   };
                   reader.onerror = () => {
-                    toast.error("Không thể đọc file ảnh");
+                    toast.error(t("upload.readError"));
                   };
                   reader.readAsDataURL(file);
                 }}
@@ -363,7 +367,7 @@ export default function ProfileClient({
                 {avatarUrl ? (
                   <Image
                     src={avatarUrl}
-                    alt={profile.name || "User"}
+                    alt={profile.name || t("avatarAlt")}
                     fill
                     className="rounded-full object-cover"
                     unoptimized
@@ -379,7 +383,7 @@ export default function ProfileClient({
                     className="fixed inset-0 z-40"
                     onClick={() => setShowAvatarMenu(false)}
                   />
-                  <div className="absolute left-0 top-full z-50 mt-2 min-w-[200px] rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="absolute left-0 top-full z-50 mt-2 min-w-[200px] rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
                     {/* Upload new avatar */}
                     <label className="flex cursor-pointer items-center gap-3 px-4 py-2 text-sm text-zinc-900 transition-colors hover:bg-zinc-100 dark:text-zinc-50 dark:hover:bg-zinc-800">
                       <input
@@ -410,7 +414,7 @@ export default function ProfileClient({
                             ].includes(fileExtension);
 
                           if (!isImage) {
-                            toast.error("Vui lòng chọn file ảnh hợp lệ");
+                            toast.error(t("upload.invalidImage"));
                             return;
                           }
 
@@ -422,13 +426,13 @@ export default function ProfileClient({
                             setShowCropper(true);
                           };
                           reader.onerror = () => {
-                            toast.error("Không thể đọc file ảnh");
+                            toast.error(t("upload.readError"));
                           };
                           reader.readAsDataURL(file);
                         }}
                       />
                       <ImageIcon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-                      <span>Cập nhật ảnh</span>
+                      <span>{t("avatar.actions.update")}</span>
                     </label>
 
                     {/* Delete avatar */}
@@ -438,11 +442,11 @@ export default function ProfileClient({
                           setShowAvatarMenu(false);
                           confirmModal.show(
                             {
-                              title: "Xóa ảnh đại diện?",
-                              message: "Bạn có chắc muốn xóa ảnh đại diện?",
+                              title: t("avatar.removeConfirm.title"),
+                              message: t("avatar.removeConfirm.message"),
                               icon: "warning",
-                              confirmText: "Xóa",
-                              cancelText: "Hủy",
+                              confirmText: t("avatar.removeConfirm.confirm"),
+                              cancelText: t("avatar.removeConfirm.cancel"),
                               confirmColor: "red",
                             },
                             async () => {
@@ -455,7 +459,7 @@ export default function ProfileClient({
                                   }
                                 );
                                 if (!res.ok)
-                                  throw new Error("Failed to delete avatar");
+                                  throw new Error("FAILED_DELETE_AVATAR");
                                 setProfile((p) =>
                                   p ? { ...p, picture: undefined } : p
                                 );
@@ -467,10 +471,10 @@ export default function ProfileClient({
                                   );
                                 }
                                 refresh();
-                                toast.success("Đã xóa avatar");
+                                toast.success(t("toast.avatar.removeSuccess"));
                               } catch (error: any) {
                                 toast.error(
-                                  error?.message || "Lỗi khi xóa avatar"
+                                  error?.message || t("toast.avatar.removeError")
                                 );
                               }
                             }
@@ -479,7 +483,7 @@ export default function ProfileClient({
                         className="flex w-full items-center gap-3 rounded-b-xl px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30"
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span>Xóa ảnh</span>
+                        <span>{t("avatar.actions.remove")}</span>
                       </button>
                     )}
                   </div>
@@ -491,7 +495,7 @@ export default function ProfileClient({
               {avatarUrl ? (
                 <Image
                   src={avatarUrl}
-                  alt={profile.name || "User"}
+                  alt={profile.name || t("avatarAlt")}
                   fill
                   className="rounded-full object-cover"
                   unoptimized
@@ -507,7 +511,7 @@ export default function ProfileClient({
         <div className="flex flex-1 flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div className="flex-1">
             <h1 className="mb-1 text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              {profile.name || "User"}
+              {profile.name || t("fallbackName")}
             </h1>
 
             {profile.bio && (
@@ -522,7 +526,7 @@ export default function ProfileClient({
                   {profile.postsCount || 0}
                 </span>
                 <span className="ml-1 text-zinc-600 dark:text-zinc-400">
-                  bài viết
+                  {t("stats.posts")}
                 </span>
               </div>
               <button
@@ -534,7 +538,7 @@ export default function ProfileClient({
                   {profile.followersCount || 0}
                 </span>
                 <span className="text-zinc-600 dark:text-zinc-400">
-                  người theo dõi
+                  {t("stats.followers")}
                 </span>
               </button>
               <button
@@ -546,7 +550,7 @@ export default function ProfileClient({
                   {profile.followingCount || 0}
                 </span>
                 <span className="text-zinc-600 dark:text-zinc-400">
-                  đang theo dõi
+                  {t("stats.following")}
                 </span>
               </button>
             </div>
@@ -559,7 +563,7 @@ export default function ProfileClient({
                 className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-blue-600 dark:hover:bg-zinc-800"
               >
                 <Settings className="h-4 w-4" />
-                Chỉnh sửa hồ sơ
+                {t("actions.editProfile")}
               </button>
             ) : (
               <>
@@ -570,7 +574,9 @@ export default function ProfileClient({
                     className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm transition-all hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-rose-500 dark:hover:bg-rose-950/30"
                   >
                     <UserMinus className="h-4 w-4" />
-                    {followLoading ? "Đang xử lý..." : "Bỏ theo dõi"}
+                    {followLoading
+                      ? t("actions.processing")
+                      : t("actions.unfollow")}
                   </button>
                 ) : (
                   <button
@@ -579,7 +585,9 @@ export default function ProfileClient({
                     className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-blue-500 dark:hover:bg-blue-600"
                   >
                     <UserPlus className="h-4 w-4" />
-                    {followLoading ? "Đang xử lý..." : "Theo dõi"}
+                    {followLoading
+                      ? t("actions.processing")
+                      : t("actions.follow")}
                   </button>
                 )}
               </>
@@ -592,13 +600,13 @@ export default function ProfileClient({
       {profile.toeicGoal && (
         <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-5 shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
           <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-            Mục tiêu TOEIC
+            {t("goal.title")}
           </h2>
           <div className="flex flex-wrap items-center gap-6 text-sm">
             {profile.toeicGoal.startScore && (
               <div>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Điểm hiện tại
+                  {t("goal.current")}
                 </p>
                 <p className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
                   {profile.toeicGoal.startScore}
@@ -608,7 +616,7 @@ export default function ProfileClient({
             {profile.toeicGoal.targetScore && (
               <div>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Mục tiêu
+                  {t("goal.target")}
                 </p>
                 <p className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
                   {profile.toeicGoal.targetScore}
@@ -625,17 +633,20 @@ export default function ProfileClient({
         <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <h2 className="truncate text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              Bộ sưu tập huy hiệu
+              {t("badges.title")}
             </h2>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              {earnedBadges.length} / {totalBadges} huy hiệu đã mở khóa
+              {t("badges.progress", {
+                unlocked: earnedBadges.length,
+                total: totalBadges,
+              })}
             </p>
           </div>
 
           {earnedBadges.length > 0 && (
             <div className="mt-1 inline-flex items-center gap-1 self-start rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-[11px] font-semibold text-zinc-700 shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 sm:mt-0 sm:self-auto">
               <Star className="h-3.5 w-3.5" />
-              <span>{earnedBadges.length} huy hiệu</span>
+              <span>{t("badges.pill", { count: earnedBadges.length })}</span>
             </div>
           )}
         </div>
@@ -647,11 +658,10 @@ export default function ProfileClient({
               <Trophy className="h-7 w-7 sm:h-8 sm:w-8" />
             </div>
             <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-              Chưa có huy hiệu nào
+              {t("badges.emptyTitle")}
             </h3>
             <p className="mb-1 max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
-              Làm bài đều đặn, giữ streak và đặt mục tiêu để mở khóa huy hiệu
-              đầu tiên.
+              {t("badges.emptyDescription")}
             </p>
           </div>
         ) : (
@@ -722,7 +732,7 @@ export default function ProfileClient({
             {lockedBadgeTypes.length > 0 && (
               <div className="border-t border-zinc-200/80 pt-4 dark:border-zinc-800/80">
                 <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                  Huy hiệu chưa mở khóa
+                  {t("badges.lockedTitle")}
                 </p>
                 <div className="flex flex-wrap gap-2.5 sm:gap-3">
                   {lockedBadgeTypes.map((type) => {
@@ -736,7 +746,9 @@ export default function ProfileClient({
                       <React.Fragment key={type}>
                         <div
                           data-tooltip-id={tooltipId}
-                          data-tooltip-content={`Chưa đạt: ${config.description}`}
+                          data-tooltip-content={t("badges.lockedTooltip", {
+                            description: config.description,
+                          })}
                           className={`
                             group relative flex h-10 w-10 items-center justify-center overflow-hidden
                             rounded-2xl bg-gradient-to-br from-slate-200 to-slate-400
@@ -773,7 +785,7 @@ export default function ProfileClient({
       {/* Posts */}
       <div className="space-y-4">
         <h2 className="truncate text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Bài viết
+          {t("posts.title")}
         </h2>
         {posts.length > 0 ? (
           <div className="space-y-4">
@@ -788,16 +800,15 @@ export default function ProfileClient({
             ))}
           </div>
         ) : (
-          // 🔄 Empty posts state – đồng bộ 100% với community/Groups
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/80 bg-white/95 px-4 sm:px-6 py-12 sm:py-16 text-center shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900/95">
             <div className="mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-sky-50 text-sky-500 dark:bg-sky-900/30 dark:text-sky-300">
               <FileText className="h-7 w-7 sm:h-8 sm:w-8" />
             </div>
             <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-              Chưa có bài viết nào
+              {t("posts.emptyTitle")}
             </h3>
             <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
-              Người dùng này chưa đăng bài viết nào trong cộng đồng.
+              {t("posts.emptyDescription")}
             </p>
           </div>
         )}
@@ -840,7 +851,7 @@ export default function ProfileClient({
                 if (!uploadRes.ok) {
                   const errorData = await uploadRes.json().catch(() => ({}));
                   throw new Error(
-                    errorData.message || "Upload avatar thất bại"
+                    errorData.message || t("toast.avatar.updateError")
                   );
                 }
 
@@ -857,7 +868,7 @@ export default function ProfileClient({
                   );
                 }
                 refresh();
-                toast.success("Đã cập nhật ảnh đại diện");
+                toast.success(t("toast.avatar.updateSuccess"));
               } else {
                 // iOS fix: Convert dataURL to blob properly
                 const response = await fetch(croppedImage);
@@ -883,7 +894,8 @@ export default function ProfileClient({
                   }
                 );
 
-                if (!uploadRes.ok) throw new Error("Upload failed");
+                if (!uploadRes.ok)
+                  throw new Error(t("toast.cover.updateError"));
                 const uploadData = await uploadRes.json();
 
                 const updateRes = await fetch(
@@ -896,20 +908,21 @@ export default function ProfileClient({
                   }
                 );
 
-                if (!updateRes.ok) throw new Error("Update failed");
+                if (!updateRes.ok)
+                  throw new Error(t("toast.cover.updateError"));
                 const data = await updateRes.json();
                 setProfile((p) =>
                   p ? { ...p, coverImage: data.coverImage } : p
                 );
-                toast.success("Đã cập nhật ảnh bìa");
+                toast.success(t("toast.cover.updateSuccess"));
               }
             } catch (error: any) {
               console.error("[ProfileClient] Upload error:", error);
               const errorMessage =
                 error?.message ||
                 (cropperType === "cover"
-                  ? "Lỗi khi cập nhật ảnh bìa"
-                  : "Lỗi khi cập nhật ảnh đại diện");
+                  ? t("toast.cover.updateError")
+                  : t("toast.avatar.updateError"));
               toast.error(errorMessage);
             } finally {
               setUploading(false);

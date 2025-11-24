@@ -278,6 +278,77 @@
       "secondaryCta": "Explore practice sets"
     }
   },
+  "layout": {
+    "footer": {
+      "brand": {
+        "tagline": "Personalized TOEIC training",
+        "description": "ToeicPrep blends placement tests, adaptive practice, and live study rooms so you always know what to study next.",
+        "stats": {
+          "learners": "35K+ learners",
+          "scoreGain": "+180 avg score gain"
+        }
+      },
+      "contact": {
+        "title": "Contact",
+        "emailLabel": "Email",
+        "emailValue": "hi@toeicprep.com",
+        "addressLabel": "Studio",
+        "addressValue": "Ho Chi Minh City, Vietnam",
+        "hoursLabel": "Support hours",
+        "hoursValue": "09:00–21:00 (GMT+7)"
+      },
+      "socials": {
+        "title": "Stay connected",
+        "twitter": "Twitter",
+        "youtube": "YouTube",
+        "instagram": "Instagram",
+        "github": "GitHub",
+        "aria": "ToeicPrep on {network}"
+      },
+      "sections": {
+        "product": {
+          "title": "Product",
+          "links": {
+            "placement": "Placement Test",
+            "practice": "Practice by part",
+            "vocabulary": "Vocabulary lab",
+            "progress": "Progress analytics",
+            "pricing": "Pricing plans"
+          }
+        },
+        "study": {
+          "title": "Study modes",
+          "links": {
+            "studyRooms": "Study rooms",
+            "createRoom": "Create a room",
+            "teacherRegister": "Become a teacher",
+            "mobileStudy": "Mobile study view",
+            "mobilePractice": "Mobile practice view"
+          }
+        },
+        "community": {
+          "title": "Community & content",
+          "links": {
+            "feed": "Community feed",
+            "groups": "Study groups",
+            "explore": "Explore topics",
+            "trending": "Trending posts",
+            "news": "Newsroom"
+          }
+        }
+      },
+      "language": {
+        "title": "Language",
+        "options": {
+          "vi": "Vietnamese",
+          "en": "English"
+        }
+      },
+      "legal": {
+        "rights": "© {year} ToeicPrep. All rights reserved."
+      }
+    }
+  },
   "navbar": {
     "practice": {
       "label": "Practice L&R",
@@ -517,6 +588,40 @@
         "delete": "Delete comment"
       }
     },
+    "postDetail": {
+      "toast": {
+        "loadError": "Couldn't load the post",
+        "likeError": "Couldn't like the post",
+        "commentSuccess": "Comment posted",
+        "commentError": "Couldn't post the comment",
+        "deleteError": "Couldn't delete the post"
+      },
+      "commentInput": {
+        "required": "Please enter text or add an attachment",
+        "imageAlt": "Comment attachment",
+        "fileFallback": "File",
+        "removeAttachmentAria": "Remove attachment",
+        "placeholder": "Write a comment...",
+        "attachAria": "Attach file",
+        "submitAria": "Post comment"
+      },
+      "loading": "Loading post...",
+      "edit": {
+        "cancel": "Cancel"
+      },
+      "shared": {
+        "viewOriginal": "Shared post · View original",
+        "label": "Shared post"
+      },
+      "original": {
+        "viewPost": "View original →"
+      },
+      "comments": {
+        "title": "Comments ({count})",
+        "emptyTitle": "No comments yet",
+        "emptyDescription": "Be the first to start the conversation."
+      }
+    },
     "explore": {
       "header": {
         "title": "Explore community",
@@ -707,6 +812,88 @@
           "guestDescription": "This group doesn't have any posts yet."
         }
       }
+    },
+    "profile": {
+      "loading": "Loading profile...",
+      "avatarAlt": "Profile photo",
+      "fallbackName": "User",
+      "uploading": "Updating photo...",
+      "toast": {
+        "follow": {
+          "success": "You're now following this user",
+          "error": "Couldn't follow this user"
+        },
+        "unfollow": {
+          "success": "Unfollowed",
+          "error": "Couldn't unfollow this user"
+        },
+        "cover": {
+          "removeSuccess": "Cover photo removed",
+          "removeError": "Couldn't remove the cover photo",
+          "updateSuccess": "Cover photo updated",
+          "updateError": "Couldn't update the cover photo"
+        },
+        "avatar": {
+          "removeSuccess": "Avatar removed",
+          "removeError": "Couldn't remove the avatar",
+          "updateSuccess": "Avatar updated",
+          "updateError": "Couldn't update the avatar"
+        }
+      },
+      "upload": {
+        "invalidImage": "Please select a valid image file",
+        "readError": "Couldn't read the image file"
+      },
+      "cover": {
+        "removeConfirm": {
+          "title": "Remove cover photo?",
+          "message": "This action removes the cover photo for everyone.",
+          "confirm": "Remove",
+          "cancel": "Cancel"
+        }
+      },
+      "avatar": {
+        "actions": {
+          "update": "Update avatar",
+          "remove": "Remove avatar"
+        },
+        "removeConfirm": {
+          "title": "Remove avatar?",
+          "message": "Are you sure you want to remove your avatar?",
+          "confirm": "Remove",
+          "cancel": "Cancel"
+        }
+      },
+      "actions": {
+        "editProfile": "Edit profile",
+        "processing": "Processing...",
+        "unfollow": "Unfollow",
+        "follow": "Follow"
+      },
+      "stats": {
+        "posts": "posts",
+        "followers": "followers",
+        "following": "following"
+      },
+      "goal": {
+        "title": "TOEIC goal",
+        "current": "Current score",
+        "target": "Target"
+      },
+      "badges": {
+        "title": "Badge collection",
+        "progress": "{unlocked} / {total} badges unlocked",
+        "pill": "{count} badges",
+        "emptyTitle": "No badges yet",
+        "emptyDescription": "Keep practicing, stay on streak, and you'll unlock your first badge soon.",
+        "lockedTitle": "Locked badges",
+        "lockedTooltip": "Not unlocked yet: {description}"
+      },
+      "posts": {
+        "title": "Posts",
+        "emptyTitle": "No posts yet",
+        "emptyDescription": "This user hasn't posted in the community."
+      }
     }
   },
   "vocabulary": {
@@ -762,6 +949,115 @@
         "title": "Delete this term?",
         "message": "Remove the term from the set?",
         "confirm": "Delete term"
+      }
+    }
+  },
+  "study": {
+    "header": {
+      "create": {
+        "full": "Create room",
+        "short": "Create"
+      },
+      "refresh": {
+        "full": "Refresh",
+        "short": "Refresh"
+      }
+    },
+    "createRoom": {
+      "validation": {
+        "empty": "Room name cannot be empty.",
+        "min": "Room name must be at least 3 characters.",
+        "max": "Room name can be at most 32 characters.",
+        "pattern": "Use lowercase letters, numbers, and hyphens. Don't start with a hyphen."
+      },
+      "toast": {
+        "invalidName": "Room name is invalid",
+        "noPermission": {
+          "title": "You don't have permission",
+          "description": "Only teachers and admins can open live study rooms."
+        },
+        "createSuccess": {
+          "title": "Room created",
+          "description": "Redirecting you to the room..."
+        },
+        "createError": "Couldn't create the room. Please try again.",
+        "genericError": "Something went wrong",
+        "modalSuccess": "Room created successfully!",
+        "listError": "Couldn't load rooms",
+        "autoDelete": "Automatically closed an empty room after 5 minutes: {room}",
+        "deleteSuccess": "Room \"{room}\" deleted",
+        "deleteError": "Couldn't delete the room"
+      },
+      "dialogs": {
+        "delete": {
+          "title": "Delete this room?",
+          "message": "Are you sure you want to delete the room \"{room}\"? This action cannot be undone.",
+          "confirm": "Delete",
+          "cancel": "Cancel"
+        }
+      },
+      "states": {
+        "unauthenticated": {
+          "title": "Sign in required",
+          "description": "Please log in to create a room. Only teachers and admins can host sessions."
+        },
+        "forbidden": {
+          "title": "You can't create rooms",
+          "roleLabel": "Current role:",
+          "contact": "Contact an admin to request teacher access."
+        }
+      },
+      "form": {
+        "title": "Create a live study room",
+        "description": "Enter a URL-friendly room ID to start a session.",
+        "nameLabel": "Room name",
+        "placeholder": "toeic-lr-class",
+        "helperValid": "Looks good!",
+        "cancel": "Cancel",
+        "submit": "Create room",
+        "submitting": "Creating..."
+      },
+      "page": {
+        "loading": "Loading..."
+      }
+    },
+    "rooms": {
+      "hero": {
+        "title": "Study rooms",
+        "description": "Track live rooms, open your own, or join with a link."
+      },
+      "notice": {
+        "student": {
+          "badge": "For students",
+          "title": "Your account only joins rooms",
+          "description": "Only <strong>teachers</strong> and <strong>admins</strong> can open livestream rooms. When a teacher starts a room you can:",
+          "tips": {
+            "link": "Receive a join link from your teacher (chat, email, …).",
+            "list": "Pick a room inside <highlight>“Room list”</highlight> below when one is live."
+          }
+        },
+        "teacher": {
+          "title": "Are you a TOEIC / IELTS teacher?",
+          "description": "If you have teaching experience and want to host classes here, send your info so the admin can grant teacher access if your profile fits.",
+          "cta": "Send teacher application"
+        }
+      },
+      "errors": {
+        "retry": "Try again"
+      },
+      "list": {
+        "title": "Room list",
+        "empty": {
+          "title": "No rooms yet",
+          "creator": "You haven't opened any rooms yet. Launch your first room and teach TOEIC live.",
+          "student": "No rooms are live right now. Check back later or contact your teacher."
+        },
+        "card": {
+          "online": "{count} online",
+          "join": "Enter room",
+          "deleting": "Deleting...",
+          "delete": "Delete"
+        }
       }
     }
   },

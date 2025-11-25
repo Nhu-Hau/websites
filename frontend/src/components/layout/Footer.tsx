@@ -38,6 +38,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
   const t = useTranslations("layout.footer");
   const basePrefix = useBasePrefix();
+  const homeHref = basePrefix || "/";
 
   const sections: Array<{ title: string; links: SectionLink[] }> = [
     {
@@ -114,7 +115,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-6">
           <div className="col-span-2 lg:col-span-2">
-            <Link href={basePrefix} className="inline-flex items-center gap-1.5">
+            <Link href={homeHref} className="inline-flex items-center gap-1.5">
               <span className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                 Toeic<span className="text-sky-600">Prep</span>
               </span>

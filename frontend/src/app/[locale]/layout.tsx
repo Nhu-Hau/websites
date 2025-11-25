@@ -1,6 +1,6 @@
 // app/[locale]/layout.tsx
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getMessages, getTranslations } from "next-intl/server";
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/routing";
 import { cookies } from "next/headers";
@@ -68,9 +68,10 @@ export default async function LocaleLayout({
   const { locale } = await params;
 
   if (!hasLocale(routing.locales, locale)) notFound();
+  setRequestLocale(locale);
 
   const theme = (await cookies()).get("theme")?.value === "dark" ? "dark" : "light";
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
 
   return (
     <ThemeProvider defaultTheme={theme}>

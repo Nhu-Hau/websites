@@ -24,3 +24,7 @@ export default async function QuizPage({
 
 
 
+
+
+
+

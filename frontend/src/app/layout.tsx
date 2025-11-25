@@ -4,9 +4,11 @@
 import "./globals.css";
 import "@livekit/components-styles";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Mulish } from "next/font/google";
 import { SITE_CONFIG, generateMetadata as genMeta } from "@/lib/seo";
 import { generateWebSiteSchema, renderJsonLd } from "@/lib/seo/structured-data";
+import { routing } from "@/routing";
 
 const mulish = Mulish({
   subsets: ["latin"],
@@ -73,10 +75,15 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const requestHeaders = headers();
+  const locale =
+    requestHeaders.get("x-intl-locale") ??
+    requestHeaders.get("x-locale") ??
+    routing.defaultLocale;
   const websiteSchema = generateWebSiteSchema(SITE_CONFIG.url);
 
   return (
-    <html suppressHydrationWarning lang="vi">
+    <html suppressHydrationWarning lang={locale}>
       <body className={`${mulish.variable} font-sans`}>
         {renderJsonLd(websiteSchema)}
         {children}

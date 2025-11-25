@@ -4,12 +4,131 @@ import { PlacementAttempt } from "../../shared/models/PlacementAttempt";
 import { User } from "../../shared/models/User";
 import { chatService } from "../study-room/chat.service";
 import { checkAndAwardBadges } from "../badge/badge.service";
+import {
+  placementTestCookieName,
+  placementTestCookieOpts,
+} from "../../config/cookies";
 
 const ITEMS_COLL = process.env.PLACEMENT_PARTS_COLL || "placement_parts";
 const STIMULI_COLL = process.env.PLACEMENT_STIMULI_COLL || "placement_stimuli";
 
 const LISTENING = new Set(["part.1", "part.2", "part.3", "part.4"]);
 const READING = new Set(["part.5", "part.6", "part.7"]);
+
+const PLACEMENT_TEST_TTL_MS =
+  placementTestCookieOpts.maxAge ?? 2 * 60 * 60 * 1000;
+
+type PlacementItemDoc = {
+  id: string;
+  part: string;
+  answer: string;
+  stimulusId?: string;
+  test?: number | null;
+  order?: number;
+};
+
+function normalizeTestValue(input: unknown): number | null {
+  if (input === null || input === undefined) return null;
+  const parsed =
+    typeof input === "number" ? input : Number(String(input).trim());
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function readAssignedTestFromCookie(req: Request): number | null {
+  const cookieBag = (req as any)?.cookies;
+  if (!cookieBag) return null;
+  const raw = cookieBag[placementTestCookieName];
+  if (!raw || typeof raw !== "string") return null;
+  try {
+    const parsed = JSON.parse(raw);
+    const cookieTest = normalizeTestValue(parsed?.test);
+    if (cookieTest === null) return null;
+    if (parsed?.assignedAt) {
+      const assignedMs = Date.parse(parsed.assignedAt);
+      if (
+        Number.isFinite(assignedMs) &&
+        Date.now() - assignedMs > PLACEMENT_TEST_TTL_MS
+      ) {
+        return null;
+      }
+    }
+    return cookieTest;
+  } catch {
+    return null;
+  }
+}
+
+function persistAssignedTest(res: Response, test: number) {
+  const payload = JSON.stringify({
+    test,
+    assignedAt: new Date().toISOString(),
+  });
+  res.cookie(placementTestCookieName, payload, placementTestCookieOpts);
+}
+
+function clearAssignedTestCookie(res: Response) {
+  res.clearCookie(placementTestCookieName, {
+    ...placementTestCookieOpts,
+    maxAge: 0,
+  });
+}
+
+function resolveAttemptTest(req: Request, bodyTest: unknown): number | null {
+  const normalizedBody = normalizeTestValue(bodyTest);
+  const cookieTest = readAssignedTestFromCookie(req);
+
+  if (
+    normalizedBody !== null &&
+    cookieTest !== null &&
+    normalizedBody !== cookieTest
+  ) {
+    console.warn("[placement] Test mismatch body vs cookie", {
+      normalizedBody,
+      cookieTest,
+    });
+  }
+
+  return normalizedBody ?? cookieTest;
+}
+
+async function loadPlacementItems(
+  itemsCol: mongoose.mongo.Collection,
+  ids: string[],
+  attemptTest: number | null,
+  projection: Record<string, 0 | 1>
+): Promise<{ ordered: PlacementItemDoc[]; missing: string[] }> {
+  if (!ids.length) return { ordered: [], missing: [] };
+
+  const match: Record<string, unknown> = { id: { $in: ids } };
+  if (attemptTest !== null) {
+    match.test = attemptTest;
+  }
+
+  const docs = (await itemsCol
+    .find(match, { projection })
+    .sort({ order: 1, id: 1 })
+    .toArray()) as PlacementItemDoc[];
+
+  const uniqueById = new Map<string, PlacementItemDoc>();
+  for (const doc of docs) {
+    if (!uniqueById.has(doc.id)) {
+      uniqueById.set(doc.id, doc);
+    }
+  }
+
+  const ordered: PlacementItemDoc[] = [];
+  const missing: string[] = [];
+  for (const id of ids) {
+    const doc = uniqueById.get(id);
+    if (!doc) {
+      missing.push(id);
+      continue;
+    }
+    ordered.push(doc);
+  }
+
+  return { ordered, missing };
+}
 
 function accToLevel(acc: number): 1 | 2 | 3 {
   if (acc >= 0.7) return 3;
@@ -51,10 +170,20 @@ export async function getPlacementPaper(req: Request, res: Response) {
     const stimCol = db.collection(STIMULI_COLL);
 
     // Bước 1: Lấy danh sách các giá trị test có trong collection
-    const distinctTests = await itemsCol.distinct("test", { test: { $exists: true, $ne: null } });
-    
-    if (!distinctTests || distinctTests.length === 0) {
+    const distinctTestsRaw = await itemsCol.distinct("test", {
+      test: { $exists: true, $ne: null },
+    });
+    const distinctTests = Array.from(
+      new Set(
+        distinctTestsRaw
+          .map((val) => normalizeTestValue(val))
+          .filter((val): val is number => val !== null)
+      )
+    );
+
+    if (!distinctTests.length) {
       console.warn("[getPlacementPaper] No test values found in collection, falling back to all items");
+      clearAssignedTestCookie(res);
       // Fallback: nếu không có field test, lấy tất cả items như cũ
       const limits = {
         "part.1": Number(req.query.p1 ?? 0),
@@ -100,9 +229,16 @@ export async function getPlacementPaper(req: Request, res: Response) {
       return res.json({ items, stimulusMap, test: null });
     }
 
-    // Bước 2: Random chọn một giá trị test
-    const randomTest = distinctTests[Math.floor(Math.random() * distinctTests.length)];
-    console.log(`[getPlacementPaper] Selected random test: ${randomTest} from available tests: [${distinctTests.join(", ")}]`);
+    // Bước 2: Lấy test từ cookie (nếu có) hoặc random
+    const cookieTest = readAssignedTestFromCookie(req);
+    const selectedTest =
+      cookieTest !== null && distinctTests.includes(cookieTest)
+        ? cookieTest
+        : distinctTests[Math.floor(Math.random() * distinctTests.length)];
+    persistAssignedTest(res, selectedTest);
+    console.log(
+      `[getPlacementPaper] Selected test: ${selectedTest} from available tests: [${distinctTests.join(", ")}]`
+    );
 
     // Bước 3: Lấy items theo test đã chọn
     const limits = {
@@ -121,7 +257,7 @@ export async function getPlacementPaper(req: Request, res: Response) {
       const lim =
         Number.isFinite(limits[pk]) && limits[pk] > 0 ? limits[pk] : 0;
       const cur = itemsCol
-        .find({ part: pk, test: randomTest }, { projection: { _id: 0 } })
+        .find({ part: pk, test: selectedTest }, { projection: { _id: 0 } })
         .sort({ order: 1, id: 1 });
       items = items.concat(
         lim > 0 ? await cur.limit(lim).toArray() : await cur.toArray()
@@ -146,7 +282,7 @@ export async function getPlacementPaper(req: Request, res: Response) {
     
     const stimQuery: any = { id: { $in: sids } };
     if (hasTestField) {
-      stimQuery.test = randomTest;
+      stimQuery.test = selectedTest;
     }
     
     const stArr = sids.length
@@ -157,7 +293,7 @@ export async function getPlacementPaper(req: Request, res: Response) {
     const stimulusMap: Record<string, any> = {};
     for (const s of stArr) stimulusMap[s.id] = s;
 
-    return res.json({ items, stimulusMap, test: randomTest });
+    return res.json({ items, stimulusMap, test: selectedTest });
   } catch (e) {
     console.error("[getPlacementPaper] ERROR", e);
     return res.status(500).json({ message: "Lỗi máy chủ" });
@@ -167,10 +303,11 @@ export async function getPlacementPaper(req: Request, res: Response) {
 /** SỬA: POST /api/placement/grade — KHÔNG yêu cầu testId */
 export async function gradePlacement(req: Request, res: Response) {
   try {
-    const { answers, timeSec, allIds } = req.body as {
+    const { answers, timeSec, allIds, test } = req.body as {
       answers?: Record<string, string>;
       timeSec?: number;
       allIds?: string[];
+      test?: number | string | null;
     };
     if (!answers || !allIds?.length) {
       return res.status(400).json({ message: "Thiếu dữ liệu" });
@@ -179,12 +316,29 @@ export async function gradePlacement(req: Request, res: Response) {
     const db = mongoose.connection;
     const itemsCol = db.collection(ITEMS_COLL);
 
-    const items = await itemsCol
-      .find(
-        { id: { $in: allIds } },
-        { projection: { _id: 0, id: 1, part: 1, answer: 1 } }
-      )
-      .toArray();
+    const attemptTest = resolveAttemptTest(req, test);
+    if (attemptTest === null) {
+      return res
+        .status(400)
+        .json({ message: "Không xác định được mã đề, vui lòng tải lại." });
+    }
+
+    const { ordered: items, missing } = await loadPlacementItems(
+      itemsCol,
+      allIds,
+      attemptTest,
+      { _id: 0, id: 1, part: 1, answer: 1 }
+    );
+
+    if (missing.length) {
+      console.error("[gradePlacement] Missing items", {
+        attemptTest,
+        missing,
+      });
+      return res.status(400).json({
+        message: "Không tìm thấy câu hỏi tương ứng với mã đề, vui lòng thử lại.",
+      });
+    }
 
     let total = items.length,
       correct = 0,
@@ -272,7 +426,7 @@ export async function submitPlacement(req: Request, res: Response) {
       timeSec?: number;
       startedAt?: string;
       version?: string;
-      test?: number | null;
+      test?: number | string | null;
     };
     if (!answers || !allIds?.length) {
       return res.status(400).json({ message: "Thiếu dữ liệu" });
@@ -281,12 +435,29 @@ export async function submitPlacement(req: Request, res: Response) {
     const db = mongoose.connection;
     const itemsCol = db.collection(ITEMS_COLL);
 
-    const items = await itemsCol
-      .find(
-        { id: { $in: allIds } },
-        { projection: { _id: 0, id: 1, part: 1, answer: 1 } }
-      )
-      .toArray();
+    const attemptTest = resolveAttemptTest(req, test);
+    if (attemptTest === null) {
+      return res
+        .status(400)
+        .json({ message: "Không xác định được mã đề, vui lòng tải lại." });
+    }
+
+    const { ordered: items, missing } = await loadPlacementItems(
+      itemsCol,
+      allIds,
+      attemptTest,
+      { _id: 0, id: 1, part: 1, answer: 1 }
+    );
+
+    if (missing.length) {
+      console.error("[submitPlacement] Missing items", {
+        attemptTest,
+        missing,
+      });
+      return res.status(400).json({
+        message: "Không tìm thấy câu hỏi tương ứng với mã đề, vui lòng làm lại.",
+      });
+    }
 
     let total = items.length,
       correct = 0,
@@ -344,7 +515,7 @@ export async function submitPlacement(req: Request, res: Response) {
 
     const attempt = await PlacementAttempt.create({
       userId,
-      test: test !== undefined && test !== null ? Number(test) : null, // Lưu giá trị test đã random
+      test: attemptTest,
       total,
       correct,
       acc,
@@ -397,6 +568,8 @@ export async function submitPlacement(req: Request, res: Response) {
     checkAndAwardBadges(new Types.ObjectId(String(userId))).catch((err) => {
       console.error("[submitPlacement] Error checking badges:", err);
     });
+
+    clearAssignedTestCookie(res);
 
     return res.json({
       attemptId: String(attempt._id),
@@ -509,10 +682,18 @@ export async function getPlacementAttemptItemsOrdered(
     const itemsCol = db.collection(ITEMS_COLL);
     const stimCol = db.collection(STIMULI_COLL);
 
+    const match: Record<string, unknown> = { id: { $in: ids } };
+    const hasTest = (attempt as any)?.test !== undefined;
+    const attemptTest = (attempt as any)?.test;
+    if (hasTest && attemptTest !== null && attemptTest !== undefined) {
+      match.test = attemptTest;
+    }
+
     const items = await itemsCol
       .aggregate([
-        { $match: { id: { $in: ids } } },
+        { $match: match },
         { $addFields: { _order: { $indexOfArray: [ids, "$id"] } } },
+        { $match: { _order: { $ne: -1 } } },
         { $sort: { _order: 1 } },
         { $project: { _id: 0, _order: 0 } },
       ])
@@ -521,9 +702,13 @@ export async function getPlacementAttemptItemsOrdered(
     const sids = Array.from(
       new Set(items.map((it: any) => it.stimulusId).filter(Boolean))
     );
+    const stimQuery: Record<string, unknown> = { id: { $in: sids } };
+    if (match.test !== undefined) {
+      stimQuery.test = match.test;
+    }
     const stArr = sids.length
       ? await stimCol
-          .find({ id: { $in: sids } }, { projection: { _id: 0 } })
+          .find(stimQuery, { projection: { _id: 0 } })
           .toArray()
       : [];
 

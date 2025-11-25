@@ -6,12 +6,14 @@ import Flag from "react-world-flags";
 import { Globe, Bell, Moon, Sun } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { useLocaleSwitch } from "@/hooks/routing/useLocaleSwitch";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import useClickOutside from "@/hooks/common/useClickOutside";
 import { useTheme } from "@/context/ThemeContext";
 import { useNotifications } from "@/hooks/common/useNotifications";
 import ProgressEligibilityWatcher from "@/components/features/progress/ProgressEligibility";
 import PracticeInactivityWatcher from "@/components/features/practice/PracticeInactivity";
 import { useTranslations } from "next-intl";
+import { resolveLocaleHref } from "@/lib/navigation/resolveLocaleHref";
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -74,6 +76,7 @@ return (
           <li>
             <Link
               href={hrefFor("vi")}
+              locale="vi"
               aria-current={locale === "vi" ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",
@@ -82,6 +85,7 @@ return (
                   ? "bg-sky-50 text-sky-800 shadow-sm ring-1 ring-sky-100 dark:bg-sky-900/25 dark:text-sky-100 dark:ring-sky-500/40"
                   : "bg-zinc-50 text-zinc-800 hover:bg-zinc-100/80 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700/80"
               )}
+              onClick={() => setOpen(false)}
             >
               <Flag code="vn" className="h-5 w-7 rounded-sm object-cover" />
               <div className="flex flex-col">
@@ -97,6 +101,7 @@ return (
           <li>
             <Link
               href={hrefFor("en")}
+              locale="en"
               aria-current={locale === "en" ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",
@@ -105,6 +110,7 @@ return (
                   ? "bg-sky-50 text-sky-800 shadow-sm ring-1 ring-sky-100 dark:bg-sky-900/25 dark:text-sky-100 dark:ring-sky-500/40"
                   : "bg-zinc-50 text-zinc-800 hover:bg-zinc-100/80 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700/80"
               )}
+              onClick={() => setOpen(false)}
             >
               <Flag code="gb" className="h-5 w-7 rounded-sm object-cover" />
               <div className="flex flex-col">
@@ -138,6 +144,7 @@ export function Notification() {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("HeaderActions.notification");
+  const basePrefix = useBasePrefix();
   useClickOutside(wrapperRef, () => {
     if (open) setOpen(false);
   });
@@ -209,7 +216,7 @@ export function Notification() {
               {items.map((n) => (
                 <li key={n.id}>
                   <Link
-                    href={n.link || "#"}
+                    href={resolveLocaleHref(n.link, basePrefix) || "#"}
                     onClick={() => setOpen(false)}
                     className={cn(
                       "block rounded-xl px-3 py-2.5 text-sm transition-colors duration-200",

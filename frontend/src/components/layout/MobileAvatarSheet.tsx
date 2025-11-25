@@ -137,7 +137,7 @@ export default function MobileAvatarSheet({
   const { logout, user: ctxUser } = useAuth();
   const router = useRouter();
   const { locale, hrefFor } = useLocaleSwitch();
-  const base = useBasePrefix(locale || "vi");
+  const base = useBasePrefix();
   const { theme, setTheme } = useTheme();
   const [me, setMe] = useState<any | null>(initialMe);
   const [mounted, setMounted] = useState(false);

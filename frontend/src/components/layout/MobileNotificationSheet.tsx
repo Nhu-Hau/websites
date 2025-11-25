@@ -7,6 +7,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { useNotifications } from "@/hooks/common/useNotifications";
 import { cn } from "@/lib/utils";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { resolveLocaleHref } from "@/lib/navigation/resolveLocaleHref";
 
 interface MobileNotificationSheetProps {
   open: boolean;
@@ -19,6 +21,7 @@ export default function MobileNotificationSheet({
 }: MobileNotificationSheetProps) {
   const { items, markAllRead, clearAll } = useNotifications();
   const [mounted, setMounted] = useState(false);
+  const basePrefix = useBasePrefix();
 
   useEffect(() => {
     setMounted(true);
@@ -103,7 +106,7 @@ export default function MobileNotificationSheet({
                   {items.map((n) => (
                     <li key={n.id}>
                       <Link
-                        href={n.link || "#"}
+                        href={resolveLocaleHref(n.link, basePrefix) || "#"}
                         onClick={onClose}
                         className={cn(
                           "block rounded-xl px-4 py-3 text-sm transition-colors duration-200",

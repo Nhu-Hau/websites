@@ -15,6 +15,7 @@ import {
 import { Gauge, Loader2, AlertCircle, Clock3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 /* ===================== Types ===================== */
 type PlacementAttemptLite = {
@@ -256,6 +257,8 @@ const comparisonToneStyles = {
 /* ===================== Component ===================== */
 export default function AssessmentChart() {
   const t = useTranslations("dashboard.assessment");
+  const basePrefix = useBasePrefix();
+  const progressHref = `${basePrefix}/progress`;
   const [placementHist, setPlacementHist] = React.useState<
     PlacementAttemptLite[]
   >([]);
@@ -629,7 +632,7 @@ export default function AssessmentChart() {
               </div>
             </div>
             <Link
-              href="/progress"
+              href={progressHref}
               aria-disabled={!progressEligibility.eligible}
               tabIndex={progressEligibility.eligible ? 0 : -1}
               className={cn(

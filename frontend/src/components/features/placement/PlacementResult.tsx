@@ -29,7 +29,7 @@ type AttemptItem = {
 type Attempt = {
   _id: string;
   userId: string;
-  testId: string;
+  test?: number | null;
   total: number;
   correct: number;
   acc: number;
@@ -53,6 +53,37 @@ function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function orderItemsForAttempt(rawItems: Item[], allowedIds: string[]) {
+  if (!allowedIds?.length) return rawItems;
+
+  const queues = new Map<string, number[]>();
+  allowedIds.forEach((id, idx) => {
+    const list = queues.get(id);
+    if (list) {
+      list.push(idx);
+    } else {
+      queues.set(id, [idx]);
+    }
+  });
+
+  const withOrder: { item: Item; order: number }[] = [];
+  for (const item of rawItems) {
+    const queue = queues.get(item.id);
+    if (!queue?.length) continue;
+    const order = queue.shift()!;
+    withOrder.push({ item, order });
+  }
+
+  if (withOrder.length !== allowedIds.length && process.env.NODE_ENV === "development") {
+    console.warn(
+      "[PlacementResult] Items mismatch:",
+      { expected: allowedIds.length, received: withOrder.length }
+    );
+  }
+
+  return withOrder.sort((a, b) => a.order - b.order).map((entry) => entry.item);
 }
 
 export default function PlacementResult() {
@@ -155,8 +186,12 @@ export default function PlacementResult() {
         }
 
         setAttempt(attemptData);
+        const allowedIds =
+          attemptData.allIds?.length
+            ? attemptData.allIds
+            : attemptData.items?.map((i) => i.id) || [];
 
-        // tải lại câu hỏi gốc để render
+        // tải lại câu hỏi gốc để render đúng thứ tự đề
         const orderedRes = await fetch(
           `/api/placement/attempts/${encodeURIComponent(
             String(attemptData._id)
@@ -166,31 +201,27 @@ export default function PlacementResult() {
 
         if (orderedRes.ok) {
           const data = (await orderedRes.json()) as ItemsResp;
+          const orderedItems = orderItemsForAttempt(data.items || [], allowedIds);
           if (!mounted) return;
-          setItems(data.items || []);
+          setItems(orderedItems);
           setStimulusMap(data.stimulusMap || {});
         } else {
-          // fallback: fetch theo list id
-          const allIds = attemptData.allIds?.length
-            ? attemptData.allIds
+          // fallback: fetch theo list id lưu trong attempt
+          const idsToFetch = allowedIds.length
+            ? allowedIds
             : attemptData.items?.map((i) => i.id) || [];
-          if (allIds.length) {
+          if (idsToFetch.length) {
             const r = await fetch(`/api/placement/items`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               credentials: "include",
-              body: JSON.stringify({ ids: allIds }),
+              body: JSON.stringify({ ids: idsToFetch }),
             });
             if (r.ok) {
               const json = (await r.json()) as ItemsResp;
-              const indexMap = new Map<string, number>(
-                allIds.map((id, idx) => [id, idx])
-              );
-              const orderedItems = (json.items || [])
-                .slice()
-                .sort(
-                  (a, b) =>
-                    (indexMap.get(a.id) ?? 0) - (indexMap.get(b.id) ?? 0)
+              const orderedItems = orderItemsForAttempt(
+                json.items || [],
+                idsToFetch
                 );
               if (!mounted) return;
               setItems(orderedItems);

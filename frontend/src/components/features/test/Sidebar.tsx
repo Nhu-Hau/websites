@@ -299,9 +299,10 @@ export function Sidebar({
                   }
                 }
 
+                const key = `${it.id}-${i}`;
                 return (
                   <button
-                    key={it.id}
+                    key={key}
                     onClick={() => onJump(i)}
                     className={cls}
                     title={t("questionTitle", { n: i + 1 })}

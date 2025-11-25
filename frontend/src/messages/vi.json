@@ -369,6 +369,47 @@
     "dashboard": {
       "label": "Tổng quan",
       "title": "Bảng điều khiển",
+    "goal": {
+      "empty": {
+        "label": "Kế hoạch mục tiêu",
+        "title": "Đặt mục tiêu TOEIC",
+        "description": "Theo dõi tiến độ đến số điểm bạn mong muốn.",
+        "cardTitle": "Chưa có mục tiêu",
+        "cardDesc": "Đặt điểm TOEIC mong muốn để mở khóa bảng theo dõi.",
+        "button": "Đặt mục tiêu"
+      },
+      "toast": {
+        "rangeError": "Vui lòng nhập điểm từ 10 đến 990",
+        "fail": "Không thể lưu mục tiêu",
+        "success": "Đã cập nhật mục tiêu!"
+      },
+      "tracking": {
+        "label": "Theo dõi mục tiêu",
+        "title": "Tiến độ mục tiêu TOEIC",
+        "achieved": "Bạn đã chạm mục tiêu – xuất sắc!",
+        "ongoing": "Tiếp tục luyện tập để bứt phá.",
+        "update": "Cập nhật mục tiêu",
+        "stats": {
+          "target": "Điểm mục tiêu",
+          "current": "Điểm hiện tại",
+          "completed": "Hoàn thành"
+        },
+        "start": "Xuất phát: {score}",
+        "target": "Đích đến: {score}",
+        "summary": "Hành trình từ {start} đến {target} điểm TOEIC – cứ giữ nhịp luyện tập nhé."
+      },
+      "dialog": {
+        "setTitle": "Đặt mục tiêu TOEIC",
+        "updateTitle": "Cập nhật mục tiêu",
+        "desc": "Nhập số điểm TOEIC bạn muốn đạt để hệ thống theo dõi tiến độ.",
+        "inputLabel": "Điểm mục tiêu (10–990)",
+        "placeholder": "Ví dụ: 750",
+        "current": "Mục tiêu hiện tại: {score}",
+        "cancel": "Hủy",
+        "confirm": "Lưu mục tiêu",
+        "saving": "Đang lưu..."
+      }
+    },
       "assessment": {
         "overviewTitle": "Tổng quan đánh giá",
         "selfReported": "Điểm khai báo",
@@ -380,7 +421,9 @@
           "mediumMsg": "Điểm placement test hơi lệch so với điểm TOEIC bạn khai báo.",
           "mediumSub": "Bạn khai báo: {reported} điểm • Placement test ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Nguyên nhân có thể do thời gian làm bài khác với đề thi thật, điểm TOEIC bạn thi đã cách đây một thời gian, hoặc bài placement chỉ gồm 55 câu nên có sai số nhất định. Hệ thống vẫn ưu tiên dùng placement test để gợi ý lộ trình.",
           "largeMsg": "Điểm placement test lệch khá nhiều so với điểm TOEIC bạn khai báo.",
-          "largeSub": "Bạn khai báo: {reported} điểm • Placement test ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do bạn làm bài khi chưa tập trung, điểm TOEIC bạn nhập là từ kỳ thi đã khá lâu, hoặc đây chỉ là điểm ước lượng trên 55 câu. Hệ thống sẽ ưu tiên dùng kết quả placement để phân level hiện tại. Nếu bạn cảm thấy kết quả chưa phản ánh đúng trình độ, hãy luyện thêm một thời gian rồi làm lại progress test để hệ thống đánh giá ổn định hơn."
+        "largeSub": "Bạn khai báo: {reported} điểm • Placement test ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do bạn làm bài khi chưa tập trung, điểm TOEIC bạn nhập là từ kỳ thi đã khá lâu, hoặc đây chỉ là điểm ước lượng trên 55 câu. Hệ thống sẽ ưu tiên dùng kết quả placement để phân level hiện tại. Nếu bạn cảm thấy kết quả chưa phản ánh đúng trình độ, hãy luyện thêm một thời gian rồi làm lại progress test để hệ thống đánh giá ổn định hơn.",
+        "show": "Hiện thẻ so sánh",
+        "hide": "Ẩn thẻ so sánh"
         },
         "eligibility": {
           "eligible": "Đã đủ điều kiện làm Progress Test",
@@ -1612,7 +1655,14 @@
       "meta": {
         "title": "Luyện tập TOEIC - Practice Tests theo từng Part",
         "description": "Luyện tập TOEIC với hàng nghìn câu hỏi theo từng Part, phân loại theo Level. Hệ thống chấm điểm tự động và phân tích chi tiết.",
-        "keywords": "luyện tập TOEIC, practice test, TOEIC part, bài tập TOEIC"
+        "keywords": "luyện tập TOEIC, practice test, TOEIC part, bài tập TOEIC",
+        "part1": "Part 1 – Mô tả tranh",
+        "part2": "Part 2 – Hỏi đáp",
+        "part3": "Part 3 – Đoạn hội thoại",
+        "part4": "Part 4 – Bài nói ngắn",
+        "part5": "Part 5 – Hoàn thành câu",
+        "part6": "Part 6 – Hoàn thành đoạn văn",
+        "part7": "Part 7 – Đọc hiểu"
       },
       "parts": {
         "part": {
@@ -2330,6 +2380,21 @@
       "title": "Lịch học thông minh",
       "subtitle": "Đặt lịch luyện tập cố định để duy trì nhịp học TOEIC.",
       "notifyLabel": "Nhắc nhở qua Email / Web",
+      "planner": {
+        "title": "Lên kế hoạch buổi học tiếp theo",
+        "subtitle": "Chọn thời gian, hình thức và nhắc nhở – ToeicPrep sẽ theo sát bạn.",
+        "reminderBadge": "Đang bật nhắc nhở",
+        "recurrenceLabel": "Chu kỳ lặp",
+        "dateTimeLabel": "Ngày & giờ",
+        "planTypeLabel": "Chọn loại buổi học",
+        "durationLabel": "Thời lượng",
+        "remindLabel": "Nhắc trước",
+        "notifyLabel": "Kênh nhắc nhở",
+        "notifyEmail": "Nhắc qua Email",
+        "notifyWeb": "Nhắc qua Web push",
+        "saving": "Đang lưu lịch...",
+        "save": "Lưu lịch học"
+      },
       "recurrence": {
         "label": "Chu kỳ lặp lại",
         "once": "Một lần",
@@ -2346,11 +2411,21 @@
         "fri": "T6",
         "sat": "T7"
       },
-      "dateTime": {
-        "label": "Ngày & Giờ",
         "today": "Hôm nay",
         "tomorrow": "Ngày mai",
-        "pickDate": "Chọn ngày"
+      "pickDate": "Chọn ngày",
+      "minutes": "phút",
+      "plans": {
+        "auto": "Tự động (Smart Auto)",
+        "progress": "Kiểm tra tiến độ",
+        "mini_progress": "Mini-Progress",
+        "practice_p1": "Luyện tập Part 1",
+        "practice_p2": "Luyện tập Part 2",
+        "practice_p3": "Luyện tập Part 3",
+        "practice_p4": "Luyện tập Part 4",
+        "practice_p5": "Luyện tập Part 5",
+        "practice_p6": "Luyện tập Part 6",
+        "practice_p7": "Luyện tập Part 7"
       },
       "plan": {
         "label": "Loại bài học",
@@ -2378,10 +2453,16 @@
         "email": "Email",
         "web": "Web push"
       },
-      "submit": "Lưu lịch học",
-      "submitLoading": "Đang lưu lịch...",
+      "successSave": "Đã lưu lịch học",
+      "errorSave": "Không thể lưu lịch học",
+      "errorGeneric": "Có lỗi xảy ra, vui lòng thử lại.",
+      "successUpdate": "Đã cập nhật lịch học",
+      "errorUpdate": "Không thể cập nhật lịch học",
+      "successCancel": "Đã hủy lịch học",
+      "errorCancel": "Không thể hủy lịch học",
       "upcoming": {
         "title": "Lịch học sắp tới",
+        "loading": "Đang tải lịch học sắp tới...",
         "emptyTitle": "Chưa có lịch học",
         "emptyDesc": "Tạo lịch học ở trên, hệ thống sẽ nhắc bạn đúng giờ như các ứng dụng giáo dục chuyên nghiệp.",
         "completed": "Buổi học cuối đã hoàn thành.",
@@ -2389,7 +2470,38 @@
         "reminder": "Nhớ tham gia đúng giờ để giữ streak nhé!",
         "statusCompleted": "Đã hoàn thành buổi học!",
         "statusMissed": "Bạn đã bỏ lỡ buổi học",
+        "statusScheduled": "Buổi học đã lên lịch",
+        "completedTitle": "Tuyệt! Bạn đã hoàn thành buổi học.",
+        "missedTitle": "Bạn đã bỏ lỡ buổi học này",
+        "remindBefore": "Nhắc trước {minutes} phút",
         "streak": "Streak hiện tại: {days} ngày"
+      }
+    },
+    "progressChart": {
+      "listening": {
+        "title": "Biểu đồ độ chính xác Listening",
+        "description": "Theo dõi độ chính xác theo từng Part và Level để thấy Listening của bạn đang tiến bộ ra sao.",
+        "emptyTitle": "Chưa có dữ liệu Listening",
+        "emptyDesc": "Hoàn thành một bài {part} để mở biểu đồ Listening."
+      },
+      "reading": {
+        "title": "Biểu đồ độ chính xác Reading",
+        "description": "Quan sát độ chính xác từng Part Reading để điều chỉnh trọng tâm luyện tập.",
+        "emptyTitle": "Chưa có dữ liệu Reading",
+        "emptyDesc": "Hoàn thành một bài {part} để mở biểu đồ Reading."
+      },
+      "loading": "Đang tải biểu đồ...",
+      "latest": "Mới nhất",
+      "level": "Level {level}",
+      "test": "Test {test}",
+      "legend": {
+        "solid": "Độ chính xác từng lần làm",
+        "dashed": "Xu hướng trung bình",
+        "retake": "Lần làm lại"
+      },
+      "tooltip": {
+        "retake": "Lần làm lại",
+        "firstTime": "Lần đầu"
       }
     },
     "activity": {
@@ -2888,11 +3000,63 @@
       "startDesc": "Bắt đầu ngay để theo dõi tiến độ.",
       "startNow": "Làm bài ngay",
       "retry": "Làm lại"
+    },
+    "levelSuggestModal": {
+      "title": "Level bạn chọn khác với gợi ý",
+      "subtitle": "Hệ thống đề xuất Level phù hợp với năng lực hiện tại.",
+      "aria": {
+        "close": "Đóng"
+      },
+      "levels": {
+        "1": {
+          "label": "Level 1",
+          "desc": "Cơ bản"
+        },
+        "2": {
+          "label": "Level 2",
+          "desc": "Trung bình"
+        },
+        "3": {
+          "label": "Level 3",
+          "desc": "Nâng cao"
+        }
+      },
+      "current": {
+        "selected": "{desc} – bạn đang chọn"
+      },
+      "suggested": {
+        "badge": "GỢI Ý HỆ THỐNG",
+        "description": "{desc} – phù hợp với kết quả học hiện tại."
+      },
+      "message": {
+        "prefix": "Bạn vẫn có thể tiếp tục với",
+        "currentLevel": "Level {level}",
+        "middle": ", nhưng chúng tôi khuyến khích thử",
+        "suffix": "để có lộ trình tốt hơn."
+      },
+      "actions": {
+        "change": "Đổi Level khác",
+        "continue": "Tiếp tục với Level {currentLevel}"
+      }
     }
   },
   "practiceComponents": {
     "listening": "Luyện Listening TOEIC",
     "reading": "Luyện Reading TOEIC"
+  },
+  "communityComponents": {
+    "chipNav": {
+      "newPost": "Đăng bài",
+      "feed": "Bảng tin",
+      "following": "Đang theo dõi",
+      "trending": "Xu hướng",
+      "saved": "Đã lưu",
+      "profile": "Hồ sơ",
+      "groups": "Nhóm học",
+      "studyRoom": "Phòng học",
+      "explore": "Khám phá",
+      "settings": "Cài đặt"
+    }
   },
   "paymentComponents": {
     "upgrade": {

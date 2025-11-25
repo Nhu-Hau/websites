@@ -2,33 +2,10 @@
 "use client";
 
 import { AlertCircle, ArrowRight, X, CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 type L = 1 | 2 | 3;
-
-const LEVEL_CONFIG: Record<
-  L,
-  { label: string; desc: string; color: string; bgColor: string }
-> = {
-  1: {
-    label: "Level 1",
-    desc: "Cơ bản",
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
-  },
-  2: {
-    label: "Level 2",
-    desc: "Trung bình",
-    color: "text-emerald-600 dark:text-emerald-400",
-    bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
-  },
-  3: {
-    label: "Level 3",
-    desc: "Nâng cao",
-    color: "text-purple-600 dark:text-purple-400",
-    bgColor: "bg-purple-50 dark:bg-purple-900/20",
-  },
-};
 
 export default function LevelSuggestModal({
   open,
@@ -45,8 +22,33 @@ export default function LevelSuggestModal({
 }) {
   if (!open) return null;
 
-  const currentConfig = LEVEL_CONFIG[currentLevel];
-  const suggestedConfig = LEVEL_CONFIG[suggestedLevel];
+  const t = useTranslations("test.levelSuggestModal");
+  const levelConfig: Record<
+    L,
+    { label: string; desc: string; color: string; bgColor: string }
+  > = {
+    1: {
+      label: t("levels.1.label"),
+      desc: t("levels.1.desc"),
+      color: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+    },
+    2: {
+      label: t("levels.2.label"),
+      desc: t("levels.2.desc"),
+      color: "text-emerald-600 dark:text-emerald-400",
+      bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
+    },
+    3: {
+      label: t("levels.3.label"),
+      desc: t("levels.3.desc"),
+      color: "text-purple-600 dark:text-purple-400",
+      bgColor: "bg-purple-50 dark:bg-purple-900/20",
+    },
+  };
+
+  const currentConfig = levelConfig[currentLevel];
+  const suggestedConfig = levelConfig[suggestedLevel];
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-3 py-6 backdrop-blur-sm">
@@ -67,17 +69,17 @@ export default function LevelSuggestModal({
             </div>
             <div>
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                Level bạn chọn khác với gợi ý
+                {t("title")}
               </h3>
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                Hệ thống đề xuất Level phù hợp với năng lực hiện tại
+                {t("subtitle")}
               </p>
             </div>
           </div>
           {onCancel && (
             <button
               onClick={onCancel}
-              aria-label="Đóng"
+              aria-label={t("aria.close")}
               className="h-8 w-8 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-300"
             >
               <X className="h-4 w-4" />
@@ -111,7 +113,7 @@ export default function LevelSuggestModal({
                 {currentConfig.label}
               </div>
               <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                {currentConfig.desc} – bạn đang chọn
+                {t("current.selected", { desc: currentConfig.desc })}
               </div>
             </div>
           </div>
@@ -141,11 +143,11 @@ export default function LevelSuggestModal({
                   {suggestedConfig.label}
                 </span>
                 <span className="inline-flex items-center rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                  GỢI Ý HỆ THỐNG
+                  {t("suggested.badge")}
                 </span>
               </div>
               <div className="text-xs text-zinc-500 dark:text-zinc-300">
-                {suggestedConfig.desc} – phù hợp với kết quả học hiện tại.
+                {t("suggested.description", { desc: suggestedConfig.desc })}
               </div>
             </div>
           </div>
@@ -154,15 +156,15 @@ export default function LevelSuggestModal({
         {/* Message */}
         <div className="px-4 pb-4">
           <p className="text-center text-xs text-zinc-600 dark:text-zinc-400">
-            Bạn vẫn có thể tiếp tục với{" "}
+            {t("message.prefix")}{" "}
             <span className="font-semibold">
-              Level {currentLevel}
+              {t("message.currentLevel", { level: currentLevel })}
             </span>
-            , nhưng chúng tôi khuyến khích thử{" "}
+            {t("message.middle")}{" "}
             <span className="font-semibold text-emerald-600 dark:text-emerald-400">
               {suggestedConfig.label}
             </span>{" "}
-            để có lộ trình tốt hơn.
+            {t("message.suffix")}
           </p>
         </div>
 
@@ -179,7 +181,7 @@ export default function LevelSuggestModal({
                 "dark:border-zinc-700"
               )}
             >
-              Đổi Level khác
+            {t("actions.change")}
             </button>
           )}
 
@@ -194,7 +196,7 @@ export default function LevelSuggestModal({
             )}
           >
             <ArrowRight className="h-4 w-4" />
-            Tiếp tục với Level {currentLevel}
+          {t("actions.continue", { currentLevel })}
           </button>
         </div>
       </div>

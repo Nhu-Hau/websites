@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 
 export default function MobileTopBar() {
   const base = useBasePrefix();
+  const homeHref = base || "/";
   const { unread } = useNotifications();
   const [notificationOpen, setNotificationOpen] = useState(false);
   const t = useTranslations("MobileTopBar");
@@ -30,7 +31,7 @@ export default function MobileTopBar() {
         <div className="flex h-14 items-center justify-between">
           {/* Logo */}
           <Link
-            href={`${base}`}
+            href={homeHref}
             aria-label={t("logoAria")}
             className="flex items-center gap-2"
           >

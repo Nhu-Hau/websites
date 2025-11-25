@@ -5,12 +5,15 @@
 import React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { resolveLocaleHref } from "@/lib/navigation/resolveLocaleHref";
 import { X, Info, CheckCircle2 } from "lucide-react";
 
 type Corner = { id: string; title: string; message: string; link?: string };
 
 export default function CornerToast() {
   const [toasts, setToasts] = React.useState<Corner[]>([]);
+  const basePrefix = useBasePrefix();
 
   // track id để chống double trong ~10s
   const seenRef = React.useRef<Set<string>>(new Set());
@@ -122,7 +125,7 @@ export default function CornerToast() {
                 <div className="mt-1.5 text-[12px] leading-snug text-slate-200/90">
                   {t.link ? (
                     <Link
-                      href={t.link}
+                      href={resolveLocaleHref(t.link, basePrefix) || "#"}
                       className="font-medium text-sky-300 underline underline-offset-2 transition-colors hover:text-sky-200"
                     >
                       {t.message}

@@ -43,3 +43,13 @@ export const refreshCookieOpts: CookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
   ...(cookieDomain ? { domain: cookieDomain } : {}),
 };
+
+export const placementTestCookieName = "placement_test";
+export const placementTestCookieOpts: CookieOptions = {
+  httpOnly: true,
+  secure: isProd ? true : false,
+  sameSite: isProd ? "none" : "lax",
+  path: "/api/placement",
+  maxAge: 2 * 60 * 60 * 1000, // 2 hours to finish an attempt
+  ...(cookieDomain ? { domain: cookieDomain } : {}),
+};

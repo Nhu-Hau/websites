@@ -324,11 +324,12 @@ function CardFullWidth({
     >
       <div className="space-y-4 xs:space-y-5 sm:space-y-6">
         {items.map((it, iIdx) => {
-          const displayIndex = (itemIndexMap.get(it.id) ?? iIdx) + 1;
+          const index = itemIndexMap.get(it.id) ?? iIdx;
+          const displayIndex = index + 1;
           const correct = pickCorrect(correctMap, it.id);
           return (
             <ChoiceRow
-              key={it.id}
+              key={`${it.id}-${index}`}
               anchorId={`q-${displayIndex}`}
               item={it}
               displayIndex={displayIndex}
@@ -430,11 +431,12 @@ function CardSticky(props: BaseProps) {
         {/* Choices */}
         <div className="lg:col-span-2 space-y-4 xs:space-y-5 sm:space-y-6">
           {items.map((it, iIdx) => {
-            const displayIndex = (itemIndexMap.get(it.id) ?? iIdx) + 1;
+            const index = itemIndexMap.get(it.id) ?? iIdx;
+            const displayIndex = index + 1;
             const correct = pickCorrect(correctMap, it.id);
             return (
               <ChoiceRow
-                key={it.id}
+                key={`${it.id}-${index}`}
                 anchorId={`q-${displayIndex}`}
                 item={it}
                 displayIndex={displayIndex}
@@ -492,11 +494,12 @@ function CardColumnNoSticky(props: BaseProps) {
 
       <div className="space-y-4 xs:space-y-5 sm:space-y-6">
         {items.map((it, iIdx) => {
-          const displayIndex = (itemIndexMap.get(it.id) ?? iIdx) + 1;
+          const index = itemIndexMap.get(it.id) ?? iIdx;
+          const displayIndex = index + 1;
           const correct = pickCorrect(correctMap, it.id);
           return (
             <ChoiceRow
-              key={it.id}
+              key={`${it.id}-${index}`}
               anchorId={`q-${displayIndex}`}
               item={it}
               displayIndex={displayIndex}

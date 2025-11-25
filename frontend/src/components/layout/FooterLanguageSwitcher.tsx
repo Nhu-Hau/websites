@@ -6,7 +6,7 @@ import { useLocaleSwitch } from "@/hooks/routing/useLocaleSwitch";
 import { useTranslations } from "next-intl";
 
 export default function FooterLanguageSwitcher() {
-  const { locale, hrefFor, switchLocale } = useLocaleSwitch();
+  const { locale, hrefFor } = useLocaleSwitch();
   const t = useTranslations("layout.footer.language");
   const languages = [
     { code: "vi", label: t("options.vi") },
@@ -21,12 +21,9 @@ export default function FooterLanguageSwitcher() {
           <li key={code}>
             <Link
               href={hrefFor(code)}
+              locale={code}
               className="inline-flex items-center gap-1 hover:text-sky-500 dark:hover:text-sky-400"
               aria-current={locale === code ? "true" : undefined}
-              onClick={(e) => {
-                e.preventDefault();
-                switchLocale(code);
-              }}
             >
               <Globe size={14} /> {label}
             </Link>

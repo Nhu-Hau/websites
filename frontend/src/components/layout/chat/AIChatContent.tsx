@@ -20,6 +20,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { useChat } from "@/context/ChatContext";
 import { useTranslations } from "next-intl";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 type Msg = {
   _id?: string;
@@ -363,6 +364,9 @@ export default function AIChatContent({
   const ariaT = useTranslations("layoutComponents.chat.aria");
   const { user } = useAuth();
   const { open, setUnreadCount } = useChat();
+  const basePrefix = useBasePrefix();
+  const loginHref = `${basePrefix}/login`;
+  const accountHref = `${basePrefix}/account`;
 
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
@@ -854,7 +858,7 @@ export default function AIChatContent({
 
         {!user && (
           <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-            <Link href="/login" className="text-sky-600 hover:underline">
+            <Link href={loginHref} className="text-sky-600 hover:underline">
               {t("loginCta")}
             </Link>{" "}
             {t("loginFooter")}
@@ -862,7 +866,7 @@ export default function AIChatContent({
         )}
         {user && user.access !== "premium" && (
           <p className="mt-2 text-center text-xs text-orange-600 dark:text-orange-400">
-            <Link href="/account" className="hover:underline font-medium">
+            <Link href={accountHref} className="hover:underline font-medium">
               {t("premiumCta")}
             </Link>{" "}
             {t("premiumFooter")}

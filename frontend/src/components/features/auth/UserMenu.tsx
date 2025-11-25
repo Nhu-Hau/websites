@@ -18,7 +18,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
-import { useLocaleSwitch } from "@/hooks/routing/useLocaleSwitch";
 import useClickOutside from "@/hooks/common/useClickOutside";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/lib/toast";
@@ -130,8 +129,7 @@ export default function UserMenu() {
   const t = useTranslations("UserMenu");
   const { user: ctxUser, logout } = useAuth();
   const router = useRouter();
-  const { locale } = useLocaleSwitch();
-  const base = useBasePrefix(locale || "vi"); // 👈 DÙNG base prefix thống nhất
+  const base = useBasePrefix(); // 👈 DÙNG base prefix thống nhất
   const { setOpen, setUser, setMe } = useMobileAvatarSheet();
 
   const [open, setOpenLocal] = useState(false);

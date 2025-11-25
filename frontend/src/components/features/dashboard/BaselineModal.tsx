@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { Loader2, Target } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslations } from "next-intl";
 
 interface BaselineModalProps {
   open: boolean;
@@ -23,6 +24,7 @@ export default function BaselineModal({
   initialData,
 }: BaselineModalProps) {
   const { refresh } = useAuth();
+  const t = useTranslations("baselineModal");
 
   const [source, setSource] = useState<"unknown" | "self_report_official">(
     initialData?.currentToeicSource ?? "unknown"
@@ -58,7 +60,7 @@ export default function BaselineModal({
       if (source === "self_report_official") {
         const value = Number(score);
         if (isNaN(value) || value < 10 || value > 990) {
-          alert("Điểm TOEIC phải từ 10 đến 990");
+          alert(t("scoreValidation"));
           setIsSaving(false);
           return;
         }
@@ -73,7 +75,7 @@ export default function BaselineModal({
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err.message || "Lưu thất bại");
+        alert(err.message || t("saveFailed"));
         setIsSaving(false);
         return;
       }
@@ -83,7 +85,7 @@ export default function BaselineModal({
       onClose();
     } catch (e) {
       console.error("Failed to save baseline", e);
-      alert("Lưu thất bại");
+      alert(t("saveFailed"));
     } finally {
       setIsSaving(false);
     }
@@ -112,10 +114,10 @@ export default function BaselineModal({
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50 leading-tight">
-                Thiết lập baseline TOEIC
+                {t("title")}
               </h3>
               <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
-                Giúp hệ thống cá nhân hóa lộ trình học
+                {t("subtitle")}
               </p>
             </div>
           </div>
@@ -156,10 +158,10 @@ export default function BaselineModal({
 
             <div className="min-w-0 flex-1">
               <p className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-zinc-50 leading-tight">
-                Tôi chưa thi TOEIC / chưa xác định
+                {t("optionUnknown.title")}
               </p>
               <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mt-1 sm:mt-1.5 leading-relaxed">
-                Hệ thống sẽ dùng điểm placement test làm baseline.
+                {t("optionUnknown.desc")}
               </p>
             </div>
           </button>
@@ -195,10 +197,10 @@ export default function BaselineModal({
 
             <div className="min-w-0 flex-1">
               <p className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-zinc-50 leading-tight">
-                Tôi đã thi TOEIC và nhớ điểm
+                {t("optionSelfReport.title")}
               </p>
               <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mt-1 sm:mt-1.5 leading-relaxed">
-                Nhập điểm thi chính thức gần nhất của bạn.
+                {t("optionSelfReport.desc")}
               </p>
             </div>
           </button>
@@ -212,7 +214,7 @@ export default function BaselineModal({
               "
             >
               <label className="text-sm sm:text-base font-semibold text-amber-700 dark:text-amber-300">
-                Điểm TOEIC của bạn *
+                {t("scoreLabel")}
               </label>
 
               <input
@@ -221,7 +223,7 @@ export default function BaselineModal({
                 max={990}
                 value={score}
                 onChange={(e) => setScore(e.target.value)}
-                placeholder="VD: 650"
+                placeholder={t("scorePlaceholder")}
                 className="
                   mt-2 sm:mt-3 w-full rounded-lg sm:rounded-xl border border-amber-200 bg-white px-4 py-3 sm:py-3.5
                   text-base sm:text-lg font-medium text-zinc-900 shadow-sm 
@@ -252,15 +254,15 @@ export default function BaselineModal({
             {isSaving ? (
               <>
                 <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
-                <span className="hidden sm:inline">Đang lưu...</span>
-                <span className="sm:hidden">Đang lưu</span>
+                <span className="hidden sm:inline">{t("saving")}</span>
+                <span className="sm:hidden">{t("savingShort")}</span>
               </>
             ) : (
-              "Lưu baseline"
+              t("saveButton")
             )}
           </button>
           <p className="mt-2 sm:mt-3 text-center text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
-            Vui lòng điền thông tin để tiếp tục sử dụng dashboard
+            {t("footerNote")}
           </p>
         </div>
       </div>

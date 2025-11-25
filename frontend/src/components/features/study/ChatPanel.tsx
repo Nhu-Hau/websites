@@ -407,13 +407,14 @@ export default function ChatPanel({
 
   const handleUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const inputEl = e.currentTarget;
       const file = e.target.files?.[0];
       if (!file) return;
       if (!canUpload) return;
 
       if (file.size > 50 * 1024 * 1024) {
         toast.error(t("fileTooLarge"), { description: t("maxSize") });
-        e.currentTarget.value = "";
+        inputEl.value = "";
         return;
       }
       if (uploadingRef.current) return;
@@ -474,7 +475,7 @@ export default function ChatPanel({
         toast.error(t("uploadError"));
       } finally {
         uploadingRef.current = false;
-        e.currentTarget.value = "";
+        if (inputEl) inputEl.value = "";
       }
     },
     [roomName, canUpload, me, room, saveToLS]

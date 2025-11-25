@@ -2441,7 +2441,13 @@
       "kickConfirmOk": "Yes, kick",
       "cancel": "Cancel",
       "kickSuccess": "Kicked \"{name}\" from room",
-      "kickFailed": "Kick failed"
+      "kickFailed": "Kick failed",
+      "kickReason": "Kicked by teacher/admin",
+      "cannotJoin": "Cannot join room",
+      "retry": "Retry",
+      "connecting": "Connecting to room...",
+      "leftRoom": "You left the room",
+      "chatRoom": "Room Chat"
     },
     "teacherRegister": {
       "title": "Register as a Teacher",
@@ -2983,5 +2989,25 @@
     "description": "Smart TOEIC prep platform with placement tests, adaptive practice, and live study rooms.",
     "siteName": "ToeicPrep",
     "ogImageAlt": "ToeicPrep Banner"
+  },
+  "baselineModal": {
+    "title": "Set up TOEIC baseline",
+    "subtitle": "Help the system personalize your study path",
+    "optionUnknown": {
+      "title": "I haven't taken TOEIC / Not sure",
+      "desc": "The system will use your placement test score as baseline."
+    },
+    "optionSelfReport": {
+      "title": "I've taken TOEIC and remember my score",
+      "desc": "Enter your most recent official test score."
+    },
+    "scoreLabel": "Your TOEIC score *",
+    "scorePlaceholder": "E.g. 650",
+    "scoreValidation": "TOEIC score must be between 10 and 990",
+    "saveFailed": "Save failed",
+    "saving": "Saving...",
+    "savingShort": "Saving",
+    "saveButton": "Save baseline",
+    "footerNote": "Please fill in the information to continue using the dashboard"
   }
 }

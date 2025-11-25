@@ -2835,7 +2835,13 @@
       "kickConfirmOk": "Có, kick",
       "cancel": "Hủy",
       "kickSuccess": "Đã kick \"{name}\" khỏi phòng",
-      "kickFailed": "Kick thất bại"
+      "kickFailed": "Kick thất bại",
+      "kickReason": "Bị kick bởi giáo viên/quản trị viên",
+      "cannotJoin": "Không thể vào phòng",
+      "retry": "Thử lại",
+      "connecting": "Đang kết nối phòng…",
+      "leftRoom": "Bạn đã rời phòng",
+      "chatRoom": "Chat phòng học"
     },
     "teacherRegister": {
       "title": "Đăng ký trở thành Giáo viên",
@@ -3361,5 +3367,25 @@
     "description": "Nền tảng luyện thi TOEIC thông minh với lộ trình cá nhân hóa.",
     "siteName": "ToeicPrep",
     "ogImageAlt": "ToeicPrep Banner"
+  },
+  "baselineModal": {
+    "title": "Thiết lập baseline TOEIC",
+    "subtitle": "Giúp hệ thống cá nhân hóa lộ trình học",
+    "optionUnknown": {
+      "title": "Tôi chưa thi TOEIC / chưa xác định",
+      "desc": "Hệ thống sẽ dùng điểm placement test làm baseline."
+    },
+    "optionSelfReport": {
+      "title": "Tôi đã thi TOEIC và nhớ điểm",
+      "desc": "Nhập điểm thi chính thức gần nhất của bạn."
+    },
+    "scoreLabel": "Điểm TOEIC của bạn *",
+    "scorePlaceholder": "VD: 650",
+    "scoreValidation": "Điểm TOEIC phải từ 10 đến 990",
+    "saveFailed": "Lưu thất bại",
+    "saving": "Đang lưu...",
+    "savingShort": "Đang lưu",
+    "saveButton": "Lưu baseline",
+    "footerNote": "Vui lòng điền thông tin để tiếp tục sử dụng dashboard"
   }
 }

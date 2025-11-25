@@ -301,7 +301,7 @@ function ParticipantsList({ roomName }: { roomName: string }) {
                 credentials: "include",
                 body: JSON.stringify({
                   userId,
-                  reason: "Bị kick bởi giáo viên/quản trị viên",
+                  reason: t("kickReason"),
                 }),
               }
             );
@@ -834,7 +834,7 @@ export default function StudyRoomPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <h2 className="mb-1 text-lg font-semibold text-zinc-900 dark:text-white">
-                  Không thể vào phòng
+                  {t("cannotJoin")}
                 </h2>
                 <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-400">
                   {err}
@@ -844,7 +844,7 @@ export default function StudyRoomPage() {
                   className="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:bg-sky-500 dark:hover:bg-sky-600"
                 >
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Thử lại</span>
+                  <span>{t("retry")}</span>
                 </button>
               </div>
             </div>
@@ -863,7 +863,7 @@ export default function StudyRoomPage() {
               <Loader2 className="h-6 w-6 animate-spin text-sky-600 dark:text-sky-400" />
             </div>
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              Đang kết nối phòng…
+              {t("connecting")}
             </p>
           </div>
         </div>
@@ -884,7 +884,7 @@ export default function StudyRoomPage() {
         audio={isHost}
         connectOptions={{ autoSubscribe: true }}
         className="relative h-full"
-        onDisconnected={() => toast.info("Bạn đã rời phòng")}
+        onDisconnected={() => toast.info(t("leftRoom"))}
       >
         <RoomAudioRenderer />
 
@@ -921,11 +921,11 @@ export default function StudyRoomPage() {
 
       md:h-auto md:w-auto md:px-5 md:py-1.5 md:gap-2 md:text-base
     "
-                aria-label="Chat phòng học"
+                aria-label={t("chatRoom")}
               >
                 <MessageSquare className="h-5 w-5" />
                 {/* ẩn text trên mobile, hiện từ md trở lên */}
-                <span className="hidden md:inline">Chat phòng học</span>
+                <span className="hidden md:inline">{t("chatRoom")}</span>
               </button>
             )}
 

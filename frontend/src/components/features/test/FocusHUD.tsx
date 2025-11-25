@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Timer, Clock, Focus as FocusIcon, Send, Play } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type FocusHUDProps = {
   /** trạng thái */
@@ -51,6 +52,7 @@ export default function FocusHUD({
   onOpenQuickNav,
   onToggleFocus,
 }: FocusHUDProps) {
+  const t = useTranslations("test.hud");
   const showMobile = !resp && !mobileNavOpen; // ẩn mobile HUD khi sheet mở
   const showDesktopFocus = focusMode && !resp;
 
@@ -63,11 +65,11 @@ export default function FocusHUD({
             <div className="flex items-center gap-4 text-sm font-medium">
               <span className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
                 <Timer className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                {durationMin} phút
+                {durationMin} {t("minutes")}
               </span>
               <span className="text-zinc-600 dark:text-zinc-400">/</span>
               <span className="text-zinc-700 dark:text-zinc-300">
-                {total} câu
+                {total} {t("questions")}
               </span>
             </div>
             <button
@@ -75,7 +77,7 @@ export default function FocusHUD({
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition-all hover:scale-105"
             >
               <Play className="w-4 h-4" />
-              Bắt đầu
+              {t("start")}
             </button>
           </div>
         </div>
@@ -90,8 +92,8 @@ export default function FocusHUD({
               border border-zinc-300 dark:border-zinc-700 px-3 py-2.5 sm:px-5 sm:py-4
               shadow-2xl text-[11px] sm:text-sm font-medium"
           >
-            <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
-              Câu{" "}
+            <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200 whitespace-nowrap">
+              {t("questions").charAt(0).toUpperCase() + t("questions").slice(1)}{" "}
               <span className="px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300">
                 {currentIndex + 1}
               </span>
@@ -119,7 +121,7 @@ export default function FocusHUD({
                   text-zinc-800 dark:text-zinc-100 font-semibold
                   transition-all hover:scale-105 active:scale-100
                 "
-                aria-label="Điều hướng nhanh"
+                aria-label={t("quickNav")}
               >
                 <FocusIcon className="w-4 h-4" />
               </button>
@@ -133,7 +135,7 @@ export default function FocusHUD({
                   text-zinc-800 dark:text-zinc-100 font-semibold
                   transition-all hover:scale-105 active:scale-100
                 "
-                aria-label="Điều hướng nhanh"
+                aria-label={t("quickNav")}
               >
                 <FocusIcon className="w-4 h-4" />
               </button>
@@ -149,7 +151,7 @@ export default function FocusHUD({
                 "
               >
                 <Send className="w-4 h-4" />
-                Nộp
+                {t("submit")}
               </button>
             </div>
           </div>
@@ -164,11 +166,11 @@ export default function FocusHUD({
               <div className="flex items-center gap-4 text-sm font-medium">
                 <span className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
                   <Timer className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  {durationMin} phút
+                  {durationMin} {t("minutes")}
                 </span>
                 <span className="text-zinc-600 dark:text-zinc-400">/</span>
                 <span className="text-zinc-700 dark:text-zinc-300">
-                  {total} câu
+                  {total} {t("questions")}
                 </span>
               </div>
               <button
@@ -176,7 +178,7 @@ export default function FocusHUD({
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition-all hover:scale-105"
               >
                 <Play className="w-4 h-4" />
-                Bắt đầu
+                {t("start")}
               </button>
             </div>
           ) : (
@@ -188,7 +190,7 @@ export default function FocusHUD({
                 px-3 py-2.5 sm:px-5 sm:py-4 shadow-2xl text-[11px] sm:text-sm font-medium"
             >
               <div className="flex items-center gap-1 text-zinc-800 dark:text-zinc-200">
-                Câu{" "}
+                {t("questions").charAt(0).toUpperCase() + t("questions").slice(1)}{" "}
                 <span className="px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300">
                   {currentIndex + 1}
                 </span>
@@ -215,7 +217,7 @@ export default function FocusHUD({
                     transition-all hover:scale-105 active:scale-100
                   "
                   aria-label="Toggle sidebar"
-                  title="Mở/Đóng sidebar (phím F)"
+                  title={t("toggleSidebar")}
                 >
                   <FocusIcon className="w-4 h-4" />
                 </button>
@@ -231,7 +233,7 @@ export default function FocusHUD({
                   "
                 >
                   <Send className="w-4 h-4" />
-                  Nộp
+                  {t("submit")}
                 </button>
               </div>
             </div>

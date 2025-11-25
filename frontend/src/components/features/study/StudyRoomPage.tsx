@@ -16,6 +16,7 @@ import {
 import { Track, LocalVideoTrack } from "livekit-client";
 import "@livekit/components-styles";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/lib/toast";
 import {
@@ -61,6 +62,7 @@ function LeaveRoomButton() {
   const room = useRoomContext();
   const router = useRouter();
   const basePrefix = useBasePrefix();
+  const t = useTranslations("study.room");
 
   const leave = async () => {
     try {
@@ -92,14 +94,14 @@ function LeaveRoomButton() {
 
         md:h-auto md:w-auto md:gap-2 md:rounded-lg md:px-3 md:py-2
       "
-      aria-label="Rời phòng"
+      aria-label={t("leave")}
     >
       <LogOut className="h-4 w-4 text-red-600 dark:text-red-400" />
       {/* text ẩn trên mobile, hiện từ md trở lên */}
-      <span className="hidden md:inline">Rời phòng</span>
+      <span className="hidden md:inline">{t("leave")}</span>
       {/* (Esc) chỉ hiện trên màn hình lớn hơn (lg) */}
       <span className="ml-1 hidden text-xs text-zinc-500 dark:text-zinc-500 lg:inline">
-        (Esc)
+        {t("esc")}
       </span>
     </button>
   );
@@ -107,6 +109,7 @@ function LeaveRoomButton() {
 function HostTile({ hostIdentity }: { hostIdentity: string }) {
   const { localParticipant } = useLocalParticipant();
   const participants = useParticipants();
+  const t = useTranslations("study.room");
 
   const hostP = useMemo(() => {
     if (localParticipant?.identity === hostIdentity) return localParticipant;
@@ -142,10 +145,10 @@ function HostTile({ hostIdentity }: { hostIdentity: string }) {
             <Crown className="h-8 w-8 text-white" />
           </div>
           <p className="text-lg font-semibold text-white">
-            Đang chờ chủ phòng…
+            {t("waitingHost")}
           </p>
           <p className="text-sm text-zinc-400">
-            Khi giáo viên tham gia, video sẽ hiển thị ở đây.
+            {t("teacherJoined")}
           </p>
         </div>
       </div>
@@ -176,7 +179,7 @@ function HostTile({ hostIdentity }: { hostIdentity: string }) {
             </div>
             <p className="text-base font-semibold">{nameLabel}</p>
             <p className="flex items-center justify-center gap-1.5 text-sm text-zinc-400">
-              <VideoOff className="h-4 w-4" /> Camera chưa bật
+              <VideoOff className="h-4 w-4" /> {t("cameraOff")}
             </p>
           </div>
         </div>
@@ -190,6 +193,7 @@ function HostControls() {
   const { localParticipant } = useLocalParticipant();
   const [isSharing, setIsSharing] = useState(false);
   const [screenTrack, setScreenTrack] = useState<LocalVideoTrack | null>(null);
+  const t = useTranslations("study.room");
 
   const toggleScreenShare = useCallback(async () => {
     if (!room || !localParticipant) return;
@@ -228,7 +232,7 @@ function HostControls() {
       }
     } catch (e: any) {
       console.error("Screen share error:", e);
-      toast.error("Không thể chia sẻ màn hình", { description: e?.message });
+      toast.error(t("shareScreenError"), { description: e?.message });
     }
   }, [room, localParticipant, isSharing, screenTrack]);
 
@@ -255,7 +259,7 @@ function HostControls() {
               ? "border-red-500 bg-red-600 text-white hover:bg-red-700"
               : "border-white/20 bg-white/5 text-black hover:bg-white/15"
           }`}
-          title={isSharing ? "Dừng chia sẻ màn hình" : "Chia sẻ màn hình"}
+          title={isSharing ? t("stopShare") : t("shareScreen")}
         >
           {isSharing ? (
             <MonitorOff className="h-5 w-5" />
@@ -274,16 +278,17 @@ function ParticipantsList({ roomName }: { roomName: string }) {
   const [showList, setShowList] = useState(false);
   const { show, Modal: ConfirmModal } = useConfirmModal();
   const listRef = React.useRef<HTMLDivElement>(null);
+  const t = useTranslations("study.room");
 
   const handleKick = useCallback(
     async (userId: string, userName: string) => {
       show(
         {
-          title: "Xác nhận",
-          message: `Bạn có chắc muốn kick "${userName}" khỏi phòng?`,
+          title: t("kickConfirmTitle"),
+          message: t("kickConfirmMessage", { name: userName }),
           icon: "warning",
-          confirmText: "Có, kick",
-          cancelText: "Hủy",
+          confirmText: t("kickConfirmOk"),
+          cancelText: t("cancel"),
           confirmColor: "red",
         },
         async () => {
@@ -302,12 +307,12 @@ function ParticipantsList({ roomName }: { roomName: string }) {
             );
             if (!res.ok) {
               const error = await res.json().catch(() => ({}));
-              toast.error(error.message || "Kick thất bại");
+              toast.error(error.message || t("kickFailed"));
               return;
             }
-            toast.success(`Đã kick "${userName}" khỏi phòng`);
+            toast.success(t("kickSuccess", { name: userName }));
           } catch (e: any) {
-            toast.error("Kick thất bại");
+            toast.error(t("kickFailed"));
             console.error("Failed to kick:", e);
           }
         }
@@ -345,7 +350,7 @@ function ParticipantsList({ roomName }: { roomName: string }) {
       {showList && (
         <div className="absolute top-full right-0 mt-2 max-h-96 w-72 overflow-y-auto rounded-xl border border-zinc-200 bg-white p-3 text-sm shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
           <div className="mb-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            Người tham gia ({participants.length})
+            {t("participants")} ({participants.length})
           </div>
           <div className="space-y-1">
             {participants.map((p) => {
@@ -359,7 +364,7 @@ function ParticipantsList({ roomName }: { roomName: string }) {
                     {p.name || p.identity}{" "}
                     {isMe && (
                       <span className="font-medium text-sky-600 dark:text-sky-400">
-                        (Bạn)
+                        {t("you")}
                       </span>
                     )}
                   </span>
@@ -369,7 +374,7 @@ function ParticipantsList({ roomName }: { roomName: string }) {
                         handleKick(p.identity, p.name || p.identity)
                       }
                       className="rounded-lg p-1.5 text-red-600 transition-colors duration-200 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                      title="Kick"
+                      title={t("kick")}
                     >
                       <Ban className="h-4 w-4" />
                     </button>
@@ -392,6 +397,7 @@ function HeartReaction() {
     Array<{ id: string; x: number; y: number; timestamp: number }>
   >([]);
   const [showFullscreen, setShowFullscreen] = useState(false);
+  const t = useTranslations("study.room");
 
   useEffect(() => {
     if (!room) return;
@@ -478,7 +484,7 @@ function HeartReaction() {
       <button
         onClick={sendHeart}
         className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-black transition-colors duration-200"
-        title="Thả tim"
+        title={t("heart")}
       >
         <Heart className="h-5 w-5 fill-current" />
       </button>
@@ -566,6 +572,7 @@ function LikeReaction() {
     Array<{ id: string; x: number; y: number; timestamp: number }>
   >([]);
   const [showFullscreen, setShowFullscreen] = useState(false);
+  const t = useTranslations("study.room");
 
   useEffect(() => {
     if (!room) return;
@@ -652,7 +659,7 @@ function LikeReaction() {
       <button
         onClick={sendLike}
         className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-black transition-colors duration-200"
-        title="Thả like"
+        title={t("like")}
       >
         <ThumbsUp className="h-5 w-5 fill-current" />
       </button>
@@ -727,6 +734,7 @@ export default function StudyRoomPage() {
   const params = useParams<{ locale?: string; room?: string }>();
   const room = String(params?.room ?? "");
   const { user } = useAuth();
+  const t = useTranslations("study.room");
 
   const [data, setData] = useState<JoinResp | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -795,7 +803,7 @@ export default function StudyRoomPage() {
         if (lastErr) throw lastErr;
       } catch (e: any) {
         if (e?.name !== "AbortError") {
-          const msg = e?.message || "Không thể lấy token tham gia phòng.";
+          const msg = e?.message || t("tokenError");
           setErr(msg);
         }
       } finally {

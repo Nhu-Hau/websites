@@ -4,6 +4,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Item, ChoiceId } from "@/types/tests.types";
 import { Eye, EyeOff, Focus as FocusIcon, Clock } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 function fmtMMSS(sec: number) {
   const safe = Math.max(0, sec | 0);
@@ -55,6 +56,7 @@ export function Sidebar({
   focusMode: boolean;
   onToggleFocus: () => void;
 }) {
+  const t = useTranslations("test.sidebar");
   const [leftSec, setLeftSec] = useState<number>(
     Number.isFinite(initialLeftSec as number)
       ? (initialLeftSec as number)
@@ -145,14 +147,14 @@ export function Sidebar({
     <aside
       className={`${asideBase} ${asideSize}`}
       role="complementary"
-      aria-label="Thanh điều hướng bài làm"
+      aria-label={t("ariaLabel")}
       aria-expanded={!focusMode}
     >
       {/* Focus Toggle */}
       <button
         type="button"
         onClick={onToggleFocus}
-        title="Focus mode (phím F)"
+        title={t("focusModeTitle")}
         className={`group flex w-full items-center justify-center rounded-xl p-2 transition-all duration-300 ${
           focusMode
             ? "bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-200 shadow-sm"
@@ -162,7 +164,7 @@ export function Sidebar({
         <FocusIcon className="h-4 w-4 transition-transform group-hover:scale-110" />
         {!focusMode && (
           <span className="ml-2 text-[11px] font-bold tracking-[0.16em] uppercase">
-            Focus
+            {t("focus")}
           </span>
         )}
       </button>
@@ -178,16 +180,16 @@ export function Sidebar({
               <div className="flex items-center justify-between text-[11px] font-medium">
                 <div className="flex flex-col">
                   <span className="text-zinc-500 dark:text-zinc-400">
-                    Tiến độ
+                    {t("progress")}
                   </span>
                   <span className="mt-0.5 text-[13px] font-semibold text-zinc-900 dark:text-zinc-50">
-                    {answered}/{total} câu
+                    {answered}/{total} {t("questions")}
                   </span>
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
                     <Clock className="h-3.5 w-3.5" />
-                    Thời gian
+                    {t("time")}
                   </span>
                   <span className="mt-0.5 text-[13px] font-semibold text-red-500 dark:text-sky-300">
                     {countdownLabel}
@@ -211,7 +213,7 @@ export function Sidebar({
                 disabled={!canSubmit}
                 className="mt-3 w-full rounded-xl bg-zinc-900 px-3 py-2 text-[11px] font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200"
               >
-                Nộp bài
+                {t("submit")}
               </button>
             </>
           ) : (
@@ -219,7 +221,7 @@ export function Sidebar({
               <div className="flex items-center justify-between text-[11px]">
                 <span className="flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
                   <Clock className="h-3.5 w-3.5" />
-                  Thời gian làm
+                  {t("timeSpent")}
                 </span>
                 <span className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-50">
                   {timeLabel}
@@ -233,12 +235,12 @@ export function Sidebar({
                 {showDetails ? (
                   <>
                     <EyeOff className="h-3.5 w-3.5" />
-                    Ẩn đáp án & giải thích
+                    {t("hideAnswers")}
                   </>
                 ) : (
                   <>
                     <Eye className="h-3.5 w-3.5" />
-                    Hiện đáp án & giải thích
+                    {t("showAnswers")}
                   </>
                 )}
               </button>
@@ -250,11 +252,11 @@ export function Sidebar({
         <div className="flex-1 rounded-2xl border border-zinc-200/80 bg-white/90 p-3 shadow-sm backdrop-blur-sm dark:border-zinc-700/80 dark:bg-zinc-900/90">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-              Câu hỏi
+              {t("questionList")}
             </p>
             {!resp && (
               <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
-                Nhấn để chuyển nhanh
+                {t("quickJump")}
               </span>
             )}
           </div>
@@ -302,7 +304,7 @@ export function Sidebar({
                     key={it.id}
                     onClick={() => onJump(i)}
                     className={cls}
-                    title={`Câu ${i + 1}`}
+                    title={t("questionTitle", { n: i + 1 })}
                   >
                     {i + 1}
                   </button>

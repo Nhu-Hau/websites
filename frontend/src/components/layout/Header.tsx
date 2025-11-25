@@ -45,7 +45,7 @@ export default function Header() {
               {/* Logo image + glow */}
               <div className="relative">
                 <Image
-                  src="/images/logotoeic.png"
+                  src="/logotoeic.png"
                   alt={t("logoAlt")}
                   width={48}
                   height={48}

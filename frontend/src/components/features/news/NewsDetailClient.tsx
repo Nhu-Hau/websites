@@ -9,6 +9,7 @@ import { PremiumGuard } from "./PremiumGuard";
 import { ArrowLeft, Calendar, Eye, Sparkles, Newspaper } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { cn } from "@/lib/utils";
+import { useTranslations, useLocale } from "next-intl";
 
 interface NewsItem {
   _id: string;
@@ -24,26 +25,15 @@ interface NewsDetailClientProps {
   newsId: string;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  all: "Tất cả",
-  education: "Giáo dục",
-  politics: "Chính trị",
-  travel: "Du lịch",
-  technology: "Công nghệ",
-  sports: "Thể thao",
-  entertainment: "Giải trí",
-  business: "Kinh doanh",
-  society: "Xã hội",
-  health: "Sức khỏe",
-  culture: "Văn hóa",
-};
-
 export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const { user } = useAuth();
   const [news, setNews] = useState<NewsItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations("newsComponents.detail");
+  const tCats = useTranslations("newsComponents.categories");
+  const locale = useLocale();
 
   useEffect(() => {
     fetchNews();
@@ -68,7 +58,7 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
   };
 
   const getCategoryLabel = (category: string) => {
-    return CATEGORY_LABELS[category] || category;
+    return tCats.has(category) ? tCats(category) : category;
   };
 
   const getImageUrl = (s3Url: string) => {
@@ -80,7 +70,7 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
+    return date.toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -121,17 +111,17 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
               <Eye className="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
             </div>
             <p className="text-lg xs:text-xl font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
-              Không tìm thấy bài viết
+              {t("notFound")}
             </p>
             <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-              Bài viết này có thể đã bị xóa hoặc không tồn tại
+              {t("notFoundDesc")}
             </p>
             <button
               onClick={handleBack}
               className="inline-flex items-center gap-2 rounded-xl border border-[#4063bb]/20 bg-gradient-to-br from-[#4063bb] to-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#4063bb]/30 transition-all duration-200 hover:shadow-xl hover:shadow-[#4063bb]/40 hover:scale-105 active:scale-95 dark:border-[#4063bb]/30"
             >
               <ArrowLeft className="h-4 w-4" />
-              Quay lại danh sách
+              {t("backToList")}
             </button>
           </div>
         </div>
@@ -151,7 +141,7 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
           className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-[#4063bb] xs:px-4 xs:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-200"
         >
           <ArrowLeft className="h-4 w-4" />
-          Quay lại
+          {t("back")}
         </button>
 
         {/* Main Article Card */}
@@ -183,7 +173,7 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Eye className="h-4 w-4" />
-                  <span>{news.viewCount.toLocaleString("vi-VN")} lượt xem</span>
+                  <span>{t("viewCount", { count: news.viewCount.toLocaleString(locale === "vi" ? "vi-VN" : "en-US") })}</span>
                 </div>
               </div>
             </div>
@@ -199,10 +189,10 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
                 </div>
                 <div>
                   <p className="text-sm xs:text-base font-semibold text-zinc-900 dark:text-zinc-50 mb-1">
-                    Nâng cấp lên Premium
+                    {t("premiumBanner.title")}
                   </p>
                   <p className="text-xs xs:text-sm text-zinc-700 dark:text-zinc-300">
-                    Truy cập tính năng dịch từ và lưu từ vựng khi đọc bài viết!
+                    {t("premiumBanner.description")}
                   </p>
                 </div>
               </div>

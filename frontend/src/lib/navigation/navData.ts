@@ -58,7 +58,7 @@ export function MenuNav(): NavItemType[] {
         },
       ],
     },
-    { label: t("dashboard"), href: `${basePrefix}/dashboard` },
+    { label: t("dashboard.label"), href: `${basePrefix}/dashboard` },
   ];
 
   return items;

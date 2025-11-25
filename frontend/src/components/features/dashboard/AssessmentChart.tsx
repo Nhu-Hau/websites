@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { Gauge, Loader2, AlertCircle, Clock3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /* ===================== Types ===================== */
 type PlacementAttemptLite = {
@@ -98,7 +99,8 @@ interface ScoreComparisonResult {
 
 function comparePlacementWithSelfReported(
   reportedScore: number | null,
-  placementScore: number | null
+  placementScore: number | null,
+  t: any
 ): ScoreComparisonResult | null {
   if (
     reportedScore == null ||
@@ -121,8 +123,8 @@ function comparePlacementWithSelfReported(
       level,
       diff,
       absDiff,
-      message: "Điểm placement test khá gần với điểm TOEIC bạn khai báo.",
-      subtitle: `Bạn khai báo: ${reportedScore} điểm • Placement test ước tính: ${placementScore} điểm (chênh lệch khoảng ${absDiff} điểm). Hệ thống sẽ dùng kết quả placement để đề xuất lộ trình chi tiết cho từng Part.`,
+      message: t("comparison.matchMsg"),
+      subtitle: t("comparison.matchSub", { reported: reportedScore, placement: placementScore, diff: absDiff }),
     };
   }
 
@@ -131,8 +133,8 @@ function comparePlacementWithSelfReported(
       level,
       diff,
       absDiff,
-      message: "Điểm placement test hơi lệch so với điểm TOEIC bạn khai báo.",
-      subtitle: `Bạn khai báo: ${reportedScore} điểm • Placement test ước tính: ${placementScore} điểm (chênh lệch khoảng ${absDiff} điểm). Nguyên nhân có thể do thời gian làm bài khác với đề thi thật, điểm TOEIC bạn thi đã cách đây một thời gian, hoặc bài placement chỉ gồm 55 câu nên có sai số nhất định. Hệ thống vẫn ưu tiên dùng placement test để gợi ý lộ trình.`,
+      message: t("comparison.mediumMsg"),
+      subtitle: t("comparison.mediumSub", { reported: reportedScore, placement: placementScore, diff: absDiff }),
     };
   }
 
@@ -140,9 +142,8 @@ function comparePlacementWithSelfReported(
     level,
     diff,
     absDiff,
-    message:
-      "Điểm placement test lệch khá nhiều so với điểm TOEIC bạn khai báo.",
-    subtitle: `Bạn khai báo: ${reportedScore} điểm • Placement test ước tính: ${placementScore} điểm (chênh lệch khoảng ${absDiff} điểm). Có thể do bạn làm bài khi chưa tập trung, điểm TOEIC bạn nhập là từ kỳ thi đã khá lâu, hoặc đây chỉ là điểm ước lượng trên 55 câu. Hệ thống sẽ ưu tiên dùng kết quả placement để phân level hiện tại. Nếu bạn cảm thấy kết quả chưa phản ánh đúng trình độ, hãy luyện thêm một thời gian rồi làm lại progress test để hệ thống đánh giá ổn định hơn.`,
+    message: t("comparison.largeMsg"),
+    subtitle: t("comparison.largeSub", { reported: reportedScore, placement: placementScore, diff: absDiff }),
   };
 }
 
@@ -189,8 +190,8 @@ function formatDateTime(iso?: string | null) {
     .padStart(2, "0")}`;
 }
 
-function formatRemainingMs(ms?: number | null) {
-  if (ms == null || ms <= 0) return "ít phút nữa";
+function formatRemainingMs(ms: number | null | undefined, t: any) {
+  if (ms == null || ms <= 0) return t("time.fewMinutes");
   const totalSeconds = Math.ceil(ms / 1000);
   const days = Math.floor(totalSeconds / (60 * 60 * 24));
   const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
@@ -198,33 +199,33 @@ function formatRemainingMs(ms?: number | null) {
   const seconds = totalSeconds % 60;
 
   if (days > 0) {
-    return `${days} ngày ${hours} giờ`;
+    return `${days} ${t("time.days")} ${hours} ${t("time.hours")}`;
   }
   if (hours > 0) {
-    return `${hours} giờ ${minutes} phút`;
+    return `${hours} ${t("time.hours")} ${minutes} ${t("time.minutes")}`;
   }
   if (minutes > 0) {
-    return `${minutes} phút ${seconds} giây`;
+    return `${minutes} ${t("time.minutes")} ${seconds} ${t("time.seconds")}`;
   }
-  return `${seconds} giây`;
+  return `${seconds} ${t("time.seconds")}`;
 }
 
-function describeEligibilityReason(info: ProgressEligibilityInfo | null) {
+function describeEligibilityReason(info: ProgressEligibilityInfo | null, t: any) {
   if (!info) return "";
   switch (info.reason) {
     case "no_practice_yet":
-      return "Hãy làm ít nhất 1 bài Practice để mở Progress Test.";
+      return t("eligibility.descNoPractice");
     case "insufficient_practice_tests":
       const current = info.practiceTestCount ?? 0;
       const required = info.requiredPracticeTests ?? 3;
       const remaining = required - current;
-      return `Bạn cần hoàn thành ${remaining} bài Practice Test nữa (đã làm ${current}/${required} bài).`;
+      return t("eligibility.descInsufficient", { remaining, current, required });
     case "no_practice_after_progress":
-      return "Bạn cần hoàn thành một bài Practice sau lần Progress Test gần nhất.";
+      return t("eligibility.descNoPracticeAfter");
     case "waiting_window":
-      return "Bạn vừa luyện xong Practice, hệ thống sẽ mở Progress Test sau đủ thời gian theo chu kỳ.";
+      return t("eligibility.descWaiting");
     default:
-      return "Hệ thống tự mở Progress Test theo chu kỳ luyện tập 5 ngày.";
+      return t("eligibility.descDefault");
   }
 }
 
@@ -254,6 +255,7 @@ const comparisonToneStyles = {
 
 /* ===================== Component ===================== */
 export default function AssessmentChart() {
+  const t = useTranslations("dashboard.assessment");
   const [placementHist, setPlacementHist] = React.useState<
     PlacementAttemptLite[]
   >([]);
@@ -432,9 +434,10 @@ export default function AssessmentChart() {
     if (!assessmentData) return null;
     return comparePlacementWithSelfReported(
       assessmentData.selfReportedScore,
-      assessmentData.placementScore
+      assessmentData.placementScore,
+      t
     );
-  }, [assessmentData]);
+  }, [assessmentData, t]);
 
   const progressWindowDays = React.useMemo(() => {
     if (!progressEligibility?.windowMinutes) return null;
@@ -466,14 +469,14 @@ export default function AssessmentChart() {
         return;
       }
       const remaining = Math.max(0, nextEligibleAt - now);
-      setRemainingTime(formatRemainingMs(remaining));
+      setRemainingTime(formatRemainingMs(remaining, t));
     };
 
     updateRemaining();
     const interval = setInterval(updateRemaining, 1000); // Update mỗi giây
 
     return () => clearInterval(interval);
-  }, [progressEligibility?.remainingMs, progressEligibility?.nextEligibleAt]);
+  }, [progressEligibility?.remainingMs, progressEligibility?.nextEligibleAt, t]);
 
   const anchorPracticeText = React.useMemo(() => {
     return formatDateTime(progressEligibility?.since ?? null);
@@ -514,7 +517,7 @@ export default function AssessmentChart() {
         <div className={CARD_BASE}>
           <div className="mb-3 flex items-center justify-between gap-3">
             <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-900 dark:text-slate-50">
-              Tổng quan đánh giá
+              {t("overviewTitle")}
             </h4>
             {comparison && (
               <button
@@ -530,7 +533,7 @@ export default function AssessmentChart() {
               >
                 <AlertCircle className="h-3.5 w-3.5" />
                 <span className="sr-only">
-                  {showComparisonCard ? "Ẩn so sánh điểm" : "Hiện so sánh điểm"}
+                  {showComparisonCard ? t("comparison.hide") : t("comparison.show")}
                 </span>
               </button>
             )}
@@ -538,32 +541,32 @@ export default function AssessmentChart() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div>
               <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Điểm khai báo
+                {t("selfReported")}
               </p>
               <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-50">
                 {assessmentData.selfReportedScore != null
-                  ? `${assessmentData.selfReportedScore} điểm`
-                  : "Chưa xác định"}
+                  ? `${assessmentData.selfReportedScore} ${t("chart.tooltip", { score: "" }).replace("0", "").trim()}`
+                  : t("chart.tooltip", { score: "" }).replace("0", "").trim() === "điểm" ? "Chưa xác định" : "Undefined"}
               </p>
             </div>
             <div>
               <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Placement Test
+                {t("placementTest")}
               </p>
               <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-50">
                 {assessmentData.placementScore != null
-                  ? `${assessmentData.placementScore} điểm`
-                  : "Chưa có"}
+                  ? `${assessmentData.placementScore} ${t("chart.tooltip", { score: "" }).replace("0", "").trim()}`
+                  : t("chart.tooltip", { score: "" }).replace("0", "").trim() === "điểm" ? "Chưa có" : "None"}
               </p>
             </div>
             <div>
               <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Progress Test mới nhất
+                {t("latestProgress")}
               </p>
               <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-50">
                 {assessmentData.latestProgressScore != null
-                  ? `${assessmentData.latestProgressScore} điểm`
-                  : "Chưa có"}
+                  ? `${assessmentData.latestProgressScore} ${t("chart.tooltip", { score: "" }).replace("0", "").trim()}`
+                  : t("chart.tooltip", { score: "" }).replace("0", "").trim() === "điểm" ? "Chưa có" : "None"}
               </p>
             </div>
           </div>
@@ -587,39 +590,39 @@ export default function AssessmentChart() {
                 </div>
               </div>
               <div className="space-y-1">
-                <p className={SECTION_LABEL_CLASS}>Chu kỳ Progress Test</p>
+                <p className={SECTION_LABEL_CLASS}>{t("eligibility.cycle", { days: 5 }).split(" ")[0] + " Progress Test"}</p>
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                   {progressEligibility.eligible
-                    ? "Đã đủ điều kiện làm Progress Test"
+                    ? t("eligibility.eligible")
                     : progressEligibility.reason === "insufficient_practice_tests"
-                    ? "Chưa đủ điều kiện làm Progress Test"
+                    ? t("eligibility.insufficient")
                     : nextEligibleText
-                    ? `Sẽ mở lại vào ${nextEligibleText}`
-                    : "Đang chờ mở Progress Test"}
+                    ? t("eligibility.reopen", { time: nextEligibleText })
+                    : t("eligibility.waiting")}
                 </p>
                 {remainingTime && !progressEligibility.eligible && (
                   <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
-                    ⏱️ Còn lại: {remainingTime}
+                    ⏱️ {t("eligibility.remaining", { time: remainingTime })}
                   </p>
                 )}
                 <p className="text-[11px] text-slate-600 dark:text-slate-400">
                   {progressEligibility.eligible
-                    ? "Bạn có thể làm bài để cập nhật điểm dự đoán mới nhất."
-                    : describeEligibilityReason(progressEligibility)}
+                    ? t("eligibility.descEligible")
+                    : describeEligibilityReason(progressEligibility, t)}
                 </p>
                 {!progressEligibility.eligible &&
                   progressEligibility.reason === "waiting_window" &&
                   progressEligibility.remainingMs != null &&
                   progressEligibility.remainingMs > 0 && (
                     <p className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
-                      ⏱️ Còn lại: {formatRemainingMs(progressEligibility.remainingMs)}
+                      ⏱️ {t("eligibility.remaining", { time: formatRemainingMs(progressEligibility.remainingMs, t) })}
                     </p>
                   )}
                 {!progressEligibility.eligible && anchorPracticeText && (
                   <p className="text-[11px] text-slate-500 dark:text-slate-500">
-                    Mốc tính từ {anchorPracticeText}
+                    {t("eligibility.anchor", { time: anchorPracticeText })}
                     {progressWindowDays
-                      ? ` • chu kỳ ${progressWindowDays} ngày`
+                      ? ` • ${t("eligibility.cycle", { days: progressWindowDays })}`
                       : ""}
                   </p>
                 )}
@@ -636,7 +639,7 @@ export default function AssessmentChart() {
                   : "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-zinc-800 dark:text-zinc-500"
               )}
             >
-              {progressEligibility.eligible ? "Làm Progress Test" : "Đang khóa"}
+              {progressEligibility.eligible ? t("eligibility.actionStart") : t("eligibility.actionLocked")}
             </Link>
           </div>
         </div>
@@ -661,10 +664,10 @@ export default function AssessmentChart() {
           </div>
           <div className="min-w-0">
             <h3 className="text-lg xs:text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-              Điểm TOEIC theo thời gian
+              {t("chart.title")}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Listening, Reading &amp; Overall (đã quy đổi thang điểm TOEIC)
+              {t("chart.subtitle")}
             </p>
           </div>
         </div>
@@ -684,7 +687,7 @@ export default function AssessmentChart() {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Đang tải dữ liệu...
+              {t("chart.loading")}
             </p>
           </div>
         ) : assessmentLineData.length > 0 ? (
@@ -746,13 +749,13 @@ export default function AssessmentChart() {
 
                   const kind =
                       props?.payload?.kind === "baseline"
-                        ? "Baseline"
+                        ? t("chart.kindBaseline")
                         : props?.payload?.kind === "progress"
-                      ? "Progress Test"
-                      : "Placement Test";
+                      ? t("chart.kindProgress")
+                      : t("chart.kindPlacement");
 
                     return [
-                      rounded5 != null ? `${rounded5} điểm` : "Chưa có dữ liệu",
+                      rounded5 != null ? t("chart.tooltip", { score: rounded5 }) : "Chưa có dữ liệu",
                       `${name} • ${kind}`,
                     ];
                   }}
@@ -798,28 +801,9 @@ export default function AssessmentChart() {
                 dataKey="Overall"
                 stroke="#22c55e"
                 strokeWidth={2.4}
-                  dot={((props: any) => {
-                    if (props.payload?.kind === "baseline") {
-                      // Use index or cx/cy combination as key for React
-                      const key = props.index !== undefined 
-                        ? `baseline-dot-${props.index}` 
-                        : `baseline-dot-${props.cx}-${props.cy}`;
-                      return (
-                        <circle
-                          key={key}
-                          cx={props.cx}
-                          cy={props.cy}
-                          r={6}
-                          fill="#f59e0b"
-                          stroke="#f59e0b"
-                          strokeWidth={2}
-                        />
-                      );
-                    }
-                    return false;
-                  }) as any}
+                dot={false}
                 activeDot={{
-                  r: 4.5,
+                  r: 4,
                   stroke: "#22c55e",
                   strokeWidth: 2,
                   fill: "#dcfce7",
@@ -830,62 +814,15 @@ export default function AssessmentChart() {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-zinc-800 dark:text-zinc-500">
-              <Gauge className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="mb-1 text-sm font-medium text-slate-900 dark:text-slate-50">
-                Chưa có dữ liệu Assessment
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Hãy làm Placement Test hoặc Progress Test để xem biểu đồ điểm
-                TOEIC của bạn.
-              </p>
-            </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {t("chart.loading")}
+            </p>
           </div>
         )}
       </div>
       </div>
-
-      {/* Legend */}
-      {assessmentLineData.length > 0 && (
-        <div className="mt-4 flex flex-col gap-3 text-[10px] text-slate-600 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:text-[11px]">
-          <div className="flex flex-wrap items-center gap-3">
-            {[
-              { label: "Listening", color: "from-sky-400 to-sky-500" },
-              { label: "Reading", color: "from-indigo-400 to-indigo-500" },
-              { label: "Overall", color: "from-emerald-400 to-emerald-500" },
-            ].map((item) => (
-              <span
-                key={item.label}
-                className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600 shadow-sm dark:bg-zinc-800/80 dark:text-zinc-200"
-              >
-                <span
-                  className={cn(
-                    "h-1.5 w-6 rounded-full bg-gradient-to-r",
-                    item.color
-                  )}
-                />
-                {item.label}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {assessmentData?.selfReportedScore != null && (
-              <div className="flex items-center gap-1.5">
-                <span className="h-0.5 w-4 rounded-full bg-amber-500" />
-                <span>Baseline ({assessmentData.selfReportedScore} điểm)</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1.5">
-              <span className="inline-flex h-1.5 w-1.5 rounded-full bg-sky-500" />
-              <span>Placement / Progress được xếp trên cùng trục 0–990</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -12,16 +12,14 @@ import {
   Bell,
   BellRing,
   AlarmClock,
-  Repeat,
-  Pencil,
-  Trash2,
-  Loader2,
   Trophy,
   Target,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type StudyPlan =
   | "practice_p1"
@@ -60,62 +58,18 @@ interface StudyScheduleData {
   recurrence?: Recurrence;
 }
 
-const PLAN_OPTIONS: { value: StudyPlan; label: string; color: string }[] = [
-  {
-    value: "auto",
-    label: "Tự động (Smart Auto)",
-    color: "from-[#3B8561] to-[#31694E]",
-  },
-  {
-    value: "progress",
-    label: "Progress Test",
-    color: "from-[#3B8561] to-[#31694E]",
-  },
-  {
-    value: "mini_progress",
-    label: "Mini-Progress",
-    color: "from-[#3B8561] to-[#31694E]",
-  },
-  {
-    value: "practice_p1",
-    label: "Luyện Part 1",
-    color: "from-[#3B8561] to-[#31694E]",
-  },
-  {
-    value: "practice_p2",
-    label: "Luyện Part 2",
-    color: "from-[#3B8561] to-[#31694E]",
-  },
-  {
-    value: "practice_p3",
-    label: "Luyện Part 3",
-    color: "from-[#3B8561] to-[#31694E]",
-  },
-  {
-    value: "practice_p4",
-    label: "Luyện Part 4",
-    color: "from-[#3B8561] to-[#31694E]",
-  },
-  {
-    value: "practice_p5",
-    label: "Luyện Part 5",
-    color: "from-[#3B8561] to-[#31694E]",
-  },
-  {
-    value: "practice_p6",
-    label: "Luyện Part 6",
-    color: "from-[#3B8561] to-[#31694E]",
-  },
-  {
-    value: "practice_p7",
-    label: "Luyện Part 7",
-    color: "from-[#3B8561] to-[#31694E]",
-  },
+const PLAN_OPTIONS: { value: StudyPlan; color: string }[] = [
+  { value: "auto", color: "from-[#3B8561] to-[#31694E]" },
+  { value: "progress", color: "from-[#3B8561] to-[#31694E]" },
+  { value: "mini_progress", color: "from-[#3B8561] to-[#31694E]" },
+  { value: "practice_p1", color: "from-[#3B8561] to-[#31694E]" },
+  { value: "practice_p2", color: "from-[#3B8561] to-[#31694E]" },
+  { value: "practice_p3", color: "from-[#3B8561] to-[#31694E]" },
+  { value: "practice_p4", color: "from-[#3B8561] to-[#31694E]" },
+  { value: "practice_p5", color: "from-[#3B8561] to-[#31694E]" },
+  { value: "practice_p6", color: "from-[#3B8561] to-[#31694E]" },
+  { value: "practice_p7", color: "from-[#3B8561] to-[#31694E]" },
 ];
-
-const PLAN_LABELS = Object.fromEntries(
-  PLAN_OPTIONS.map((o) => [o.value, o.label])
-) as Record<StudyPlan, string>;
 
 const PLAN_COLORS = Object.fromEntries(
   PLAN_OPTIONS.map((o) => [o.value, o.color])
@@ -152,7 +106,7 @@ function isoToLocalHHmm(iso: string) {
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-function isoPrettyDay(iso: string) {
+function isoPrettyDay(iso: string, t: any) {
   const d = new Date(iso);
   const today = new Date();
   const tmw = new Date();
@@ -161,8 +115,8 @@ function isoPrettyDay(iso: string) {
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
-  if (isSame(d, today)) return "Hôm nay";
-  if (isSame(d, tmw)) return "Ngày mai";
+  if (isSame(d, today)) return t("today");
+  if (isSame(d, tmw)) return t("tomorrow");
   return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
 }
 
@@ -270,6 +224,7 @@ export interface StudyScheduleClientProps {
 export default function StudyScheduleClient({
   initialUpcoming,
 }: StudyScheduleClientProps) {
+  const t = useTranslations("dashboard.schedule");
   const [whenType, setWhenType] = useState<"today" | "tomorrow" | "date">(
     "tomorrow"
   );
@@ -347,13 +302,13 @@ export default function StudyScheduleClient({
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        throw new Error(j?.message || "Không thể lưu lịch");
+        throw new Error(j?.message || t("errorSave"));
       }
-      toast.success("Đã lên lịch học!");
+      toast.success(t("successSave"));
       setEditing(false);
       await fetchUpcoming();
     } catch (err: any) {
-      toast.error(err?.message || "Có lỗi xảy ra khi lưu");
+      toast.error(err?.message || t("errorGeneric"));
     } finally {
       setSaving(false);
     }
@@ -372,11 +327,11 @@ export default function StudyScheduleClient({
         }
       );
       if (!res.ok) throw new Error(await res.text());
-      toast.success("Đã cập nhật lịch");
+      toast.success(t("successUpdate"));
       setEditing(false);
       await fetchUpcoming();
     } catch {
-      toast.error("Cập nhật thất bại");
+      toast.error(t("errorUpdate"));
     }
   };
 
@@ -391,14 +346,22 @@ export default function StudyScheduleClient({
         }
       );
       if (!res.ok) throw new Error(await res.text());
-      toast.success("Đã huỷ lịch");
+      toast.success(t("successCancel"));
       await fetchUpcoming();
     } catch {
-      toast.error("Huỷ lịch thất bại");
+      toast.error(t("errorCancel"));
     }
   };
 
-  const weekdayLabels = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+  const weekdayLabels = [
+    t("weekdays.sun"),
+    t("weekdays.mon"),
+    t("weekdays.tue"),
+    t("weekdays.wed"),
+    t("weekdays.thu"),
+    t("weekdays.fri"),
+    t("weekdays.sat"),
+  ];
 
   return (
     <div className="space-y-6">
@@ -419,17 +382,17 @@ export default function StudyScheduleClient({
             </div>
             <div className="min-w-0">
               <h2 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-slate-50 sm:text-xl">
-                Lên lịch học thông minh
+                {t("planner.title")}
               </h2>
               <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400 sm:text-[13px]">
-                Đặt lịch luyện tập cố định để giữ nhịp học TOEIC bạn nhé.
+                {t("planner.subtitle")}
               </p>
             </div>
           </div>
 
           <div className="inline-flex items-center gap-1.5 rounded-full bg-gray-100/80 px-3 py-1 text-[11px] font-medium text-gray-600 ring-1 ring-gray-200/60">
             <AlarmClock className="h-3.5 w-3.5 text-[#31694E]" />
-            <span>Lời nhắc Email / Web</span>
+            <span>{t("planner.reminderBadge")}</span>
           </div>
         </div>
 
@@ -443,14 +406,14 @@ export default function StudyScheduleClient({
             {/* recurrence */}
             <div>
               <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-                Chu kỳ lặp
+                {t("planner.recurrenceLabel")}
               </p>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { k: "once", label: "Một lần" },
-                  { k: "daily", label: "Hàng ngày" },
-                  { k: "weekdays", label: "Thứ 2–6" },
-                  { k: "custom", label: "Tuỳ chọn" },
+                  { k: "once", label: t("recurrence.once") },
+                  { k: "daily", label: t("recurrence.daily") },
+                  { k: "weekdays", label: t("recurrence.weekdays") },
+                  { k: "custom", label: t("recurrence.custom") },
                 ].map(({ k, label }) => {
                   const active =
                     recurrenceMode === (k as typeof recurrenceMode);
@@ -499,14 +462,14 @@ export default function StudyScheduleClient({
             {/* date & time */}
             <div className="space-y-3">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-                Ngày & giờ học
+                {t("planner.dateTimeLabel")}
               </p>
 
               <div className="flex flex-wrap gap-2.5">
                 {[
-                  { k: "today", label: "Hôm nay" },
-                  { k: "tomorrow", label: "Ngày mai" },
-                  { k: "date", label: "Chọn ngày" },
+                  { k: "today", label: t("today") },
+                  { k: "tomorrow", label: t("tomorrow") },
+                  { k: "date", label: t("pickDate") },
                 ].map(({ k, label }) => {
                   const active = whenType === (k as typeof whenType);
                   return (
@@ -556,7 +519,7 @@ export default function StudyScheduleClient({
             {/* plan */}
             <div>
               <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-                Loại buổi học
+                {t("planner.planTypeLabel")}
               </p>
               <div className="relative">
                 <BookOpen className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -568,7 +531,7 @@ export default function StudyScheduleClient({
                 >
                   {PLAN_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(`plans.${opt.value}`)}
                     </option>
                   ))}
                 </select>
@@ -585,7 +548,7 @@ export default function StudyScheduleClient({
             <div className="grid gap-3 grid-cols-2">
               <div>
                 <p className="mb-1.5 text-[11px] font-semibold text-gray-600">
-                  Thời lượng
+                  {t("planner.durationLabel")}
                 </p>
                 <div className="relative">
                   <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -598,7 +561,7 @@ export default function StudyScheduleClient({
                   >
                     {DURATIONS.map((d) => (
                       <option key={d} value={d}>
-                        {d} phút
+                        {d} {t("minutes")}
                       </option>
                     ))}
                   </select>
@@ -606,7 +569,7 @@ export default function StudyScheduleClient({
               </div>
               <div>
                 <p className="mb-1.5 text-[11px] font-semibold text-gray-600">
-                  Nhắc trước
+                  {t("planner.remindLabel")}
                 </p>
                 <div className="relative">
                   <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -619,7 +582,7 @@ export default function StudyScheduleClient({
                   >
                     {REMIND_MINUTES.map((m) => (
                       <option key={m} value={m}>
-                        {m} phút
+                        {m} {t("minutes")}
                       </option>
                     ))}
                   </select>
@@ -630,20 +593,20 @@ export default function StudyScheduleClient({
             {/* notify with custom toggles */}
             <div className="rounded-lg bg-gray-50/80 p-3 ring-1 ring-gray-200/60">
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
-                Nhắc lịch
+                {t("planner.notifyLabel")}
               </p>
 
               <div className="grid gap-2 grid-cols-2">
                 <NotifyToggleRow
                   icon={<Bell className="h-3.5 w-3.5" />}
-                  label="Email"
+                  label={t("planner.notifyEmail")}
                   checked={notifyEmail}
                   onChange={setNotifyEmail}
                   compact
                 />
                 <NotifyToggleRow
                   icon={<BellRing className="h-3.5 w-3.5" />}
-                  label="Web push"
+                  label={t("planner.notifyWeb")}
                   checked={notifyWeb}
                   onChange={setNotifyWeb}
                   compact
@@ -662,12 +625,12 @@ export default function StudyScheduleClient({
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Đang lưu lịch học...
+                  {t("planner.saving")}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Lưu lịch học
+                  {t("planner.save")}
                 </>
               )}
             </button>
@@ -681,7 +644,7 @@ export default function StudyScheduleClient({
           <div className="flex flex-col items-center justify-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400 dark:text-zinc-500" />
             <p className="text-xs font-medium text-gray-500 dark:text-zinc-400">
-              Đang tải lịch học gần nhất...
+              {t("upcoming.loading")}
             </p>
           </div>
         </div>
@@ -693,11 +656,10 @@ export default function StudyScheduleClient({
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-gray-900 dark:text-slate-50">
-                Chưa có lịch sắp tới
+                {t("upcoming.emptyTitle")}
               </p>
               <p className="mt-1 text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
-                Hãy tạo một lịch học ở trên, hệ thống sẽ nhắc bạn đúng giờ như
-                các app edtech pro.
+                {t("upcoming.emptyDesc")}
               </p>
             </div>
           </div>
@@ -716,14 +678,14 @@ export default function StudyScheduleClient({
               {/* Text */}
               <div className="min-w-0 flex flex-col justify-center">
                 <h3 className="text-sm font-semibold tracking-tight text-gray-900 dark:text-slate-50">
-                  Lịch học sắp tới
+                  {t("upcoming.title")}
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
                   {upcoming.status === "completed"
-                    ? "Buổi học gần nhất đã hoàn thành."
+                    ? t("upcoming.statusCompleted")
                     : upcoming.status === "missed"
-                    ? "Bạn đã bỏ lỡ buổi học trước."
-                    : "Nhớ tham gia đúng giờ để giữ streak nhé!"}
+                    ? t("upcoming.statusMissed")
+                    : t("upcoming.statusScheduled")}
                 </p>
               </div>
             </div>
@@ -731,7 +693,7 @@ export default function StudyScheduleClient({
             {/* RIGHT */}
             <div className="inline-flex items-center gap-1.5 rounded-full bg-gray-100/80 px-3 py-1 text-[11px] font-medium text-gray-700 shadow-sm sm:self-center">
               <Target className="h-3.5 w-3.5 text-[#31694E]" />
-              <span>{PLAN_LABELS[upcoming.plan]}</span>
+              <span>{t(`plans.${upcoming.plan}`)}</span>
             </div>
           </div>
 
@@ -742,17 +704,17 @@ export default function StudyScheduleClient({
                 <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-600" />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-emerald-700">
-                    Hoàn thành buổi học!
+                    {t("upcoming.completedTitle")}
                   </p>
                   <p className="text-xs text-emerald-700/90 sm:text-sm">
-                    {isoPrettyDay(upcoming.startAt)} •{" "}
+                    {isoPrettyDay(upcoming.startAt, t)} •{" "}
                     {isoToLocalHHmm(upcoming.startAt)} • {upcoming.durationMin}{" "}
-                    phút • {PLAN_LABELS[upcoming.plan]}
+                    {t("minutes")} • {t(`plans.${upcoming.plan}`)}
                   </p>
                   {upcoming.streak > 0 && (
                     <p className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-emerald-700">
                       <Trophy className="h-3.5 w-3.5" />
-                      Chuỗi hiện tại: {upcoming.streak} ngày
+                      {t("upcoming.streak", { days: upcoming.streak })}
                     </p>
                   )}
                 </div>
@@ -764,12 +726,12 @@ export default function StudyScheduleClient({
                 <XCircle className="h-5 w-5 flex-shrink-0 text-rose-500" />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-rose-600">
-                    Bạn đã bỏ lỡ buổi học
+                    {t("upcoming.missedTitle")}
                   </p>
                   <p className="text-xs text-rose-600/90 sm:text-sm">
-                    {isoPrettyDay(upcoming.startAt)} •{" "}
+                    {isoPrettyDay(upcoming.startAt, t)} •{" "}
                     {isoToLocalHHmm(upcoming.startAt)} • {upcoming.durationMin}{" "}
-                    phút • {PLAN_LABELS[upcoming.plan]}
+                    {t("minutes")} • {t(`plans.${upcoming.plan}`)}
                   </p>
                 </div>
               </div>
@@ -780,187 +742,28 @@ export default function StudyScheduleClient({
                 {/* LEFT – info */}
                 <div className="space-y-2">
                   <p className="text-sm font-semibold text-gray-900">
-                    {isoPrettyDay(upcoming.startAt)} •{" "}
+                    {isoPrettyDay(upcoming.startAt, t)} •{" "}
                     {isoToLocalHHmm(upcoming.startAt)} • {upcoming.durationMin}{" "}
-                    phút
+                    {t("minutes")}
                   </p>
 
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-gray-700 shadow-sm">
                       <BookOpen className="h-3.5 w-3.5 text-[#31694E]" />
-                      {PLAN_LABELS[upcoming.plan]}
+                      {t(`plans.${upcoming.plan}`)}
                     </span>
 
                     <div className="flex flex-wrap gap-3 text-[11px] text-gray-600">
                       {upcoming.remindMinutes && (
                         <span className="flex items-center gap-1">
                           <Bell className="h-3.5 w-3.5" />
-                          Nhắc trước {upcoming.remindMinutes} phút
+                          {t("upcoming.remindBefore", { minutes: upcoming.remindMinutes })}
                         </span>
                       )}
-                      {upcoming.notifyEmail && <span>Email</span>}
-                      {upcoming.notifyWeb && <span>Web</span>}
                     </div>
                   </div>
-
-                  {upcoming.recurrence?.mode && (
-                    <p className="flex items-center gap-1.5 text-[11px] text-gray-600">
-                      <Repeat className="h-3.5 w-3.5" />
-                      {upcoming.recurrence.mode === "daily"
-                        ? "Lặp lại hàng ngày"
-                        : upcoming.recurrence.mode === "weekdays"
-                        ? "Lặp lại Thứ 2–6"
-                        : `Ngày: ${(upcoming.recurrence.days || [])
-                            .map((d) => weekdayLabels[d])
-                            .join(", ")}`}
-                    </p>
-                  )}
-
-                  {upcoming.streak > 0 && (
-                    <p className="text-[11px] font-medium text-gray-600">
-                      Chuỗi hiện tại: {upcoming.streak} ngày
-                    </p>
-                  )}
-                </div>
-
-                {/* RIGHT – actions */}
-                <div className="flex w-full flex-col gap-2 sm:flex-row sm:w-auto sm:justify-end">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditing(true);
-                      setWhenType("tomorrow");
-                      setTimeHHmm(isoToLocalHHmm(upcoming.startAt));
-                      setDurationMin(upcoming.durationMin as Duration);
-                      setPlan(upcoming.plan);
-                      setNotifyEmail(!!upcoming.notifyEmail);
-                      setNotifyWeb(!!upcoming.notifyWeb);
-                      setRemindMinutes((upcoming.remindMinutes as any) ?? 10);
-                      if (upcoming.recurrence?.mode) {
-                        setRecurrenceMode(upcoming.recurrence.mode);
-                        setRecurrenceDays(upcoming.recurrence.days ?? []);
-                      } else {
-                        setRecurrenceMode("once");
-                        setRecurrenceDays([]);
-                      }
-                    }}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#31694E]/30 bg-white px-3.5 py-2 text-xs font-medium text-[#31694E] shadow-sm transition-all hover:border-[#31694E] hover:bg-[#31694E]/5 sm:flex-none sm:text-sm"
-                  >
-                    <Pencil className="h-4 w-4" />
-                    Sửa
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={cancelUpcoming}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#d32f2f] px-3.5 py-2 text-xs font-medium text-white shadow-sm transition-all hover:bg-[#e04343] sm:flex-none sm:text-sm"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Huỷ
-                  </button>
                 </div>
               </div>
-
-              {editing &&
-                (upcoming.status as StudyStatus) !== "completed" &&
-                (upcoming.status as StudyStatus) !== "missed" && (
-                  <div className="mt-4 rounded-xl border border-gray-200 bg-white/95 p-4">
-                    <p className="mb-3 text-sm font-semibold text-gray-800">
-                      Chỉnh sửa nhanh lịch này
-                    </p>
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                      <div>
-                        <p className="mb-1.5 text-[11px] font-semibold text-gray-600">
-                          Giờ
-                        </p>
-                        <input
-                          type="time"
-                          value={timeHHmm}
-                          onChange={(e) => setTimeHHmm(e.target.value)}
-                          className={cn(
-                            baseInputClass,
-                            "px-3 text-sm font-medium"
-                          )}
-                        />
-                      </div>
-                      <div>
-                        <p className="mb-1.5 text-[11px] font-semibold text-gray-600">
-                          Thời lượng
-                        </p>
-                        <div className="relative">
-                          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                          <select
-                            value={durationMin}
-                            onChange={(e) =>
-                              setDurationMin(Number(e.target.value) as Duration)
-                            }
-                            className={cn(
-                              baseInputClass,
-                              "appearance-none pr-9"
-                            )}
-                          >
-                            {DURATIONS.map((d) => (
-                              <option key={d} value={d}>
-                                {d} phút
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="mb-1.5 text-[11px] font-semibold text-gray-600">
-                          Loại
-                        </p>
-                        <div className="relative">
-                          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                          <select
-                            value={plan}
-                            onChange={(e) =>
-                              setPlan(e.target.value as StudyPlan)
-                            }
-                            className={cn(
-                              baseInputClass,
-                              "appearance-none pr-9"
-                            )}
-                          >
-                            {PLAN_OPTIONS.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          patchUpcoming({
-                            startAt: startLocal,
-                            durationMin,
-                            plan,
-                            remindMinutes,
-                            notifyEmail,
-                            notifyWeb,
-                            recurrence: recurrence as any,
-                          } as any)
-                        }
-                        className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#3B8561] to-[#31694E] px-3.5 py-2.5 text-sm font-medium text-white shadow-md shadow-[#31694E]/25 transition-all hover:shadow-lg"
-                      >
-                        <Save className="h-4 w-4" />
-                        Lưu thay đổi
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditing(false)}
-                        className="rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50"
-                      >
-                        Huỷ
-                      </button>
-                    </div>
-                  </div>
-                )}
             </div>
           )}
         </div>

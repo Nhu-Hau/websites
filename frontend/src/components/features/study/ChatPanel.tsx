@@ -31,6 +31,7 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/lib/toast";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type Role = "student" | "teacher" | "admin";
 type Me = { id: string; name: string; role: Role };
@@ -87,6 +88,7 @@ export default function ChatPanel({
   const { user: authUser } = useAuth();
   const { show, Modal: ConfirmModal } = useConfirmModal();
   const isOverlay = variant === "overlay";
+  const t = useTranslations("study.chat");
 
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
@@ -309,8 +311,8 @@ export default function ChatPanel({
     if (sendingRef.current) return;
 
     if (!isPremium && commentCount >= commentLimit) {
-      toast.error("Bạn đã đạt giới hạn 5 comment", {
-        description: "Nâng cấp Premium để comment không giới hạn.",
+      toast.error(t("limit5"), {
+        description: t("upgradeHint"),
       });
       return;
     }
@@ -359,8 +361,8 @@ export default function ChatPanel({
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         if (err.code === "COMMENT_LIMIT_REACHED") {
-          toast.error("Bạn đã đạt giới hạn 10 comment", {
-            description: "Nâng cấp Premium để comment không giới hạn.",
+          toast.error(t("limit10"), {
+            description: t("upgradeHint"),
           });
           await loadCommentCount();
         }
@@ -410,7 +412,7 @@ export default function ChatPanel({
       if (!canUpload) return;
 
       if (file.size > 50 * 1024 * 1024) {
-        toast.error("File quá lớn", { description: "Tối đa 50MB" });
+        toast.error(t("fileTooLarge"), { description: t("maxSize") });
         e.currentTarget.value = "";
         return;
       }
@@ -431,7 +433,7 @@ export default function ChatPanel({
         );
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          toast.error(err.message || "Upload thất bại");
+          toast.error(err.message || t("uploadError"));
           return;
         }
         const data = await res.json();
@@ -462,14 +464,14 @@ export default function ChatPanel({
             saveToLS(next);
             return next;
           });
-          toast.success("Đã gửi tài liệu vào chat");
+          toast.success(t("sentDoc"));
         } catch (err) {
           console.error("Send doc message failed:", err);
-          toast.error("Không thể gửi tin nhắn tài liệu");
+          toast.error(t("sendError"));
         }
       } catch (err) {
         console.error("Upload error:", err);
-        toast.error("Upload thất bại");
+        toast.error(t("uploadError"));
       } finally {
         uploadingRef.current = false;
         e.currentTarget.value = "";
@@ -481,8 +483,8 @@ export default function ChatPanel({
   const handleDownload = useCallback(
     async (docId: string) => {
       if (!isPremium) {
-        toast.error("Chỉ tài khoản Premium mới được download", {
-          description: "Vui lòng nâng cấp để tải tài liệu.",
+        toast.error(t("premiumOnly"), {
+          description: t("upgradeHint"),
         });
         return;
       }
@@ -495,13 +497,13 @@ export default function ChatPanel({
         );
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          toast.error(err.message || "Download thất bại");
+          toast.error(err.message || t("downloadError"));
           return;
         }
         const { downloadUrl } = await res.json();
         window.open(downloadUrl, "_blank");
       } catch (e) {
-        toast.error("Download thất bại");
+        toast.error(t("downloadError"));
       }
     },
     [roomName, isPremium]
@@ -511,7 +513,7 @@ export default function ChatPanel({
     async (msgId: string, newText: string) => {
       const msg = msgs.find((m) => m.id === msgId);
       if (!msg || !msg.commentId) {
-        toast.error("Không thể chỉnh sửa comment này");
+        toast.error(t("cannotEdit"));
         return;
       }
 
@@ -528,7 +530,7 @@ export default function ChatPanel({
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          toast.error(err.message || "Chỉnh sửa thất bại");
+          toast.error(err.message || t("editError"));
           return;
         }
 
@@ -564,12 +566,12 @@ export default function ChatPanel({
           });
         } catch {}
 
-        toast.success("Đã chỉnh sửa comment");
+        toast.success(t("edited"));
         setEditingId(null);
         setEditText("");
       } catch (e) {
         console.error("Edit comment error:", e);
-        toast.error("Chỉnh sửa thất bại");
+        toast.error(t("editError"));
       }
     },
     [msgs, roomName, room, saveToLS]
@@ -579,19 +581,19 @@ export default function ChatPanel({
     async (msgId: string) => {
       const msg = msgs.find((m) => m.id === msgId);
       if (!msg || !msg.commentId) {
-        toast.error("Không thể xóa comment này");
+        toast.error(t("cannotDelete"));
         return;
       }
 
-    show(
-      {
-          title: "Xóa bình luận?",
-          message: "Bạn có chắc chắn muốn xóa bình luận này?",
-        icon: "warning",
-        confirmText: "Xóa",
-        cancelText: "Hủy",
-        confirmColor: "red",
-      },
+      show(
+        {
+          title: t("deleteTitle"),
+          message: t("confirmDelete"),
+          icon: "warning",
+          confirmText: t("deleteConfirm"),
+          cancelText: t("cancel"),
+          confirmColor: "red",
+        },
       async () => {
         try {
           const res = await fetch(
@@ -604,7 +606,7 @@ export default function ChatPanel({
 
           if (!res.ok) {
               const err = await res.json().catch(() => ({}));
-              toast.error(err.message || "Xóa thất bại");
+              toast.error(err.message || t("deleteError"));
             return;
           }
 
@@ -627,11 +629,11 @@ export default function ChatPanel({
               });
             } catch {}
 
-            toast.success("Đã xóa comment");
+            toast.success(t("deleted"));
             setMenuOpenId(null);
           } catch (e) {
             console.error("Delete comment error:", e);
-            toast.error("Xóa thất bại");
+            toast.error(t("deleteError"));
         }
       }
     );
@@ -670,14 +672,14 @@ export default function ChatPanel({
                     }}
                     className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-zinc-800"
                   >
-                    Hủy
+                    {t("cancel")}
                   </button>
                   <button
                     onClick={() => handleEditComment(m.id, editText)}
                     disabled={!editText.trim()}
                     className="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700 disabled:opacity-50 dark:bg-sky-500 dark:hover:bg-sky-600"
                   >
-                    Lưu
+                    {t("save")}
                   </button>
                 </div>
               </div>
@@ -730,14 +732,14 @@ export default function ChatPanel({
                     className="flex w-full items-center gap-2 rounded-t-lg px-3 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-zinc-800 whitespace-nowrap"
                   >
                     <Edit className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
-                    <span className="text-black">Chỉnh sửa</span>
+                    <span className="text-black">{t("edit")}</span>
                   </button>
                   <button
                     onClick={() => handleDeleteComment(m.id)}
                     className="flex w-full items-center gap-2 rounded-b-lg px-3 py-2 text-left text-xs text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                    <span>Xóa</span>
+                    <span>{t("delete")}</span>
                   </button>
                 </div>
               )}
@@ -752,7 +754,7 @@ export default function ChatPanel({
               <div className="whitespace-pre-wrap break-words">{m.text}</div>
               {m.editedAt && (
                 <div className="mt-1 text-[10px] italic text-slate-400 dark:text-slate-500">
-                  Đã chỉnh sửa
+                  {t("edited")}
                 </div>
               )}
             </div>
@@ -790,14 +792,14 @@ export default function ChatPanel({
                 <div className="min-w-[80px] max-w-[110px]">
                   <div
                     className="truncate text-sm font-medium"
-                    title={m.docName || "Tệp tin"}
+                    title={m.docName || t("file")}
                   >
                     {m.docName?.length && m.docName.length > 20
                       ? m.docName.slice(0, 17) + "..."
-                      : m.docName || "Tệp tin"}
+                      : m.docName || t("file")}
                   </div>
                   <div className="text-xs text-slate-500 dark:text-slate-400">
-                    Tài liệu
+                    {t("document")}
                   </div>
                 </div>
               </div>
@@ -806,18 +808,18 @@ export default function ChatPanel({
                 <button
                   onClick={() => handleDownload(m.docId!)}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-2.5 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:bg-sky-500 dark:hover:bg-sky-600"
-                  title="Tải xuống"
+                  title={t("download")}
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Tải
+                  {t("downloadButton")}
                 </button>
               ) : (
                 <span
                   className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-400 dark:border-slate-600 dark:text-slate-500"
-                  title="Chỉ Premium hoặc Teacher/Admin"
+                  title={t("premiumOnlyTitle")}
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Khóa
+                  {t("locked")}
                 </span>
               )}
             </div>
@@ -862,11 +864,11 @@ export default function ChatPanel({
               <MessageSquare className="h-4 w-4" />
             </div>
             <span className="font-semibold text-slate-900 dark:text-zinc-50">
-              Bình luận
+              {t("title")}
             </span>
           </div>
           <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-            Phòng: <span className="font-medium text-slate-700">#{roomName}</span>
+            {t("room")}: <span className="font-medium text-slate-700">#{roomName}</span>
           </div>
         </div>
 
@@ -876,7 +878,7 @@ export default function ChatPanel({
               type="button"
               onClick={onCloseOverlay}
               className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-zinc-800"
-              aria-label="Đóng chat"
+              aria-label={t("close")}
             >
               <X className="h-4 w-4" />
             </button>
@@ -897,10 +899,10 @@ export default function ChatPanel({
               <Send className="h-8 w-8 text-slate-400 dark:text-slate-500" />
             </div>
             <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Hãy là người bình luận đầu tiên!
+              {t("emptyState.title")}
             </p>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Trao đổi với bạn bè hoặc giảng viên ngay trong phòng học này.
+              {t("emptyState.description")}
             </p>
           </div>
         )}
@@ -922,7 +924,7 @@ export default function ChatPanel({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-zinc-900 dark:text-slate-200 dark:hover:bg-zinc-800"
-                title="Tải tệp lên và gửi vào chat"
+                title={t("uploadTitle")}
               >
                 <Upload className="h-4 w-4" />
               </button>
@@ -934,8 +936,8 @@ export default function ChatPanel({
             onChange={(e) => setInput(e.target.value)}
             placeholder={
               !isPremium && commentCount >= commentLimit
-                ? "Đã đạt giới hạn comment"
-                : "Nhập tin nhắn…"
+                ? t("limitReachedPlaceholder")
+                : t("inputPlaceholder")
             }
             disabled={!isPremium && commentCount >= commentLimit}
             className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent dark:border-slate-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-slate-500"
@@ -949,7 +951,7 @@ export default function ChatPanel({
             className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-sky-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
           >
             <Send className="h-4 w-4" />
-            Gửi
+            {t("send")}
           </button>
         </form>
 
@@ -957,7 +959,7 @@ export default function ChatPanel({
           <div className="mt-2 flex items-center justify-center gap-1 text-[11px] text-slate-500 dark:text-slate-500">
             <AlertCircle className="h-3.5 w-3.5" />
             <span>
-              Comment:{" "}
+              {t("commentCount")}:{" "}
               <span className="font-semibold">
                 {commentCount}/{commentLimit}
               </span>

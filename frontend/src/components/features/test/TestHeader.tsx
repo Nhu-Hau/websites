@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ListChecks, Timer } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type TestHeaderProps = {
   badge: {
@@ -24,6 +25,8 @@ export function TestHeader({
   description,
   stats,
 }: TestHeaderProps) {
+  const t = useTranslations("practice.stats");
+
   return (
     <header className="mb-6 sm:mb-8">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -57,10 +60,10 @@ export function TestHeader({
               </div>
               <div className="space-y-0.5">
                 <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
-                  Số câu hỏi
+                  {t("questionsLabel")}
                 </p>
                 <p className="text-[15px] font-bold text-zinc-900 dark:text-zinc-50">
-                  {stats.totalQuestions} câu
+                  {stats.totalQuestions} {t("questionsUnit")}
                 </p>
               </div>
             </div>
@@ -76,10 +79,10 @@ export function TestHeader({
               </div>
               <div className="space-y-0.5">
                 <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
-                  Thời gian
+                  {t("timeLabel")}
                 </p>
                 <p className="text-[15px] font-bold text-zinc-900 dark:text-zinc-50">
-                  {stats.durationMin} phút
+                  {stats.durationMin} {t("timeUnit")}
                 </p>
               </div>
             </div>

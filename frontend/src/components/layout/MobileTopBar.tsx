@@ -35,7 +35,7 @@ export default function MobileTopBar() {
             className="flex items-center gap-2"
           >
             <Image
-              src="/images/logotoeic.png"
+              src="/logotoeic.png"
               alt={t("logoAlt")}
               width={32}
               height={32}
@@ -49,8 +49,8 @@ export default function MobileTopBar() {
             {/* Notification Button */}
             <button
               type="button"
-              aria-label={t("notificationsAria")}
               onClick={() => setNotificationOpen(true)}
+              aria-label={t("notificationAria")}
               className={cn(
                 "relative inline-flex h-9 w-9 items-center justify-center rounded-full",
                 "text-zinc-700 dark:text-zinc-200",

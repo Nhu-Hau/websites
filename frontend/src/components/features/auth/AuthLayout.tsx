@@ -3,6 +3,7 @@
 "use client";
 import React from "react";
 import { motion, Variants, easeOut } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 const easeOutBezier = easeOut;
 
@@ -33,6 +34,8 @@ export default function AuthLayout({
   below,
   className,
 }: Props) {
+  const t = useTranslations("authComponents.layout");
+
   return (
     <motion.main
       className="relative min-h-screen grid place-items-center bg-gradient-to-br from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 px-4 py-12 overflow-hidden"
@@ -92,7 +95,7 @@ export default function AuthLayout({
                 <div className="flex-1 border-t border-zinc-200 dark:border-zinc-800"></div>
                 <span className="px-3 text-xs font-medium text-zinc-500 dark:text-zinc-400 
                                  bg-white/80 dark:bg-zinc-900/80">
-                  {typeof below === "object" && below !== null && "or" in (below as any) ? (below as any).or : "HOẶC"}
+                  {typeof below === "object" && below !== null && "or" in (below as any) ? (below as any).or : t("or")}
                 </span>
                 <div className="flex-1 border-t border-zinc-200 dark:border-zinc-800"></div>
               </div>

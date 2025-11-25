@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /* ================== TYPES ================== */
 export interface AttemptSummary {
@@ -140,6 +141,7 @@ export default function TestCard({
   disabled = false,
   disabledHint,
 }: TestCardProps) {
+  const t = useTranslations("test.card");
   const router = useRouter();
   const done = !!attemptSummary;
   const accuracy = attemptSummary ? Math.round(attemptSummary.acc * 100) : 0;
@@ -212,7 +214,7 @@ export default function TestCard({
             </h3>
             {done && (
               <span className="mt-0.5 text-[10px] xs:text-[11px] text-zinc-500 dark:text-zinc-400">
-                Lần gần nhất: {lastAtLabel}
+                {t("lastAttempt")} {lastAtLabel}
               </span>
             )}
           </div>
@@ -231,7 +233,7 @@ export default function TestCard({
               }}
             >
               <Sparkles className="h-3 w-3" />
-              <span>High score</span>
+              <span>{t("highScore")}</span>
             </motion.div>
           )}
         </div>
@@ -247,7 +249,7 @@ export default function TestCard({
           )}
         >
           <span className="hidden sm:inline">{levelLabel}</span>
-          <span className="sm:hidden whitespace-nowrap">Lv. {level}</span>
+          <span className="sm:hidden whitespace-nowrap">{t("level")} {level}</span>
         </div>
       </div>
 
@@ -257,14 +259,14 @@ export default function TestCard({
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-zinc-50 dark:bg-zinc-800">
             <ListChecks className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
           </div>
-          <span className="font-medium">{totalQuestions} câu</span>
+          <span className="font-medium">{totalQuestions} {t("questions")}</span>
         </div>
 
         <div className="flex items-center gap-1.5 whitespace-nowrap">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-zinc-50 dark:bg-zinc-800">
             <Timer className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
           </div>
-          <span className="font-medium">{durationMin} phút</span>
+          <span className="font-medium">{durationMin} {t("minutes")}</span>
         </div>
 
         {done ? (
@@ -306,8 +308,7 @@ export default function TestCard({
             </div>
             <div className="flex items-center justify-between gap-2">
               <span className="text-[11px] xs:text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                {attemptSummary?.correct ?? 0}/{attemptSummary?.total ?? 0} câu
-                đúng
+                {attemptSummary?.correct ?? 0}/{attemptSummary?.total ?? 0} {t("correctSentences")}
               </span>
               <span
                 className={cn(
@@ -326,10 +327,10 @@ export default function TestCard({
         ) : (
           <div className="rounded-xl border border-dashed border-zinc-300 px-3 py-2.5 text-center text-xs xs:text-[13px] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900">
             <p className="font-medium text-zinc-700 dark:text-zinc-300">
-              Chưa làm bài
+              {t("notStarted")}
             </p>
             <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
-              Bắt đầu ngay để theo dõi tiến độ.
+              {t("startDesc")}
             </p>
           </div>
         )}
@@ -344,7 +345,7 @@ export default function TestCard({
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-zinc-300 px-3 py-2 text-xs xs:text-sm font-semibold text-white cursor-not-allowed"
             >
               <Play className="h-4 w-4" />
-              Làm bài ngay
+              {t("startNow")}
             </button>
           ) : (
             <Link
@@ -358,7 +359,7 @@ export default function TestCard({
               onClick={(e) => e.stopPropagation()}
             >
               <Play className="h-4 w-4" />
-              Làm bài ngay
+              {t("startNow")}
             </Link>
           )
         ) : (
@@ -375,7 +376,7 @@ export default function TestCard({
             onClick={(e) => e.stopPropagation()}
           >
             <RotateCcw className="h-4 w-4" />
-            Làm lại
+            {t("retry")}
           </Link>
         )}
       </div>

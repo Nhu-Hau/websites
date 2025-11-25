@@ -1,10 +1,10 @@
-// frontend/src/components/features/vocabulary/Flashcard.tsx
 "use client";
 
 import React from "react";
 import { VocabularyTerm } from "@/types/vocabulary.types";
 import { Volume2, BookOpen } from "lucide-react";
 import { useSpeech } from "@/hooks/news/useSpeech";
+import { useTranslations } from "next-intl";
 
 interface FlashcardProps {
   term: VocabularyTerm;
@@ -13,6 +13,7 @@ interface FlashcardProps {
 }
 
 export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
+  const t = useTranslations("vocabularyExtra.flashcard");
   const { speak, speaking } = useSpeech();
 
   const handleAudio = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -52,7 +53,7 @@ export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
         >
           {/* ============== FRONT: TỪ VỰNG ============== */}
           <FlashcardFace
-            heading="Thuật ngữ"
+            heading={t("term")}
             subheading={term.partOfSpeech}
             accent="from-sky-50 via-white to-emerald-50"
             className=""
@@ -78,17 +79,17 @@ export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
                     className="inline-flex items-center gap-1.5 rounded-xl border border-white/70 bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:text-[#2E5EB8] dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100 disabled:opacity-50"
                   >
                     <Volume2 className={`h-3.5 w-3.5 ${speaking ? 'text-[#2E5EB8]' : ''}`} />
-                    {term.audio ? "Nghe phát âm" : "Đọc từ"}
+                    {term.audio ? t("listen") : t("read")}
                   </button>
                 </div>
               </div>
 
               <div className="flex items-center justify-between px-3 pb-2 pt-1 text-[10px] text-zinc-400 sm:px-6 sm:pb-3">
-                <span className="uppercase tracking-[0.22em]">Nhấn để lật</span>
+                <span className="uppercase tracking-[0.22em]">{t("tapToFlip")}</span>
                 {/* Chip trạng thái: Thuật ngữ */}
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/85 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.25em] text-slate-500 sm:px-3 sm:py-1 sm:text-[10px] dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-300">
                   <BookOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                  Thuật ngữ
+                  {t("term")}
                 </span>
               </div>
             </div>
@@ -96,7 +97,7 @@ export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
 
           {/* ============== BACK: NGHĨA ============== */}
           <FlashcardFace
-            heading="Nghĩa"
+            heading={t("meaning")}
             subheading={term.partOfSpeech}
             accent="from-emerald-50 via-white to-amber-50"
             className=""
@@ -127,7 +128,7 @@ export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
                       }}
                       disabled={speaking}
                       className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-600 transition-all duration-200 hover:bg-gray-100 hover:text-[#2E5EB8] dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-sky-400 active:scale-95 disabled:opacity-50 flex-shrink-0"
-                      title="Đọc từ"
+                      title={t("read")}
                     >
                       <Volume2 className={`h-4 w-4 ${speaking ? 'text-[#2E5EB8] dark:text-sky-400' : ''}`} />
                     </button>
@@ -155,7 +156,7 @@ export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
                       "
                     >
                       <p className="text-[9px] xs:text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-400">
-                        Ví dụ
+                        {t("example")}
                       </p>
 
                       {term.example && (
@@ -176,12 +177,12 @@ export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
 
               <div className="flex items-center justify-between px-3 pb-2 pt-1 text-[10px] text-zinc-400 sm:px-6 sm:pb-3">
                 <span className="uppercase tracking-[0.24em]">
-                  Nhấn để lật lại
+                  {t("tapToFlipBack")}
                 </span>
                 {/* Chip trạng thái: Nghĩa */}
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/85 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.25em] text-slate-500 sm:px-3 sm:py-1 sm:text-[10px] dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:text-zinc-300">
                   <BookOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                  Nghĩa
+                  {t("meaning")}
                 </span>
               </div>
             </div>
@@ -190,7 +191,7 @@ export function Flashcard({ term, isFlipped, onFlip }: FlashcardProps) {
       </div>
 
       <p className="mt-2 text-center text-[10px] text-zinc-400 sm:hidden">
-        Chạm vào thẻ hoặc nhấn Space để lật
+        {t("flipHint")}
       </p>
     </div>
   );

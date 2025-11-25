@@ -1,31 +1,36 @@
-// frontend/src/components/features/vocabulary/CompletionScreen.tsx
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { Brain, BookOpen, RotateCcw, Trophy } from "lucide-react";
+import { Trophy, RotateCcw, BookOpen, Brain } from "lucide-react";
 import confetti from "canvas-confetti";
+import { useTranslations } from "next-intl";
 
 interface CompletionScreenProps {
+  mode: "learn" | "study" | "flashcard";
   remembered: number;
   notYet: number;
-  total: number;
+  total?: number;
   onRestart: () => void;
-  onReviewWeak: () => void;
+  onBack?: () => void;
   onLearnMode: () => void;
-  mode?: "flashcard" | "learn";
+  onReviewWeak?: () => void;
   score?: number;
 }
 
 export function CompletionScreen({
   remembered,
   notYet,
-  total,
   onRestart,
-  onReviewWeak,
+  onBack,
   onLearnMode,
-  mode = "flashcard",
+  onReviewWeak,
+  mode,
   score,
 }: CompletionScreenProps) {
+  const t = useTranslations("vocabularyExtra.completion");
+
+  // Tính % progress
+  const total = remembered + notYet;
   const percentage =
     typeof score === "number"
       ? score
@@ -62,11 +67,11 @@ export function CompletionScreen({
   }, [percentage]);
 
   const badge = useMemo(() => {
-    if (percentage >= 90) return { label: "Legendary", tone: "text-emerald-600" };
-    if (percentage >= 75) return { label: "Great job", tone: "text-sky-600" };
-    if (percentage >= 60) return { label: "Keep going", tone: "text-amber-600" };
-    return { label: "Practice more", tone: "text-zinc-500" };
-  }, [percentage]);
+    if (percentage >= 90) return { label: t("legendary"), tone: "text-emerald-600" };
+    if (percentage >= 75) return { label: t("greatJob"), tone: "text-sky-600" };
+    if (percentage >= 60) return { label: t("keepGoing"), tone: "text-amber-600" };
+    return { label: t("practiceMore"), tone: "text-zinc-500" };
+  }, [percentage, t]);
 
   return (
     <div className="mx-auto w-full max-w-2xl rounded-3xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl xs:p-5 dark:border-zinc-800/60 dark:bg-zinc-900/90">
@@ -74,21 +79,21 @@ export function CompletionScreen({
         <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#4063bb]/10 to-sky-500/10 text-[#4063bb] dark:from-[#4063bb]/20 dark:to-sky-500/20 dark:text-sky-200 xs:mb-5 xs:h-16 xs:w-16">
           <Trophy className="h-7 w-7 xs:h-8 xs:w-8" />
         </div>
-        <h2 className="text-xl font-semibold text-zinc-900 xs:text-2xl dark:text-white">
-          {mode === "learn" ? "Bạn đã hoàn tất quiz!" : "Vòng flashcard hoàn thành!"}
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 sm:text-3xl">
+          {mode === "learn" ? t("quizComplete") : t("flashcardComplete")}
         </h2>
         <p className={`mt-1.5 text-xs font-semibold xs:text-sm ${badge.tone}`}>{badge.label}</p>
       </div>
 
-      <div className="mt-5 grid gap-2.5 xs:gap-3 sm:grid-cols-3">
-        <StatCard label="Tổng số" value={total} />
-        <StatCard label={mode === "learn" ? "Câu đúng" : "Đã nhớ"} value={remembered} tone="emerald" />
-        <StatCard label={mode === "learn" ? "Câu sai" : "Chưa nhớ"} value={notYet} tone="amber" />
+      {/* Stats Row */}
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4">
+        <StatCard label={mode === "learn" ? t("correct") : t("remembered")} value={remembered} tone="emerald" />
+        <StatCard label={mode === "learn" ? t("incorrect") : t("notYet")} value={notYet} tone="amber" />
       </div>
 
       <div className="mt-4 rounded-2xl border border-white/80 bg-white/80 p-3 dark:border-zinc-800/70 dark:bg-zinc-900/70 xs:mt-5 xs:rounded-3xl xs:p-4">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-zinc-300 xs:text-sm">
-          <span>Điểm</span>
+          <span>{t("score")}</span>
           <span className="text-xl text-slate-900 dark:text-white xs:text-2xl">{percentage}%</span>
         </div>
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200/80 dark:bg-zinc-800/80 xs:mt-3 xs:h-2">

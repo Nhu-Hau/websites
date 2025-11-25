@@ -18,7 +18,7 @@ function getBaseUrl(): string {
   );
 }
 
-const OG_IMAGE_PATH = "/images/bannerTOEICPREP.png";
+const OG_IMAGE_PATH = "/bannerTOEICPREP.png";
 
 export const SITE_CONFIG = {
   name: "TOEICPREP",

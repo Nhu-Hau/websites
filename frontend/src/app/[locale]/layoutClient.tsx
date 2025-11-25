@@ -48,8 +48,8 @@ export default function LayoutClient({
   // chỉ ẩn Footer ở các trang kết quả hoặc lịch sử
   const hideFooterOnly =
     /^\/[a-z]{2}\/placement\/result\/[^/]+$/.test(pathname) || // /vi/placement/result/abc123
-    /^\/[a-z]{2}\/practice\/history\/[^/]+$/.test(pathname) ||
-    /^\/[a-z]{2}\/progress$/.test(pathname); // /vi/practice/history/abc123
+    /^\/[a-z]{2}\/practice\/history\/[^/]+$/.test(pathname) || // /vi/practice/history/abc123
+    /^\/[a-z]{2}\/progress\/result\/[^/]+$/.test(pathname); // /vi/progress/result/abc123
 
   // Show SideNav only on community pages (desktop only)
   // Explicitly hide on study room pages

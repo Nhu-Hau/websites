@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import React from "react";
+import { useTranslations } from "next-intl";
 
 type Props = React.InputHTMLAttributes<HTMLInputElement> & {
   id: string;
@@ -11,6 +12,8 @@ type Props = React.InputHTMLAttributes<HTMLInputElement> & {
 };
 
 export default function PasswordField({ id, label, show, onToggle, ...rest }: Props) {
+  const t = useTranslations("authComponents.passwordField");
+
   return (
     <div>
       <label htmlFor={id} className="block text-sm mb-1 text-zinc-700 dark:text-zinc-300">
@@ -28,7 +31,7 @@ export default function PasswordField({ id, label, show, onToggle, ...rest }: Pr
         />
         <button
           type="button"
-          aria-label={show ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+          aria-label={show ? t("hide") : t("show")}
           onClick={onToggle}
           className="absolute inset-y-0 right-2 grid place-items-center px-1 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
         >

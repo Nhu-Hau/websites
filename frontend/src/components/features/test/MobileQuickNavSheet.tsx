@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Focus, Clock } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type MobileQuickNavSheetProps = {
   open: boolean;
@@ -28,6 +29,8 @@ export function MobileQuickNavSheet({
   onJump,
   fmtTime,
 }: MobileQuickNavSheetProps) {
+  const t = useTranslations("practice.nav");
+
   if (!open) return null;
 
   return (
@@ -44,13 +47,13 @@ export function MobileQuickNavSheet({
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
             <Focus className="h-4 w-4 text-sky-600 dark:text-sky-400" />
-            Điều hướng nhanh
+            {t("title")}
           </div>
           <button
             onClick={onClose}
             className="rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
           >
-            Đóng
+            {t("close")}
           </button>
         </div>
 
@@ -64,7 +67,7 @@ export function MobileQuickNavSheet({
           </div>
           <div className="mt-1.5 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
             <span>
-              Câu{" "}
+              {t("question")}{" "}
               <span className="font-semibold text-zinc-700 dark:text-zinc-200">
                 {currentIndex + 1}
               </span>{" "}

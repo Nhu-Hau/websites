@@ -26,6 +26,7 @@ import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { toast } from "@/lib/toast";
 import { useVocabularyProgress } from "@/hooks/vocabulary/useVocabularyProgress";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useTranslations } from "next-intl";
 
 interface VocabularySetClientProps {
   setId: string;
@@ -39,6 +40,7 @@ interface TermModalState {
 }
 
 export function VocabularySetClient({ setId }: VocabularySetClientProps) {
+  const tExtra = useTranslations("vocabularyExtra");
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const { markRemembered, markDifficult } = useVocabularyProgress();
@@ -73,7 +75,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
       setSetData(data);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Không thể tải bộ từ vựng này."
+        err instanceof Error ? err.message : tExtra("errors.loadFailed")
       );
     } finally {
       setLoading(false);
@@ -117,7 +119,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
           localStorage.removeItem("pendingVocabularyWord");
           
           // Show success message
-          toast.success("Đã lưu từ vào bộ từ vựng!");
+          toast.success(tExtra("toast.termSaved"));
           
           // Navigate back to news page if returnUrl exists
           if (wordData.returnUrl) {
@@ -146,7 +148,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
     // Use setId from props instead of setData._id to ensure consistency
     const targetSetId = setId || setData?._id;
     if (!targetSetId) {
-      toast.error("Không xác định được bộ từ để cập nhật");
+      toast.error(tExtra("toast.noSetIdUpdate"));
       throw new Error("Missing setId when updating vocabulary set");
     }
 
@@ -163,7 +165,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         payload
       );
       setSetData(updated);
-      toast.success("Đã cập nhật bộ từ");
+      toast.success(tExtra("toast.setUpdated"));
     } catch (err: any) {
       console.error("Error updating vocabulary set:", {
         error: err,
@@ -182,7 +184,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
       }
 
       const message =
-        err instanceof Error ? err.message : "Không thể cập nhật bộ từ";
+        err instanceof Error ? err.message : tExtra("errors.setUpdateFailed");
       // Only show error if it's a real error
       if (err?.status && err.status >= 400) {
         toast.error(message);
@@ -197,7 +199,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
     const context = termModalRef.current;
     const targetSetId = context.setId ?? setData?._id;
     if (!targetSetId) {
-      toast.error("Không xác định được bộ từ để lưu");
+      toast.error(tExtra("toast.noSetId"));
       throw new Error("Missing setId when saving vocabulary term");
     }
     try {
@@ -223,7 +225,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
       }
       setSetData(updated);
       toast.success(
-        context.mode === "edit" ? "Đã cập nhật từ vựng" : "Đã thêm từ mới"
+        context.mode === "edit" ? tExtra("toast.termUpdated") : tExtra("toast.termAdded")
       );
     } catch (err: any) {
       // Better error logging - extract all possible error information
@@ -249,7 +251,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
       }
 
       // Extract error message from various possible sources
-      let message = "Không thể lưu từ vựng";
+      let message = tExtra("errors.saveTermFailed");
       if (err instanceof Error) {
         message = err.message || message;
       } else if (err?.message) {
@@ -260,20 +262,17 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         message = err;
       }
 
-      // Translate common error messages to Vietnamese
+      // Apply translation if available
       const errorTranslations: Record<string, string> = {
-        "Failed to add term": "Không thể thêm từ vựng. Vui lòng thử lại.",
+        "Failed to add term": tExtra("errorMap.failedToAddTerm"),
         "Failed to add term: Database operation returned no result. This may indicate a permission issue or database error.":
-          "Không thể thêm từ vựng. Có thể do lỗi quyền truy cập hoặc lỗi cơ sở dữ liệu.",
-        "Vocabulary set not found": "Không tìm thấy bộ từ vựng",
+          tExtra("errorMap.permissionDenied"),
+        "Vocabulary set not found": tExtra("errorMap.setNotFound"),
         "Unauthorized access to vocabulary set":
-          "Bạn không có quyền truy cập bộ từ vựng này",
-        "Invalid vocabulary set ID": "ID bộ từ vựng không hợp lệ",
-        "Word and meaning are required":
-          "Từ tiếng Anh và nghĩa tiếng Việt là bắt buộc",
+          tExtra("errorMap.accessDenied"),
+        "Invalid vocabulary set ID": tExtra("errorMap.invalidSetId"),
       };
 
-      // Apply translation if available
       if (errorTranslations[message]) {
         message = errorTranslations[message];
       }
@@ -301,7 +300,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         deleteTermTarget.term._id
       );
       setSetData(updated);
-      toast.success("Đã xóa từ");
+      toast.success(tExtra("toast.termDeleted"));
     } catch (err: any) {
       console.error("Error deleting vocabulary term:", {
         error: err,
@@ -318,7 +317,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         await fetchSet();
       }
 
-      const message = err instanceof Error ? err.message : "Không thể xóa từ";
+      const message = err instanceof Error ? err.message : tExtra("errors.deleteFailed");
       // Only show error if it's a real error (not network timeout that might have succeeded)
       if (err?.status && err.status >= 400) {
         toast.error(message);
@@ -334,12 +333,12 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
     if (!setData) return;
     try {
       await vocabularyService.deleteVocabularySet(setData._id);
-      toast.success("Đã xóa bộ từ");
+      toast.success(tExtra("toast.setDeleted"));
       router.push(`${basePrefix}/vocabulary`);
     } catch (err: any) {
       console.error("Error deleting vocabulary set:", err);
       const message =
-        err instanceof Error ? err.message : "Không thể xóa bộ từ";
+        err instanceof Error ? err.message : tExtra("errors.setDeleteFailed");
       // Only show error if it's a real error
       if (err?.status && err.status >= 400) {
         toast.error(message);
@@ -417,13 +416,13 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-zinc-50 px-4 text-center dark:bg-zinc-900">
         <p className="text-sm text-red-600 dark:text-red-400">
-          {error || "Không tìm thấy bộ từ vựng"}
+          {error || tExtra("errors.notFound")}
         </p>
         <button
           onClick={() => router.push(`${basePrefix}/vocabulary`)}
           className="rounded-2xl bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white hover:-translate-y-0.5 dark:bg-white dark:text-zinc-900"
         >
-          Quay lại danh sách
+          {tExtra("actions.backToList")}
         </button>
       </div>
     );
@@ -458,7 +457,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
               >
                 <ArrowLeft className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                 {/* Mobile: chỉ icon, từ xs trở lên mới hiện text */}
-                <span className="hidden xs:inline">Trở về danh sách</span>
+                <span className="hidden xs:inline">{tExtra("actions.backToList")}</span>
               </button>
 
               {/* Action buttons bên phải */}
@@ -467,13 +466,13 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                   onClick={() => setComposerOpen(true)}
                   className="rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-[#4063bb] xs:px-4 xs:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100"
                 >
-                  Chỉnh sửa bộ
+                  {tExtra("actions.editSet")}
                 </button>
                 <button
                   onClick={() => setDeleteSetTarget(true)}
                   className="rounded-2xl border border-red-200/70 bg-white/90 px-3 py-2 text-xs font-semibold text-red-600 shadow-sm transition hover:border-red-300 xs:px-4 xs:text-sm dark:border-red-900/40 dark:bg-zinc-900/80 dark:text-red-300"
                 >
-                  Xóa bộ
+                  {tExtra("actions.deleteSet")}
                 </button>
               </div>
             </div>
@@ -484,7 +483,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                 {setData.title}
               </h1>
               <p className="max-w-2xl text-[13px] leading-relaxed text-slate-600 xs:text-sm dark:text-zinc-300">
-                {setData.description || "Chưa có mô tả cho bộ từ này."}
+                {setData.description || tExtra("setDetail.noDescription")}
               </p>
             </div>
 
@@ -497,7 +496,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                     <Tag className="h-3.5 w-3.5" />
                   </span>
                   <span className="flex items-center gap-1">
-                    Tổng từ:
+                    {tExtra("labels.totalTerms")}
                     <span className="font-semibold text-slate-900 dark:text-white">
                       {setData.terms.length}
                     </span>
@@ -509,7 +508,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                       <Layers className="h-3.5 w-3.5" />
                     </span>
                     <span className="flex items-center gap-1">
-                      Chủ đề:
+                      {tExtra("labels.topic")}
                       <span className="font-semibold text-slate-900 dark:text-white">
                         {setData.topic}
                       </span>
@@ -531,19 +530,19 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                   className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-[#4063bb] xs:w-auto xs:px-4 xs:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100"
                 >
                   <Plus className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
-                  <span>Thêm từ mới</span>
+                  <span>{tExtra("actions.addTerm")}</span>
                 </button>
                 <button
                   onClick={() => handleStartPractice("flashcard")}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 xs:w-auto xs:px-4 xs:text-sm"
                 >
-                  Luyện flashcard
+                  {tExtra("actions.practiceFlashcard")}
                 </button>
                 <button
                   onClick={() => handleStartPractice("quiz")}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-[#4063bb] xs:w-auto xs:px-4 xs:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100"
                 >
-                  Quiz nhanh
+                  {tExtra("actions.quickQuiz")}
                 </button>
               </div>
             </div>
@@ -556,7 +555,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
             {/* Search */}
             <div className="w-full md:max-w-md">
               <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-                Tìm kiếm nhanh
+                {tExtra("labels.quickSearch")}
               </label>
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
@@ -568,7 +567,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                       query: event.target.value,
                     }))
                   }
-                  placeholder="Nhập từ khóa, nghĩa, phiên âm hoặc ví dụ..."
+                  placeholder={tExtra("setDetail.searchPlaceholder")}
                   className="
     w-full rounded-2xl border border-slate-200/80 bg-white
     py-2 pl-9 pr-3 
@@ -588,24 +587,24 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
             {/* Chips */}
             <div className="w-full md:w-auto">
               <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-                Sắp xếp & lọc
+                {tExtra("labels.sortFilter")}
               </label>
               <div className="flex gap-2 overflow-x-auto pb-1">
                 <FilterChip
                   icon={<Filter className="h-3.5 w-3.5" />}
-                  label="Mới thêm"
+                  label={tExtra("setDetail.filterNew")}
                   active={filters.sort === "recent"}
                   onClick={() => setFilters((p) => ({ ...p, sort: "recent" }))}
                 />
                 <FilterChip
-                  label="Theo A–Z"
+                  label={tExtra("sort.alphabetical")}
                   active={filters.sort === "alphabetical"}
                   onClick={() =>
                     setFilters((p) => ({ ...p, sort: "alphabetical" }))
                   }
                 />
                 <FilterChip
-                  label="Theo từ loại"
+                  label={tExtra("sort.partOfSpeech")}
                   active={filters.sort === "partOfSpeech"}
                   onClick={() =>
                     setFilters((p) => ({ ...p, sort: "partOfSpeech" }))
@@ -620,21 +619,21 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-sm shadow-slate-900/5 backdrop-blur-xl xs:p-5 dark:border-zinc-800/60 dark:bg-zinc-900/90">
           <div className="mb-3 xs:mb-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-              Study deck
+              {tExtra("labels.studyDeck")}
             </p>
             <h2 className="text-xl font-semibold text-slate-900 xs:text-2xl dark:text-zinc-50">
-              Danh sách từ
+              {tExtra("labels.termList")}
             </h2>
             <p className="mt-1 text-xs text-slate-500 xs:text-sm dark:text-zinc-400">
-              Nhấn vào từng dòng để xem nhanh, chỉnh sửa hoặc xóa từ vựng.
+              {tExtra("labels.termListHint")}
             </p>
           </div>
 
           {filteredTerms.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-200 bg-white/70 px-4 py-8 text-center text-sm text-slate-500 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-400">
               {filters.query.trim()
-                ? "Không có từ nào khớp với tìm kiếm."
-                : "Chưa có từ vựng nào trong bộ này."}
+                ? tExtra("setDetail.noResults")
+                : tExtra("setDetail.noTerms")}
             </div>
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-zinc-800">
@@ -716,7 +715,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                         }
                         className="inline-flex items-center justify-center rounded-lg border border-slate-200/80 px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:border-[#4063bb66] hover:text-[#4063bb] xs:text-xs dark:border-zinc-700 dark:text-zinc-100"
                       >
-                        Chỉnh sửa
+                        {tExtra("actions.edit")}
                       </button>
                       <button
                         onClick={() =>
@@ -727,7 +726,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                         }
                         className="inline-flex items-center justify-center rounded-lg border border-red-200/70 px-3 py-1.5 text-[11px] font-semibold text-red-600 transition hover:border-red-300 xs:text-xs dark:border-red-900/40 dark:text-red-300"
                       >
-                        Xóa
+                        {tExtra("actions.delete")}
                       </button>
                     </div>
                   </div>
@@ -758,7 +757,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         onClose={() => setDeleteSetTarget(false)}
         onConfirm={handleDeleteSet}
         title="Xóa bộ từ này?"
-        message="Thao tác không thể hoàn tác. Bạn có chắc chắn muốn xóa?"
+        message={tExtra("setDetail.deleteConfirm")}
         icon="warning"
         confirmText="Xóa"
         confirmColor="red"
@@ -768,10 +767,10 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         open={!!deleteTermTarget}
         onClose={() => setDeleteTermTarget(null)}
         onConfirm={handleDeleteTerm}
-        title="Xóa từ khỏi bộ?"
-        message="Từ vựng sẽ bị xóa khỏi bộ này."
+        title={tExtra("modals.deleteTerm.title")}
+        message={tExtra("modals.deleteTerm.message")}
         icon="warning"
-        confirmText="Xóa từ"
+        confirmText={tExtra("modals.deleteTerm.confirm")}
         confirmColor="red"
       />
     </section>

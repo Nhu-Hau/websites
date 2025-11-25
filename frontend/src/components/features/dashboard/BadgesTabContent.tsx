@@ -1,15 +1,16 @@
 import { Suspense } from "react";
 import { Trophy } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import BadgesServer from "./BadgesServer";
 import DashboardChartLoaderCard from "./DashboardChartLoaderCard";
 
-function BadgesLoader() {
+function BadgesLoader({ t }: { t: any }) {
   return (
     <DashboardChartLoaderCard
       accentClass="bg-gradient-to-r from-[#4063bb] to-[#35519a]"
-      title="Bộ sưu tập huy hiệu"
-      subtitle="Đếm huy hiệu đã mở khóa và chờ đồng bộ dữ liệu mới nhất."
-      badgeLabel="Badges"
+      title={t("title")}
+      subtitle={t("subtitle")}
+      badgeLabel={t("badgeLabel")}
       heightClass="h-48 sm:h-52"
       icon={
         <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
@@ -23,10 +24,12 @@ function BadgesLoader() {
   );
 }
 
-export default function BadgesTabContent() {
+export default async function BadgesTabContent() {
+  const t = await getTranslations("dashboard.badges");
+
   return (
     <div className="space-y-6">
-      <Suspense fallback={<BadgesLoader />}>
+      <Suspense fallback={<BadgesLoader t={t} />}>
         <BadgesServer />
       </Suspense>
     </div>

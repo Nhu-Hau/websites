@@ -29,7 +29,7 @@ Use this list before every release to keep Lighthouse (Desktop) scores ≥95 wit
 ## SEO
 - [ ] Set unique `title` + `description` per route via Next metadata API; keep title <60 chars, description ~155 chars.
 - [ ] Provide canonical URLs + `alternates.languages` for localized routes, add `hreflang` where applicable.
-- [ ] Configure Open Graph + Twitter cards with default banner (`/images/bannerTOEICPREP.png`) and per-page overrides.
+- [ ] Configure Open Graph + Twitter cards with default banner (`/bannerTOEICPREP.png`) and per-page overrides.
 - [ ] Include `meta[name="viewport"]` (already in `viewport` export) and ensure robots meta respects indexing strategy.
 - [ ] Add structured data (WebSite, FAQ, Article) for high-value pages when content exists.
 - [ ] Optimize link text—describe destination (no “click here”); ensure nav uses semantic `<nav>` and `aria-current`.

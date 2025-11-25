@@ -1,5 +1,6 @@
 import React from "react";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface DashboardChartLoaderCardProps {
   title: string;
@@ -20,6 +21,8 @@ export default function DashboardChartLoaderCard({
   heightClass = "h-52 sm:h-60 md:h-64",
   descriptionSlot,
 }: DashboardChartLoaderCardProps) {
+  const t = useTranslations("dashboard");
+  
   return (
     <div className="relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/95 p-4 shadow-sm ring-1 ring-black/5 backdrop-blur-xl transition-all hover:shadow-md sm:p-5 dark:border-zinc-800/80 dark:bg-zinc-900/95">
       {accentClass && (
@@ -54,11 +57,10 @@ export default function DashboardChartLoaderCard({
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
           <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Đang tải dữ liệu...
+            {t("loading")}
           </p>
         </div>
       </div>
     </div>
   );
 }
-

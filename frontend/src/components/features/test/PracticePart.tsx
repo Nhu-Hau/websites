@@ -23,44 +23,38 @@ import LevelSuggestModal from "@/components/features/test/LevelSuggestModal";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Variants } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 /* ====== META ====== */
 const PART_META: Record<
   string,
-  { title: string; defaultQuestions: number; defaultDuration: number }
+  { defaultQuestions: number; defaultDuration: number }
 > = {
   "part.1": {
-    title: "Part 1 – Photographs",
     defaultQuestions: 6,
     defaultDuration: 6,
   },
   "part.2": {
-    title: "Part 2 – Question–Response",
     defaultQuestions: 25,
     defaultDuration: 11,
   },
   "part.3": {
-    title: "Part 3 – Conversations",
     defaultQuestions: 39,
     defaultDuration: 20,
   },
   "part.4": {
-    title: "Part 4 – Talks",
     defaultQuestions: 30,
     defaultDuration: 13,
   },
   "part.5": {
-    title: "Part 5 – Incomplete Sentences",
     defaultQuestions: 30,
     defaultDuration: 17,
   },
   "part.6": {
-    title: "Part 6 – Text Completion",
     defaultQuestions: 16,
     defaultDuration: 12,
   },
   "part.7": {
-    title: "Part 7 – Reading Comprehension",
     defaultQuestions: 54,
     defaultDuration: 55,
   },
@@ -72,27 +66,19 @@ type AttemptMap = Record<number, AttemptSummary>;
 const levelConfig: Record<
   L,
   {
-    label: string;
-    desc: string;
     textColor: string;
     bgColor: string;
   }
 > = {
   1: {
-    label: "Level 1",
-    desc: "Beginner",
     textColor: "text-[#347433] dark:text-[#4C9C43]",
     bgColor: "bg-[#4C9C43]/10 dark:bg-[#4C9C43]/20",
   },
   2: {
-    label: "Level 2",
-    desc: "Intermediate",
     textColor: "text-[#27548A] dark:text-[#2E5EB8]",
     bgColor: "bg-[#2E5EB8]/10 dark:bg-[#2E5EB8]/20",
   },
   3: {
-    label: "Level 3",
-    desc: "Advanced",
     textColor: "text-[#BB3E00] dark:text-[#C44E1D]",
     bgColor: "bg-[#C44E1D]/10 dark:bg-[#C44E1D]/20",
   },
@@ -184,12 +170,12 @@ export default function PracticePart() {
   const { partKey } = useParams<{ partKey: string }>();
   const sp = useSearchParams();
   const { user, loading: authLoading } = useAuth();
+  const t = useTranslations("practice");
 
   const levelParam = Number(sp.get("level") ?? 1);
   const level: L = [1, 2, 3].includes(levelParam) ? (levelParam as L) : 1;
 
   const meta = PART_META[partKey] ?? {
-    title: `Practice • ${partKey}`,
     defaultQuestions: 10,
     defaultDuration: 10,
   };
@@ -319,6 +305,8 @@ export default function PracticePart() {
 
   const placementHref = `${base}/placement`;
 
+  const partTitle = t(`meta.${partKey.replace(".", "")}` as any);
+
   return (
     <div className="relative min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-hidden">
       {/* subtle grid background */}
@@ -358,7 +346,7 @@ export default function PracticePart() {
                       : "text-lime-700 dark:text-lime-300"
                   }`}
                 >
-                  {isListening ? "Luyện Nghe TOEIC" : "Luyện Đọc TOEIC"}
+                  {isListening ? t("header.listening") : t("header.reading")}
                 </span>
               </div>
 
@@ -366,14 +354,14 @@ export default function PracticePart() {
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-3">
                   <h1 className="text-3xl sm:text-4xl font-black tracking-tight dark:text-zinc-100">
-                    {meta.title}
+                    {partTitle}
                   </h1>
                 </div>
 
                 <p className="text-sm sm:text-base text-zinc-700 dark:text-zinc-300 max-w-xl leading-relaxed">
-                  Mỗi Part được chia thành <strong>3 cấp độ</strong>. Chọn Level
-                  phù hợp, luyện đề theo thời gian chuẩn TOEIC, và theo dõi tiến
-                  độ ngay trên hệ thống.
+                  {t.rich("header.desc", {
+                    strong: (chunks) => <strong>{chunks}</strong>,
+                  })}
                 </p>
               </div>
 
@@ -398,14 +386,16 @@ export default function PracticePart() {
                   >
                     <Star className="w-4 h-4 text-amber-500" />
                     <span>
-                      Nên làm{" "}
-                      <Link
-                        href={placementHref}
-                        className="font-semibold underline underline-offset-4"
-                      >
-                        Placement Test
-                      </Link>{" "}
-                      trước để hệ thống gợi ý lộ trình chính xác hơn.
+                      {t.rich("header.placement", {
+                        link: (chunks) => (
+                          <Link
+                            href={placementHref}
+                            className="font-semibold underline underline-offset-4"
+                          >
+                            {chunks}
+                          </Link>
+                        ),
+                      })}
                     </span>
                   </motion.div>
                 )}
@@ -428,7 +418,7 @@ export default function PracticePart() {
                   }}
                 >
                   <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-[0.16em]">
-                    Cấp độ luyện tập
+                    {t("switcher.label")}
                   </p>
                   <LevelSwitcher
                     level={level}
@@ -462,10 +452,10 @@ export default function PracticePart() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-                      Lịch sử luyện tập
+                      {t("switcher.history")}
                     </span>
                     <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                      Xem lại kết quả
+                      {t("switcher.review")}
                     </span>
                   </div>
                   <ChevronRight className="h-4 w-4 text-zinc-500 dark:text-zinc-400 transition-transform group-hover:translate-x-1" />
@@ -504,21 +494,21 @@ export default function PracticePart() {
                 {/* Text gợi ý */}
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-[11px] sm:text-xs font-semibold text-amber-800 dark:text-amber-200 whitespace-nowrap">
-                    Gợi ý:
+                    {t("suggestion.label")}
                   </span>
 
                   {/* Badge level nhỏ gọn */}
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-[1px] text-[11px] sm:text-xs font-semibold whitespace-nowrap ${levelConfig[suggestedLevel].textColor} ${levelConfig[suggestedLevel].bgColor} border border-current/15`}
                   >
-                    {levelConfig[suggestedLevel].label}
+                    {t(`levels.l${suggestedLevel}.label` as any)}
                     <span className="hidden xs:inline opacity-75 text-[10px]">
-                      · {levelConfig[suggestedLevel].desc}
+                      · {t(`levels.l${suggestedLevel}.desc` as any)}
                     </span>
                   </span>
 
                   <span className="text-[11px] text-amber-800/80 dark:text-amber-100/80 truncate">
-                    phù hợp với trình độ hiện tại của bạn.
+                    {t("suggestion.match")}
                   </span>
                 </div>
 
@@ -541,7 +531,7 @@ export default function PracticePart() {
         whitespace-nowrap
       "
                   >
-                    Chuyển level
+                    {t("suggestion.switch")}
                     <ArrowRight className="h-3 w-3" />
                   </button>
                 )}
@@ -587,11 +577,10 @@ export default function PracticePart() {
                 </div>
               </div>
               <h3 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
-                Chưa có đề thi cho Level {level}
+                {t("empty.title", { level })}
               </h3>
               <p className="mt-2 text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-md">
-                Hãy thử cấp độ khác hoặc quay lại sau. Admin có thể đang cập
-                nhật thêm đề cho Part này.
+                {t("empty.desc")}
               </p>
             </motion.div>
           ) : (

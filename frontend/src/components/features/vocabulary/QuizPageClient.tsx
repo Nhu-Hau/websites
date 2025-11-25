@@ -7,12 +7,14 @@ import { vocabularyService } from "@/utils/vocabulary.service";
 import { VocabularySet } from "@/types/vocabulary.types";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { QuizPageContent } from "./QuizPageContent";
+import { useTranslations } from "next-intl";
 
 interface QuizPageClientProps {
   setId: string;
 }
 
 export function QuizPageClient({ setId }: QuizPageClientProps) {
+  const tExtra = useTranslations("vocabularyExtra");
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const [set, setSet] = React.useState<VocabularySet | null>(null);
@@ -27,7 +29,7 @@ export function QuizPageClient({ setId }: QuizPageClientProps) {
       setSet(data);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Không thể tải bộ từ vựng này."
+        err instanceof Error ? err.message : tExtra("errors.loadFailed")
       );
     } finally {
       setLoading(false);
@@ -52,7 +54,7 @@ export function QuizPageClient({ setId }: QuizPageClientProps) {
         <div className="text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[#4063bb] border-t-transparent" />
           <p className="text-sm text-slate-600 dark:text-zinc-400">
-            Đang tải bộ từ vựng...
+            {tExtra("loadingSet")}
           </p>
         </div>
       </div>
@@ -62,15 +64,17 @@ export function QuizPageClient({ setId }: QuizPageClientProps) {
   if (error || !set) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-50 px-4 text-center dark:bg-zinc-950">
-        <p className="text-sm font-semibold text-red-600 dark:text-red-400">
-          {error || "Không tìm thấy bộ từ vựng"}
-        </p>
+        <div className="mt-8 text-center">
+          <p className="text-zinc-600 dark:text-zinc-300">
+            {error || tExtra("errors.notFound")}
+          </p>
+        </div>
         <button
           onClick={handleBack}
           className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 dark:bg-zinc-100 dark:text-zinc-900"
         >
           <ArrowLeft className="h-4 w-4" />
-          Quay lại danh sách
+          {tExtra("actions.backToList")}
         </button>
       </div>
     );
@@ -94,13 +98,13 @@ export function QuizPageClient({ setId }: QuizPageClientProps) {
                 className="inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-[#4063bb] xs:px-4 xs:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-200"
               >
                 <ArrowLeft className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
-                <span>Trở về</span>
+                <span>{tExtra("actions.back")}</span>
               </button>
               <button
                 onClick={handleSwitchToFlashcard}
                 className="inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-[#4063bb] xs:px-4 xs:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-200"
               >
-                Luyện flashcard
+                {tExtra("actions.practiceFlashcard")}
               </button>
             </div>
 

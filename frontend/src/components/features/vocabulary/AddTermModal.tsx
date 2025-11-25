@@ -8,6 +8,7 @@ import {
   VocabularyTerm,
 } from "@/types/vocabulary.types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 const PART_OF_SPEECH = [
   "noun",
@@ -35,6 +36,8 @@ export function TermComposerModal({
   onClose,
   onSubmit,
 }: TermComposerModalProps) {
+  const t = useTranslations("vocabularyComponents.modal.addTerm");
+  const tExtra = useTranslations("vocabularyExtra");
   const [form, setForm] = useState({
     word: "",
     meaning: "",
@@ -97,9 +100,9 @@ export function TermComposerModal({
   const header = useMemo(
     () =>
       mode === "edit"
-        ? { title: "Cập nhật từ vựng", badge: "Chỉnh sửa" }
-        : { title: "Thêm từ mới", badge: "Từ vựng" },
-    [mode]
+        ? { title: t("editTitle"), badge: t("editBadge") }
+        : { title: t("createTitle"), badge: t("createBadge") },
+    [mode, t]
   );
 
   if (!open) return null;
@@ -117,7 +120,7 @@ export function TermComposerModal({
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!form.word.trim() || !form.meaning.trim()) {
-      setError("Từ tiếng Anh và nghĩa tiếng Việt là bắt buộc.");
+      setError(tExtra("errors.termRequired"));
       return;
     }
     try {
@@ -136,7 +139,7 @@ export function TermComposerModal({
       setError(
         err instanceof Error
           ? err.message
-          : "Không thể lưu từ vựng. Thử lại sau."
+          : tExtra("errors.termSaveFailed")
       );
     } finally {
       setLoading(false);
@@ -168,7 +171,7 @@ export function TermComposerModal({
         <button
           onClick={onClose}
           disabled={loading}
-          aria-label="Đóng"
+          aria-label={t("aria.close")}
           className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/80 text-zinc-500 ring-1 ring-zinc-200/80 shadow-sm transition hover:bg-white hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed xs:right-4 xs:top-4 xs:h-9 xs:w-9 sm:h-10 sm:w-10 dark:bg-zinc-900/80 dark:text-zinc-300 dark:ring-zinc-700/80 dark:hover:bg-zinc-800"
         >
           <X className="h-4 w-4 xs:h-5 xs:w-5" />
@@ -207,26 +210,26 @@ export function TermComposerModal({
           <div className="grid gap-3 xs:gap-4 sm:grid-cols-2">
             <label className="space-y-1.5">
               <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-                Từ tiếng Anh <span className="text-red-500">*</span>
+                {tExtra("labels.word")} <span className="text-red-500">*</span>
               </span>
               <input
                 value={form.word}
                 onChange={(event) => handleChange("word", event.target.value)}
-                placeholder="Ví dụ: accomplish"
+                placeholder={tExtra("placeholders.term")}
                 className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-3 pr-3 text-sm font-medium text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
               />
             </label>
 
             <label className="space-y-1.5">
               <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-                Nghĩa tiếng Việt <span className="text-red-500">*</span>
+                {t("labels.vietnameseDef")} <span className="text-red-500">*</span>
               </span>
               <input
                 value={form.meaning}
                 onChange={(event) =>
                   handleChange("meaning", event.target.value)
                 }
-                placeholder="Ví dụ: hoàn thành, đạt được"
+                placeholder={tExtra("placeholders.definition")}
                 className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-3 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
               />
             </label>
@@ -235,14 +238,14 @@ export function TermComposerModal({
           {/* English Meaning */}
           <div className="space-y-1.5">
             <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-              Nghĩa tiếng Anh
+              {t("labels.englishDef")}
             </label>
             <input
               value={form.englishMeaning}
               onChange={(event) =>
                 handleChange("englishMeaning", event.target.value)
               }
-              placeholder="Ví dụ: to achieve or complete successfully"
+              placeholder={tExtra("placeholders.englishDef")}
               className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-3 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
           </div>
@@ -251,21 +254,21 @@ export function TermComposerModal({
           <div className="grid gap-3 xs:gap-4 sm:grid-cols-[1.2fr_1fr]">
             <label className="space-y-1.5">
               <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-                Phiên âm
+                {t("labels.phonetic")}
               </span>
               <input
                 value={form.phonetic}
                 onChange={(event) =>
                   handleChange("phonetic", event.target.value)
                 }
-                placeholder="Ví dụ: /əˈkʌmplɪʃ/"
+                placeholder={tExtra("placeholders.pronunciation")}
                 className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-3 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
               />
             </label>
 
             <label className="space-y-1.5">
               <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-                Từ loại
+                {t("labels.partOfSpeech")}
               </span>
 
               <div className="relative">
@@ -285,7 +288,7 @@ export function TermComposerModal({
                       : "text-slate-400 dark:text-zinc-500"
                   )}
                 >
-                  <option value="">Chọn từ loại</option>
+                  <option value="">{t("placeholders.selectType")}</option>
                   {PART_OF_SPEECH.map((item) => (
                     <option key={item} value={item} className="capitalize">
                       {item}
@@ -304,14 +307,14 @@ export function TermComposerModal({
             <label className="inline-flex items-center gap-1.5">
               <PenSquare className="h-3.5 w-3.5 text-slate-400" />
               <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-                Ví dụ
+                {t("labels.example")}
               </span>
             </label>
             <textarea
               rows={3}
               value={form.example}
               onChange={(event) => handleChange("example", event.target.value)}
-              placeholder='Ví dụ: "She accomplished her goal of learning English."'
+              placeholder={t("placeholders.example")}
               className="w-full rounded-2xl border border-slate-200/80 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 text-[10px] xs:text-[11px]"
             />
           </div>
@@ -324,7 +327,7 @@ export function TermComposerModal({
               disabled={loading}
               className="inline-flex w-full items-center justify-center rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed xs:w-auto dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-50"
             >
-              Hủy
+              {t("actions.cancel")}
             </button>
             <button
               type="submit"
@@ -353,12 +356,12 @@ export function TermComposerModal({
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  <span>Đang lưu...</span>
+                  <span>{t("actions.saving")}</span>
                 </>
               ) : mode === "create" ? (
-                "Thêm từ"
+                tExtra("controls.addTerm")
               ) : (
-                "Lưu thay đổi"
+                tExtra("controls.saveChanges")
               )}
             </button>
           </div>

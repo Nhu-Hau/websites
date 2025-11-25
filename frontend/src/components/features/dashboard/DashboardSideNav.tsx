@@ -4,39 +4,41 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { TrendingUp, BarChart3, Calendar, Trophy } from "lucide-react";
 import { Suspense } from "react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useTranslations } from "next-intl";
 
 type TabId = "progress" | "results" | "activity" | "badges";
 
 interface NavItem {
   id: TabId;
-  label: string;
+  labelKey: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
 const navItems: NavItem[] = [
   {
     id: "progress",
-    label: "Tiến độ luyện tập",
+    labelKey: "progress",
     icon: TrendingUp,
   },
   {
     id: "results",
-    label: "Kết quả kiểm tra",
+    labelKey: "results",
     icon: BarChart3,
   },
   {
     id: "activity",
-    label: "Hoạt động & lịch học",
+    labelKey: "activity",
     icon: Calendar,
   },
   {
     id: "badges",
-    label: "Bộ sưu tập huy hiệu",
+    labelKey: "badges",
     icon: Trophy,
   },
 ];
 
 function DashboardSideNavInner() {
+  const t = useTranslations("dashboardComponents.sideNav.tabs");
   const searchParams = useSearchParams();
   const router = useRouter();
   const basePrefix = useBasePrefix();
@@ -116,7 +118,7 @@ function DashboardSideNavInner() {
 
                   <div className="flex flex-col items-start">
                     <span className="relative text-left text-sm font-semibold">
-                      {item.label}
+                      {t(item.labelKey)}
                     </span>
                     {/* <span className="relative mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
                       {item.id === "progress" &&

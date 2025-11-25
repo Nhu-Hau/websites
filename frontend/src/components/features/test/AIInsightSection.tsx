@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { toast } from "@/lib/toast";
+import { useTranslations } from "next-intl";
 
 export type AIInsightSectionProps = {
   attemptId: string;
@@ -43,9 +44,12 @@ type AIInsightButtonProps = {
   onClick: () => void;
   loading: boolean;
   insightExists: boolean;
+  viewLabel: string;
+  createLabel: string;
+  loadingLabel: string;
 };
 
-function AIInsightButton({ onClick, loading, insightExists }: AIInsightButtonProps) {
+function AIInsightButton({ onClick, loading, insightExists, viewLabel, createLabel, loadingLabel }: AIInsightButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -54,12 +58,12 @@ function AIInsightButton({ onClick, loading, insightExists }: AIInsightButtonPro
     >
       {loading ? (
         <>
-          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Đang tải...
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> {loadingLabel}
         </>
       ) : (
         <>
           <MessageSquare className="h-3.5 w-3.5" />
-          {insightExists ? "Xem nhận xét" : "Tạo nhận xét"}
+          {insightExists ? viewLabel : createLabel}
         </>
       )}
     </button>
@@ -72,6 +76,7 @@ export function AIInsightSection({
   userAccess,
   apiEndpoint,
 }: AIInsightSectionProps) {
+  const t = useTranslations("test.aiInsight");
   const [showInsight, setShowInsight] = useState(false);
   const [insightLoading, setInsightLoading] = useState(false);
   const [insight, setInsight] = useState<string | null>(null);
@@ -131,13 +136,13 @@ export function AIInsightSection({
         }
       } else {
         if (showErrors) {
-          toast.error("Không thể tạo nhận xét");
+          toast.error(t("createError"));
         }
       }
     } catch (e) {
       console.error(e);
       if (showErrors) {
-        toast.error("Lỗi khi tải nhận xét");
+        toast.error(t("loadError"));
       }
     } finally {
       setInsightLoading(false);
@@ -170,8 +175,8 @@ export function AIInsightSection({
     <section className="rounded-2xl border border-zinc-200/80 bg-white/95 p-4 xs:p-5 shadow-sm backdrop-blur-sm dark:border-zinc-700/80 dark:bg-zinc-900/95">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <AIInsightHeader
-          title="Nhận xét từ AI"
-          subtitle="Phân tích điểm mạnh/yếu và lộ trình khuyến nghị"
+          title={t("title")}
+          subtitle={t("subtitle")}
           icon={<MessageSquare className="h-4 w-4" />}
         />
 
@@ -180,6 +185,9 @@ export function AIInsightSection({
             onClick={handleLoadInsight}
             loading={insightLoading}
             insightExists={!!insight}
+            viewLabel={t("view")}
+            createLabel={t("create")}
+            loadingLabel={t("loading")}
           />
         )}
       </div>
@@ -224,7 +232,7 @@ export function AIInsightSection({
 
       {showInsight && !insight && (
         <p className="py-3 text-center text-xs font-medium text-zinc-500 dark:text-zinc-400">
-          Chưa có nhận xét. Hãy thử tải lại sau.
+          {t("noInsight")}
         </p>
       )}
     </section>

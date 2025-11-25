@@ -15,6 +15,7 @@ import {
 import { toast } from "@/lib/toast";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface TeacherLeadFormValues {
   fullName: string;
@@ -30,6 +31,7 @@ export default function TeacherRegisterPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const basePrefix = useBasePrefix();
+  const t = useTranslations("study.teacherRegister");
 
   const [form, setForm] = useState<TeacherLeadFormValues>({
     fullName: user?.name || "",
@@ -87,7 +89,7 @@ export default function TeacherRegisterPage() {
         !experience.trim() ||
         !availability.trim()
       ) {
-        toast.error("Vui lòng điền đầy đủ tất cả các trường bắt buộc.");
+        toast.error(t("validation.requiredAll"));
         return;
       }
 
@@ -103,12 +105,10 @@ export default function TeacherRegisterPage() {
           message: form.message.trim(),
         });
         setSubmitted(true);
-        toast.success(
-          "Đã gửi thông tin đăng ký giáo viên. Admin sẽ liên hệ nếu hồ sơ phù hợp."
-        );
+        toast.success(t("toast.success"));
       } catch (error: any) {
         const message =
-          error?.message || "Gửi thông tin thất bại. Vui lòng thử lại sau.";
+          error?.message || t("toast.error");
         toast.error(message);
       } finally {
         setSubmitting(false);
@@ -125,7 +125,7 @@ export default function TeacherRegisterPage() {
             <Loader2 className="h-6 w-6 animate-spin text-amber-600 dark:text-amber-400" />
           </div>
           <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            Đang tải...
+            {t("loading")}
           </p>
         </div>
       </div>
@@ -143,12 +143,10 @@ export default function TeacherRegisterPage() {
               </div>
               <div className="space-y-2">
                 <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white">
-                  Đã gửi thành công!
+                  {t("success.title")}
                 </h1>
                 <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-md">
-                  Cảm ơn bạn đã gửi thông tin đăng ký giáo viên. Admin sẽ xem xét
-                  hồ sơ và liên hệ với bạn trong thời gian sớm nhất nếu hồ sơ
-                  phù hợp.
+                  {t("success.message")}
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
@@ -157,7 +155,7 @@ export default function TeacherRegisterPage() {
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Quay lại phòng học
+                  {t("success.backToRoom")}
                 </Link>
               </div>
             </div>
@@ -177,7 +175,7 @@ export default function TeacherRegisterPage() {
             className="inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 mb-4 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Quay lại phòng học
+            {t("success.backToRoom")}
           </Link>
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300">
@@ -185,11 +183,10 @@ export default function TeacherRegisterPage() {
             </div>
             <div className="flex-1">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 mb-2">
-                Đăng ký trở thành giáo viên
+                {t("title")}
               </h1>
               <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400">
-                Điền thông tin liên hệ và năng lực giảng dạy để ban quản trị xem
-                xét hồ sơ của bạn.
+                {t("instruction")}
               </p>
             </div>
           </div>
@@ -205,14 +202,14 @@ export default function TeacherRegisterPage() {
                   htmlFor="teacher-full-name"
                   className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
                 >
-                  Họ và tên <span className="text-rose-500">*</span>
+                  {t("form.fullName")} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   id="teacher-full-name"
                   value={form.fullName}
                   onChange={updateField("fullName")}
                   className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-                  placeholder="Nguyễn Văn A"
+                  placeholder={t("form.placeholders.fullName")}
                   disabled={submitting}
                   required
                 />
@@ -223,7 +220,7 @@ export default function TeacherRegisterPage() {
                   htmlFor="teacher-email"
                   className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
                 >
-                  Email <span className="text-rose-500">*</span>
+                  {t("form.email")} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   id="teacher-email"
@@ -231,7 +228,7 @@ export default function TeacherRegisterPage() {
                   value={form.email}
                   onChange={updateField("email")}
                   className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-                  placeholder="giaovien@example.com"
+                  placeholder={t("form.placeholders.email")}
                   disabled={submitting}
                   required
                 />
@@ -245,7 +242,7 @@ export default function TeacherRegisterPage() {
                   htmlFor="teacher-phone"
                   className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
                 >
-                  Số điện thoại <span className="text-rose-500">*</span>
+                  {t("form.phone")} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   id="teacher-phone"
@@ -253,7 +250,7 @@ export default function TeacherRegisterPage() {
                   value={form.phone}
                   onChange={updateField("phone")}
                   className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-                  placeholder="Ví dụ: 0912 345 678"
+                  placeholder={t("form.placeholders.phone")}
                   disabled={submitting}
                   required
                 />
@@ -264,14 +261,14 @@ export default function TeacherRegisterPage() {
                   htmlFor="teacher-score"
                   className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
                 >
-                  Điểm số / Chứng chỉ <span className="text-rose-500">*</span>
+                  {t("form.scoreOrCert")} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   id="teacher-score"
                   value={form.scoreOrCert}
                   onChange={updateField("scoreOrCert")}
                   className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-                  placeholder="TOEIC 900, IELTS 7.5..."
+                  placeholder={t("form.placeholders.scoreOrCert")}
                   disabled={submitting}
                   required
                 />
@@ -284,7 +281,7 @@ export default function TeacherRegisterPage() {
                 htmlFor="teacher-experience"
                 className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
               >
-                Kinh nghiệm giảng dạy <span className="text-rose-500">*</span>
+                {t("form.experience")} <span className="text-rose-500">*</span>
               </label>
               <textarea
                 id="teacher-experience"
@@ -292,7 +289,7 @@ export default function TeacherRegisterPage() {
                 onChange={updateField("experience")}
                 rows={4}
                 className="min-h-[100px] w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-                placeholder="Tóm tắt ngắn gọn kinh nghiệm giảng dạy của bạn."
+                placeholder={t("form.placeholders.experience")}
                 disabled={submitting}
                 required
               />
@@ -302,20 +299,20 @@ export default function TeacherRegisterPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Tệp / Ảnh chứng chỉ, bằng cấp
+                  {t("fileUpload.label")}
                 </label>
                 <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                  PDF, JPG, PNG · tối đa 5
+                  {t("fileUpload.hint")}
                 </span>
               </div>
 
               <label className="group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-4 text-center transition hover:border-amber-400 hover:bg-amber-50/60 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-amber-500 dark:hover:bg-zinc-900/80">
                 <div className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-100">
                   <UploadCloud className="h-5 w-5 text-amber-500 dark:text-amber-400" />
-                  <span>Nhấn để chọn tệp</span>
+                  <span>{t("fileUpload.dropzone")}</span>
                 </div>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Bảng điểm, chứng chỉ hoặc giấy tờ liên quan (nếu có).
+                  {t("fileUpload.dropzoneDesc")}
                 </p>
                 <input
                   type="file"
@@ -330,7 +327,7 @@ export default function TeacherRegisterPage() {
               {attachments.length > 0 && (
                 <div className="space-y-2 rounded-xl bg-zinc-50/80 p-3 text-sm dark:bg-zinc-900/80">
                   <p className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                    Tệp đã chọn ({attachments.length})
+                    {t("fileUpload.selected")} ({attachments.length})
                   </p>
                   <ul className="space-y-2">
                     {attachments.map((file, index) => (
@@ -350,7 +347,7 @@ export default function TeacherRegisterPage() {
                           className="text-xs font-medium text-zinc-500 hover:text-rose-500 dark:text-zinc-400 dark:hover:text-rose-400"
                           disabled={submitting}
                         >
-                          Xóa
+                          {t("fileUpload.remove")}
                         </button>
                       </li>
                     ))}
@@ -365,15 +362,14 @@ export default function TeacherRegisterPage() {
                 htmlFor="teacher-availability"
                 className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
               >
-                Thời gian có thể giảng dạy{" "}
-                <span className="text-rose-500">*</span>
+                {t("form.availability")} <span className="text-rose-500">*</span>
               </label>
               <input
                 id="teacher-availability"
                 value={form.availability}
                 onChange={updateField("availability")}
                 className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-                placeholder="Ví dụ: tối 2–4–6, cuối tuần."
+                placeholder={t("form.placeholders.availability")}
                 disabled={submitting}
                 required
               />
@@ -385,7 +381,7 @@ export default function TeacherRegisterPage() {
                 htmlFor="teacher-message"
                 className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
               >
-                Ghi chú thêm (tùy chọn)
+                {t("form.message")}
               </label>
               <textarea
                 id="teacher-message"
@@ -393,7 +389,7 @@ export default function TeacherRegisterPage() {
                 onChange={updateField("message")}
                 rows={3}
                 className="min-h-[80px] w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder-zinc-500"
-                placeholder="Bất kỳ thông tin bổ sung nào bạn muốn chia sẻ..."
+                placeholder={t("form.placeholders.message")}
                 disabled={submitting}
               />
             </div>
@@ -404,7 +400,7 @@ export default function TeacherRegisterPage() {
                 href={`${basePrefix}/study/create`}
                 className="inline-flex w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 sm:w-auto"
               >
-                Hủy
+                {t("form.cancel")}
               </Link>
               <button
                 type="submit"
@@ -414,10 +410,10 @@ export default function TeacherRegisterPage() {
                 {submitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Đang gửi...
+                    {t("form.submitting")}
                   </>
                 ) : (
-                  "Gửi thông tin"
+                  t("form.submit")
                 )}
               </button>
             </div>

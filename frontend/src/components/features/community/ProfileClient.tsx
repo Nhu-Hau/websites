@@ -78,6 +78,7 @@ export default function ProfileClient({
   const { user: currentUser, refresh } = useAuth();
   const isOwnProfile = currentUser?.id === userId;
   const t = useTranslations("community.profile");
+  const tBadges = useTranslations("dashboard.badges");
 
   const [profile, setProfile] = React.useState<Profile | null | undefined>(
     initialProfile
@@ -383,7 +384,7 @@ export default function ProfileClient({
                     className="fixed inset-0 z-40"
                     onClick={() => setShowAvatarMenu(false)}
                   />
-                    <div className="absolute left-0 top-full z-50 mt-2 min-w-[200px] rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+                  <div className="absolute left-0 top-full z-50 mt-2 min-w-[200px] rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
                     {/* Upload new avatar */}
                     <label className="flex cursor-pointer items-center gap-3 px-4 py-2 text-sm text-zinc-900 transition-colors hover:bg-zinc-100 dark:text-zinc-50 dark:hover:bg-zinc-800">
                       <input
@@ -474,7 +475,8 @@ export default function ProfileClient({
                                 toast.success(t("toast.avatar.removeSuccess"));
                               } catch (error: any) {
                                 toast.error(
-                                  error?.message || t("toast.avatar.removeError")
+                                  error?.message ||
+                                    t("toast.avatar.removeError")
                                 );
                               }
                             }
@@ -677,7 +679,10 @@ export default function ProfileClient({
                   badge._id || badge.badgeType
                 }-profile`;
 
-                let detailedDescription = config.description;
+                const description = tBadges(
+                  `types.${badge.badgeType}.description`
+                );
+                let detailedDescription = description;
                 if (badge.metadata) {
                   if (badge.metadata.partKey) {
                     detailedDescription += ` (${badge.metadata.partKey.replace(
@@ -686,10 +691,14 @@ export default function ProfileClient({
                     )})`;
                   }
                   if (badge.metadata.improvement) {
-                    detailedDescription += ` (+${badge.metadata.improvement} điểm)`;
+                    detailedDescription += ` (+${badge.metadata.improvement} ${
+                      tBadges("points") || "điểm"
+                    })`;
                   }
                   if (badge.metadata.streak) {
-                    detailedDescription += ` (${badge.metadata.streak} ngày)`;
+                    detailedDescription += ` (${badge.metadata.streak} ${
+                      tBadges("days") || "ngày"
+                    })`;
                   }
                   if (badge.metadata.progress !== undefined) {
                     detailedDescription += ` (${Math.round(
@@ -734,6 +743,7 @@ export default function ProfileClient({
                 <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   {t("badges.lockedTitle")}
                 </p>
+
                 <div className="flex flex-wrap gap-2.5 sm:gap-3">
                   {lockedBadgeTypes.map((type) => {
                     const config = BADGE_CONFIG[type as BadgeType];
@@ -741,36 +751,43 @@ export default function ProfileClient({
 
                     const Icon = config.icon;
                     const tooltipId = `badge-locked-${type}-profile`;
+                    const description = tBadges(`types.${type}.description`);
 
                     return (
                       <React.Fragment key={type}>
                         <div
                           data-tooltip-id={tooltipId}
-                          data-tooltip-content={t("badges.lockedTooltip", {
-                            description: config.description,
+                          data-tooltip-content={tBadges("lockedDesc", {
+                            desc: description,
                           })}
                           className={`
-                            group relative flex h-10 w-10 items-center justify-center overflow-hidden
-                            rounded-2xl bg-gradient-to-br from-slate-200 to-slate-400
-                            text-xs shadow-md shadow-slate-900/10
-                            transition-all duration-150
-                            hover:-translate-y-0.5 hover:shadow-lg
-                            cursor-not-allowed
-                            sm:h-12 sm:w-12 md:h-14 md:w-14
-                          `}
+                group relative flex h-10 w-10 items-center justify-center overflow-hidden
+                rounded-2xl bg-zinc-200/40 dark:bg-zinc-700/30
+                text-xs shadow-inner shadow-black/5
+                transition-all duration-150
+                cursor-not-allowed
+                sm:h-12 sm:w-12 md:h-14 md:w-14
+              `}
                         >
-                          <div className="absolute inset-0 rounded-2xl ring-1 ring-white/40 opacity-70" />
-                          <Icon className="relative z-10 h-6 w-6 text-slate-600 dark:text-slate-300" />
+                          {/* Mờ vòng ngoài */}
+                          <div className="absolute inset-0 rounded-2xl ring-1 ring-zinc-300/40 dark:ring-zinc-600/40" />
+
+                          {/* Icon chính (mờ đi) */}
+                          <Icon className="relative z-10 h-6 w-6 text-zinc-500 dark:text-zinc-300 opacity-50" />
+
+                          {/* Lock icon rõ hơn một chút */}
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <Lock className="h-4 w-4 text-slate-700/85 dark:text-slate-200/90 drop-shadow-sm" />
+                            <Lock className="h-4 w-4 text-zinc-700/60 dark:text-zinc-200/70 drop-shadow-sm" />
                           </div>
                         </div>
+
                         <Tooltip
                           id={tooltipId}
                           place="top"
                           positionStrategy="fixed"
                           offset={10}
-                          className="!z-50 !max-w-xs !rounded-lg !border !border-slate-700 !bg-slate-900/95 !px-3 !py-2 !text-xs !font-medium !text-white shadow-lg"
+                          className="!z-50 !max-w-xs !rounded-lg !border !border-slate-700 !bg-slate-900/95
+                         !px-3 !py-2 !text-xs !font-medium !text-white shadow-lg"
                         />
                       </React.Fragment>
                     );

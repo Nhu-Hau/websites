@@ -321,9 +321,7 @@
           "links": {
             "studyRooms": "Study rooms",
             "createRoom": "Create a room",
-            "teacherRegister": "Become a teacher",
-            "mobileStudy": "Mobile study view",
-            "mobilePractice": "Mobile practice view"
+            "teacherRegister": "Become a teacher"
           }
         },
         "community": {
@@ -368,7 +366,9 @@
       "vocabulary": "Vocabulary",
       "news": "Study with news"
     },
-    "dashboard": "Dashboard"
+    "dashboard": {
+      "label": "Dashboard"
+    }
   },
   "community": {
     "metadata": {
@@ -956,115 +956,6 @@
       }
     }
   },
-  "study": {
-    "header": {
-      "create": {
-        "full": "Create room",
-        "short": "Create"
-      },
-      "refresh": {
-        "full": "Refresh",
-        "short": "Refresh"
-      }
-    },
-    "createRoom": {
-      "validation": {
-        "empty": "Room name cannot be empty.",
-        "min": "Room name must be at least 3 characters.",
-        "max": "Room name can be at most 32 characters.",
-        "pattern": "Use lowercase letters, numbers, and hyphens. Don't start with a hyphen."
-      },
-      "toast": {
-        "invalidName": "Room name is invalid",
-        "noPermission": {
-          "title": "You don't have permission",
-          "description": "Only teachers and admins can open live study rooms."
-        },
-        "createSuccess": {
-          "title": "Room created",
-          "description": "Redirecting you to the room..."
-        },
-        "createError": "Couldn't create the room. Please try again.",
-        "genericError": "Something went wrong",
-        "modalSuccess": "Room created successfully!",
-        "listError": "Couldn't load rooms",
-        "autoDelete": "Automatically closed an empty room after 5 minutes: {room}",
-        "deleteSuccess": "Room \"{room}\" deleted",
-        "deleteError": "Couldn't delete the room"
-      },
-      "dialogs": {
-        "delete": {
-          "title": "Delete this room?",
-          "message": "Are you sure you want to delete the room \"{room}\"? This action cannot be undone.",
-          "confirm": "Delete",
-          "cancel": "Cancel"
-        }
-      },
-      "states": {
-        "unauthenticated": {
-          "title": "Sign in required",
-          "description": "Please log in to create a room. Only teachers and admins can host sessions."
-        },
-        "forbidden": {
-          "title": "You can't create rooms",
-          "roleLabel": "Current role:",
-          "contact": "Contact an admin to request teacher access."
-        }
-      },
-      "form": {
-        "title": "Create a live study room",
-        "description": "Enter a URL-friendly room ID to start a session.",
-        "nameLabel": "Room name",
-        "placeholder": "toeic-lr-class",
-        "helperValid": "Looks good!",
-        "cancel": "Cancel",
-        "submit": "Create room",
-        "submitting": "Creating..."
-      },
-      "page": {
-        "loading": "Loading..."
-      }
-    },
-    "rooms": {
-      "hero": {
-        "title": "Study rooms",
-        "description": "Track live rooms, open your own, or join with a link."
-      },
-      "notice": {
-        "student": {
-          "badge": "For students",
-          "title": "Your account only joins rooms",
-          "description": "Only <strong>teachers</strong> and <strong>admins</strong> can open livestream rooms. When a teacher starts a room you can:",
-          "tips": {
-            "link": "Receive a join link from your teacher (chat, email, …).",
-            "list": "Pick a room inside <highlight>“Room list”</highlight> below when one is live."
-          }
-        },
-        "teacher": {
-          "title": "Are you a TOEIC / IELTS teacher?",
-          "description": "If you have teaching experience and want to host classes here, send your info so the admin can grant teacher access if your profile fits.",
-          "cta": "Send teacher application"
-        }
-      },
-      "errors": {
-        "retry": "Try again"
-      },
-      "list": {
-        "title": "Room list",
-        "empty": {
-          "title": "No rooms yet",
-          "creator": "You haven't opened any rooms yet. Launch your first room and teach TOEIC live.",
-          "student": "No rooms are live right now. Check back later or contact your teacher."
-        },
-        "card": {
-          "online": "{count} online",
-          "join": "Enter room",
-          "deleting": "Deleting...",
-          "delete": "Delete"
-        }
-      }
-    }
-  },
   "news": {
     "page": {
       "header": {
@@ -1138,9 +1029,9 @@
     }
   },
   "MobileTopBar": {
-    "logoAria": "Back to ToeicPrep homepage",
-    "logoAlt": "ToeicPrep Logo",
-    "notificationsAria": "Notifications"
+    "logoAria": "Home",
+    "logoAlt": "TOEIC Practice Logo",
+    "notificationAria": "Notifications"
   },
   "HeaderActions": {
     "language": {
@@ -1322,12 +1213,6 @@
       "logoutError": "Logout failed"
     }
   },
-  "BottomTabBar": {
-    "practice": "Practice L&R",
-    "study": "Study",
-    "community": "Community",
-    "dashboard": "Dashboard"
-  },
   "Account": {
     "header": {
       "title": "Account Settings",
@@ -1504,6 +1389,45 @@
         "title": "TOEIC Practice - Practice Tests by Part",
         "description": "Practice TOEIC with thousands of questions by Part, categorized by Level. Automatic scoring and detailed analysis.",
         "keywords": "TOEIC practice, practice test, TOEIC part, TOEIC exercises"
+      },
+      "parts": {
+        "part": {
+          "1": {
+            "title": "Part 1 – Photographs",
+            "description": "Practice TOEIC Part 1 - Photographs. Listen and choose the sentence that best describes the picture.",
+            "keywords": "TOEIC, TOEIC part.1, TOEIC practice, TOEIC test, Part 1 – Photographs"
+          },
+          "2": {
+            "title": "Part 2 – Question–Response",
+            "description": "Practice TOEIC Part 2 - Question-Response. Listen to questions and choose the most appropriate answer.",
+            "keywords": "TOEIC, TOEIC part.2, TOEIC practice, TOEIC test, Part 2 – Question–Response"
+          },
+          "3": {
+            "title": "Part 3 – Conversations",
+            "description": "Practice TOEIC Part 3 - Conversations. Listen to short conversations and answer questions.",
+            "keywords": "TOEIC, TOEIC part.3, TOEIC practice, TOEIC test, Part 3 – Conversations"
+          },
+          "4": {
+            "title": "Part 4 – Talks",
+            "description": "Practice TOEIC Part 4 - Short Talks. Listen to short talks and answer related questions.",
+            "keywords": "TOEIC, TOEIC part.4, TOEIC practice, TOEIC test, Part 4 – Talks"
+          },
+          "5": {
+            "title": "Part 5 – Incomplete Sentences",
+            "description": "Practice TOEIC Part 5 - Incomplete Sentences. Practice grammar and vocabulary to complete sentences correctly.",
+            "keywords": "TOEIC, TOEIC part.5, TOEIC practice, TOEIC test, Part 5 – Incomplete Sentences"
+          },
+          "6": {
+            "title": "Part 6 – Text Completion",
+            "description": "Practice TOEIC Part 6 - Text Completion. Practice reading and filling in appropriate words in blanks.",
+            "keywords": "TOEIC, TOEIC part.6, TOEIC practice, TOEIC test, Part 6 – Text Completion"
+          },
+          "7": {
+            "title": "Part 7 – Reading Comprehension",
+            "description": "Practice TOEIC Part 7 - Reading Comprehension. Practice reading long passages and answering comprehension questions.",
+            "keywords": "TOEIC, TOEIC part.7, TOEIC practice, TOEIC test, Part 7 – Reading Comprehension"
+          }
+        }
       }
     },
     "study": {
@@ -1575,6 +1499,7 @@
       },
       "progress": {
         "label": "Learning Progress",
+        "labelShort": "Progress",
         "mastered": "mastered",
         "needReview": "need review"
       },
@@ -1584,43 +1509,71 @@
     },
     "modal": {
       "createSet": {
-        "title": "Create Set",
-        "editTitle": "Edit Set",
-        "badge": "Compose Set",
-        "editBadge": "Edit",
-        "description": "Create a vocabulary set for a specific topic or context.",
-        "editDescription": "Edit details to keep your set clear and organized.",
+        "aria": {
+          "close": "Close"
+        },
+        "badgeCreate": "Create Set",
+        "badgeEdit": "Edit",
+        "titleCreate": "Set Up Vocabulary Set",
+        "titleEdit": "Update Vocabulary Set",
+        "description": "Create a vocabulary set based on a specific topic or context.",
+        "editDescription": "Edit information to make the set clear and easy to manage.",
+        "buttonCreate": "Create Set",
         "fields": {
           "title": "Set Name",
-          "titlePlaceholder": "e.g., TOEIC Part 1 Vocabulary",
-          "description": "Description (optional)",
-          "descriptionPlaceholder": "Brief description of set content",
-          "topic": "Topic (optional)",
-          "topicPlaceholder": "e.g., Business, Travel, Technology"
+          "topic": "Topic / Tag",
+          "description": "Description (optional)"
         },
-        "buttons": {
+        "labels": {
+          "setName": "Set name",
+          "topic": "Topic / tag",
+          "description": "Description (optional)"
+        },
+        "placeholders": {
+          "setName": "Ex: TOEIC – Office Communication",
+          "topic": "Ex: Office, Meetings, Customer service"
+        },
+        "actions": {
           "cancel": "Cancel",
-          "create": "Create Set",
-          "update": "Update"
+          "saving": "Saving..."
         }
       },
       "addTerm": {
+        "aria": {
+          "close": "Close"
+        },
         "createTitle": "Add New Term",
+        "createBadge": "Vocabulary",
         "editTitle": "Update Term",
-        "createBadge": "Add Term",
         "editBadge": "Edit",
         "fields": {
-          "term": "Term / Phrase",
-          "termPlaceholder": "e.g., accomplish",
-          "definition": "Definition",
-          "definitionPlaceholder": "e.g., to complete, achieve",
-          "example": "Example (optional)",
-          "examplePlaceholder": "e.g., She accomplished her goal."
+          "word": "English Word",
+          "meaning": "Vietnamese Meaning",
+          "englishMeaning": "English Meaning",
+          "phonetic": "Phonetic",
+          "partOfSpeech": "Part of Speech"
         },
+        "example": "Example (optional)",
+        "examplePlaceholder": "e.g., She accomplished her goal.",
         "buttons": {
           "cancel": "Cancel",
           "add": "Add Term",
           "update": "Update"
+        },
+        "labels": {
+          "vietnameseDef": "Vietnamese Meaning",
+          "englishDef": "English Meaning",
+          "phonetic": "Phonetic",
+          "partOfSpeech": "Part of Speech",
+          "example": "Example"
+        },
+        "placeholders": {
+          "selectType": "Select part of speech",
+          "example": "e.g., \"She accomplished her goal of learning English.\""
+        },
+        "actions": {
+          "cancel": "Cancel",
+          "saving": "Saving..."
         }
       }
     },
@@ -1649,6 +1602,21 @@
         "score": "Score",
         "correct": "Correct",
         "incorrect": "Incorrect"
+      },
+      "types": {
+        "multipleChoice": "Multiple Choice",
+        "fillInBlank": "Fill in the Blank"
+      },
+      "actions": {
+        "submit": "Submit Answer",
+        "next": "Next Question"
+      },
+      "placeholders": {
+        "answer": "Enter answer..."
+      },
+      "result": {
+        "correct": "Correct!",
+        "correctAnswer": "Correct answer: {answer}"
       }
     },
     "setDetail": {
@@ -1717,7 +1685,1146 @@
       "noTests": "No tests available for Level"
     },
     "mobile": {
-      "question": "Question"
+      "question": "Question",
+      "study": {
+        "header": {
+          "badge": "Supporting skills roadmap",
+          "title": "Study",
+          "description": "Choose the right way to learn: <vocabulary>active vocabulary</vocabulary> or <news>reading comprehension through news</news>."
+        },
+        "vocabulary": {
+          "title": "Learn Vocabulary",
+          "description": "Practice vocabulary by set, similar to Quizlet but optimized for TOEIC.",
+          "tag": "Focus on vocabulary",
+          "estimated": "~10–15 min/set",
+          "suggested": "Suggested for you"
+        },
+        "news": {
+          "title": "Learn through News",
+          "description": "Read English news, look up words and save real vocabulary.",
+          "tag": "Real reading comprehension",
+          "estimated": "~15–20 min/article"
+        },
+        "cta": {
+          "start": "Start now",
+          "tap": "Tap to enter study screen"
+        },
+        "tip": "Tip: You can alternate <vocabulary>Learn Vocabulary</vocabulary> and <news>Learn through News</news> to both remember vocabulary and improve reading comprehension."
+      },
+      "practice": {
+        "header": {
+          "badge": "Practice Listening & Reading by Part",
+          "title": "Practice L&R",
+          "description": "Choose the Part you want to practice. The system defaults to starting from <level1>Level 1</level1> and automatically adjusts based on your results."
+        },
+        "parts": {
+          "part1": "Photographs",
+          "part2": "Question-Response",
+          "part3": "Conversations",
+          "part4": "Talks",
+          "part5": "Incomplete Sentences",
+          "part6": "Text Completion",
+          "part7": "Reading Comprehension",
+          "full": {
+            "1": "Part 1: Photographs",
+            "2": "Part 2: Question-Response",
+            "3": "Part 3: Conversations",
+            "4": "Part 4: Talks",
+            "5": "Part 5: Incomplete Sentences",
+            "6": "Part 6: Text Completion",
+            "7": "Part 7: Reading Comprehension"
+          }
+        },
+        "listening": "Listening",
+        "reading": "Reading",
+        "card": {
+          "startFromLevel1": "Start from Level 1",
+          "autoSuggest": "Auto-suggested roadmap"
+        },
+        "tip": "Tip: Alternate practicing <listening>Part 1–4</listening> (Listening) and <reading>Part 5–7</reading> (Reading) to balance both skills."
+      }
     }
+  },
+  "BottomTabBar": {
+    "practice": "Practice",
+    "study": "Vocabulary",
+    "community": "Community",
+    "dashboard": "Dashboard"
+  },
+  "layoutComponents": {
+    "chat": {
+      "tabs": {
+        "admin": "Chat with admin",
+        "adminShort": "Admin",
+        "ai": "Chat AI TOEIC",
+        "aiShort": "AI"
+      },
+      "aria": {
+        "close": "Close chat",
+        "open": "Open chat",
+        "deleteAll": "Delete all conversations",
+        "copy": "Copy message"
+      },
+      "ai": {
+        "welcome": "Hello! I'm your TOEIC AI assistant. I can help you practice, explain grammar, vocabulary, and test strategies. What would you like to know?",
+        "placeholder": "Hi! Send a message to start chatting with the TOEIC AI assistant.",
+        "premiumOnly": "AI chat is available for Premium accounts only.",
+        "premiumRequired": "AI chat is available for Premium accounts only. Please upgrade your account to use this feature.",
+        "loginRequired": "Please log in to start chatting",
+        "loginPlaceholder": "Log in to chat...",
+        "premiumPlaceholder": "Premium account required...",
+        "sending": "Sending...",
+        "responding": "Thinking...",
+        "typing": "AI is thinking...",
+        "timestampPending": "Sending...",
+        "empty": "Ask anything about TOEIC practice to start a conversation.",
+        "aiLabel": "AI Coach",
+        "clear": "Delete all",
+        "loginCta": "Log in",
+        "loginFooter": "to chat with AI",
+        "premiumCta": "Upgrade to Premium",
+        "premiumFooter": "to unlock AI chat",
+        "error": "An error occurred while sending message",
+        "learningInsight": {
+          "goalProgressTitle": "TOEIC goal progress",
+          "goalPrompt": "💡 Set a TOEIC goal to track your progress",
+          "range": "{start} → {current} / {target}",
+          "activityTitle": "Study activity (30 days)",
+          "activityEmpty": "No Learning Insight data yet",
+          "heatmapEmpty": "No activity data yet",
+          "attempts": "{count} tests",
+          "streak": "{days} days",
+          "tooltip": "{date}: {count} tests"
+        }
+      },
+      "admin": {
+        "welcome": "Admin will reply as soon as possible. Thank you for contacting us!",
+        "placeholder": "Hello! Send a message to start chatting with admin.",
+        "premiumOnly": "Admin chat is available for Premium accounts only.",
+        "premiumRequired": "Admin chat is available for Premium accounts only. Please upgrade your account to use this feature.",
+        "loginRequired": "Please log in to use admin chat",
+        "loginPlaceholder": "Log in to chat...",
+        "premiumPlaceholder": "Premium account required...",
+        "sending": "Sending...",
+        "typing": "Admin is typing...",
+        "timestampPending": "Sending...",
+        "empty": "Need help with TOEIC practice? Start a conversation with admin.",
+        "adminLabel": "Admin",
+        "clear": "Delete all",
+        "loginCta": "Log in",
+        "loginFooter": "to chat with Admin",
+        "premiumCta": "Upgrade to Premium",
+        "premiumFooter": "to chat with Admin",
+        "error": "An error occurred while sending message"
+      }
+    },
+    "nav": {
+      "aria": {
+        "openMenu": "Open menu",
+        "closeMenu": "Close menu"
+      }
+    }
+  },
+  "dashboardComponents": {
+    "sideNav": {
+      "tabs": {
+        "progress": "Practice Progress",
+        "results": "Test Results",
+        "activity": "Activity & Schedule",
+        "badges": "Badge Collection"
+      }
+    }
+  },
+  "placement": {
+    "aria": {
+      "close": "Close"
+    },
+    "mandatory": {
+      "title": "Please complete the <highlight>Placement Test</highlight> first",
+      "description": "To assess your level and suggest a suitable roadmap, the system requires you to complete <emphasis>the placement test</emphasis> before practicing.",
+      "button": "Start Placement",
+      "closeAria": "Close"
+    },
+    "errors": {
+      "notFound": "Latest result not found",
+      "unknown": "Unknown error",
+      "loginRequired": "Please log in to start the test",
+      "noQuestions": "Question list not found"
+    },
+    "loading": "Loading test results...",
+    "loadingTest": "Loading test...",
+    "result": {
+      "label": "Results • Mini TOEIC",
+      "title": "TOEIC Placement Test Results",
+      "description": "Completed at <time>{datetime}</time>. Here is your estimated TOEIC score and detailed analysis for each skill."
+    },
+    "test": {
+      "label": "Mini TOEIC • 55 questions • 35 minutes",
+      "title": "TOEIC Placement Test",
+      "description": "The test consists of <strong>{count} questions</strong> in <strong>{duration} minutes</strong>. After submission, you will receive"
+    },
+    "complete": "You have completed the Placement test. Redirecting to results.",
+    "resultPage": {
+      "reload": "Reload",
+      "attemptId": "Attempt ID: {id}",
+      "empty": {
+        "title": "No questions to display.",
+        "stats": "Items: {items}, Groups: {groups}"
+      },
+      "groupError": {
+        "title": "Cannot group questions to display.",
+        "stats": "Items: {items}, Stimulus keys: {keys}"
+      },
+      "errors": {
+        "detail": "Cannot load details: {status}",
+        "history": "Cannot load history: {status}",
+        "result": "Cannot load result ({status}): {message}",
+        "questions": "Cannot load questions: {status} - {message}",
+        "loadData": "Error loading data: {message}"
+      }
+    }
+  },
+  "progress": {
+    "loading": "Loading test results...",
+    "errors": {
+      "notFound": "Latest result not found",
+      "unknown": "Unknown error",
+      "history": "Cannot load history: {status}",
+      "detail": "Cannot load details: {status}",
+      "result": "Cannot load result ({status}): {message}",
+      "questions": "Cannot load questions: {status} - {message}",
+      "noQuestions": "Question list not found"
+    },
+    "result": {
+      "badge": "Progress Test",
+      "badgeWithVersion": "Progress Test • Test {version}",
+      "title": "TOEIC Progress Test Results",
+      "description": "Completed at <time>{datetime}</time>. Here is your estimated TOEIC score and detailed analysis for each skill."
+    },
+    "resultPage": {
+      "reload": "Reload",
+      "attemptId": "Attempt ID: {id}",
+      "empty": {
+        "title": "No questions to display.",
+        "stats": "Items: {items}, Groups: {groups}"
+      },
+      "groupError": {
+        "title": "Cannot group questions to display.",
+        "stats": "Items: {items}, Stimulus keys: {keys}"
+      },
+      "errors": {
+        "detail": "Cannot load details: {status}",
+        "history": "Cannot load history: {status}",
+        "result": "Cannot load result ({status}): {message}",
+        "questions": "Cannot load questions: {status} - {message}",
+        "loadData": "Error loading data: {message}"
+      }
+    }
+  },
+  "vocabularyExtra": {
+    "loadingSet": "Loading vocabulary set...",
+    "errors": {
+      "titleRequired": "Set name is required.",
+      "saveFailed": "Cannot save vocabulary set. Please try again.",
+      "loadFailed": "Cannot load this vocabulary set.",
+      "notFound": "Vocabulary set not found",
+      "termRequired": "English word and Vietnamese meaning are required.",
+      "termSaveFailed": "Cannot save term. Try again later.",
+      "setUpdateFailed": "Cannot update vocabulary set",
+      "deleteFailed": "Cannot delete term",
+      "setDeleteFailed": "Cannot delete vocabulary set",
+      "saveTermFailed": "Failed to save term"
+    },
+    "flashcard": {
+      "term": "Term",
+      "listen": "Listen",
+      "read": "Read",
+      "tapToFlip": "Tap to flip",
+      "meaning": "Meaning",
+      "example": "Example",
+      "tapToFlipBack": "Tap to flip back",
+      "flipHint": "Tap card or press Space to flip"
+    },
+    "completion": {
+      "quizComplete": "You've completed the quiz!",
+      "flashcardComplete": "Flashcard round complete!",
+      "correct": "Correct",
+      "incorrect": "Incorrect",
+      "remembered": "Mastered",
+      "notYet": "Not yet",
+      "legendary": "Legendary!",
+      "greatJob": "Great Job!",
+      "keepGoing": "Keep Going!",
+      "practiceMore": "Practice More",
+      "score": "Score"
+    },
+    "controls": {
+      "previous": "Previous",
+      "next": "Next",
+      "notRemembered": "Not remembered",
+      "remembered": "Remembered",
+      "saveChanges": "Save Changes",
+      "addTerm": "Add Term"
+    },
+    "toast": {
+      "termSaved": "Term saved to vocabulary set!",
+      "termUpdated": "Term updated",
+      "termAdded": "New term added",
+      "termDeleted": "Term deleted",
+      "setUpdated": "Vocabulary set updated",
+      "setDeleted": "Vocabulary set deleted",
+      "noSetId": "Cannot determine set to save",
+      "noSetIdUpdate": "Cannot determine set to update"
+    },
+    "setDetail": {
+      "noDescription": "No description for this set yet.",
+      "searchPlaceholder": "Search by word, meaning, phonetic or example...",
+      "filterNew": "Recently Added",
+      "noResults": "No terms match your search.",
+      "noTerms": "No vocabulary terms in this set yet.",
+      "deleteConfirm": "This action cannot be undone. Are you sure you want to delete?"
+    },
+    "errorMap": {
+      "failedToAddTerm": "Failed to add term. Please try again.",
+      "permissionDenied": "Failed to add term. This may be due to permission or database errors.",
+      "setNotFound": "Vocabulary set not found",
+      "accessDenied": "You don't have permission to access this vocabulary set",
+      "invalidSetId": "Invalid vocabulary set ID"
+    },
+    "placeholders": {
+      "setDescription": "e.g., Common vocabulary in office conversations.",
+      "term": "Example: accomplish",
+      "definition": "Example: to complete, achieve",
+      "englishDef": "Example: to achieve or complete successfully",
+      "pronunciation": "Example: /əˈkʌmplɪʃ/"
+    },
+    "actions": {
+      "editSet": "Edit set",
+      "deleteSet": "Delete set",
+      "backToList": "Back to list",
+      "back": "Back",
+      "switchToQuiz": "Switch to Quiz",
+      "addTerm": "Add new term",
+      "practiceFlashcard": "Practice flashcards",
+      "quickQuiz": "Quick quiz",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "saving": "Saving..."
+    },
+    "labels": {
+      "totalTerms": "Total terms:",
+      "topic": "Topic:",
+      "quickSearch": "Quick search",
+      "sortFilter": "Sort & Filter",
+      "studyDeck": "Study deck",
+      "termList": "Term list",
+      "termListHint": "Click on a row to view, edit or delete.",
+      "setName": "Set name",
+      "description": "Description (optional)",
+      "word": "Word"
+    },
+    "sort": {
+      "alphabetical": "A–Z",
+      "partOfSpeech": "By part of speech"
+    },
+    "modals": {
+      "deleteTerm": {
+        "title": "Delete term?",
+        "message": "This term will be removed from the set.",
+        "confirm": "Delete term"
+      }
+    }
+  },
+  "dashboard": {
+    "label": "Dashboard",
+    "title": "Dashboard",
+    "assessment": {
+      "overviewTitle": "Assessment Overview",
+      "selfReported": "Self-Reported Score",
+      "placementTest": "Placement Test",
+      "latestProgress": "Latest Progress Test",
+      "comparison": {
+        "matchMsg": "Placement test score is quite close to your reported TOEIC score.",
+        "matchSub": "You reported: {reported} points • Placement test estimated: {placement} points (difference of about {diff} points). The system will use the placement result to suggest a detailed roadmap for each Part.",
+        "mediumMsg": "Placement test score slightly deviates from your reported TOEIC score.",
+        "mediumSub": "You reported: {reported} points • Placement test estimated: {placement} points (difference of about {diff} points). This may be due to different timing from the real exam, your reported score being old, or the placement test having only 55 questions. The system still prioritizes the placement test for roadmap suggestions.",
+        "largeMsg": "Placement test score deviates significantly from your reported TOEIC score.",
+        "largeSub": "You reported: {reported} points • Placement test estimated: {placement} points (difference of about {diff} points). This may be due to lack of focus, your reported score being old, or this being just an estimate from 55 questions. The system will prioritize the placement result for current level assessment. If you feel the result is inaccurate, practice for a while and retake the progress test for a more stable assessment."
+      },
+      "eligibility": {
+        "eligible": "Eligible for Progress Test",
+        "insufficient": "Not yet eligible for Progress Test",
+        "waiting": "Waiting for Progress Test to open",
+        "reopen": "Will reopen at {time}",
+        "remaining": "Remaining: {time}",
+        "descEligible": "You can take the test to update your latest predicted score.",
+        "descNoPractice": "Complete at least 1 Practice test to unlock Progress Test.",
+        "descInsufficient": "You need to complete {remaining} more Practice Tests (completed {current}/{required}).",
+        "descNoPracticeAfter": "You need to complete a Practice test after the last Progress Test.",
+        "descWaiting": "You just finished Practice, the system will open Progress Test after the cycle time.",
+        "descDefault": "System automatically opens Progress Test every 5-day practice cycle.",
+        "anchor": "Milestone from {time}",
+        "cycle": "{days}-day cycle",
+        "actionStart": "Start Progress Test",
+        "actionLocked": "Locked"
+      },
+      "chart": {
+        "title": "TOEIC Score Over Time",
+        "subtitle": "Listening, Reading & Overall (converted to TOEIC scale)",
+        "loading": "Loading data...",
+        "tooltip": "{score} points",
+        "kindBaseline": "Baseline",
+        "kindPlacement": "Placement Test",
+        "kindProgress": "Progress Test"
+      },
+      "time": {
+        "days": "days",
+        "hours": "hours",
+        "minutes": "minutes",
+        "seconds": "seconds",
+        "fewMinutes": "a few minutes"
+      }
+    },
+    "schedule": {
+      "title": "Smart Study Schedule",
+      "subtitle": "Set a fixed practice schedule to keep up your TOEIC learning rhythm.",
+      "notifyLabel": "Email / Web Reminders",
+      "recurrence": {
+        "label": "Recurrence Cycle",
+        "once": "Once",
+        "daily": "Daily",
+        "weekdays": "Mon-Fri",
+        "custom": "Custom"
+      },
+      "weekdays": {
+        "sun": "Sun",
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat"
+      },
+      "dateTime": {
+        "label": "Date & Time",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "pickDate": "Pick Date"
+      },
+      "plan": {
+        "label": "Session Type",
+        "auto": "Auto (Smart Auto)",
+        "progress": "Progress Test",
+        "miniProgress": "Mini-Progress",
+        "part1": "Practice Part 1",
+        "part2": "Practice Part 2",
+        "part3": "Practice Part 3",
+        "part4": "Practice Part 4",
+        "part5": "Practice Part 5",
+        "part6": "Practice Part 6",
+        "part7": "Practice Part 7"
+      },
+      "duration": {
+        "label": "Duration",
+        "minutes": "{minutes} minutes"
+      },
+      "remind": {
+        "label": "Remind Before",
+        "minutes": "{minutes} minutes"
+      },
+      "notify": {
+        "label": "Reminders",
+        "email": "Email",
+        "web": "Web push"
+      },
+      "submit": "Save Schedule",
+      "submitLoading": "Saving schedule...",
+      "upcoming": {
+        "title": "Upcoming Schedule",
+        "emptyTitle": "No upcoming schedule",
+        "emptyDesc": "Create a schedule above, the system will remind you on time like pro edtech apps.",
+        "completed": "Last session completed.",
+        "missed": "You missed the last session.",
+        "reminder": "Remember to join on time to keep your streak!",
+        "statusCompleted": "Session Completed!",
+        "statusMissed": "You missed the session",
+        "streak": "Current streak: {days} days"
+      }
+    },
+    "activity": {
+      "title": "Learning Activity Heatmap",
+      "subtitle": "Each square is a day – the darker the color, the harder you studied.",
+      "emptyTitle": "No activity data yet",
+      "emptyDesc": "Complete practice or tests for the system to draw your heatmap.",
+      "totalDays": "Total Study Days",
+      "totalAttempts": "Total Attempts",
+      "currentStreak": "Current Streak",
+      "maxStreak": "Max Streak",
+      "legendLess": "Less",
+      "legendMore": "More",
+      "motivation": "You are maintaining a {streak}-day study streak 🔥 Keep it up!"
+    },
+    "loading": "Loading data...",
+    "badges": {
+      "title": "Badge Collection",
+      "subtitle": "Count unlocked badges and wait for latest data sync.",
+      "badgeLabel": "Badges",
+      "congratsTitle": "Congratulations!",
+      "congratsMessage": "You unlocked the <bold>{name}</bold> badge.",
+      "earnedCount": "{earned} / {total} badges unlocked",
+      "badgeCount": "{count} badges",
+      "syncing": "Syncing new badges...",
+      "emptyTitle": "No badges yet",
+      "emptyDesc": "Practice regularly, keep your streak, and set goals to unlock your first badge.",
+      "lockedTitle": "Locked Badges",
+      "lockedDesc": "Not earned: {desc}",
+      "types": {
+        "streak_7_days": {
+          "name": "7-Day Streak",
+          "description": "Study for 7 consecutive days"
+        },
+        "streak_14_days": {
+          "name": "14-Day Streak",
+          "description": "Maintain a 14-day streak"
+        },
+        "streak_30_days": {
+          "name": "30-Day Streak",
+          "description": "Study for 30 consecutive days"
+        },
+        "practice_10_tests": {
+          "name": "Hard Worker",
+          "description": "Complete 10 Practice Tests"
+        },
+        "practice_25_tests": {
+          "name": "Persistent Learner",
+          "description": "Complete 25 Practice Tests"
+        },
+        "goal_50_percent": {
+          "name": "Halfway There",
+          "description": "Reach 50% of your TOEIC goal"
+        },
+        "goal_75_percent": {
+          "name": "Almost There",
+          "description": "Reach 75% of your TOEIC goal"
+        },
+        "part_improvement_20": {
+          "name": "Great Improvement",
+          "description": "Improve a Part score by 20+ points"
+        },
+        "first_placement": {
+          "name": "Journey Begins",
+          "description": "Take the Placement Test for the first time"
+        },
+        "first_progress": {
+          "name": "Progress Check",
+          "description": "Take the Progress Test for the first time"
+        },
+        "first_practice": {
+          "name": "First Practice",
+          "description": "Take a Practice Test for the first time"
+        },
+        "perfect_score": {
+          "name": "Perfect Score",
+          "description": "Score 100% on a test"
+        },
+        "early_bird": {
+          "name": "Early Bird",
+          "description": "Study early in the morning (before 7 AM)"
+        },
+        "night_owl": {
+          "name": "Night Owl",
+          "description": "Study late at night (after 10 PM)"
+        },
+        "marathon": {
+          "name": "Study Marathon",
+          "description": "Complete 5+ tests in a single day"
+        },
+        "consistency_king": {
+          "name": "Consistency King",
+          "description": "Study consistently for 14 days"
+        },
+        "practice_50_tests": {
+          "name": "Practice Warrior",
+          "description": "Complete 50 Practice Tests"
+        },
+        "progress_5_tests": {
+          "name": "Progress Expert",
+          "description": "Complete 5 Progress Tests"
+        },
+        "goal_100_percent": {
+          "name": "Goal Conquered",
+          "description": "Reach 100% of your set TOEIC goal"
+        },
+        "weekend_warrior": {
+          "name": "Weekend Warrior",
+          "description": "Study actively every weekend"
+        }
+      }
+    },
+    "progressChart": {
+      "listening": {
+        "title": "Listening Accuracy",
+        "description": "Track accuracy for Parts 1–4 and spot practice trends.",
+        "emptyTitle": "No Listening data yet",
+        "emptyDesc": "Practice {part} to see accuracy."
+      },
+      "reading": {
+        "title": "Reading Accuracy",
+        "description": "Monitor progress in Parts 5–7 to balance grammar and comprehension.",
+        "emptyTitle": "No Reading data yet",
+        "emptyDesc": "Complete {part} to display data."
+      },
+      "latest": "Latest",
+      "level": "Level {level}",
+      "test": "Test {test}",
+      "loading": "Loading data...",
+      "legend": {
+        "solid": "Solid line: Accuracy per attempt",
+        "dashed": "Dashed line: Moving Avg (3 attempts)",
+        "retake": "Thick border: Retake"
+      },
+      "tooltip": {
+        "retake": "Retake",
+        "firstTime": "First time"
+      }
+    },
+    "goal": {
+      "toast": {
+        "rangeError": "Target score must be between 10 and 990",
+        "fail": "Failed to set goal",
+        "success": "Goal set successfully!"
+      },
+      "empty": {
+        "label": "Goal Planning",
+        "title": "Goal Progress",
+        "description": "No TOEIC goal set yet.",
+        "cardTitle": "You haven't set a TOEIC goal",
+        "cardDesc": "Set a goal to track your learning progress and get reminders.",
+        "button": "Set Goal Now"
+      },
+      "tracking": {
+        "label": "Goal Tracking",
+        "title": "Goal Progress",
+        "achieved": "Congratulations! You reached your TOEIC goal.",
+        "ongoing": "Keep practicing to get closer to your goal.",
+        "update": "Update",
+        "stats": {
+          "target": "Target",
+          "current": "Current",
+          "completed": "Completed"
+        },
+        "start": "Start: {score}",
+        "target": "Target: {score}",
+        "summary": "From {start} → {target} points"
+      },
+      "dialog": {
+        "updateTitle": "Update Goal",
+        "setTitle": "Set TOEIC Goal",
+        "desc": "Enter your desired TOEIC score (10 – 990).",
+        "inputLabel": "Target TOEIC Score *",
+        "placeholder": "Ex: 750",
+        "current": "Current: {score} points",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "saving": "Saving..."
+      }
+    }
+  },
+  "study": {
+    "room": {
+      "leave": "Leave Room",
+      "esc": "(Esc)",
+      "waitingHost": "Waiting for host...",
+      "teacherJoined": "When teacher joins...",
+      "cameraOff": "Camera off",
+      "shareScreen": "Share Screen",
+      "stopShare": "Stop Sharing",
+      "participants": "Participants",
+      "you": "(You)",
+      "kick": "Kick",
+      "heart": "Heart",
+      "like": "Like",
+      "tokenError": "Cannot get room token.",
+      "shareScreenError": "Cannot share screen",
+      "kickConfirmTitle": "Confirm",
+      "kickConfirmMessage": "Are you sure you want to kick \"{name}\"?",
+      "kickConfirmOk": "Yes, kick",
+      "cancel": "Cancel",
+      "kickSuccess": "Kicked \"{name}\" from room",
+      "kickFailed": "Kick failed"
+    },
+    "teacherRegister": {
+      "title": "Register as a Teacher",
+      "subtitle": "Share your knowledge and earn extra income with us",
+      "instruction": "Fill in your contact information and teaching qualifications for the admin to review your profile.",
+      "loading": "Loading...",
+      "form": {
+        "fullName": "Full Name",
+        "email": "Email",
+        "phone": "Phone Number",
+        "scoreOrCert": "Score / Certificate",
+        "experience": "Teaching Experience",
+        "availability": "Teaching Availability",
+        "message": "Additional Notes (optional)",
+        "bio": "Bio",
+        "submit": "Submit Information",
+        "submitting": "Sending...",
+        "cancel": "Cancel",
+        "placeholders": {
+          "fullName": "John Doe",
+          "email": "teacher@example.com",
+          "phone": "Example: 0912 345 678",
+          "scoreOrCert": "TOEIC 900, IELTS 7.5...",
+          "experience": "Briefly summarize your teaching experience.",
+          "availability": "Example: Mon-Wed-Fri evenings, weekends.",
+          "message": "Any additional information you want to share..."
+        }
+      },
+      "fileUpload": {
+        "label": "Certificate / Degree Files",
+        "hint": "PDF, JPG, PNG · max 5",
+        "dropzone": "Click to select files",
+        "dropzoneDesc": "Transcripts, certificates, or related documents (if any).",
+        "selected": "Selected files",
+        "remove": "Remove"
+      },
+      "validation": {
+        "requiredAll": "Please fill in all required fields."
+      },
+      "toast": {
+        "success": "Teacher registration information sent. Admin will contact you if your profile is suitable.",
+        "error": "Failed to send information. Please try again later."
+      },
+      "success": {
+        "title": "Sent Successfully!",
+        "message": "Thank you for submitting your teacher registration. Admin will review your profile and contact you as soon as possible if suitable.",
+        "backToRoom": "Back to Study Room"
+      },
+      "error": {
+        "title": "Registration Failed",
+        "message": "An error occurred. Please try again later."
+      }
+    },
+    "chat": {
+      "title": "Comments",
+      "room": "Room",
+      "close": "Close chat",
+      "emptyState": {
+        "title": "Be the first to comment!",
+        "description": "Exchange with friends or instructors right in this study room."
+      },
+      "uploadTitle": "Upload file and send to chat",
+      "limitReachedPlaceholder": "Comment limit reached",
+      "inputPlaceholder": "Type a message…",
+      "send": "Send",
+      "commentCount": "Comment",
+      "download": "Download",
+      "downloadButton": "Download",
+      "locked": "Locked",
+      "premiumOnlyTitle": "Premium or Teacher/Admin only",
+      "limitReached": "You have reached the free message limit.",
+      "uploadCert": "Upload Certificate...",
+      "edit": "Edit",
+      "delete": "Delete",
+      "document": "Document",
+      "file": "File",
+      "sentDoc": "Sent a document to chat",
+      "sendError": "Cannot send message",
+      "uploadError": "Upload failed",
+      "downloadError": "Download failed",
+      "premiumOnly": "Only Premium accounts can send messages.",
+      "editError": "Cannot edit message",
+      "edited": "Edited",
+      "deleteError": "Cannot delete message",
+      "confirmDelete": "Are you sure you want to delete this message?",
+      "deleted": "Comment deleted",
+      "cancel": "Cancel",
+      "save": "Save",
+      "fileTooLarge": "File too large",
+      "maxSize": "Max 50MB",
+      "limit5": "You have reached the 5 comment limit",
+      "limit10": "You have reached the 10 comment limit",
+      "upgradeHint": "Upgrade to Premium for unlimited comments.",
+      "cannotEdit": "Cannot edit this comment",
+      "cannotDelete": "Cannot delete this comment",
+      "deleteTitle": "Delete comment?",
+      "deleteConfirm": "Delete"
+    },
+    "createRoom": {
+      "validation": {
+        "empty": "Room name cannot be empty",
+        "min": "Room name too short (min 3 chars)",
+        "max": "Room name too long (max 32 chars)",
+        "pattern": "Room name can only contain lowercase letters, numbers, and hyphens"
+      },
+      "toast": {
+        "invalidName": "Invalid room name",
+        "noPermission": {
+          "title": "You do not have permission to create a room",
+          "description": "Only teachers or admins can create rooms."
+        },
+        "createSuccess": {
+          "title": "Room created successfully",
+          "description": "Redirecting to room..."
+        },
+        "createError": "Cannot create room",
+        "genericError": "Error creating room",
+        "listError": "Cannot load room list",
+        "autoDelete": "Deleted empty room: {room}",
+        "deleteSuccess": "Deleted room {room}",
+        "deleteError": "Cannot delete room",
+        "modalSuccess": "Room created successfully"
+      },
+      "states": {
+        "unauthenticated": {
+          "title": "You are not logged in",
+          "description": "Please log in to join or create a study room."
+        },
+        "forbidden": {
+          "title": "Access Denied",
+          "roleLabel": "Your current role:",
+          "contact": "Contact admin if you think this is a mistake."
+        }
+      },
+      "form": {
+        "title": "Create New Study Room",
+        "description": "Create a study space and invite others to join.",
+        "nameLabel": "Room Name (Slug)",
+        "placeholder": "example-room-name",
+        "helperValid": "Valid room name",
+        "cancel": "Cancel",
+        "submit": "Create Room",
+        "submitting": "Creating..."
+      },
+      "dialogs": {
+        "delete": {
+          "title": "Delete Study Room?",
+          "message": "Are you sure you want to delete room \"{room}\"?",
+          "confirm": "Delete Room",
+          "cancel": "Cancel"
+        }
+      },
+      "page": {
+        "loading": "Loading room list..."
+      }
+    },
+    "rooms": {
+      "hero": {
+        "title": "Online Study Rooms",
+        "description": "Join study rooms to practice with teachers and friends."
+      },
+      "notice": {
+        "student": {
+          "badge": "For Students",
+          "title": "Join a Study Room",
+          "description": "You can join open study rooms below. <strong\u003eNote:\u003c/strong\u003e Only teachers can create rooms.",
+          "tips": {
+            "link": "Choose a room suitable for your level",
+            "list": "Prepare \u003cb\u003emic & camera\u003c/b\u003e for best interaction"
+          }
+        },
+        "teacher": {
+          "title": "Are you a teacher?",
+          "description": "Register to become a teacher and create your own study rooms.",
+          "cta": "Register as Teacher"
+        }
+      },
+      "errors": {
+        "retry": "Retry"
+      },
+      "list": {
+        "title": "Open Rooms",
+        "empty": {
+          "title": "No study rooms yet",
+          "creator": "Be the first to create a study room!",
+          "student": "No open rooms at the moment. Please check back later."
+        },
+        "card": {
+          "online": "{count} online",
+          "join": "Join Now",
+          "deleting": "Deleting...",
+          "delete": "Delete Room"
+        }
+      }
+    },
+    "header": {
+      "create": {
+        "full": "Create New Room",
+        "short": "Create"
+      },
+      "refresh": {
+        "full": "Refresh",
+        "short": "Refresh"
+      }
+    }
+  },
+  "test": {
+    "results": {
+      "estimatedToeic": "ESTIMATED TOEIC",
+      "combinedScore": "Combined Listening + Reading",
+      "listening": "LISTENING",
+      "reading": "READING",
+      "accuracy": "Accuracy",
+      "overview": "PERFORMANCE OVERVIEW",
+      "correctCount": "Correct Answers",
+      "totalAccuracy": "Total Accuracy",
+      "timeSpent": "Time Spent",
+      "hideDetails": "Hide Details",
+      "showDetails": "Show Details",
+      "partAnalysis": "Part Analysis",
+      "partAnalysisDesc": "View accuracy by Part & practice suggestions.",
+      "miniTestInfo": "Mini test - 55 questions - 35 minutes",
+      "currentAccuracy": "Accuracy this time",
+      "correctSentences": "correct",
+      "level": "Level. {lv}",
+      "correctRatio": "{correct}/{total} correct",
+      "practiceNow": "Practice Now",
+      "priorityPractice": "Priority Practice",
+      "weakPartsDesc": "These Parts have lower accuracy, focus on them to improve your score quickly.",
+      "steadyProgress": "Your study pace is very steady! Keep practicing evenly and level up in your strong Parts."
+    },
+    "aiInsight": {
+      "title": "AI Insights",
+      "subtitle": "Strengths/Weaknesses Analysis & Recommended Roadmap",
+      "view": "View Insights",
+      "create": "Create Insights",
+      "loading": "Loading...",
+      "noInsight": "No insights yet. Try reloading later.",
+      "createError": "Cannot create insights",
+      "loadError": "Error loading insights"
+    },
+    "hud": {
+      "minutes": "min",
+      "questions": "qs",
+      "start": "Start",
+      "submit": "Submit",
+      "quickNav": "Quick Nav",
+      "toggleSidebar": "Toggle Sidebar (F)"
+    },
+    "sidebar": {
+      "focus": "Focus",
+      "progress": "Progress",
+      "questions": "qs",
+      "time": "Time",
+      "submit": "Submit",
+      "timeSpent": "Time Spent",
+      "hideAnswers": "Hide Answers & Explanations",
+      "showAnswers": "Show Answers & Explanations",
+      "questionList": "Questions",
+      "quickJump": "Click to jump",
+      "ariaLabel": "Test Navigation Sidebar",
+      "focusModeTitle": "Focus mode (F key)",
+      "questionTitle": "Question {n}"
+    },
+    "stimulus": {
+      "transcript": "Transcript",
+      "explanation": "Explanation",
+      "question": "Question {n}",
+      "correct": "Correct",
+      "incorrect": "Incorrect",
+      "correctAnswer": "Correct: {n}",
+      "skipped": "Skipped",
+      "selected": "Selected: {n}",
+      "notSelected": "Not selected",
+      "explainQuestion": "Explanation for Question {n}",
+      "imageAlt": "Illustration for question {n}"
+    },
+    "card": {
+      "lastAttempt": "Last attempt:",
+      "highScore": "High score",
+      "level": "Lv.",
+      "questions": "qs",
+      "minutes": "min",
+      "correctSentences": "correct",
+      "notStarted": "Not started",
+      "startDesc": "Start now to track progress.",
+      "startNow": "Start Now",
+      "retry": "Retry"
+    }
+  },
+  "practiceComponents": {
+    "listening": "TOEIC Listening Practice",
+    "reading": "TOEIC Reading Practice"
+  },
+  "paymentComponents": {
+    "upgrade": {
+      "title": "Upgrade to Premium",
+      "description": "Unlock all features"
+    },
+    "cancel": {
+      "title": "Payment Cancelled",
+      "description": "You cancelled the payment process. You can try again anytime.",
+      "retry": "Try Payment Again",
+      "home": "Back to Home"
+    },
+    "success": {
+      "verifying": "Verifying payment...",
+      "title": "Payment Successful!",
+      "description": "Congratulations! You have successfully upgraded to Pro plan.",
+      "redirect": "System will redirect to homepage in <bold>{seconds}</bold> seconds…",
+      "homeNow": "Go to Homepage Now",
+      "error": {
+        "title": "Cannot Verify Payment",
+        "description": "Please contact support if you have already paid successfully.",
+        "home": "Back to Homepage"
+      }
+    }
+  },
+  "newsComponents": {
+    "categories": {
+      "all": "All",
+      "tips": "Tips & Tricks",
+      "strategy": "Strategy",
+      "updates": "Updates",
+      "education": "Education",
+      "politics": "Politics",
+      "travel": "Travel",
+      "technology": "Technology",
+      "sports": "Sports",
+      "entertainment": "Entertainment",
+      "business": "Business",
+      "society": "Society",
+      "health": "Health",
+      "culture": "Culture"
+    },
+    "premiumGuard": {
+      "title": "Premium Feature",
+      "description": "Translation and vocabulary practice features are for Premium accounts only. Upgrade now to:",
+      "features": {
+        "translate": "Translate words and phrases instantly",
+        "pronunciation": "Standard English pronunciation",
+        "saveVocab": "Save vocabulary to personal sets",
+        "suggestions": "Important vocabulary suggestions"
+      },
+      "close": "Close",
+      "upgrade": "Upgrade to Premium"
+    },
+    "saveVocab": {
+      "button": "Save to Vocabulary"
+    },
+    "progress": {
+      "notification": {
+        "title": "Time to Check Progress!",
+        "message": "Time to check your progress! Click to start Progress Test."
+      }
+    },
+    "detail": {
+      "notFound": "News not found",
+      "notFoundDesc": "This article may have been deleted or does not exist",
+      "backToList": "Back to list",
+      "back": "Back",
+      "viewCount": "{count} views",
+      "premiumBanner": {
+        "title": "Upgrade to Premium",
+        "description": "Access translation and vocabulary saving features while reading!"
+      }
+    }
+  },
+  "newsHooks": {
+    "translation": {
+      "premiumRequired": "Premium account required to use this feature.",
+      "wordError": "Unable to translate word",
+      "selectionError": "Unable to translate paragraph"
+    }
+  },
+  "practice": {
+    "meta": {
+      "part1": "Part 1 – Photographs",
+      "part2": "Part 2 – Question–Response",
+      "part3": "Part 3 – Conversations",
+      "part4": "Part 4 – Talks",
+      "part5": "Part 5 – Incomplete Sentences",
+      "part6": "Part 6 – Text Completion",
+      "part7": "Part 7 – Reading Comprehension"
+    },
+    "levels": {
+      "l1": {
+        "label": "Level 1",
+        "desc": "Beginner"
+      },
+      "l2": {
+        "label": "Level 2",
+        "desc": "Intermediate"
+      },
+      "l3": {
+        "label": "Level 3",
+        "desc": "Advanced"
+      }
+    },
+    "header": {
+      "listening": "TOEIC Listening Practice",
+      "reading": "TOEIC Reading Practice",
+      "desc": "Each Part is divided into <strong>3 levels</strong>. Choose a suitable Level, practice with standard TOEIC timing, and track your progress.",
+      "placement": "Recommended: Take the <link>Placement Test</link> first for better roadmap suggestions."
+    },
+    "switcher": {
+      "label": "Practice Level",
+      "history": "Practice History",
+      "review": "Review Results"
+    },
+    "suggestion": {
+      "label": "Suggestion:",
+      "match": "matches your current level.",
+      "switch": "Switch level"
+    },
+    "empty": {
+      "title": "No tests for Level {level}",
+      "desc": "Try another level or check back later. Admin might be updating this Part."
+    },
+    "stats": {
+      "questionsLabel": "Questions",
+      "questionsUnit": "questions",
+      "timeLabel": "Time",
+      "timeUnit": "minutes"
+    },
+    "nav": {
+      "title": "Quick Navigation",
+      "close": "Close",
+      "question": "Question"
+    },
+    "loading": "Loading test...",
+    "resultStats": {
+      "correctLabel": "Correct Answers",
+      "timeLabel": "Time"
+    },
+    "modal": {
+      "title": "Your choice differs from suggestion",
+      "subtitle": "System recommends a Level suitable for your current ability",
+      "close": "Close",
+      "currentDesc": "you are choosing",
+      "suggestedBadge": "SYSTEM RECOMMENDATION",
+      "suggestedDesc": "suitable for current learning results.",
+      "message": "You can still continue with <current>Level {current}</current>, but we recommend trying <suggested>{suggested}</suggested> for a better roadmap.",
+      "changeLevel": "Change Level",
+      "continue": "Continue with Level {level}"
+    },
+    "levelDesc": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "startScreen": {
+      "title": "Ready to begin?",
+      "button": "Start Test"
+    }
+  },
+  "authComponents": {
+    "layout": {
+      "or": "OR"
+    },
+    "passwordField": {
+      "show": "Show password",
+      "hide": "Hide password"
+    }
+  },
+  "metadata": {
+    "title": {
+      "default": "ToeicPrep - Online TOEIC Practice",
+      "template": "%s | ToeicPrep"
+    },
+    "description": "Smart TOEIC practice platform with personalized learning paths.",
+    "siteName": "ToeicPrep",
+    "ogImageAlt": "ToeicPrep Banner"
   }
 }

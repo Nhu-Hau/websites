@@ -80,14 +80,6 @@ export default function Footer() {
           label: t("sections.study.links.teacherRegister"),
           href: `${basePrefix}/study/teacher-register`,
         },
-        {
-          label: t("sections.study.links.mobileStudy"),
-          href: `${basePrefix}/mobile/study`,
-        },
-        {
-          label: t("sections.study.links.mobilePractice"),
-          href: `${basePrefix}/mobile/practice`,
-        },
       ],
     },
     {

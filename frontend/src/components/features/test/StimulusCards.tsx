@@ -7,6 +7,7 @@ import type { Stimulus, Item, ChoiceId } from "@/types/tests.types";
 import { Volume2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/common/AudioPlayer";
+import { useTranslations } from "next-intl";
 
 type ChoiceLike = { id: ChoiceId; text?: string; content?: string | any };
 type CorrectMap =
@@ -91,6 +92,7 @@ function YellowInfoBlock({
 }
 
 function StimulusYellowPanel({ stimulus }: { stimulus?: Stimulus | null }) {
+  const t = useTranslations("test.stimulus");
   if (!stimulus) return null;
   const transcript =
     (stimulus as any)?.media?.script ?? (stimulus as any)?.script ?? null;
@@ -102,13 +104,13 @@ function StimulusYellowPanel({ stimulus }: { stimulus?: Stimulus | null }) {
     <div className="mt-3 space-y-2.5 xs:mt-4 xs:space-y-3">
       {transcript && (
         <YellowInfoBlock
-          title="Transcript"
+          title={t("transcript")}
           content={String(transcript)}
           icon={Volume2}
         />
       )}
       {explain && (
-        <YellowInfoBlock title="Giải thích" content={String(explain)} />
+        <YellowInfoBlock title={t("explanation")} content={String(explain)} />
       )}
     </div>
   );
@@ -137,6 +139,7 @@ function ChoiceRow({
   isHalfWidth?: boolean;
   anchorId?: string;
 }) {
+  const t = useTranslations("test.stimulus");
   const itemExplain =
     (item as any)?.explain ?? (item as any)?.media?.explain ?? null;
 
@@ -146,41 +149,41 @@ function ChoiceRow({
       <div className="flex flex-wrap items-center justify-between gap-1.5 xs:gap-2">
         <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-zinc-900 dark:text-zinc-50 xs:text-sm">
           <span className="inline-flex h-6 min-w-[4.5rem] items-center justify-center rounded-full bg-sky-100 text-[12px] font-semibold text-zinc-900 dark:bg-sky-800 dark:text-zinc-200 xs:h-7 xs:min-w-[5.5rem] xs:text-[13px]">
-            Câu {displayIndex}
+            {t("question", { n: displayIndex })}
           </span>
         </span>
 
         {locked ? (
           picked === correct ? (
             <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-300 xs:text-[11px]">
-              Chính xác
+              {t("correct")}
             </span>
           ) : picked ? (
             <span className="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-semibold text-red-700 dark:bg-red-900/30 dark:text-red-300 xs:text-[11px]">
-              Sai
+              {t("incorrect")}
               {correct && (
                 <span className="ml-1 text-[10px] font-medium text-red-600/90 dark:text-red-200 xs:text-[11px]">
-                  (Đúng: {correct})
+                  ({t("correctAnswer", { n: correct })})
                 </span>
               )}
             </span>
           ) : (
             <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 xs:text-[11px]">
-              Đã bỏ qua
+              {t("skipped")}
               {correct && (
                 <span className="ml-1 text-[10px] font-medium text-zinc-500 dark:text-zinc-300 xs:text-[11px]">
-                  (Đúng: {correct})
+                  ({t("correctAnswer", { n: correct })})
                 </span>
               )}
             </span>
           )
         ) : picked ? (
           <span className="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 dark:bg-sky-900/30 dark:text-sky-200 xs:text-[11px]">
-            Đã chọn: {picked}
+            {t("selected", { n: picked })}
           </span>
         ) : (
           <span className="text-[11px] text-zinc-400 dark:text-zinc-500 xs:text-xs">
-            Chưa chọn
+            {t("notSelected")}
           </span>
         )}
       </div>
@@ -244,12 +247,15 @@ function ChoiceRow({
               key={ch.id}
               disabled={locked}
               onClick={() => onPick(ch.id)}
-              className={cls}
+              className={cls + " grid grid-cols-[40px_1fr] items-start gap-3"} // ⬅️ GIẢI QUYẾT TRIỆT ĐỂ
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-[11px] font-semibold text-white dark:bg-zinc-700 xs:h-8 xs:w-8 xs:text-[12px]">
+              {/* Icon A/B/C/D cố định kích thước */}
+              <span className="flex h-7 w-7 xs:h-8 xs:w-8 items-center justify-center rounded-full bg-zinc-900 text-[11px] xs:text-[12px] font-semibold text-white dark:bg-zinc-700 flex-shrink-0">
                 {ch.id}
               </span>
-              <span className="text-[13px] leading-relaxed xs:text-sm">
+
+              {/* Nội dung không ép icon nữa */}
+              <span className="text-[13px] leading-relaxed xs:text-sm break-words text-left">
                 {label}
               </span>
             </button>
@@ -260,7 +266,7 @@ function ChoiceRow({
       {/* Giải thích từng câu */}
       {locked && showPerItemExplain && itemExplain && (
         <YellowInfoBlock
-          title={`Giải thích câu ${displayIndex}`}
+          title={t("explainQuestion", { n: displayIndex })}
           content={String(itemExplain)}
         />
       )}
@@ -358,6 +364,7 @@ function CardSticky(props: BaseProps) {
   const audios = toArray((stimulus as any)?.media?.audio);
   const part = (stimulus as any)?.part as string | undefined;
   const skipSeconds = getSkipSecondsByPart(part);
+  const t = useTranslations("test.stimulus");
 
   return (
     <section
@@ -395,7 +402,7 @@ function CardSticky(props: BaseProps) {
                   >
                     <Image
                       src={url}
-                      alt={`Hình minh họa câu hỏi ${i + 1}`}
+                      alt={t("imageAlt", { n: i + 1 })}
                       width={0}
                       height={0}
                       sizes="100vw"

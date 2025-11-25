@@ -4,6 +4,7 @@
 import { LearnModeQuestion } from "@/types/vocabulary.types";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface LearnModeQuestionProps {
   question: LearnModeQuestion;
@@ -24,12 +25,14 @@ export function LearnModeQuestionComponent({
   onSubmit,
   onNext,
 }: LearnModeQuestionProps) {
+  const t = useTranslations("vocabularyComponents.quiz");
+
   if (question.type === "multiple-choice") {
     return (
       <div className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-900/90 xs:rounded-3xl xs:p-5">
         <header className="mb-4 xs:mb-5">
           <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-zinc-400 xs:text-[10px]">
-            Trắc nghiệm
+            {t("types.multipleChoice")}
           </p>
           <h3 className="mt-1.5 text-lg font-semibold text-zinc-900 xs:mt-2 xs:text-xl dark:text-zinc-50">
             {question.question}
@@ -77,7 +80,7 @@ export function LearnModeQuestionComponent({
             disabled={!selectedAnswer}
             className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 xs:mt-5 xs:px-5 xs:py-3 xs:text-sm"
           >
-            Nộp câu trả lời
+            {t("actions.submit")}
           </button>
         ) : (
           <ResultPanel
@@ -94,7 +97,7 @@ export function LearnModeQuestionComponent({
     <div className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-900/90 xs:rounded-3xl xs:p-5">
       <header className="mb-4 xs:mb-5">
         <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-zinc-400 xs:text-[10px]">
-          Điền từ
+          {t("types.fillInBlank")}
         </p>
         <h3 className="mt-1.5 text-lg font-semibold text-zinc-900 xs:mt-2 xs:text-xl dark:text-zinc-50">
           {question.question}
@@ -105,7 +108,7 @@ export function LearnModeQuestionComponent({
         value={selectedAnswer ?? ""}
         onChange={(event) => !showResult && onSelectAnswer(event.target.value)}
         disabled={showResult}
-        placeholder="Nhập đáp án..."
+        placeholder={t("placeholders.answer")}
         className="
     w-full 
     rounded-2xl 
@@ -143,7 +146,7 @@ export function LearnModeQuestionComponent({
           disabled={!selectedAnswer?.trim()}
           className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 xs:mt-5 xs:px-5 xs:py-3 xs:text-sm"
         >
-          Nộp câu trả lời
+          {t("actions.submit")}
         </button>
       ) : (
         <ResultPanel
@@ -206,6 +209,7 @@ function ResultPanel({
   correctAnswer: string;
   onNext: () => void;
 }) {
+  const t = useTranslations("vocabularyComponents.quiz");
   return (
     <div className="mt-4 space-y-3 xs:mt-5 xs:space-y-4">
       <div
@@ -216,13 +220,13 @@ function ResultPanel({
             : "border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-300"
         )}
       >
-        {isCorrect ? "Chính xác!" : `Đáp án đúng: ${correctAnswer}`}
+        {isCorrect ? t("result.correct") : t("result.correctAnswer", { answer: correctAnswer })}
       </div>
       <button
         onClick={onNext}
         className="inline-flex w-full items-center justify-center rounded-2xl border border-[#4063bb]/30 bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 xs:px-4 xs:py-3 xs:text-sm"
       >
-        Câu tiếp theo
+        {t("actions.next")}
       </button>
     </div>
   );

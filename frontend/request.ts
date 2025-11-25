@@ -2,6 +2,8 @@
 import { hasLocale } from "next-intl";
 import { getRequestConfig } from "next-intl/server";
 import { routing } from "./src/routing";
+import * as fs from "fs";
+import * as path from "path";
 
 type MessagesObject = Record<string, unknown>;
 
@@ -33,13 +35,15 @@ export default getRequestConfig(async ({ requestLocale }) => {
     ? requested
     : routing.defaultLocale;
 
-  const fs = require('fs');
-  const path = require('path');
-
   const loadMessages = (loc: string) => {
     try {
-      const filePath = path.join(process.cwd(), 'src', 'messages', `${loc}.json`);
-      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      const filePath = path.join(
+        process.cwd(),
+        "src",
+        "messages",
+        `${loc}.json`
+      );
+      return JSON.parse(fs.readFileSync(filePath, "utf8"));
     } catch (error) {
       console.error(`Error loading messages for ${loc}:`, error);
       return {};

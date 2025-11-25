@@ -290,10 +290,10 @@ export function VocabularySetCard({
           {!hasTerms ? (
             <div className="mt-1 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-2.5 py-2 text-center text-[10px] text-slate-600 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300 xs:rounded-2xl xs:px-3 xs:py-2.5 xs:text-[11px]">
               <p className="hidden text-[10px] font-semibold text-slate-800 dark:text-zinc-50 sm:block">
-                Chưa có từ nào trong bộ này
+                {t("empty.noTerms")}
               </p>
               <p className="mt-0.5 text-[9px] text-slate-500 dark:text-zinc-400 xs:text-[10px]">
-                Nhấn mở bộ từ để thêm từ vựng đầu tiên.
+                {t("empty.addFirst")}
               </p>
             </div>
           ) : hasStudy ? (
@@ -302,7 +302,7 @@ export function VocabularySetCard({
               <div className="mt-1 flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/80 px-2.5 py-1.5 text-[10px] text-slate-700 dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-200 xs:hidden">
                 <div className="inline-flex items-center gap-1">
                   <Sparkles className="h-2.5 w-2.5 text-[#4063bb]" />
-                  <span>Tiến độ: {percent}%</span>
+                  <span>{t("progress.labelShort")}: {percent}%</span>
                 </div>
                 <span className="text-[9px] font-semibold uppercase tracking-wide">
                   {statusLabel}
@@ -314,7 +314,7 @@ export function VocabularySetCard({
                 <div className="flex items-center justify-between text-[9px] font-semibold text-slate-600 dark:text-zinc-300 xs:text-[10px]">
                   <div className="inline-flex items-center gap-1">
                     <Sparkles className="h-2.5 w-2.5 text-[#4063bb] xs:h-3 xs:w-3" />
-                    <span>Tiến độ học</span>
+                    <span>{t("progress.label")}</span>
                   </div>
                   <span className="tabular-nums">{percent}%</span>
                 </div>
@@ -335,14 +335,14 @@ export function VocabularySetCard({
                       <span className="tabular-nums">
                         {progress.masteredCount}
                       </span>
-                      <span>đã thuộc</span>
+                      <span>{t("progress.mastered")}</span>
                     </span>
                     <span className="inline-flex items-center gap-0.5 rounded-full bg-white/80 px-1 py-0.5 text-[9px] font-semibold text-amber-600 dark:bg-zinc-800/80 dark:text-amber-300 xs:px-1.5 xs:text-[10px]">
                       <Flame className="h-2.5 w-2.5 xs:h-3 xs:w-3" />
                       <span className="tabular-nums">
                         {progress.difficultCount}
                       </span>
-                      <span>cần ôn</span>
+                      <span>{t("progress.needReview")}</span>
                     </span>
                   </div>
 
@@ -355,10 +355,10 @@ export function VocabularySetCard({
           ) : (
             <div className="mt-1 rounded-2xl border border-slate-100 bg-white/80 px-2.5 py-1.5 text-[10px] text-slate-600 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-300 xs:px-3 xs:py-2 xs:text-[11px]">
               <p className="font-semibold text-slate-800 dark:text-zinc-50">
-                Đã có {set.terms.length} từ trong bộ này
+                {t("hasTerms.title", { count: set.terms.length })}
               </p>
               <p className="mt-0.5 text-[9px] text-slate-500 dark:text-zinc-400 xs:text-[10px]">
-                Bấm &quot;Học flashcard&quot; để bắt đầu theo dõi tiến độ học.
+                {t("hasTerms.subtitle")}
               </p>
             </div>
           )}
@@ -372,7 +372,7 @@ export function VocabularySetCard({
               stopPropagation(event);
               if (!hasTerms) {
                 toast.info(
-                  "Bộ từ này chưa có từ nào. Hãy thêm từ vựng để bắt đầu học!"
+                  t("toast.noTermsInfo")
                 );
                 router.push(`${basePrefix}/vocabulary/${set._id}`);
               } else {
@@ -382,7 +382,7 @@ export function VocabularySetCard({
             className="inline-flex h-7 w-full items-center justify-center gap-1 rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-2.5 text-[11px] font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 xs:h-8 xs:flex-1 xs:px-3 xs:text-[12px]"
           >
             <PlayCircle className="h-3 w-3 xs:h-3.5 xs:w-3.5" />
-            <span>Flashcard</span>
+            <span>{t("buttons.flashcard")}</span>
           </button>
 
           <button
@@ -391,7 +391,7 @@ export function VocabularySetCard({
               stopPropagation(event);
               if (!hasTerms) {
                 toast.info(
-                  "Bộ từ này chưa có từ nào. Hãy thêm từ vựng để bắt đầu học!"
+                  t("toast.noTermsInfo")
                 );
                 router.push(`${basePrefix}/vocabulary/${set._id}`);
               } else {
@@ -401,7 +401,7 @@ export function VocabularySetCard({
             className="inline-flex h-7 w-full items-center justify-center gap-1 rounded-2xl border border-slate-200/80 bg-white/80 px-2.5 text-[11px] font-semibold text-slate-700 shadow-sm transition hover:border-[#4063bb66] hover:text-[#4063bb] dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100 xs:h-8 xs:w-auto xs:flex-none xs:px-3 xs:text-[12px]"
           >
             <ArrowRight className="h-3 w-3 xs:h-3.5 xs:w-3.5" />
-            <span>Quiz</span>
+            <span>{t("buttons.quiz")}</span>
           </button>
         </div>
       </motion.article>

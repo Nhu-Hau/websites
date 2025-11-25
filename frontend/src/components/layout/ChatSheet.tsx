@@ -9,8 +9,10 @@ import AIChatContent from "./chat/AIChatContent";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 
 export default function ChatSheet() {
+  const t = useTranslations("layoutComponents.chat");
   const { open, setOpen, activeTab, setActiveTab } = useChat();
   const [mounted, setMounted] = useState(false);
 
@@ -66,8 +68,8 @@ export default function ChatSheet() {
                   )}
                 >
                   <FaUserTie className="h-4 w-4" />
-                  <span className="hidden xs:inline">Chat với admin</span>
-                  <span className="xs:hidden">Admin</span>
+                  <span className="hidden xs:inline">{t("tabs.admin")}</span>
+                  <span className="xs:hidden">{t("tabs.adminShort")}</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("ai")}
@@ -79,8 +81,8 @@ export default function ChatSheet() {
                   )}
                 >
                   <FaGraduationCap className="h-4 w-4" />
-                  <span className="hidden xs:inline">Chat AI TOEIC</span>
-                  <span className="xs:hidden">AI</span>
+                  <span className="hidden xs:inline">{t("tabs.ai")}</span>
+                  <span className="xs:hidden">{t("tabs.aiShort")}</span>
                 </button>
               </div>
 
@@ -89,7 +91,7 @@ export default function ChatSheet() {
                 <button
                   onClick={() => setOpen(false)}
                   className="rounded-xl p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 transition dark:text-gray-400 dark:hover:bg-zinc-800 dark:hover:text-gray-200"
-                  aria-label="Đóng chat"
+                  aria-label={t("aria.close")}
                 >
                   <FiX className="h-4 w-4" />
                 </button>

@@ -10,7 +10,6 @@
  */
 function getBaseUrl(): string {
   return (
-    process.env.NEXT_PUBLIC_API_BASE ||
     process.env.NEXT_PUBLIC_SITE_URL ||
     (process.env.NODE_ENV === "production"
       ? "https://toeicprep.com.vn"

@@ -16,6 +16,8 @@ import {
   AdminPartsStats,
   AdminStimulus,
   adminImportExcel,
+  adminExportExcel,
+  adminExportBulkExcel,
 } from "@/lib/apiClient";
 import { ChevronDown, ChevronRight, FileText, BarChart3, Plus, Edit, Trash2, Home, Filter, AlertTriangle, Upload, Download } from "lucide-react";
 
@@ -46,6 +48,7 @@ export default function PartsPage() {
   const [expandedTest, setExpandedTest] = React.useState<string | null>(null);
   const [testItems, setTestItems] = React.useState<Record<string, AdminPart[]>>({});
   const [testStimuli, setTestStimuli] = React.useState<Record<string, Record<string, AdminStimulus>>>({});
+  const [selectedTests, setSelectedTests] = React.useState<Set<string>>(new Set());
   const [stats, setStats] = React.useState<AdminPartsStats | null>(null);
   const [busy, setBusy] = React.useState(false);
   const toast = useToast();
@@ -183,6 +186,131 @@ export default function PartsPage() {
           console.error("Load test items error:", e);
         }
       }
+    }
+  };
+
+  const handleExportTest = async (test: AdminTest, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      setBusy(true);
+      const blob = await adminExportExcel({
+        part: test.part,
+        level: test.level,
+        test: test.test,
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `test_${test.part}_level${test.level}_test${test.test}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Đã export test thành công");
+    } catch (e: any) {
+      toast.error(e?.message || "Lỗi export test");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleBulkExport = async () => {
+    try {
+      setBusy(true);
+
+      // If tests are selected, export only selected ones
+      if (selectedTests.size > 0) {
+        // Export selected tests
+        const selectedTestsArray = Array.from(selectedTests).map(key => {
+          const [part, level, test] = key.split('-');
+          return { part, level: parseInt(level), test: parseInt(test) };
+        });
+
+        // Create requests for each selected test and combine
+        const blobs = await Promise.all(
+          selectedTestsArray.map(t => adminExportExcel(t))
+        );
+
+        // For now, we'll combine by creating multiple downloads
+        // Or we can merge them - let's merge into one file
+        // Actually, let's use the bulk API with a special filter
+        // Better approach: call backend multiple times and merge OR
+        // Pass array of tests to backend (need new endpoint)
+
+        // For simplicity, let's export each selected test separately for now
+        // Then download as separate files
+        for (let i = 0; i < selectedTestsArray.length; i++) {
+          const t = selectedTestsArray[i];
+          const blob = blobs[i];
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `test_${t.part}_level${t.level}_test${t.test}.xlsx`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          // Small delay between downloads
+          if (i < selectedTestsArray.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+          }
+        }
+
+        toast.success(`Đã export ${selectedTests.size} tests thành công`);
+        setSelectedTests(new Set()); // Clear selection
+      } else {
+        // Export all tests based on current filter
+        const partValue = part ? (part.match(/^\d+$/) ? `part.${part}` : part) : undefined;
+        const levelValue = level ? parseInt(level) : undefined;
+
+        const blob = await adminExportBulkExcel({
+          part: partValue,
+          level: levelValue,
+        });
+
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        const filterSuffix = partValue ? `_${partValue}` : '';
+        a.href = url;
+        a.download = `tests_bulk_export${filterSuffix}_${timestamp}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        toast.success("Đã export hàng loạt thành công");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Lỗi export hàng loạt");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggleTestSelection = (test: AdminTest) => {
+    const key = `${test.part}-${test.level}-${test.test}`;
+    const newSelected = new Set(selectedTests);
+    if (newSelected.has(key)) {
+      newSelected.delete(key);
+    } else {
+      newSelected.add(key);
+    }
+    setSelectedTests(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedTests.size === tests.length) {
+      // Deselect all
+      setSelectedTests(new Set());
+    } else {
+      // Select all visible tests
+      const allKeys = tests.map(t => `${t.part}-${t.level}-${t.test}`);
+      setSelectedTests(new Set(allKeys));
     }
   };
 
@@ -331,9 +459,16 @@ export default function PartsPage() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={busy}
-              className="px-5 py-2.5 rounded-lg bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-700 transition-all shadow-sm flex items-center gap-2 font-medium"
+              className="px-5 py-2.5 rounded-lg bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-700 transition-all shadow-sm flex items-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Upload className="h-4 w-4" /> Import Excel
+            </button>
+            <button
+              onClick={handleBulkExport}
+              disabled={busy}
+              className="px-5 py-2.5 rounded-lg bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-700 transition-all shadow-sm flex items-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className="h-4 w-4" /> Export Hàng Loạt
             </button>
             <a
               href="/sample_import.xlsx"
@@ -441,6 +576,30 @@ export default function PartsPage() {
 
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-zinc-900">Bộ lọc</h2>
+          {tests.length > 0 && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={toggleSelectAll}
+                className="px-4 py-2 text-sm rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-700 transition-colors font-medium flex items-center gap-2"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedTests.size === tests.length && tests.length > 0}
+                  onChange={toggleSelectAll}
+                  className="rounded border-zinc-300 text-teal-600 focus:ring-teal-500"
+                />
+                {selectedTests.size === tests.length && tests.length > 0 ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+              </button>
+              {selectedTests.size > 0 && (
+                <span className="text-sm font-medium text-teal-600">
+                  Đã chọn: {selectedTests.size} tests
+                </span>
+              )}
+            </div>
+          )}
+        </div>
         <div className="flex flex-wrap gap-4 items-end">
           <div className="flex flex-col min-w-[150px]">
             <label className="text-sm font-medium text-zinc-700 mb-2">Part</label>
@@ -493,32 +652,55 @@ export default function PartsPage() {
           return (
             <div key={key} className="bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden">
               <div
-                className="p-5 cursor-pointer hover:bg-zinc-50 transition-colors flex items-center justify-between border-b border-zinc-100"
-                onClick={() => toggleTest(test)}
+                className="p-5 hover:bg-zinc-50 transition-colors flex items-center justify-between border-b border-zinc-100"
               >
                 <div className="flex items-center gap-4">
-                  <div className="bg-teal-100 rounded-lg p-2">
-                    {isExpanded ? (
-                      <ChevronDown className="w-5 h-5 text-teal-600" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-teal-600" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="font-bold text-lg text-zinc-900">
-                      {test.part} - Level {test.level} - Test {test.test}
+                  <input
+                    type="checkbox"
+                    checked={selectedTests.has(key)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleTestSelection(test);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-5 h-5 rounded border-zinc-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                  />
+                  <div
+                    className="cursor-pointer flex items-center gap-4"
+                    onClick={() => toggleTest(test)}
+                  >
+                    <div className="bg-teal-100 rounded-lg p-2">
+                      {isExpanded ? (
+                        <ChevronDown className="w-5 h-5 text-teal-600" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-teal-600" />
+                      )}
                     </div>
-                    <div className="text-sm text-zinc-600 mt-1">
-                      {test.itemCount} câu hỏi
+                    <div>
+                      <div className="font-bold text-lg text-zinc-900">
+                        {test.part} - Level {test.level} - Test {test.test}
+                      </div>
+                      <div className="text-sm text-zinc-600 mt-1">
+                        {test.itemCount} câu hỏi
+                      </div>
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={(e) => handleDeleteTest(test, e)}
-                  className="px-4 py-2 text-sm rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-2"
-                >
-                  <Trash2 className="h-4 w-4" /> Xóa Test
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => handleExportTest(test, e)}
+                    disabled={busy}
+                    className="px-4 py-2 text-sm rounded-lg border border-teal-300 text-teal-600 hover:bg-teal-50 transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Download className="h-4 w-4" /> Export Excel
+                  </button>
+                  <button
+                    onClick={(e) => handleDeleteTest(test, e)}
+                    className="px-4 py-2 text-sm rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" /> Xóa Test
+                  </button>
+                </div>
               </div>
 
               {isExpanded && (
@@ -658,47 +840,52 @@ export default function PartsPage() {
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+              )
+              }
+            </div >
           );
         })}
 
-        {tests.length === 0 && (
-          <div className="bg-white rounded-xl shadow-lg border border-zinc-200 text-center p-12">
-            <div className="flex flex-col items-center gap-3">
-              <FileText className="h-16 w-16 text-zinc-300" />
-              <p className="text-lg font-medium text-zinc-500">Không có dữ liệu</p>
+        {
+          tests.length === 0 && (
+            <div className="bg-white rounded-xl shadow-lg border border-zinc-200 text-center p-12">
+              <div className="flex flex-col items-center gap-3">
+                <FileText className="h-16 w-16 text-zinc-300" />
+                <p className="text-lg font-medium text-zinc-500">Không có dữ liệu</p>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )
+        }
+      </div >
 
       {/* Import Errors Modal */}
-      {importErrors.length > 0 && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[80vh] flex flex-col">
-            <div className="flex items-center gap-3 text-red-600">
-              <AlertTriangle className="h-6 w-6" />
-              <h3 className="text-lg font-semibold">Lỗi dữ liệu Import</h3>
-            </div>
-            <div className="flex-1 overflow-auto border border-red-100 rounded-lg bg-red-50 p-4">
-              <ul className="list-disc list-inside space-y-1 text-sm text-red-700 font-mono">
-                {importErrors.map((err, i) => (
-                  <li key={i}>{err}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="flex justify-end">
-              <button
-                onClick={() => setImportErrors([])}
-                className="px-4 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-medium transition-colors"
-              >
-                Đóng
-              </button>
+      {
+        importErrors.length > 0 && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[80vh] flex flex-col">
+              <div className="flex items-center gap-3 text-red-600">
+                <AlertTriangle className="h-6 w-6" />
+                <h3 className="text-lg font-semibold">Lỗi dữ liệu Import</h3>
+              </div>
+              <div className="flex-1 overflow-auto border border-red-100 rounded-lg bg-red-50 p-4">
+                <ul className="list-disc list-inside space-y-1 text-sm text-red-700 font-mono">
+                  {importErrors.map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setImportErrors([])}
+                  className="px-4 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-medium transition-colors"
+                >
+                  Đóng
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Modals */}
       {/* Modals */}
@@ -779,64 +966,66 @@ export default function PartsPage() {
         itemsCount={addQuestionModal.itemsCount}
       />
 
-      {confirmDialog && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
-          style={{ animation: "fadeIn 0.2s ease-out" }}
-          onClick={() => {
-            if (!confirmLoading) {
-              setConfirmDialog(null);
-            }
-          }}
-        >
+      {
+        confirmDialog && (
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-6"
-            style={{ animation: "slideUp 0.3s ease-out" }}
-            onClick={(event) => event.stopPropagation()}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+            style={{ animation: "fadeIn 0.2s ease-out" }}
+            onClick={() => {
+              if (!confirmLoading) {
+                setConfirmDialog(null);
+              }
+            }}
           >
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-red-100 text-red-600">
-                <AlertTriangle className="h-6 w-6" />
+            <div
+              className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-6"
+              style={{ animation: "slideUp 0.3s ease-out" }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-xl bg-red-100 text-red-600">
+                  <AlertTriangle className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-zinc-900">{confirmDialog.title}</h3>
+                  <p className="text-sm text-zinc-600 mt-1 leading-relaxed">{confirmDialog.description}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-zinc-900">{confirmDialog.title}</h3>
-                <p className="text-sm text-zinc-600 mt-1 leading-relaxed">{confirmDialog.description}</p>
-              </div>
-            </div>
 
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => {
-                  if (!confirmLoading) {
-                    setConfirmDialog(null);
-                  }
-                }}
-                disabled={confirmLoading}
-                className="flex-1 px-4 py-2.5 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {confirmDialog.cancelText ?? "Hủy"}
-              </button>
-              <button
-                onClick={handleConfirmAction}
-                disabled={confirmLoading}
-                className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition-all shadow-md font-medium flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {confirmLoading ? (
-                  <>
-                    <span className="h-4 w-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
-                    Đang xử lý...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="h-4 w-4" />
-                    {confirmDialog.confirmText ?? "Xác nhận"}
-                  </>
-                )}
-              </button>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    if (!confirmLoading) {
+                      setConfirmDialog(null);
+                    }
+                  }}
+                  disabled={confirmLoading}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {confirmDialog.cancelText ?? "Hủy"}
+                </button>
+                <button
+                  onClick={handleConfirmAction}
+                  disabled={confirmLoading}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition-all shadow-md font-medium flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {confirmLoading ? (
+                    <>
+                      <span className="h-4 w-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      {confirmDialog.confirmText ?? "Xác nhận"}
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       <AddStimulusModal
         isOpen={addStimulusModal.isOpen}
@@ -865,6 +1054,6 @@ export default function PartsPage() {
         isOpen={showBulkUpload}
         onClose={() => setShowBulkUpload(false)}
       />
-    </div>
+    </div >
   );
 }

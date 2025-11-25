@@ -949,3 +949,306 @@ export async function batchUpsertStimuli(req: Request, res: Response) {
     return res.status(500).json({ message: e.message || "Lỗi batch upsert" });
   }
 }
+
+// GET /api/admin/parts/export-excel - Export test to Excel
+export async function exportExcel(req: Request, res: Response) {
+  try {
+    const { part, level, test } = req.query;
+    const partStr = String(part);
+    const levelNum = parseInt(String(level));
+    const testNum = parseInt(String(test));
+
+    if (!partStr || !levelNum || !testNum) {
+      return res.status(400).json({ message: "Thiếu tham số: part, level, test" });
+    }
+
+    const db = mongoose.connection;
+    const itemsCol = db.collection(PARTS_COLL);
+    const stimCol = db.collection(STIMULI_COLL);
+
+    // Fetch all items for this test
+    const items = await itemsCol
+      .find({ part: partStr, level: levelNum, test: testNum })
+      .sort({ order: 1, id: 1 })
+      .toArray();
+
+    if (items.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy dữ liệu cho test này" });
+    }
+
+    // Fetch all stimuli for this test
+    const stimuli = await stimCol
+      .find({ part: partStr, level: levelNum, test: testNum })
+      .sort({ id: 1 })
+      .toArray();
+
+    // Transform items to Excel format
+    const itemsData = items.map((item: any) => {
+      const row: any = {
+        id: item.id,
+        part: item.part,
+        level: item.level,
+        test: item.test,
+        stimulusId: item.stimulusId || '',
+        stem: item.stem || '',
+        answer: item.answer,
+        explain: item.explain || '',
+        order: item.order !== undefined ? item.order : 0,
+      };
+
+      // Add choices if present
+      if (item.choices && Array.isArray(item.choices)) {
+        const choiceMap: any = {};
+        item.choices.forEach((choice: any) => {
+          choiceMap[`choice${choice.id}`] = choice.text || '';
+        });
+        row.choiceA = choiceMap.choiceA || '';
+        row.choiceB = choiceMap.choiceB || '';
+        row.choiceC = choiceMap.choiceC || '';
+        row.choiceD = choiceMap.choiceD || '';
+      } else {
+        row.choiceA = '';
+        row.choiceB = '';
+        row.choiceC = '';
+        row.choiceD = '';
+      }
+
+      // Add tags
+      row.tags = item.tags && Array.isArray(item.tags) ? item.tags.join(', ') : '';
+
+      // Add optional fields
+      row.question = item.question || '';
+      row.options = item.options || '';
+
+      return row;
+    });
+
+    // Transform stimuli to Excel format
+    const stimuliData = stimuli.map((stim: any) => ({
+      id: stim.id,
+      part: stim.part,
+      level: stim.level,
+      test: stim.test,
+      image: stim.media?.image || '',
+      audio: stim.media?.audio || '',
+      script: stim.media?.script || '',
+      explain: stim.media?.explain || '',
+    }));
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+
+    // Create Items sheet
+    const itemsSheet = XLSX.utils.json_to_sheet(itemsData, {
+      header: ['id', 'part', 'level', 'test', 'stimulusId', 'stem', 'answer', 'explain', 'order', 'choiceA', 'choiceB', 'choiceC', 'choiceD', 'tags', 'question', 'options']
+    });
+    XLSX.utils.book_append_sheet(workbook, itemsSheet, 'Items');
+
+    // Create Stimuli sheet if there are stimuli
+    if (stimuliData.length > 0) {
+      const stimuliSheet = XLSX.utils.json_to_sheet(stimuliData, {
+        header: ['id', 'part', 'level', 'test', 'image', 'audio', 'script', 'explain']
+      });
+      XLSX.utils.book_append_sheet(workbook, stimuliSheet, 'Stimuli');
+    }
+
+    // Generate Excel file buffer
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+    // Set headers for file download
+    const filename = `test_${partStr}_level${levelNum}_test${testNum}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', buffer.length);
+
+    return res.send(buffer);
+  } catch (e: any) {
+    console.error("[exportExcel] ERROR", e);
+    return res.status(500).json({ message: e.message || "Lỗi export Excel" });
+  }
+}
+
+// GET /api/admin/parts/export-bulk-excel - Export multiple tests to single Excel
+export async function exportBulkExcel(req: Request, res: Response) {
+  try {
+    const { part, level } = req.query;
+    const partStr = part ? String(part) : undefined;
+    const levelNum = level ? parseInt(String(level)) : undefined;
+
+    const db = mongoose.connection;
+    const itemsCol = db.collection(PARTS_COLL);
+    const stimCol = db.collection(STIMULI_COLL);
+
+    // Build filter
+    const filter: any = {};
+    if (partStr) filter.part = partStr;
+    if (levelNum) filter.level = levelNum;
+
+    // Get all tests matching filter using aggregation
+    const testsAgg = await itemsCol.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: { part: "$part", level: "$level", test: "$test" },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.part": 1, "_id.level": 1, "_id.test": 1 } }
+    ]).toArray();
+
+    if (testsAgg.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy test nào phù hợp với bộ lọc" });
+    }
+
+    // Prepare data arrays
+    const allItemsData: any[] = [];
+    const allStimuliData: any[] = [];
+
+    // Process each test
+    for (const testGroup of testsAgg) {
+      const { part: testPart, level: testLevel, test: testTest } = testGroup._id;
+
+      // Fetch items for this test
+      const items = await itemsCol
+        .find({ part: testPart, level: testLevel, test: testTest })
+        .sort({ order: 1, id: 1 })
+        .toArray();
+
+      // Fetch stimuli for this test
+      const stimuli = await stimCol
+        .find({ part: testPart, level: testLevel, test: testTest })
+        .sort({ id: 1 })
+        .toArray();
+
+      // Add separator row for items (comment row to identify test)
+      allItemsData.push({
+        id: `=== ${testPart} - Level ${testLevel} - Test ${testTest} ===`,
+        part: '',
+        level: '',
+        test: '',
+        stimulusId: '',
+        stem: '',
+        answer: '',
+        explain: '',
+        order: '',
+        choiceA: '',
+        choiceB: '',
+        choiceC: '',
+        choiceD: '',
+        tags: '',
+        question: '',
+        options: ''
+      });
+
+      // Transform and add items
+      for (const item of items) {
+        const row: any = {
+          id: item.id,
+          part: item.part,
+          level: item.level,
+          test: item.test,
+          stimulusId: item.stimulusId || '',
+          stem: item.stem || '',
+          answer: item.answer,
+          explain: item.explain || '',
+          order: item.order !== undefined ? item.order : 0,
+        };
+
+        // Add choices
+        if (item.choices && Array.isArray(item.choices)) {
+          const choiceMap: any = {};
+          item.choices.forEach((choice: any) => {
+            choiceMap[`choice${choice.id}`] = choice.text || '';
+          });
+          row.choiceA = choiceMap.choiceA || '';
+          row.choiceB = choiceMap.choiceB || '';
+          row.choiceC = choiceMap.choiceC || '';
+          row.choiceD = choiceMap.choiceD || '';
+        } else {
+          row.choiceA = '';
+          row.choiceB = '';
+          row.choiceC = '';
+          row.choiceD = '';
+        }
+
+        row.tags = item.tags && Array.isArray(item.tags) ? item.tags.join(', ') : '';
+        row.question = item.question || '';
+        row.options = item.options || '';
+
+        allItemsData.push(row);
+      }
+
+      // Add empty rows after items
+      allItemsData.push({});
+      allItemsData.push({});
+
+      // Add stimuli if present
+      if (stimuli.length > 0) {
+        // Add separator for stimuli
+        allStimuliData.push({
+          id: `=== ${testPart} - Level ${testLevel} - Test ${testTest} ===`,
+          part: '',
+          level: '',
+          test: '',
+          image: '',
+          audio: '',
+          script: '',
+          explain: ''
+        });
+
+        for (const stim of stimuli) {
+          allStimuliData.push({
+            id: stim.id,
+            part: stim.part,
+            level: stim.level,
+            test: stim.test,
+            image: stim.media?.image || '',
+            audio: stim.media?.audio || '',
+            script: stim.media?.script || '',
+            explain: stim.media?.explain || '',
+          });
+        }
+
+        // Add empty rows after stimuli
+        allStimuliData.push({});
+        allStimuliData.push({});
+      }
+    }
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+
+    // Create Items sheet
+    const itemsSheet = XLSX.utils.json_to_sheet(allItemsData, {
+      header: ['id', 'part', 'level', 'test', 'stimulusId', 'stem', 'answer', 'explain', 'order', 'choiceA', 'choiceB', 'choiceC', 'choiceD', 'tags', 'question', 'options']
+    });
+    XLSX.utils.book_append_sheet(workbook, itemsSheet, 'Items');
+
+    // Create Stimuli sheet if there are any
+    if (allStimuliData.length > 0) {
+      const stimuliSheet = XLSX.utils.json_to_sheet(allStimuliData, {
+        header: ['id', 'part', 'level', 'test', 'image', 'audio', 'script', 'explain']
+      });
+      XLSX.utils.book_append_sheet(workbook, stimuliSheet, 'Stimuli');
+    }
+
+    // Generate Excel file buffer
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+    // Set headers for file download
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const filterSuffix = partStr ? `_${partStr}` : '';
+    const filename = `tests_bulk_export${filterSuffix}_${timestamp}.xlsx`;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', buffer.length);
+
+    return res.send(buffer);
+  } catch (e: any) {
+    console.error("[exportBulkExcel] ERROR", e);
+    return res.status(500).json({ message: e.message || "Lỗi bulk export Excel" });
+  }
+}
+
+

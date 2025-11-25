@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { Users, TrendingUp, BarChart3, FileText, Trash2, Wifi } from "lucide-react";
+import { Users, TrendingUp, BarChart3, FileText, Trash2, Wifi, AlertCircle } from "lucide-react";
 import { adminDeleteUserScore, adminOverview, adminUserScores } from "@/lib/apiClient";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 
 interface OverviewTabProps {
     data: {
@@ -36,190 +38,232 @@ export default function OverviewTab({
 }: OverviewTabProps) {
     const bars = data?.histogram || [];
     const maxCount = Math.max(1, ...bars.map((b) => b.count));
-    const width = 600,
-        height = 220,
-        pad = 24;
+    const width = 700;
+    const height = 260;
+    const pad = 32;
     const bw = (width - pad * 2) / (bars.length || 1);
 
+    const handleDelete = async (userId: string, name: string) => {
+        if (!confirm(`Xóa điểm của "${name}"?\nHành động này không thể hoàn tác.`)) return;
+
+        try {
+            await adminDeleteUserScore(userId);
+            setUserScores(userScores.filter((s) => s._id !== userId));
+
+            const [overview, scores] = await Promise.all([adminOverview(), adminUserScores()]);
+            setData({
+                totalUsers: overview.totalUsers,
+                avgOverall: overview.avgOverall,
+                byLevel: overview.byLevel,
+                histogram: overview.histogram,
+            });
+            setUserScores(scores.users);
+            setError(undefined);
+        } catch (e: any) {
+            setError(e?.message || "Xóa thất bại");
+        }
+    };
+
     return (
-        <div className="flex-1 overflow-auto px-6 py-6">
-            <div className="space-y-6">
-                {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between">
+        <div className="flex-1 overflow-y-auto px-4 py-6 lg:px-8">
+            <div className="max-w-7xl mx-auto space-y-8">
+                {/* Header Title */}
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-zinc-800">Tổng quan hệ thống Placement TOEIC</h1>
+                    <p className="text-zinc-500 mt-2">Thống kê thời gian thực • Cập nhật mỗi 30 giây</p>
+                </div>
+
+                {/* Stats Cards - Glassmorphism Style */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    {/* Total Users */}
+                    <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
+                        <div className="relative flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-blue-700 mb-1">Số người dùng</p>
-                                <p className="text-3xl font-bold text-blue-900">{data?.totalUsers ?? 0}</p>
-                                <p className="text-xs text-blue-600 mt-2">Có điểm Placement</p>
+                                <p className="text-blue-100 text-sm font-medium">Tổng người dùng</p>
+                                <p className="text-4xl font-bold mt-2">{data?.totalUsers ?? 0}</p>
+                                <p className="text-blue-100 text-xs mt-3 opacity-90">Có kết quả Placement</p>
                             </div>
-                            <div className="bg-blue-200 rounded-full p-3">
-                                <Users className="h-6 w-6 text-blue-700" />
+                            <div className="p-4 bg-white/20 rounded-2xl backdrop-blur">
+                                <Users className="h-9 w-9" />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl border border-teal-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between">
+                    {/* Average Score */}
+                    <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
+                        <div className="relative flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-teal-700 mb-1">Điểm TOEIC TB</p>
-                                <p className="text-3xl font-bold text-teal-900">
-                                    {Math.round(data?.avgOverall ?? 0)}
-                                </p>
-                                <p className="text-xs text-teal-600 mt-2">Trung bình tổng điểm</p>
+                                <p className="text-emerald-100 text-sm font-medium">Điểm trung bình</p>
+                                <p className="text-4xl font-bold mt-2">{Math.round(data?.avgOverall ?? 0)}</p>
+                                <p className="text-emerald-100 text-xs mt-3 opacity-90">TOEIC Overall</p>
                             </div>
-                            <div className="bg-teal-200 rounded-full p-3">
-                                <TrendingUp className="h-6 w-6 text-teal-700" />
+                            <div className="p-4 bg-white/20 rounded-2xl backdrop-blur">
+                                <TrendingUp className="h-9 w-9" />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between">
+                    {/* Online Users */}
+                    <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
+                        <div className="relative flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-green-700 mb-1">Người đang online</p>
-                                <p className="text-3xl font-bold text-green-900">{onlineUsers}</p>
+                                <p className="text-purple-100 text-sm font-medium">Đang online</p>
+                                <p className="text-4xl font-bold mt-2">{onlineUsers}</p>
+                                <div className="flex items-center gap-2 mt-3">
+                                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse" />
+                                    <span className="text-purple-100 text-xs opacity-90">Hoạt động</span>
+                                </div>
                             </div>
-                            <div className="bg-green-200 rounded-full p-3">
-                                <Wifi className="h-6 w-6 text-green-700" />
+                            <div className="p-4 bg-white/20 rounded-2xl backdrop-blur">
+                                <Wifi className="h-9 w-9" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Total Submissions */}
+                    <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
+                        <div className="relative flex items-center justify-between">
+                            <div>
+                                <p className="text-orange-100 text-sm font-medium">Tổng bài nộp</p>
+                                <p className="text-4xl font-bold mt-2">{userScores.length}</p>
+                                <p className="text-orange-100 text-xs mt-3 opacity-90">Trong toàn bộ lịch sử</p>
+                            </div>
+                            <div className="p-4 bg-white/20 rounded-2xl backdrop-blur">
+                                <FileText className="h-9 w-9" />
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Histogram Chart */}
-                <div className="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm">
-                    <div className="flex items-center gap-2 mb-4">
-                        <BarChart3 className="h-5 w-5 text-tealCustom" />
-                        <h3 className="text-lg font-semibold text-zinc-900">Phân phối điểm (0-990)</h3>
+                <div className="bg-white/70 backdrop-blur-lg border border-zinc-200/80 rounded-2xl shadow-xl p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <BarChart3 className="h-6 w-6 text-teal-600" />
+                            <h3 className="text-xl font-bold text-zinc-800">Phân phối điểm số TOEIC (0–990)</h3>
+                        </div>
+                        <span className="text-xs text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full">
+                            Tổng: {data?.totalUsers ?? 0} người
+                        </span>
                     </div>
-                    <div className="overflow-x-auto">
-                        <svg width={width} height={height} className="block">
+
+                    <div className="overflow-x-auto pb-4">
+                        <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="mx-auto">
                             {bars.map((b, i) => {
-                                const h = Math.round(((b.count || 0) / maxCount) * (height - pad * 2));
+                                const h = ((b.count || 0) / maxCount) * (height - pad * 2);
                                 const x = pad + i * bw;
                                 const y = height - pad - h;
+
                                 return (
                                     <g key={i}>
+                                        {/* Bar */}
                                         <rect
                                             x={x}
                                             y={y}
-                                            width={bw - 8}
-                                            height={h}
-                                            className="fill-tealCustom hover:fill-teal-600 transition-colors"
-                                            rx="4"
+                                            width={bw - 10}
+                                            height={h || 2}
+                                            rx="6"
+                                            className="fill-teal-500 hover:fill-teal-600 cursor-pointer transition-all duration-200"
                                         />
-                                        <text
-                                            x={x + (bw - 8) / 2}
-                                            y={height - pad + 14}
-                                            textAnchor="middle"
-                                            className="text-[10px] fill-zinc-600 font-medium"
-                                        >
-                                            {b.min}-{b.max === 1000 ? 990 : b.max}
-                                        </text>
+                                        {/* Label on top */}
                                         {b.count > 0 && (
                                             <text
-                                                x={x + (bw - 8) / 2}
-                                                y={y - 4}
+                                                x={x + (bw - 10) / 2}
+                                                y={y - 8}
                                                 textAnchor="middle"
-                                                className="text-[10px] fill-zinc-700 font-semibold"
+                                                className="text-xs font-bold fill-teal-700"
                                             >
                                                 {b.count}
                                             </text>
                                         )}
+                                        {/* X-axis label */}
+                                        <text
+                                            x={x + (bw - 10) / 2}
+                                            y={height - 8}
+                                            textAnchor="middle"
+                                            className="text-xs fill-zinc-600 font-medium"
+                                        >
+                                            {b.min === b.max ? b.min : `${b.min}-${b.max === 1000 ? 990 : b.max}`}
+                                        </text>
                                     </g>
                                 );
                             })}
+                            {/* Y-axis guide line */}
+                            <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
+                            <line x1={pad} y1={height - pad} x2={width - pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
                         </svg>
                     </div>
                 </div>
 
-                {/* User Scores Table */}
-                <div className="bg-white rounded-xl border border-zinc-200 shadow-sm">
-                    <div className="p-6 border-b border-zinc-200">
-                        <div className="flex items-center gap-2">
-                            <FileText className="h-5 w-5 text-tealCustom" />
-                            <h3 className="text-lg font-semibold text-zinc-900">Điểm từng người dùng</h3>
+                {/* User Scores Table - Modern Table */}
+                <div className="bg-white/70 backdrop-blur-lg border border-zinc-200/80 rounded-2xl shadow-xl overflow-hidden">
+                    <div className="p-6 border-b border-zinc-200 bg-gradient-to-r from-teal-50 to-blue-50">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <FileText className="h-6 w-6 text-teal-600" />
+                                <h3 className="text-xl font-bold text-zinc-800">Danh sách kết quả người dùng</h3>
+                            </div>
+                            <span className="text-sm font-medium text-teal-700 bg-teal-100 px-4 py-1.5 rounded-full">
+                                {userScores.length} kết quả
+                            </span>
                         </div>
-                        <p className="text-sm text-zinc-600 mt-1">Sắp xếp theo điểm giảm dần</p>
                     </div>
-                    <div className="overflow-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-zinc-50">
-                                <tr className="text-left">
-                                    <th className="p-4 font-semibold text-zinc-700">Tên</th>
-                                    <th className="p-4 font-semibold text-zinc-700">Email</th>
-                                    <th className="p-4 font-semibold text-zinc-700">Tổng điểm</th>
-                                    <th className="p-4 font-semibold text-zinc-700">Listening</th>
-                                    <th className="p-4 font-semibold text-zinc-700">Reading</th>
-                                    <th className="p-4 font-semibold text-zinc-700">Ngày làm</th>
-                                    <th className="p-4 font-semibold text-zinc-700">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {userScores.map((u, idx) => (
-                                    <tr
-                                        key={u._id}
-                                        className={`border-t border-zinc-100 hover:bg-zinc-50 transition-colors ${idx % 2 === 0 ? "bg-white" : "bg-zinc-50/50"
-                                            }`}
-                                    >
-                                        <td className="p-4 font-medium text-zinc-900">{u.name}</td>
-                                        <td className="p-4 font-mono text-xs text-zinc-600">{u.email}</td>
-                                        <td className="p-4 font-semibold text-lg text-tealCustom">{u.overall}</td>
-                                        <td className="p-4 text-zinc-700">{u.listening}</td>
-                                        <td className="p-4 text-zinc-700">{u.reading}</td>
-                                        <td className="p-4 text-xs text-zinc-500">
-                                            {new Date(u.submittedAt).toLocaleDateString("vi-VN", {
-                                                year: "numeric",
-                                                month: "short",
-                                                day: "numeric",
-                                            })}
-                                        </td>
-                                        <td className="p-4">
-                                            <button
-                                                onClick={async () => {
-                                                    if (!confirm(`Bạn có chắc muốn xóa điểm của ${u.name}?`)) return;
-                                                    try {
-                                                        await adminDeleteUserScore(u._id);
-                                                        setUserScores(userScores.filter((s) => s._id !== u._id));
-                                                        setError(undefined);
-                                                        // Reload data
-                                                        const [overview, scores] = await Promise.all([
-                                                            adminOverview(),
-                                                            adminUserScores(),
-                                                        ]);
-                                                        const byLevel = overview.byLevel as any;
-                                                        setData({
-                                                            totalUsers: overview.totalUsers,
-                                                            avgOverall: overview.avgOverall,
-                                                            byLevel,
-                                                            histogram: overview.histogram,
-                                                        });
-                                                        setUserScores(scores.users);
-                                                    } catch (e: any) {
-                                                        setError(e?.message || "Lỗi xóa điểm");
-                                                    }
-                                                }}
-                                                className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-colors flex items-center gap-1.5"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                                Xóa
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {userScores.length === 0 && (
+
+                    <div className="overflow-x-auto">
+                        {userScores.length === 0 ? (
+                            <div className="p-20 text-center">
+                                <FileText className="h-16 w-16 text-zinc-300 mx-auto mb-4" />
+                                <p className="text-zinc-500 font-medium">Chưa có dữ liệu placement</p>
+                            </div>
+                        ) : (
+                            <table className="w-full">
+                                <thead className="bg-zinc-50/80 text-xs uppercase tracking-wider text-zinc-600">
                                     <tr>
-                                        <td className="p-12 text-center text-zinc-500" colSpan={7}>
-                                            <div className="flex flex-col items-center gap-2">
-                                                <FileText className="h-8 w-8 text-zinc-300" />
-                                                <p>Chưa có dữ liệu</p>
-                                            </div>
-                                        </td>
+                                        <th className="px-6 py-4 text-left font-semibold">Họ tên</th>
+                                        <th className="px-6 py-4 text-left font-semibold">Email</th>
+                                        <th className="px-6 py-4 text-center font-semibold">Tổng điểm</th>
+                                        <th className="px-6 py-4 text-center font-semibold">Listening</th>
+                                        <th className="px-6 py-4 text-center font-semibold">Reading</th>
+                                        <th className="px-6 py-4 text-left font-semibold">Ngày nộp</th>
+                                        <th className="px-6 py-4 text-center font-semibold">Thao tác</th>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-100">
+                                    {userScores.map((u, idx) => (
+                                        <tr
+                                            key={u._id}
+                                            className="hover:bg-zinc-50/70 transition-colors duration-150"
+                                        >
+                                            <td className="px-6 py-5 font-medium text-zinc-900">{u.name}</td>
+                                            <td className="px-6 py-5 text-sm font-mono text-zinc-600">{u.email}</td>
+                                            <td className="px-6 py-5 text-center">
+                                                <span className="inline-flex items-center px-4 py-2 rounded-full text-lg font-bold bg-teal-100 text-teal-700">
+                                                    {u.overall}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-5 text-center font-semibold text-zinc-700">{u.listening}</td>
+                                            <td className="px-6 py-5 text-center font-semibold text-zinc-700">{u.reading}</td>
+                                            <td className="px-6 py-5 text-sm text-zinc-500">
+                                                {format(new Date(u.submittedAt), "dd MMM yyyy", { locale: vi })}
+                                            </td>
+                                            <td className="px-6 py-5 text-center">
+                                                <button
+                                                    onClick={() => handleDelete(u._id, u.name)}
+                                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200 border border-red-200"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    Xóa
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
             </div>

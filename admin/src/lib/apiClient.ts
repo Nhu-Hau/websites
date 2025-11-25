@@ -642,6 +642,7 @@ export async function adminListParts(params?: { page?: number; limit?: number; p
   return res.json() as Promise<{ items: AdminPart[]; total: number; page: number; limit: number; pages: number }>;
 }
 
+
 export async function adminGetPart(mongoId: string) {
   const res = await fetch(`/api/admin/parts/${encodeURIComponent(mongoId)}`, { credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch part failed'); }
@@ -835,4 +836,43 @@ export async function adminImportExcel(file: File, preview: boolean = false) {
       stimuli: any[];
     }[];
   }>;
+}
+
+export async function adminExportExcel(params: { part: string; level: number; test: number }) {
+  const usp = new URLSearchParams();
+  usp.set('part', params.part);
+  usp.set('level', String(params.level));
+  usp.set('test', String(params.test));
+
+  const res = await fetch(`/api/admin/parts/export-excel?${usp.toString()}`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || 'Export Excel failed');
+  }
+
+  // Return blob for download
+  return res.blob();
+}
+
+export async function adminExportBulkExcel(params?: { part?: string; level?: number }) {
+  const usp = new URLSearchParams();
+  if (params?.part) usp.set('part', params.part);
+  if (params?.level) usp.set('level', String(params.level));
+
+  const res = await fetch(`/api/admin/parts/export-bulk-excel?${usp.toString()}`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || 'Bulk export failed');
+  }
+
+  // Return blob for download
+  return res.blob();
 }

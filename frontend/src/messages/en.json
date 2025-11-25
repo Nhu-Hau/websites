@@ -1292,10 +1292,19 @@
         "part4": "Part 4 · Short talks",
         "part5": "Part 5 · Incomplete sentences",
         "part6": "Part 6 · Text completion",
-        "part7": "Part 7 · Reading passages"
+        "part7": "Part 7 · Reading passages",
+        "full": {
+          "1": "Part 1 · Photo descriptions",
+          "2": "Part 2 · Q&A",
+          "3": "Part 3 · Conversations",
+          "4": "Part 4 · Short talks",
+          "5": "Part 5 · Incomplete sentences",
+          "6": "Part 6 · Text completion",
+          "7": "Part 7 · Reading passages"
+        }
       },
       "header": {
-        "badge": "Train TOEIC on mobile",
+        "badge": "Train TOEIC",
         "title": "Practice every TOEIC Part on the go",
         "description": "Start with <level1>Level 1 sets</level1> to reset your rhythm, then raise the difficulty whenever you feel ready."
       },
@@ -2003,7 +2012,12 @@
       "greatJob": "Great job!",
       "keepGoing": "Keep going",
       "practiceMore": "Practice a bit more",
-      "score": "Score"
+      "score": "Score",
+      "weakHint": "Hint: {count} terms/questions still uncertain — review now to reinforce them.",
+      "retryRound": "Retry this round",
+      "reviewWeak": "Review weak terms ({count})",
+      "switchToQuizMode": "Switch to quiz mode",
+      "reviewFlashcards": "Practice flashcards again"
     },
     "controls": {
       "previous": "Previous",

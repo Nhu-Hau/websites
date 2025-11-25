@@ -4,16 +4,28 @@
 
 import React from "react";
 import Link from "next/link";
+import { X, Info, CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { resolveLocaleHref } from "@/lib/navigation/resolveLocaleHref";
-import { X, Info, CheckCircle2 } from "lucide-react";
 
-type Corner = { id: string; title: string; message: string; link?: string };
+type Corner = {
+  id: string;
+  key?: string;
+  variables?: Record<string, string | number>;
+  message?: string;
+  titleKey?: string;
+  titleVariables?: Record<string, string | number>;
+  title?: string;
+  link?: string;
+};
 
 export default function CornerToast() {
   const [toasts, setToasts] = React.useState<Corner[]>([]);
   const basePrefix = useBasePrefix();
+  const translate = useTranslations();
+  const cornerT = useTranslations("Common.CornerToast");
 
   // track id để chống double trong ~10s
   const seenRef = React.useRef<Set<string>>(new Set());
@@ -69,6 +81,9 @@ export default function CornerToast() {
     >
       {toasts.map((t, idx) => {
         const isFirst = idx === 0;
+        const resolvedTitle = t.titleKey ? translate(t.titleKey, t.titleVariables) : t.title || "";
+        const resolvedMessage = t.key ? translate(t.key, t.variables) : t.message || "";
+        const normalizedTitle = resolvedTitle.toLowerCase();
 
         return (
           <div
@@ -95,8 +110,8 @@ export default function CornerToast() {
             <div className="relative flex gap-3">
               {/* Icon */}
               <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/15 ring-1 ring-sky-400/40">
-                {t.title.toLowerCase().includes("thành công") ||
-                t.title.toLowerCase().includes("success") ? (
+                {normalizedTitle.includes("thành công") ||
+                normalizedTitle.includes("success") ? (
                   <CheckCircle2 className="h-5 w-5 text-emerald-300" />
                 ) : (
                   <Info className="h-5 w-5 text-sky-300" />
@@ -107,7 +122,7 @@ export default function CornerToast() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-[13px] font-semibold tracking-wide text-slate-50">
-                      {t.title}
+                      {resolvedTitle}
                     </p>
                   </div>
 
@@ -116,7 +131,7 @@ export default function CornerToast() {
                     type="button"
                     onClick={() => handleClose(t.id)}
                     className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900/70 text-slate-400 transition hover:bg-slate-800/90 hover:text-slate-100"
-                    aria-label="Close notification"
+                    aria-label={cornerT("closeNotification")}
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -128,10 +143,12 @@ export default function CornerToast() {
                       href={resolveLocaleHref(t.link, basePrefix) || "#"}
                       className="font-medium text-sky-300 underline underline-offset-2 transition-colors hover:text-sky-200"
                     >
-                      {t.message}
+                      {resolvedMessage}
                     </Link>
+                  ) : t.key ? (
+                    resolvedMessage
                   ) : (
-                    t.message
+                    resolvedMessage
                   )}
                 </div>
 

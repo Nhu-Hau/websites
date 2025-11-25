@@ -4,10 +4,17 @@
 import React from "react";
 import { getSocket } from "@/lib/socket";
 
+type NotificationVariables = Record<string, string | number>;
+
 export type RealtimeNotification = {
   id: string;
   type: "like" | "comment" | "system";
-  message: string;
+  key?: string;
+  variables?: NotificationVariables;
+  message?: string;
+  titleKey?: string;
+  titleVariables?: NotificationVariables;
+  title?: string;
   link: string;
   createdAt: string;
   read?: boolean;
@@ -106,17 +113,26 @@ export function useNotifications() {
   const pushLocal = React.useCallback(
     (payload: {
       id?: string;
-      title?: string;
-      message: string;
-      link?: string;
       type?: "system" | "like" | "comment";
+      key: string;
+      variables?: NotificationVariables;
+      message?: string;
+      titleKey?: string;
+      titleVariables?: NotificationVariables;
+      title?: string;
+      link?: string;
     }) => {
       const id =
         payload.id || `${Date.now()}_${Math.random().toString(36).slice(2)}`;
       const n: RealtimeNotification = {
         id,
         type: payload.type || "system",
+        key: payload.key,
+        variables: payload.variables,
         message: payload.message,
+        titleKey: payload.titleKey,
+        titleVariables: payload.titleVariables,
+        title: payload.title,
         link: payload.link || "#",
         createdAt: new Date().toISOString(),
         read: false,
@@ -131,8 +147,12 @@ export function useNotifications() {
           new CustomEvent("corner-toast", {
             detail: {
               id,
-              title: payload.title || "Thông báo",
+              key: payload.key,
+              variables: payload.variables,
               message: payload.message,
+              titleKey: payload.titleKey,
+              titleVariables: payload.titleVariables,
+              title: payload.title,
               link: payload.link || "#",
             },
           })
@@ -199,8 +219,12 @@ export function useNotifications() {
           new CustomEvent("corner-toast", {
             detail: {
               id: n.id,
-              title: "Thông báo",
+              key: n.key,
+              variables: n.variables,
               message: n.message,
+              titleKey: n.titleKey,
+              titleVariables: n.titleVariables,
+              title: n.title,
               link: n.link,
             },
           })

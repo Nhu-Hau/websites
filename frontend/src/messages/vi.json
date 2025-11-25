@@ -1552,10 +1552,19 @@
         "part4": "Part 4 · Bài nói",
         "part5": "Part 5 · Hoàn thành câu",
         "part6": "Part 6 · Điền đoạn",
-        "part7": "Part 7 · Đọc hiểu"
+        "part7": "Part 7 · Đọc hiểu",
+        "full": {
+          "1": "Part 1 · Mô tả tranh",
+          "2": "Part 2 · Hỏi đáp",
+          "3": "Part 3 · Hội thoại",
+          "4": "Part 4 · Bài nói",
+          "5": "Part 5 · Hoàn thành câu",
+          "6": "Part 6 · Điền đoạn",
+          "7": "Part 7 · Đọc hiểu"
+        }
       },
       "header": {
-        "badge": "Luyện TOEIC trên di động",
+        "badge": "Luyện TOEIC",
         "title": "Luyện từng Part TOEIC mọi lúc mọi nơi",
         "description": "Bắt đầu với <level1>các bộ Level 1</level1> để lấy lại nhịp, rồi tăng độ khó khi đã sẵn sàng."
       },
@@ -2359,7 +2368,12 @@
       "greatJob": "Làm tốt lắm!",
       "keepGoing": "Cố lên!",
       "practiceMore": "Luyện tập thêm",
-      "score": "Điểm số"
+      "score": "Điểm số",
+      "weakHint": "Gợi ý: Có {count} từ/câu hỏi bạn chưa chắc chắn – ôn lại ngay để ghi nhớ sâu hơn.",
+      "retryRound": "Luyện lại vòng này",
+      "reviewWeak": "Ôn từ khó ({count})",
+      "switchToQuizMode": "Chuyển sang quiz",
+      "reviewFlashcards": "Luyện lại flashcard"
     },
     "controls": {
       "previous": "Trước",

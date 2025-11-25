@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { useNotifications } from "@/hooks/common/useNotifications";
 import { useAuth } from "@/context/AuthContext";
 
@@ -16,6 +17,8 @@ type Elig = {
 
 const DEMO_MODE = false; // bật true để demo nhanh (15s)
 const KEY_PREFIX = "progress:nudged:";
+const PROGRESS_NOTIFICATION_TITLE_KEY = "newsComponents.progress.notification.title";
+const PROGRESS_NOTIFICATION_MESSAGE_KEY = "newsComponents.progress.notification.message";
 
 /** Ngưỡng điều chỉnh lịch check (ms) */
 const NEAR_THRESHOLD_MS = 5 * 60 * 1000; // 5 phút
@@ -38,6 +41,7 @@ function clampSleep(ms: number) {
 export default function ProgressEligibilityWatcher() {
   const { pushLocal } = useNotifications();
   const { user } = useAuth();
+  const notificationT = useTranslations("newsComponents.progress.notification");
 
   // state/refs
   const timerRef = React.useRef<number | null>(null);
@@ -74,13 +78,18 @@ export default function ProgressEligibilityWatcher() {
   }, []);
 
   const notify = React.useCallback(async (nextEligibleAt: string) => {
+    const fallbackTitle = notificationT("title");
+    const fallbackMessage = notificationT("message");
+
     if (DEMO_MODE) {
       // demo: thả local noti sau 15s
       await new Promise((res) => setTimeout(res, 15_000));
       pushLocal({
         type: "system",
-        title: "Đến lúc kiểm tra tiến bộ!",
-        message: "Đến lúc kiểm tra tiến bộ! Nhấn để bắt đầu Progress Test.",
+        key: PROGRESS_NOTIFICATION_MESSAGE_KEY,
+        message: fallbackMessage,
+        titleKey: PROGRESS_NOTIFICATION_TITLE_KEY,
+        title: fallbackTitle,
         link: "/progress",
       });
       return;
@@ -93,7 +102,9 @@ export default function ProgressEligibilityWatcher() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "system",
-        message: "Đến lúc kiểm tra tiến bộ! Nhấn để bắt đầu Progress Test.",
+        key: PROGRESS_NOTIFICATION_MESSAGE_KEY,
+        variables: {},
+        message: fallbackMessage,
         link: "/progress",
         meta: { nextEligibleAt },
       }),
@@ -104,7 +115,7 @@ export default function ProgressEligibilityWatcher() {
       method: "POST",
       credentials: "include",
     }).catch(() => {});
-  }, [pushLocal]);
+  }, [pushLocal, notificationT]);
 
   const check = React.useCallback(async () => {
     // Chưa đăng nhập thì thôi, khỏi chạy

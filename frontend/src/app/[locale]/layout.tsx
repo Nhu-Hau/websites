@@ -84,9 +84,9 @@ export default async function LocaleLayout({
             </ChatProvider>
           </MobileAvatarSheetProvider>
         </AuthProvider>
+        <CornerToast />
+        <SocketBridge />
       </NextIntlClientProvider>
-      <CornerToast />
-      <SocketBridge />
     </ThemeProvider>
   );
 }

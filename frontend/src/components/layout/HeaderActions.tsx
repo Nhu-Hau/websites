@@ -142,6 +142,7 @@ export function Notification() {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("HeaderActions.notification");
+  const translate = useTranslations();
   const basePrefix = useBasePrefix();
   useClickOutside(wrapperRef, () => {
     if (open) setOpen(false);
@@ -224,7 +225,7 @@ export function Notification() {
                     )}
                   >
                     <div className="text-[13px] leading-snug">
-                      {n.message}
+                      {n.key ? translate(n.key, n.variables) : n.message}
                     </div>
                     <div className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
                       {new Date(n.createdAt).toLocaleString()}

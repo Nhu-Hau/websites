@@ -1068,25 +1068,36 @@ export async function exportExcel(req: Request, res: Response) {
   }
 }
 
-// GET /api/admin/parts/export-bulk-excel - Export multiple tests to single Excel
+// POST /api/admin/parts/export-bulk-excel - Export multiple tests to single Excel
 export async function exportBulkExcel(req: Request, res: Response) {
   try {
-    const { part, level } = req.query;
-    const partStr = part ? String(part) : undefined;
-    const levelNum = level ? parseInt(String(level)) : undefined;
+    // Support both filter (from body) and selectedTests (from body)
+    const { part, level, selectedTests } = req.body;
 
     const db = mongoose.connection;
     const itemsCol = db.collection(PARTS_COLL);
     const stimCol = db.collection(STIMULI_COLL);
 
-    // Build filter
-    const filter: any = {};
-    if (partStr) filter.part = partStr;
-    if (levelNum) filter.level = levelNum;
+    let matchStage: any = {};
+
+    if (selectedTests && Array.isArray(selectedTests) && selectedTests.length > 0) {
+      // If specific tests are selected, use $or to match them
+      matchStage = {
+        $or: selectedTests.map((t: any) => ({
+          part: String(t.part),
+          level: parseInt(String(t.level)),
+          test: parseInt(String(t.test))
+        }))
+      };
+    } else {
+      // Fallback to filter
+      if (part) matchStage.part = String(part);
+      if (level) matchStage.level = parseInt(String(level));
+    }
 
     // Get all tests matching filter using aggregation
     const testsAgg = await itemsCol.aggregate([
-      { $match: filter },
+      { $match: matchStage },
       {
         $group: {
           _id: { part: "$part", level: "$level", test: "$test" },
@@ -1097,7 +1108,7 @@ export async function exportBulkExcel(req: Request, res: Response) {
     ]).toArray();
 
     if (testsAgg.length === 0) {
-      return res.status(404).json({ message: "Không tìm thấy test nào phù hợp với bộ lọc" });
+      return res.status(404).json({ message: "Không tìm thấy test nào phù hợp" });
     }
 
     // Prepare data arrays
@@ -1236,8 +1247,9 @@ export async function exportBulkExcel(req: Request, res: Response) {
     const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 
     // Set headers for file download
+    // Set headers for file download
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    const filterSuffix = partStr ? `_${partStr}` : '';
+    const filterSuffix = part ? `_${part}` : '';
     const filename = `tests_bulk_export${filterSuffix}_${timestamp}.xlsx`;
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

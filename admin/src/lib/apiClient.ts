@@ -858,13 +858,13 @@ export async function adminExportExcel(params: { part: string; level: number; te
   return res.blob();
 }
 
-export async function adminExportBulkExcel(params?: { part?: string; level?: number }) {
-  const usp = new URLSearchParams();
-  if (params?.part) usp.set('part', params.part);
-  if (params?.level) usp.set('level', String(params.level));
-
-  const res = await fetch(`/api/admin/parts/export-bulk-excel?${usp.toString()}`, {
-    method: 'GET',
+export async function adminExportBulkExcel(params?: { part?: string; level?: number; selectedTests?: Array<{ part: string, level: number, test: number }> }) {
+  const res = await fetch(`/api/admin/parts/export-bulk-excel`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(params || {}),
     credentials: 'include',
   });
 

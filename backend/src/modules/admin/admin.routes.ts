@@ -106,7 +106,7 @@ router.post("/parts/item", createOrUpdateItem);
 router.post("/parts/upload", upload.single("file"), uploadStimulusMedia);
 router.post("/parts/import-excel", upload.single("file"), importExcel);
 router.get("/parts/export-excel", exportExcel);
-router.get("/parts/export-bulk-excel", exportBulkExcel);
+router.post("/parts/export-bulk-excel", exportBulkExcel);
 
 router.post("/parts/stimulus", createStimulus);
 router.patch("/parts/stimulus/:id", updateStimulus);

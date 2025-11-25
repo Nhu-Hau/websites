@@ -40,16 +40,17 @@ export default function LayoutClient({
 
   // ẩn Chat + Footer ở các trang luyện test hoặc placement
   // Exclude study room pages from hideAll (they are handled separately)
+  // Support both /placement and /en/placement patterns
   const hideAll =
-    /^\/[a-z]{2}\/practice\/[^/]+(\/\d+\/\d+)?$/.test(pathname) || // /vi/practice/part.1/1/2
-    /^\/[a-z]{2}\/placement$/.test(pathname) ||
-    /^\/[a-z]{2}\/progress$/.test(pathname); // /vi/placement
+    /^(\/[a-z]{2})?\/practice\/[^/]+(\/\d+\/\d+)?$/.test(pathname) || // /practice/part.1/1/2 or /vi/practice/part.1/1/2
+    /^(\/[a-z]{2})?\/placement$/.test(pathname) || // /placement or /vi/placement
+    /^(\/[a-z]{2})?\/progress$/.test(pathname); // /progress or /vi/progress
 
   // chỉ ẩn Footer ở các trang kết quả hoặc lịch sử
   const hideFooterOnly =
-    /^\/[a-z]{2}\/placement\/result\/[^/]+$/.test(pathname) || // /vi/placement/result/abc123
-    /^\/[a-z]{2}\/practice\/history\/[^/]+$/.test(pathname) || // /vi/practice/history/abc123
-    /^\/[a-z]{2}\/progress\/result\/[^/]+$/.test(pathname); // /vi/progress/result/abc123
+    /^(\/[a-z]{2})?\/placement\/result\/[^/]+$/.test(pathname) || // /placement/result/abc123 or /vi/placement/result/abc123
+    /^(\/[a-z]{2})?\/practice\/history\/[^/]+$/.test(pathname) || // /practice/history/abc123 or /vi/practice/history/abc123
+    /^(\/[a-z]{2})?\/progress\/result\/[^/]+$/.test(pathname); // /progress/result/abc123 or /vi/progress/result/abc123
 
   // Show SideNav only on community pages (desktop only)
   // Explicitly hide on study room pages

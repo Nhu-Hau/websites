@@ -325,7 +325,10 @@ export function ResultsPanel({
                       />
                     </div>
                     <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
-                      {t("correctRatio", { correct: stat.correct, total: stat.total })}
+                      {t("correctRatio", {
+                        correct: stat.correct,
+                        total: stat.total,
+                      })}
                     </p>
                   </div>
 
@@ -358,7 +361,7 @@ export function ResultsPanel({
                     {t("priorityPractice")}{" "}
                     <strong className="font-bold">
                       {resp.weakParts.map(partLabel).join(", ")}
-                    </strong>
+                    </strong>{" "}
                     {t("weakPartsDesc")}
                   </>
                 ) : (

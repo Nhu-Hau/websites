@@ -291,7 +291,7 @@
       "contact": {
         "title": "Liên hệ",
         "emailLabel": "Email",
-        "emailValue": "hi@toeicprep.com",
+        "emailValue": "hausu999@gmail.com",
         "addressLabel": "Studio",
         "addressValue": "TP. Hồ Chí Minh, Việt Nam",
         "hoursLabel": "Giờ hỗ trợ",
@@ -2108,6 +2108,20 @@
         "questions": "Không thể tải câu hỏi: {status} - {message}",
         "loadData": "Lỗi khi tải dữ liệu: {message}"
       }
+    },
+    "page": {
+      "desc": {
+        "start": "Đề rút gọn giúp bạn ước lượng",
+        "score": "điểm TOEIC 0–990",
+        "middle": "và nhận",
+        "roadmap": "lộ trình học cá nhân hóa",
+        "end": "phù hợp điểm mạnh – điểm yếu từng kỹ năng."
+      },
+      "start": {
+        "questions": "Bài kiểm tra gồm <bold>{count} câu</bold> trong",
+        "minutes": "<bold>{minutes} phút</bold>. Sau khi nộp, bạn sẽ nhận",
+        "result": "<bold>kết quả & lộ trình học</bold> ngay lập tức."
+      }
     }
   },
   "progress": {
@@ -2268,15 +2282,15 @@
     "assessment": {
       "overviewTitle": "Tổng quan đánh giá",
       "selfReported": "Điểm tự báo cáo",
-      "placementTest": "Bài kiểm tra xếp lớp",
+      "placementTest": "Bài kiểm tra trình độ",
       "latestProgress": "Bài kiểm tra tiến độ mới nhất",
       "comparison": {
-        "matchMsg": "Điểm kiểm tra xếp lớp khá sát với điểm TOEIC bạn báo cáo.",
-        "matchSub": "Bạn báo cáo: {reported} điểm • Kiểm tra xếp lớp ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Hệ thống sẽ sử dụng kết quả xếp lớp để gợi ý lộ trình chi tiết cho từng Part.",
-        "mediumMsg": "Điểm kiểm tra xếp lớp hơi lệch so với điểm TOEIC bạn báo cáo.",
-        "mediumSub": "Bạn báo cáo: {reported} điểm • Kiểm tra xếp lớp ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do thời điểm thi khác nhau, điểm báo cáo đã cũ, hoặc bài xếp lớp chỉ có 55 câu. Hệ thống vẫn ưu tiên kết quả xếp lớp để gợi ý lộ trình.",
-        "largeMsg": "Điểm kiểm tra xếp lớp lệch nhiều so với điểm TOEIC bạn báo cáo.",
-        "largeSub": "Bạn báo cáo: {reported} điểm • Kiểm tra xếp lớp ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do mất tập trung, điểm báo cáo đã cũ, hoặc đây chỉ là ước tính từ 55 câu. Hệ thống sẽ ưu tiên kết quả xếp lớp để đánh giá trình độ hiện tại. Nếu bạn thấy kết quả chưa chính xác, hãy luyện tập một thời gian và làm lại bài kiểm tra tiến độ để có đánh giá ổn định hơn."
+        "matchMsg": "Điểm kiểm tra trình độ khá sát với điểm TOEIC bạn báo cáo.",
+        "matchSub": "Bạn báo cáo: {reported} điểm • Kiểm tra trình độ ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Hệ thống sẽ sử dụng kết quả trình độ để gợi ý lộ trình chi tiết cho từng Part.",
+        "mediumMsg": "Điểm kiểm tra trình độ hơi lệch so với điểm TOEIC bạn báo cáo.",
+        "mediumSub": "Bạn báo cáo: {reported} điểm • Kiểm tra trình độ ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do thời điểm thi khác nhau, điểm báo cáo đã cũ, hoặc bài trình độ chỉ có 55 câu. Hệ thống vẫn ưu tiên kết quả trình độ để gợi ý lộ trình.",
+        "largeMsg": "Điểm kiểm tra trình độ lệch nhiều so với điểm TOEIC bạn báo cáo.",
+        "largeSub": "Bạn báo cáo: {reported} điểm • Kiểm tra trình độ ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do mất tập trung, điểm báo cáo đã cũ, hoặc đây chỉ là ước tính từ 55 câu. Hệ thống sẽ ưu tiên kết quả trình độ để đánh giá trình độ hiện tại. Nếu bạn thấy kết quả chưa chính xác, hãy luyện tập một thời gian và làm lại bài kiểm tra tiến độ để có đánh giá ổn định hơn."
       },
       "eligibility": {
         "eligible": "Đủ điều kiện làm bài kiểm tra tiến độ",
@@ -2301,7 +2315,7 @@
         "loading": "Đang tải dữ liệu...",
         "tooltip": "{score} điểm",
         "kindBaseline": "Mốc ban đầu",
-        "kindPlacement": "Kiểm tra xếp lớp",
+        "kindPlacement": "Kiểm tra trình độ",
         "kindProgress": "Kiểm tra tiến độ"
       },
       "time": {
@@ -2440,7 +2454,7 @@
         },
         "first_placement": {
           "name": "Khởi đầu hành trình",
-          "description": "Làm bài kiểm tra xếp lớp lần đầu tiên"
+          "description": "Làm bài kiểm tra trình độ lần đầu tiên"
         },
         "first_progress": {
           "name": "Kiểm tra tiến độ",

@@ -291,7 +291,7 @@
       "contact": {
         "title": "Contact",
         "emailLabel": "Email",
-        "emailValue": "hi@toeicprep.com",
+        "emailValue": "hausu999@gmail.com",
         "addressLabel": "Studio",
         "addressValue": "Ho Chi Minh City, Vietnam",
         "hoursLabel": "Support hours",
@@ -1881,6 +1881,20 @@
         "result": "Cannot load result ({status}): {message}",
         "questions": "Cannot load questions: {status} - {message}",
         "loadData": "Error loading data: {message}"
+      }
+    },
+    "page": {
+      "desc": {
+        "start": "Condensed test to estimate your",
+        "score": "TOEIC score (0–990)",
+        "middle": "and receive a",
+        "roadmap": "personalized study roadmap",
+        "end": "tailored to your strengths and weaknesses."
+      },
+      "start": {
+        "questions": "The test consists of <bold>{count} questions</bold> in",
+        "minutes": "<bold>{minutes} minutes</bold>. After submitting, you will receive",
+        "result": "<bold>results & study roadmap</bold> immediately."
       }
     }
   },

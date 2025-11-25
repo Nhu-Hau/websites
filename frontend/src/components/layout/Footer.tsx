@@ -183,7 +183,7 @@ export default function Footer() {
                 <dt className="font-medium">{t("contact.emailLabel")}</dt>
                 <dd>
                   <a
-                    href="mailto:hi@toeicprep.com"
+                    href="mailto:hausu999@gmail.com"
                     className="text-sky-600 transition-colors hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300"
                   >
                     {t("contact.emailValue")}

@@ -1,25 +1,26 @@
-# NewsDetailClient I18n Completion Walkthrough
+# Placement Page I18n and Fixes
 
 ## Overview
-Successfully internationalized the `NewsDetailClient` component and resolved reported `MISSING_MESSAGE` errors.
+Fixed a `FORMATTING_ERROR` in `CreateStudyRoomPage.tsx` and fully internationalized the `PlacementPage` component.
 
 ## Changes
 
-### 1. Fixed `MISSING_MESSAGE` Errors
-- Added missing keys to `vocabularyExtra` in `en.json` and `vi.json`:
-    - `labels.word`
-    - `completion.legendary`, `greatJob`, `keepGoing`, `practiceMore`, `score`
+### 1. Fix Formatting Error
+- **File**: `frontend/src/components/features/study/CreateStudyRoomPage.tsx`
+- **Issue**: The translation string used `<b>` tags but the code provided `highlight`.
+- **Fix**: Updated the code to provide `b` tag handler to `rich` translation function.
 
-### 2. Internationalized `NewsDetailClient.tsx`
-- Extracted hardcoded strings:
-    - Categories (`education`, `politics`, etc.)
-    - UI text (`notFound`, `back`, `viewCount`, `premiumBanner`)
-- Added `newsComponents.detail` and updated `newsComponents.categories` in `en.json` and `vi.json`.
-- Implemented `useTranslations` and `useLocale` in `NewsDetailClient.tsx`.
+### 2. Internationalize Placement Page
+- **File**: `frontend/src/components/features/placement/index.tsx`
+- **Changes**:
+    - Extracted hardcoded strings (title, description, buttons, toasts).
+    - Added new keys to `en.json` and `vi.json` under `placement.page`.
+    - Implemented `useTranslations` hook.
+
+### 3. Placement Logic
+- Verified that `PlacementPage` checks for existing attempts and redirects if found, ensuring "only 1 test" per account.
+- The `usePlacementTest` hook fetches the test from `/api/placement/paper`, which handles the random selection.
 
 ## Verification
 - **Build**: `npm run build` passed successfully.
-- **Completeness**: All user-facing strings in the modified component are now using translation keys.
-
-## Next Steps
-- The frontend i18n for the news detail section is complete.
+- **I18n**: All user-facing strings in `PlacementPage` are now localized.

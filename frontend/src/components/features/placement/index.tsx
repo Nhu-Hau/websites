@@ -19,6 +19,7 @@ import { TestLoadingState } from "@/components/features/test/TestLoadingState";
 import { TestStartScreen } from "@/components/features/test/TestStartScreen";
 import { MobileQuickNavSheet } from "@/components/features/test/MobileQuickNavSheet";
 import { AIInsightSection } from "@/components/features/test/AIInsightSection";
+import { useTranslations } from "next-intl";
 
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -27,6 +28,7 @@ function fmtTime(totalSec: number) {
 }
 
 export default function PlacementPage() {
+  const t = useTranslations("placement");
   const router = useRouter();
   const base = useBasePrefix("vi");
   const {
@@ -80,9 +82,7 @@ export default function PlacementPage() {
           const attemptId = last?._id;
           // Chỉ redirect nếu chắc chắn có attempt (total > 0 và có attemptId)
           if (total > 0 && attemptId) {
-            toast.info(
-              "Bạn đã hoàn thành Placement, chuyển đến trang kết quả."
-            );
+            toast.info(t("complete"));
             router.replace(
               `${base}/placement/result/${encodeURIComponent(attemptId)}`
             );
@@ -97,7 +97,7 @@ export default function PlacementPage() {
     return () => {
       mounted = false;
     };
-  }, [router, base]);
+  }, [router, base, t]);
 
   // Group items
   const { groups, itemIndexMap } = useMemo(
@@ -142,7 +142,7 @@ export default function PlacementPage() {
   }, []);
 
   const onLoginRequest = () =>
-    toast.error("Vui lòng đăng nhập để bắt đầu làm bài");
+    toast.error(t("errors.loginRequired"));
 
   const handleStart = () => {
     if (!isAuthed) return onLoginRequest();
@@ -181,21 +181,21 @@ export default function PlacementPage() {
     >
       <TestHeader
         badge={{
-          label: "Mini TOEIC • 55 câu • 35 phút",
+          label: t("test.label"),
           dotColor: "bg-emerald-500",
         }}
-        title="Bài kiểm tra xếp trình độ TOEIC"
+        title={t("test.title")}
         description={
           <>
-            Đề rút gọn giúp bạn ước lượng{" "}
+            {t("page.desc.start")}{" "}
             <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-              điểm TOEIC 0–990
+              {t("page.desc.score")}
             </span>{" "}
-            và nhận{" "}
+            {t("page.desc.middle")}{" "}
             <span className="font-semibold text-sky-600 dark:text-sky-400">
-              lộ trình học cá nhân hóa
+              {t("page.desc.roadmap")}
             </span>{" "}
-            phù hợp điểm mạnh – điểm yếu từng kỹ năng.
+            {t("page.desc.end")}
           </>
         }
         stats={{
@@ -205,14 +205,22 @@ export default function PlacementPage() {
       />
 
       {loading ? (
-        <TestLoadingState message="Đang tải bài kiểm tra…" />
+        <TestLoadingState message={t("loadingTest")} />
       ) : !started && !resp ? (
         <TestStartScreen
           description={
             <>
-              Bài kiểm tra gồm <span className="font-semibold">{total} câu</span> trong{" "}
-              <span className="font-semibold">{durationMin} phút</span>. Sau khi nộp, bạn sẽ nhận{" "}
-              <span className="font-semibold">kết quả & lộ trình học</span> ngay lập tức.
+              {t.rich("page.start.questions", {
+                count: total,
+                bold: (chunks) => <span className="font-semibold">{chunks}</span>,
+              })}{" "}
+              {t.rich("page.start.minutes", {
+                minutes: durationMin,
+                bold: (chunks) => <span className="font-semibold">{chunks}</span>,
+              })}{" "}
+              {t.rich("page.start.result", {
+                bold: (chunks) => <span className="font-semibold">{chunks}</span>,
+              })}
             </>
           }
           onStart={handleStart}

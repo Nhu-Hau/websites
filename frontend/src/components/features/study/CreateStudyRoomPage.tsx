@@ -598,7 +598,7 @@ export default function CreateStudyRoomPage() {
                         <span className="mt-[5px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
                         <span>
                           {pageT.rich("notice.student.tips.list", {
-                            highlight: (chunks) => <b>{chunks}</b>,
+                            b: (chunks) => <b>{chunks}</b>,
                           })}
                         </span>
                       </li>

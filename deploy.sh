@@ -1,16 +1,15 @@
 #!/bin/bash
 set -e
 
-echo ">>> Vào thư mục project"
-cd /opt/websites
+PROJECT_DIR="/opt/websites"
 
-rm -f deploy.log
-rm -rf logs/
+echo ">>> Vào thư mục dự án"
+cd "$PROJECT_DIR"
 
-git restore deploy.sh
-git restore frontend/package-lock.json
-git restore admin/package-lock.json  
-git restore backend/package-lock.json
+
+# git restore deploy.sh
+git fetch origin main
+git reset --hard origin/main
 
 echo ">>> Git pull main"
 git pull origin main
@@ -32,8 +31,15 @@ cd ../admin
 npm_config_production=false npm install
 npm run build
 
-echo ">>> Reload PM2"
-cd ..
-pm2 reload ecosystem.config.js
+# echo ">>> Reload PM2"
+# cd ..
+# pm2 reload ecosystem.config.js
+
+# echo ">>> Deploy xong!"
+
+echo ">>> Reload / start PM2 bằng ecosystem"
+cd "$PROJECT_DIR"
+pm2 startOrReload ecosystem.config.js --update-env
+pm2 save
 
 echo ">>> Deploy xong!"

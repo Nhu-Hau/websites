@@ -1388,6 +1388,69 @@
         "confirmRequired": "Vui lòng nhập lại mật khẩu",
         "confirmMismatch": "Mật khẩu xác nhận không khớp"
       }
+    },
+    "changePassword": {
+      "errorMissingFields": "Vui lòng điền đầy đủ các mật khẩu.",
+      "errorPasswordLength": "Mật khẩu mới phải có ít nhất 8 ký tự.",
+      "errorPasswordMismatch": "Mật khẩu xác nhận không khớp.",
+      "errorGeneric": "Đổi mật khẩu thất bại. Vui lòng thử lại.",
+      "success": "Đổi mật khẩu thành công! Vui lòng đăng nhập lại.",
+      "title": "Đổi mật khẩu",
+      "subtitle": "Bảo vệ tài khoản với mật khẩu mới.",
+      "currentPasswordLabel": "Mật khẩu hiện tại",
+      "currentPasswordPlaceholder": "Nhập mật khẩu hiện tại",
+      "newPasswordLabel": "Mật khẩu mới",
+      "newPasswordPlaceholder": "Tối thiểu 8 ký tự",
+      "confirmPasswordLabel": "Nhập lại mật khẩu mới",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
+      "submitLoading": "Đang cập nhật...",
+      "submit": "Lưu mật khẩu mới",
+      "backToHome": "Về trang chủ"
+    },
+    "completeGoogle": {
+      "errorPasswordLength": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "errorPasswordMismatch": "Mật khẩu xác nhận không khớp.",
+      "errorGeneric": "Có lỗi xảy ra. Vui lòng thử lại.",
+      "success": "Tạo mật khẩu thành công! Bạn có thể tiếp tục sử dụng ToeicPrep.",
+      "title": "Tạo mật khẩu",
+      "subtitle": "Bảo vệ tài khoản Google của bạn bằng mật khẩu ToeicPrep.",
+      "passwordLabel": "Mật khẩu",
+      "passwordPlaceholder": "Nhập mật khẩu",
+      "confirmPasswordLabel": "Xác nhận mật khẩu",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
+      "submitLoading": "Đang lưu...",
+      "submit": "Hoàn tất"
+    },
+    "forgotPassword": {
+      "errorEmailRequired": "Vui lòng nhập email.",
+      "successStep1": "Đã gửi mã xác thực! Kiểm tra hộp thư của bạn.",
+      "errorCodeInvalid": "Vui lòng nhập đúng mã xác thực.",
+      "errorPasswordLength": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "errorPasswordMismatch": "Mật khẩu xác nhận không khớp.",
+      "successStep2": "Đặt lại mật khẩu thành công!",
+      "title": "Quên mật khẩu",
+      "resetTitle": "Đặt lại mật khẩu",
+      "subtitleStep1": "Nhập email đã đăng ký để nhận mã gồm 6 chữ số.",
+      "subtitleStep2": "Nhập mã trong email và đặt mật khẩu mới.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "ban@example.com",
+      "submitStep1Loading": "Đang gửi...",
+      "submitStep1": "Gửi mã",
+      "backToLogin": "Quay lại đăng nhập",
+      "checkSpam": "Không nhận được email? Hãy kiểm tra <span>Spam/Quảng cáo</span> hoặc thử lại sau 60 giây.",
+      "codeLabel": "Mã xác thực",
+      "codePlaceholder": "Nhập mã 6 chữ số",
+      "resendCode": "Gửi lại mã",
+      "resendWait": "Gửi lại sau {seconds}s",
+      "newPasswordLabel": "Mật khẩu mới",
+      "newPasswordPlaceholder": "Nhập mật khẩu mới",
+      "confirmPasswordLabel": "Xác nhận mật khẩu",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
+      "submitStep2Loading": "Đang đặt lại...",
+      "submitStep2": "Cập nhật mật khẩu",
+      "sendCodeError": "Không thể gửi mã. Vui lòng thử lại.",
+      "missingEmail": "Thiếu email.",
+      "resetCodeError": "Mã không hợp lệ hoặc đã hết hạn. Vui lòng thử lại."
     }
   },
   "UserMenu": {
@@ -1478,6 +1541,56 @@
     "toast": {
       "logoutSuccess": "Đăng xuất thành công",
       "logoutError": "Lỗi khi đăng xuất"
+    }
+  },
+  "mobile": {
+    "practice": {
+      "parts": {
+        "part1": "Part 1 · Mô tả tranh",
+        "part2": "Part 2 · Hỏi đáp",
+        "part3": "Part 3 · Hội thoại",
+        "part4": "Part 4 · Bài nói",
+        "part5": "Part 5 · Hoàn thành câu",
+        "part6": "Part 6 · Điền đoạn",
+        "part7": "Part 7 · Đọc hiểu"
+      },
+      "header": {
+        "badge": "Luyện TOEIC trên di động",
+        "title": "Luyện từng Part TOEIC mọi lúc mọi nơi",
+        "description": "Bắt đầu với <level1>các bộ Level 1</level1> để lấy lại nhịp, rồi tăng độ khó khi đã sẵn sàng."
+      },
+      "listening": "Listening",
+      "reading": "Reading",
+      "card": {
+        "startFromLevel1": "Bắt đầu từ Level 1",
+        "autoSuggest": "Lộ trình tự điều chỉnh"
+      },
+      "tip": "Kết hợp <listening>các Part Listening</listening> khi bạn chỉ có vài phút và <reading>các Part Reading</reading> khi có nhiều thời gian tập trung."
+    },
+    "study": {
+      "vocabulary": {
+        "title": "Vocabulary Lab",
+        "description": "Ôn bộ từ, lật flashcard và làm quiz ngắn để giữ streak.",
+        "tag": "Flashcard + Quiz",
+        "estimated": "≈10 phút",
+        "suggested": "Đề xuất"
+      },
+      "news": {
+        "title": "Học qua tin tức",
+        "description": "Đọc bài viết chọn lọc, chạm để dịch tức thời và lưu từ mới.",
+        "tag": "Reading lab",
+        "estimated": "≈12 phút"
+      },
+      "header": {
+        "badge": "Study modes",
+        "title": "Học linh hoạt mọi lúc",
+        "description": "Luân phiên <vocabulary>Vocabulary Lab</vocabulary> cho các lượt ôn nhanh và <news>Reading Lab</news> khi muốn đắm mình trong bài đọc."
+      },
+      "cta": {
+        "start": "Mở chế độ",
+        "tap": "Chạm để khám phá"
+      },
+      "tip": "Dùng <vocabulary>Vocabulary</vocabulary> khi có thể tương tác, chuyển sang <news>News</news> lúc di chuyển hoặc thư giãn."
     }
   },
   "Account": {
@@ -2340,7 +2453,9 @@
         "mediumMsg": "Điểm kiểm tra trình độ hơi lệch so với điểm TOEIC bạn báo cáo.",
         "mediumSub": "Bạn báo cáo: {reported} điểm • Kiểm tra trình độ ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do thời điểm thi khác nhau, điểm báo cáo đã cũ, hoặc bài trình độ chỉ có 55 câu. Hệ thống vẫn ưu tiên kết quả trình độ để gợi ý lộ trình.",
         "largeMsg": "Điểm kiểm tra trình độ lệch nhiều so với điểm TOEIC bạn báo cáo.",
-        "largeSub": "Bạn báo cáo: {reported} điểm • Kiểm tra trình độ ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do mất tập trung, điểm báo cáo đã cũ, hoặc đây chỉ là ước tính từ 55 câu. Hệ thống sẽ ưu tiên kết quả trình độ để đánh giá trình độ hiện tại. Nếu bạn thấy kết quả chưa chính xác, hãy luyện tập một thời gian và làm lại bài kiểm tra tiến độ để có đánh giá ổn định hơn."
+        "largeSub": "Bạn báo cáo: {reported} điểm • Kiểm tra trình độ ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do mất tập trung, điểm báo cáo đã cũ, hoặc đây chỉ là ước tính từ 55 câu. Hệ thống sẽ ưu tiên kết quả trình độ để đánh giá trình độ hiện tại. Nếu bạn thấy kết quả chưa chính xác, hãy luyện tập một thời gian và làm lại bài kiểm tra tiến độ để có đánh giá ổn định hơn.",
+        "show": "Hiện thẻ so sánh",
+        "hide": "Ẩn thẻ so sánh"
       },
       "eligibility": {
         "eligible": "Đủ điều kiện làm bài kiểm tra tiến độ",
@@ -2522,6 +2637,8 @@
       "title": "Bộ sưu tập huy hiệu",
       "subtitle": "Đếm số huy hiệu đã mở khóa và chờ đồng bộ dữ liệu mới nhất.",
       "badgeLabel": "Huy hiệu",
+      "points": "điểm",
+      "days": "ngày",
       "congratsTitle": "Chúc mừng!",
       "congratsMessage": "Bạn đã mở khóa huy hiệu <bold>{name}</bold>.",
       "earnedCount": "Đã mở khóa {earned} / {total} huy hiệu",
@@ -2913,9 +3030,9 @@
   },
   "newsHooks": {
     "translation": {
-      "premiumRequired": "Cần tài khoản Premium để sử dụng tính năng này",
-      "wordError": "Không thể dịch từ",
-      "selectionError": "Không thể dịch đoạn văn"
+      "premiumRequired": "Nâng cấp Premium để dịch đoạn đã chọn.",
+      "selectionError": "Không thể nhận diện đoạn văn bản bạn chọn.",
+      "wordError": "Không thể dịch từ này. Vui lòng thử từ khác."
     }
   },
   "test": {

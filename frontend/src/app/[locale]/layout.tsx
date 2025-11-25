@@ -70,7 +70,8 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
-  const theme = (await cookies()).get("theme")?.value === "dark" ? "dark" : "light";
+  const cookieStore = await cookies();
+  const theme = cookieStore.get("theme")?.value === "dark" ? "dark" : "light";
   const messages = await getMessages({ locale });
 
   return (

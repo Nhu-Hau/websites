@@ -993,6 +993,13 @@
       }
     }
   },
+  "newsHooks": {
+    "translation": {
+      "premiumRequired": "Upgrade to Premium to translate highlighted text.",
+      "selectionError": "Couldn't detect a valid selection.",
+      "wordError": "Couldn't translate this word. Please try another one."
+    }
+  },
   "Header": {
     "logoAria": "Back to ToeicPrep homepage",
     "logoAlt": "ToeicPrep Logo"
@@ -1121,6 +1128,69 @@
         "confirmRequired": "Please re-enter password",
         "confirmMismatch": "Passwords do not match"
       }
+    },
+    "changePassword": {
+      "errorMissingFields": "Please fill in all password fields",
+      "errorPasswordLength": "New password must be at least 8 characters",
+      "errorPasswordMismatch": "Passwords do not match",
+      "errorGeneric": "Couldn't update password. Please try again.",
+      "success": "Password updated! Sign in again to continue.",
+      "title": "Update password",
+      "subtitle": "Secure your account with a new password.",
+      "currentPasswordLabel": "Current password",
+      "currentPasswordPlaceholder": "Enter current password",
+      "newPasswordLabel": "New password",
+      "newPasswordPlaceholder": "At least 8 characters",
+      "confirmPasswordLabel": "Confirm new password",
+      "confirmPasswordPlaceholder": "Re-enter new password",
+      "submitLoading": "Updating...",
+      "submit": "Save new password",
+      "backToHome": "Back to homepage"
+    },
+    "completeGoogle": {
+      "errorPasswordLength": "Password must be at least 8 characters",
+      "errorPasswordMismatch": "Passwords do not match",
+      "errorGeneric": "Something went wrong. Please try again.",
+      "success": "Password saved! You're ready to continue.",
+      "title": "Create a password",
+      "subtitle": "Secure your Google account with a ToeicPrep password.",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter password",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter password",
+      "submitLoading": "Saving...",
+      "submit": "Complete setup"
+    },
+    "forgotPassword": {
+      "errorEmailRequired": "Please enter your email",
+      "successStep1": "Verification code sent! Check your inbox.",
+      "errorCodeInvalid": "Please enter a valid verification code",
+      "errorPasswordLength": "Password must be at least 8 characters",
+      "errorPasswordMismatch": "Passwords do not match",
+      "successStep2": "Password reset successfully!",
+      "title": "Forgot password",
+      "resetTitle": "Reset password",
+      "subtitleStep1": "Enter your registered email and we'll send a 6-digit code.",
+      "subtitleStep2": "Enter the email code and set a new password.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "submitStep1Loading": "Sending...",
+      "submitStep1": "Send code",
+      "backToLogin": "Back to login",
+      "checkSpam": "Didn't get the email? Check <span>Spam/Promotions</span> or request a new code after 60 seconds.",
+      "codeLabel": "Verification code",
+      "codePlaceholder": "Enter 6-digit code",
+      "resendCode": "Resend code",
+      "resendWait": "Resend in {seconds}s",
+      "newPasswordLabel": "New password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter new password",
+      "submitStep2Loading": "Resetting...",
+      "submitStep2": "Update password",
+      "sendCodeError": "Couldn't send the code. Please try again.",
+      "missingEmail": "Missing email address.",
+      "resetCodeError": "Invalid or expired code. Please try again."
     }
   },
   "UserMenu": {
@@ -1211,6 +1281,56 @@
     "toast": {
       "logoutSuccess": "Logout successful",
       "logoutError": "Logout failed"
+    }
+  },
+  "mobile": {
+    "practice": {
+      "parts": {
+        "part1": "Part 1 · Photo descriptions",
+        "part2": "Part 2 · Q&A",
+        "part3": "Part 3 · Conversations",
+        "part4": "Part 4 · Short talks",
+        "part5": "Part 5 · Incomplete sentences",
+        "part6": "Part 6 · Text completion",
+        "part7": "Part 7 · Reading passages"
+      },
+      "header": {
+        "badge": "Train TOEIC on mobile",
+        "title": "Practice every TOEIC Part on the go",
+        "description": "Start with <level1>Level 1 sets</level1> to reset your rhythm, then raise the difficulty whenever you feel ready."
+      },
+      "listening": "Listening",
+      "reading": "Reading",
+      "card": {
+        "startFromLevel1": "Start at Level 1",
+        "autoSuggest": "Roadmap auto-adjusts"
+      },
+      "tip": "Mix <listening>Listening parts</listening> when you only have a few minutes and <reading>Reading parts</reading> when you can focus longer."
+    },
+    "study": {
+      "vocabulary": {
+        "title": "Vocabulary Lab",
+        "description": "Flip flashcards, run quizzes, and keep your streak with short practice bursts.",
+        "tag": "Flashcards + Quiz",
+        "estimated": "≈10 mins",
+        "suggested": "Suggested"
+      },
+      "news": {
+        "title": "Study with News",
+        "description": "Read curated English articles, tap for instant translations, and save new words.",
+        "tag": "Reading lab",
+        "estimated": "≈12 mins"
+      },
+      "header": {
+        "badge": "Study modes",
+        "title": "Learn anywhere, anytime",
+        "description": "Switch between <vocabulary>Vocabulary Lab</vocabulary> for quick reps and <news>Reading Lab</news> when you want immersive input."
+      },
+      "cta": {
+        "start": "Open mode",
+        "tap": "Tap to explore"
+      },
+      "tip": "Use <vocabulary>Vocabulary sessions</vocabulary> when you can interact, then jump to <news>News reading</news> during commutes."
     }
   },
   "Account": {
@@ -1821,6 +1941,31 @@
         "minutes": "<bold>{minutes} minutes</bold>. After you submit, you will get",
         "result": "<bold>instant results & a study plan</bold>."
       }
+    },
+    "mandatory": {
+      "closeAria": "Close placement reminder",
+      "title": "Take the <highlight>Placement Test</highlight> first",
+      "description": "We need your <emphasis>latest baseline</emphasis> to personalize practice. It only takes 35 minutes.",
+      "button": "Go to Placement Test"
+    },
+    "resultPage": {
+      "errors": {
+        "detail": "Couldn't load attempt detail (status {status}).",
+        "history": "Couldn't load attempt history (status {status}).",
+        "result": "Couldn't load this attempt (status {status}). Message: {message}",
+        "questions": "Couldn't load question list (status {status}). Message: {message}",
+        "loadData": "Unexpected error while loading data: {message}"
+      },
+      "reload": "Reload page",
+      "attemptId": "Attempt ID: {id}",
+      "empty": {
+        "title": "No questions available",
+        "stats": "Items: {items} • Groups: {groups}"
+      },
+      "groupError": {
+        "title": "Couldn't organize question groups",
+        "stats": "Items: {items} • Stimulus keys: {keys}"
+      }
     }
   },
   "vocabularyExtra": {
@@ -1853,7 +1998,12 @@
       "correct": "Correct",
       "incorrect": "Incorrect",
       "remembered": "Mastered",
-      "notYet": "Not yet"
+      "notYet": "Not yet",
+      "legendary": "Legendary focus!",
+      "greatJob": "Great job!",
+      "keepGoing": "Keep going",
+      "practiceMore": "Practice a bit more",
+      "score": "Score"
     },
     "controls": {
       "previous": "Previous",
@@ -1910,6 +2060,7 @@
       "saving": "Saving..."
     },
     "labels": {
+      "word": "English word",
       "totalTerms": "Total terms:",
       "topic": "Topic:",
       "quickSearch": "Quick search",
@@ -2029,6 +2180,13 @@
       "title": "Smart Study Schedule",
       "subtitle": "Set a fixed practice schedule to keep up your TOEIC learning rhythm.",
       "notifyLabel": "Email / Web Reminders",
+      "errorSave": "Couldn't save schedule. Please try again.",
+      "successSave": "Schedule saved!",
+      "errorGeneric": "Something went wrong. Please try again.",
+      "successUpdate": "Schedule updated",
+      "errorUpdate": "Couldn't update schedule",
+      "successCancel": "Schedule cancelled",
+      "errorCancel": "Couldn't cancel schedule",
       "planner": {
         "title": "Plan your next session",
         "subtitle": "Pick the time, focus, and reminders—ToeicPrep will keep you on track.",
@@ -2098,9 +2256,14 @@
         "completed": "Last session completed.",
         "missed": "You missed the last session.",
         "reminder": "Remember to join on time to keep your streak!",
+        "loading": "Loading upcoming schedule...",
         "statusCompleted": "Session Completed!",
         "statusMissed": "You missed the session",
-        "streak": "Current streak: {days} days"
+        "statusScheduled": "Scheduled session",
+        "completedTitle": "Session completed",
+        "missedTitle": "Session missed",
+        "streak": "Current streak: {days} days",
+        "remindBefore": "Remind {minutes} minutes before"
       }
     },
     "progressChart": {
@@ -2148,6 +2311,8 @@
       "title": "Badge Collection",
       "subtitle": "Count unlocked badges and wait for latest data sync.",
       "badgeLabel": "Badges",
+      "points": "points",
+      "days": "days",
       "congratsTitle": "Congratulations!",
       "congratsMessage": "You unlocked the <bold>{name}</bold> badge.",
       "earnedCount": "{earned} / {total} badges unlocked",
@@ -2327,7 +2492,10 @@
       "sendError": "Cannot send message",
       "uploadError": "Upload failed",
       "downloadError": "Download failed",
+      "download": "Download file",
+      "downloadButton": "Download",
       "premiumOnly": "Only Premium accounts can send messages.",
+      "premiumOnlyTitle": "Premium feature",
       "editError": "Cannot edit message",
       "edited": "Edited",
       "deleteError": "Cannot delete message",
@@ -2343,7 +2511,20 @@
       "cannotEdit": "Cannot edit this comment",
       "cannotDelete": "Cannot delete this comment",
       "deleteTitle": "Delete comment?",
-      "deleteConfirm": "Delete"
+      "deleteConfirm": "Delete",
+      "locked": "Upgrade to continue chatting",
+      "title": "Study room chat",
+      "room": "Room",
+      "close": "Close",
+      "emptyState": {
+        "title": "No messages yet",
+        "description": "Start the conversation with a quick update or question."
+      },
+      "uploadTitle": "Share files",
+      "limitReachedPlaceholder": "Upgrade to continue messaging",
+      "inputPlaceholder": "Send a message to everyone...",
+      "send": "Send",
+      "commentCount": "Comments"
     },
     "createRoom": {
       "validation": {
@@ -2639,11 +2820,55 @@
     "saveVocab": {
       "button": "Save to Vocabulary"
     },
+    "detail": {
+      "notFound": "Article not found",
+      "notFoundDesc": "This article might have been removed or is unavailable.",
+      "backToList": "Back to news list",
+      "back": "Back",
+      "viewCount": "{count} views",
+      "premiumBanner": {
+        "title": "Unlock translations & vocabulary tools",
+        "description": "Upgrade to Premium to translate instantly, hear pronunciations, and save vocabulary from this article."
+      }
+    },
     "progress": {
       "notification": {
         "title": "Time to Check Progress!",
         "message": "Time to check your progress! Click to start Progress Test."
       }
+    }
+  },
+  "progress": {
+    "errors": {
+      "detail": "Couldn't load attempt detail (status {status}).",
+      "notFound": "Attempt not found.",
+      "history": "Couldn't load attempt history (status {status}).",
+      "result": "Couldn't load this attempt (status {status}). Message: {message}",
+      "unknown": "Unknown error",
+      "questions": "Couldn't load question list (status {status}). Message: {message}",
+      "noQuestions": "No questions found for this attempt."
+    },
+    "resultPage": {
+      "errors": {
+        "loadData": "Unexpected error while loading data: {message}"
+      },
+      "reload": "Reload page",
+      "attemptId": "Attempt ID: {id}",
+      "empty": {
+        "title": "No questions to display",
+        "stats": "{items} items • {groups} groups"
+      },
+      "groupError": {
+        "title": "Missing group data",
+        "stats": "{items} items • {keys} stimuli"
+      }
+    },
+    "loading": "Loading progress data...",
+    "result": {
+      "badgeWithVersion": "Progress Test · Version {version}",
+      "badge": "Progress Test",
+      "title": "Review attempt",
+      "description": "Completed at <time>{datetime}</time>. Review results and detailed analysis below."
     }
   },
   "practice": {

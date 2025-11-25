@@ -54,7 +54,7 @@ export default function CompleteGoogleForm() {
         toast.success(data.message || t("success"));
         router.push(`${basePrefix}/`);
       } else {
-        toast.error(data.message || "Có lỗi xảy ra, vui lòng thử lại");
+        toast.error(data.message || t("errorGeneric"));
       }
     } finally {
       setLoading(false);

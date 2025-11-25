@@ -35,7 +35,7 @@ export default function LoginForm() {
       const profile = res.ok ? await res.json() : null;
       if (profile) login(profile);
       toast.success(t("success"));
-      router.push(basePrefix);
+      router.push(basePrefix || "/");
     },
   });
 

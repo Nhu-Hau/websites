@@ -61,7 +61,7 @@ export default function ChangePasswordForm() {
         toast.success(data.message || t("success"));
         router.push(`${basePrefix}/`);
       } else {
-        toast.error(data.message || "Đổi mật khẩu thất bại. Vui lòng thử lại.");
+        toast.error(data.message || t("errorGeneric"));
       }
     } finally {
       setLoading(false);

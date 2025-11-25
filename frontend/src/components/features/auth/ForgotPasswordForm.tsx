@@ -62,7 +62,7 @@ export default function ForgotPasswordForm() {
         setStep(2);
         setCooldown(60);
       } else {
-        toast.error(data.message || "Không thể gửi mã. Vui lòng thử lại.");
+        toast.error(data.message || t("sendCodeError"));
       }
     } finally {
       setLoading(false);
@@ -72,7 +72,7 @@ export default function ForgotPasswordForm() {
   // Step 2: Đặt lại mật khẩu
   async function onResetWithCode(e: React.FormEvent) {
     e.preventDefault();
-    if (!email) return toast.error("Thiếu email");
+    if (!email) return toast.error(t("missingEmail"));
     if (!code || code.length < 4)
       return toast.error(t("errorCodeInvalid"));
     if (pw.length < 8) return toast.error(t("errorPasswordLength"));
@@ -91,7 +91,7 @@ export default function ForgotPasswordForm() {
         toast.success(data.message || t("successStep2"));
         router.push(`${basePrefix}/login`);
       } else {
-        toast.error(data.message || "Mã không hợp lệ. Vui lòng thử lại.");
+        toast.error(data.message || t("resetCodeError"));
       }
     } finally {
       setLoading(false);

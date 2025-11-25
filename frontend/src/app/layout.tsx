@@ -70,15 +70,15 @@ export const viewport = {
   userScalable: true,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const requestHeaders = headers();
+  const headersList = await headers();
   const locale =
-    requestHeaders.get("x-intl-locale") ??
-    requestHeaders.get("x-locale") ??
+    headersList.get("x-intl-locale") ??
+    headersList.get("x-locale") ??
     routing.defaultLocale;
   const websiteSchema = generateWebSiteSchema(SITE_CONFIG.url);
 

@@ -76,7 +76,6 @@ return (
           <li>
             <Link
               href={hrefFor("vi")}
-              locale="vi"
               aria-current={locale === "vi" ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",
@@ -101,7 +100,6 @@ return (
           <li>
             <Link
               href={hrefFor("en")}
-              locale="en"
               aria-current={locale === "en" ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",

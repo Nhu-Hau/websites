@@ -21,7 +21,6 @@ export default function FooterLanguageSwitcher() {
           <li key={code}>
             <Link
               href={hrefFor(code)}
-              locale={code}
               className="inline-flex items-center gap-1 hover:text-sky-500 dark:hover:text-sky-400"
               aria-current={locale === code ? "true" : undefined}
             >

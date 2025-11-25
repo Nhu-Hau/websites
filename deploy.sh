@@ -4,7 +4,13 @@ set -e
 echo ">>> Vào thư mục project"
 cd /opt/websites
 
-git restore deploy.sh    
+rm -f deploy.log
+rm -rf logs/
+
+git restore deploy.sh
+git restore frontend/package-lock.json
+git restore admin/package-lock.json  
+git restore backend/package-lock.json
 
 echo ">>> Git pull main"
 git pull origin main

@@ -3,6 +3,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "@/lib/toast";
+import { useTranslations } from "next-intl";
 
 export interface SelectionTranslation {
   originalText: string;
@@ -20,6 +21,7 @@ interface Position {
 }
 
 export function useSelectionTranslation(isPremium: boolean) {
+  const t = useTranslations("newsHooks.translation");
   const [selectionData, setSelectionData] = useState<SelectionTranslation | null>(null);
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
@@ -63,22 +65,22 @@ export function useSelectionTranslation(isPremium: boolean) {
         if (!response.ok) {
           const error = await response.json();
           if (error.isPremiumOnly) {
-            toast.error("Cần tài khoản Premium để sử dụng tính năng này");
+            toast.error(t("premiumRequired"));
             return;
           }
-          throw new Error(error.error || "Translation failed");
+          throw new Error(error.error || t("selectionError"));
         }
 
         const data = await response.json();
         setSelectionData(data.data);
       } catch (error: any) {
         console.error("Error translating selection:", error);
-        toast.error(error.message || "Không thể dịch đoạn văn");
+        toast.error(error?.message || t("selectionError"));
       } finally {
         setLoading(false);
       }
     },
-    [isPremium]
+    [isPremium, t]
   );
 
   const handleSelection = useCallback(

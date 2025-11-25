@@ -275,10 +275,10 @@ export async function postComment(req: Request, res: Response) {
 
     if (user.access === "free") {
       const count = await RoomComment.countDocuments({ roomName, userId });
-      if (count >= 5)
+      if (count >= 10)
         return res
           .status(403)
-          .json({ message: "Giới hạn 5 comment cho user free" });
+          .json({ message: "Giới hạn 10 comment cho user free" });
     }
 
     const cmt = await RoomComment.create({

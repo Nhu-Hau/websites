@@ -1,12 +1,21 @@
 import { Request, Response, NextFunction } from "express";
 import { PayOS } from "@payos/node";
-import { Payment, PaymentStatus } from "../../shared/models/Payment";
+import { Payment, PaymentStatus, PaymentPlan } from "../../shared/models/Payment";
 import { User } from "../../shared/models/User";
 import { Types } from "mongoose";
 import { PromoCode, PromoDoc } from "../../shared/models/PromoCode";
 import { PromoRedemption } from "../../shared/models/PromoRedemption";
 
-const BASE_PRICE = 129000; // VND
+// Giá các gói
+const PLAN_PRICES: Record<PaymentPlan, number> = {
+  monthly_79: 79_000, // 79k/tháng (1 tháng)
+  monthly_159: 159_000, // 159k/3 tháng
+};
+
+const PLAN_DURATIONS: Record<PaymentPlan, number> = {
+  monthly_79: 1, // 1 tháng
+  monthly_159: 3, // 3 tháng
+};
 
 const payOS = new PayOS({
   clientId: process.env.PAYOS_CLIENT_ID || "",
@@ -36,6 +45,34 @@ function computeDiscountedAmount(opts: {
     return Math.max(1000, Math.round(final));
   }
   return baseAmount;
+}
+
+function normalizeBaseAmount(value: any): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const cleaned = value.replace(/[,_\s]/g, "");
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  if (value && typeof value === "object") {
+    if (value instanceof Types.Decimal128) {
+      const parsed = Number(value.toString());
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    if (typeof value.valueOf === "function") {
+      const raw = value.valueOf();
+      if (typeof raw === "number" && Number.isFinite(raw)) {
+        return raw;
+      }
+      if (typeof raw === "string") {
+        const parsed = Number(raw);
+        if (Number.isFinite(parsed)) return parsed;
+      }
+    }
+  }
+  return null;
 }
 
 async function validatePromoInternal(codeRaw: string, userId: string) {
@@ -166,7 +203,9 @@ async function validatePromoInternal(codeRaw: string, userId: string) {
     // }
   }
 
-  const baseAmount = promo.baseAmount || BASE_PRICE;
+  // baseAmount sẽ được truyền từ createPayment dựa trên plan
+  const baseAmount =
+    normalizeBaseAmount(promo.baseAmount) || PLAN_PRICES.monthly_159; // Default cho gói 159k
   const amountAfter = computeDiscountedAmount({
     baseAmount,
     type: promo.type ?? null,
@@ -194,19 +233,102 @@ export async function validatePromo(req: Request, res: Response) {
     const userId = (req as any).auth?.userId;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const { code } = req.body || {};
-    const r = await validatePromoInternal(code, String(userId));
-    if (!r.ok) return res.status(400).json({ message: r.message });
+    const { code, plan } = req.body || {};
+    const planKey =
+      typeof plan === "string" && ["monthly_79", "monthly_159"].includes(plan)
+        ? (plan as PaymentPlan)
+        : null;
+    const baseAmountFromPlan = planKey
+      ? PLAN_PRICES[planKey]
+      : PLAN_PRICES.monthly_159;
+    
+    const codeStr = String(code || "").trim().toUpperCase();
+    if (!codeStr) {
+      return res.status(400).json({ message: "Thiếu mã khuyến mãi" });
+    }
+
+    const promo = await PromoCode.findOne({ code: codeStr })
+      .lean<PromoDoc>()
+      .exec();
+    if (!promo) {
+      return res.status(400).json({ message: "Mã không tồn tại" });
+    }
+
+    const now = Date.now();
+    const getDateTimestamp = (date: any): number | null => {
+      if (!date) return null;
+      if (date instanceof Date) return date.getTime();
+      if (typeof date === "string") {
+        const parsed = new Date(date);
+        return isNaN(parsed.getTime()) ? null : parsed.getTime();
+      }
+      if (typeof date === "object" && date.$date) {
+        const parsed = new Date(date.$date);
+        return isNaN(parsed.getTime()) ? null : parsed.getTime();
+      }
+      return null;
+    };
+
+    const activeFromTime = getDateTimestamp(promo.activeFrom);
+    if (activeFromTime !== null && now < activeFromTime) {
+      const startDate = new Date(activeFromTime);
+      return res.status(400).json({
+        message: `Mã chưa tới thời gian áp dụng (bắt đầu: ${startDate.toLocaleDateString("vi-VN")})`,
+      });
+    }
+
+    const activeToTime = getDateTimestamp(promo.activeTo);
+    if (activeToTime !== null && now > activeToTime) {
+      const expiredDate = new Date(activeToTime);
+      return res.status(400).json({
+        message: `Mã đã hết hạn (hết hạn: ${expiredDate.toLocaleDateString("vi-VN")})`,
+      });
+    }
+
+    if (promo.maxUses && promo.usedCount >= promo.maxUses) {
+      return res.status(400).json({ message: "Mã đã hết lượt sử dụng" });
+    }
+
+    const promoBaseAmount = normalizeBaseAmount(promo.baseAmount);
+
+    if (
+      planKey &&
+      promoBaseAmount &&
+      promoBaseAmount !== PLAN_PRICES[planKey]
+    ) {
+      const planLabel =
+        promoBaseAmount === PLAN_PRICES.monthly_159
+          ? "gói Premium 159k / 3 tháng"
+          : promoBaseAmount === PLAN_PRICES.monthly_79
+            ? "gói Premium 79k / tháng"
+            : `gói Premium với giá gốc ${promoBaseAmount.toLocaleString("vi-VN")}đ`;
+      return res
+        .status(400)
+        .json({ message: `Mã này chỉ áp dụng cho ${planLabel}` });
+    }
+
+    // Sử dụng baseAmount từ plan hoặc từ promo
+    const baseAmountForCalc =
+      planKey
+        ? PLAN_PRICES[planKey]
+        : promoBaseAmount || baseAmountFromPlan;
+    const amountAfter = computeDiscountedAmount({
+      baseAmount: baseAmountForCalc,
+      type: promo.type ?? null,
+      value: promo.value ?? null,
+      amountAfter: promo.amountAfter ?? null,
+    });
 
     return res.json({
       data: {
-        code: r.data.code,
-        amountBefore: r.data.baseAmount,
-        amountAfter: r.data.amountAfter,
-        type: r.data.type,
-        value: r.data.value,
-        activeFrom: r.data.activeFrom,
-        activeTo: r.data.activeTo,
+        code: promo.code,
+        amountBefore: baseAmountForCalc,
+        amountAfter,
+        type: promo.type,
+        value: promo.value ?? undefined,
+        activeFrom: promo.activeFrom ?? undefined,
+        activeTo: promo.activeTo ?? undefined,
+        plan: planKey ?? undefined,
       },
     });
   } catch (e: any) {
@@ -215,15 +337,34 @@ export async function validatePromo(req: Request, res: Response) {
   }
 }
 
-/** Nâng cấp user */
-async function upgradeUserToPremium(userId: string) {
+/** Nâng cấp user và set expiry date */
+async function upgradeUserToPremium(
+  userId: string,
+  plan: PaymentPlan,
+  paymentDate: Date = new Date()
+) {
   const user = await User.findById(userId);
   if (!user) return;
-  if (user.access !== "premium") {
-    user.access = "premium";
-    await user.save();
-    console.log(`✅ User ${user.email} (${user._id}) upgraded to premium`);
+
+  const durationMonths = PLAN_DURATIONS[plan];
+  const expiryDate = new Date(paymentDate);
+  expiryDate.setMonth(expiryDate.getMonth() + durationMonths);
+
+  // Nếu user đã có premium và expiryDate > paymentDate, cộng thêm thời gian
+  if (user.access === "premium" && user.premiumExpiryDate) {
+    const currentExpiry = new Date(user.premiumExpiryDate);
+    if (currentExpiry > paymentDate) {
+      // Cộng thêm thời gian vào ngày hết hạn hiện tại
+      expiryDate.setMonth(currentExpiry.getMonth() + durationMonths);
+    }
   }
+
+  user.access = "premium";
+  user.premiumExpiryDate = expiryDate;
+  await user.save();
+  console.log(
+    `✅ User ${user.email} (${user._id}) upgraded to premium until ${expiryDate.toISOString()}`
+  );
 }
 
 /** Đồng bộ trạng thái từ PayOS */
@@ -232,13 +373,18 @@ async function syncPaymentFromPayOS(orderCode: number) {
   const payment = await Payment.findOne({ orderCode });
   if (!payment) return null;
 
-  if (info.status === "PAID" && payment.status !== PaymentStatus.PAID) {
+    if (info.status === "PAID" && payment.status !== PaymentStatus.PAID) {
     payment.status = PaymentStatus.PAID;
     payment.paidAt = new Date();
     payment.payOSTransactionId = info.transactions?.[0]?.reference || null;
     await payment.save();
 
-    await upgradeUserToPremium(payment.userId.toString());
+    const plan = (payment.plan as PaymentPlan) || "monthly_79"; // Default nếu không có plan
+    await upgradeUserToPremium(
+      payment.userId.toString(),
+      plan,
+      payment.paidAt || new Date()
+    );
 
     // Lưu redemption nếu có (nếu bạn chưa có model này, comment lại 5 dòng dưới)
     if (payment.promoCode) {
@@ -283,25 +429,106 @@ export async function createPayment(
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-    if (user.access === "premium")
-      return res.status(400).json({ message: "Bạn đã là thành viên Premium" });
+    
+    // Kiểm tra nếu user đã có premium và chưa hết hạn
+    if (user.access === "premium" && user.premiumExpiryDate) {
+      const expiryDate = new Date(user.premiumExpiryDate);
+      if (expiryDate > new Date()) {
+        return res.status(400).json({ 
+          message: `Bạn đã là thành viên Premium đến ${expiryDate.toLocaleDateString("vi-VN")}` 
+        });
+      }
+    }
 
-    const { promoCode } = req.body || {};
+    const { plan, promoCode } = req.body || {};
+    
+    // Validate plan
+    if (!plan || !["monthly_79", "monthly_159"].includes(plan)) {
+      return res.status(400).json({ 
+        message: "Vui lòng chọn gói: monthly_79 hoặc monthly_159" 
+      });
+    }
 
-    const amountBefore = BASE_PRICE;
+    const selectedPlan = plan as PaymentPlan;
+    const amountBefore = PLAN_PRICES[selectedPlan];
     let amountAfter = amountBefore;
     let appliedPromo: string | null = null;
 
     if (promoCode) {
-      const vr = await validatePromoInternal(promoCode, String(userId));
-      if (!vr.ok) {
-        return res.status(400).json({ message: vr.message });
+      // Validate promo với baseAmount của plan được chọn
+      const code = String(promoCode || "").trim().toUpperCase();
+      if (!code) {
+        return res.status(400).json({ message: "Thiếu mã khuyến mãi" });
       }
-      amountAfter = vr.data.amountAfter;
-      appliedPromo = vr.data.code;
+
+      const promo = await PromoCode.findOne({ code }).lean<PromoDoc>().exec();
+      if (!promo) {
+        return res.status(400).json({ message: "Mã không tồn tại" });
+      }
+
+      // Kiểm tra các điều kiện khác (thời gian, số lần dùng, etc.)
+      const now = Date.now();
+      const getDateTimestamp = (date: any): number | null => {
+        if (!date) return null;
+        if (date instanceof Date) return date.getTime();
+        if (typeof date === "string") {
+          const parsed = new Date(date);
+          return isNaN(parsed.getTime()) ? null : parsed.getTime();
+        }
+        if (typeof date === "object") {
+          if (date.$date) {
+            const parsed = new Date(date.$date);
+            return isNaN(parsed.getTime()) ? null : parsed.getTime();
+          }
+        }
+        return null;
+      };
+
+      const activeFromTime = getDateTimestamp(promo.activeFrom);
+      if (activeFromTime !== null && now < activeFromTime) {
+        return res.status(400).json({ message: "Mã chưa tới thời gian áp dụng" });
+      }
+
+      const activeToTime = getDateTimestamp(promo.activeTo);
+      if (activeToTime !== null && now > activeToTime) {
+        return res.status(400).json({ message: "Mã đã hết hạn" });
+      }
+
+      if (promo.maxUses && promo.usedCount >= promo.maxUses) {
+        return res.status(400).json({ message: "Mã đã hết lượt sử dụng" });
+      }
+
+      const promoBaseAmount = normalizeBaseAmount(promo.baseAmount);
+
+      if (promoBaseAmount && promoBaseAmount !== amountBefore) {
+        const planLabel =
+          promoBaseAmount === PLAN_PRICES.monthly_159
+            ? "gói Premium 159k / 3 tháng"
+            : promoBaseAmount === PLAN_PRICES.monthly_79
+              ? "gói Premium 79k / tháng"
+              : `gói Premium với giá gốc ${promoBaseAmount.toLocaleString("vi-VN")}đ`;
+        return res
+          .status(400)
+          .json({ message: `Mã này chỉ áp dụng cho ${planLabel}` });
+      }
+
+      // Tính toán giá sau giảm với baseAmount của plan
+      const baseAmountForPromo = promoBaseAmount || amountBefore;
+      amountAfter = computeDiscountedAmount({
+        baseAmount: baseAmountForPromo,
+        type: promo.type ?? null,
+        value: promo.value ?? null,
+        amountAfter: promo.amountAfter ?? null,
+      });
+      appliedPromo = promo.code;
     }
 
-    const description = "Nang cap goi Pro";
+    const planLabels: Record<PaymentPlan, string> = {
+      monthly_79: "Premium 79k/tháng",
+      monthly_159: "Premium 159k/3 tháng",
+    };
+
+    const description = planLabels[selectedPlan];
     const orderCode = Date.now();
     const baseUrl =
       process.env.APP_URL || process.env.CLIENT_URL || "http://localhost:3000";
@@ -315,9 +542,14 @@ export async function createPayment(
       cancelUrl,
       returnUrl,
       items: [
-        { name: "Goi Pro - TOEIC Prep", quantity: 1, price: amountAfter },
+        { name: description, quantity: 1, price: amountAfter },
       ],
     });
+
+    // Tính expiry date
+    const durationMonths = PLAN_DURATIONS[selectedPlan];
+    const expiryDate = new Date();
+    expiryDate.setMonth(expiryDate.getMonth() + durationMonths);
 
     await new Payment({
       userId,
@@ -332,6 +564,8 @@ export async function createPayment(
       returnUrl,
       cancelUrl,
       promoCode: appliedPromo, // null nếu không dùng mã
+      plan: selectedPlan,
+      premiumExpiryDate: expiryDate,
     }).save();
 
     res.json({

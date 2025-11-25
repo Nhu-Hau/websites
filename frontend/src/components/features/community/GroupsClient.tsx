@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/lib/toast";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
+import { useTranslations } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -23,6 +24,7 @@ export default function GroupsClient() {
   const [search, setSearch] = React.useState("");
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const { show: showConfirm, Modal } = useConfirmModal();
+  const t = useTranslations("community.groups");
 
   React.useEffect(() => {
     fetch(`${API_BASE}/api/community/groups`, {
@@ -42,12 +44,11 @@ export default function GroupsClient() {
     (groupId: string) => {
       showConfirm(
         {
-          title: "Xác nhận xoá nhóm",
-          message:
-            "Bạn có chắc muốn xoá nhóm này? Hành động này không thể hoàn tác.",
+          title: t("delete.confirm.title"),
+          message: t("delete.confirm.message"),
           icon: "warning",
-          confirmText: "Xoá nhóm",
-          cancelText: "Hủy",
+          confirmText: t("delete.confirm.confirm"),
+          cancelText: t("delete.confirm.cancel"),
           confirmColor: "red",
         },
         async () => {
@@ -62,19 +63,19 @@ export default function GroupsClient() {
             );
             if (!res.ok) {
               const data = await res.json().catch(() => ({}));
-              throw new Error(data.message || "Không thể xoá nhóm");
+              throw new Error(data.message || t("delete.toast.error"));
             }
             setGroups((prev) => prev.filter((g) => g._id !== groupId));
-            toast.success("Đã xoá nhóm");
+            toast.success(t("delete.toast.success"));
           } catch (e: any) {
-            toast.error(e?.message || "Không thể xoá nhóm");
+            toast.error(e?.message || t("delete.toast.error"));
           } finally {
             setDeletingId(null);
           }
         }
       );
     },
-    [showConfirm]
+    [showConfirm, t]
   );
 
   const filteredGroups = React.useMemo(() => {
@@ -95,10 +96,10 @@ export default function GroupsClient() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="mb-2">
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              Nhóm học
+              {t("header.title")}
             </h1>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Tham gia các nhóm học TOEIC để luyện tập cùng mọi người.
+              {t("header.description")}
             </p>
           </div>
 
@@ -110,7 +111,7 @@ export default function GroupsClient() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Tìm nhóm theo tên..."
+                placeholder={t("actions.searchPlaceholder")}
                 className="w-full rounded-xl border border-zinc-200 bg-white px-9 py-2 text-sm text-zinc-900 shadow-sm outline-none placeholder:text-zinc-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
               />
             </div>
@@ -123,7 +124,7 @@ export default function GroupsClient() {
               className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-md dark:bg-sky-500 dark:hover:bg-sky-400"
             >
               <Plus className="h-4 w-4" />
-              Tạo nhóm
+              {t("actions.create")}
             </button>
           </div>
         </div>
@@ -134,7 +135,7 @@ export default function GroupsClient() {
             <div className="flex flex-col items-center gap-3">
               <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Đang tải danh sách nhóm...
+                {t("loading")}
               </p>
             </div>
           </div>
@@ -165,7 +166,7 @@ export default function GroupsClient() {
                       ) : (
                         <Trash2 className="h-3.5 w-3.5" />
                       )}
-                      Xoá
+                      {t("delete.button")}
                     </button>
                   )}
 
@@ -208,13 +209,17 @@ export default function GroupsClient() {
                       <div className="mt-auto flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
                         <span className="flex items-center gap-1">
                           <Users className="h-4 w-4 text-sky-500 dark:text-sky-400" />
-                          <span>{group.membersCount || 0} thành viên</span>
+                        <span>
+                          {t("card.memberCount", {
+                            count: group.membersCount || 0,
+                          })}
+                        </span>
                         </span>
                         {group.visibility && (
                           <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                             {group.visibility === "private"
-                              ? "Riêng tư"
-                              : "Công khai"}
+                              ? t("card.visibility.private")
+                              : t("card.visibility.public")}
                           </span>
                         )}
                       </div>
@@ -230,11 +235,10 @@ export default function GroupsClient() {
               <Users className="h-7 w-7 sm:h-8 sm:w-8" />
             </div>
             <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-              Chưa có nhóm phù hợp
+              {t("empty.title")}
             </h3>
             <p className="mb-4 max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
-              Bạn chưa tham gia hoặc tạo nhóm nào. Hãy tạo nhóm đầu tiên để học
-              TOEIC cùng bạn bè.
+              {t("empty.description")}
             </p>
             {/* <button
               onClick={() =>

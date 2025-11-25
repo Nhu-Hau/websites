@@ -5,8 +5,11 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { useNotifications } from "@/hooks/common/useNotifications";
 import { cn } from "@/lib/utils";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { resolveLocaleHref } from "@/lib/navigation/resolveLocaleHref";
 
 interface MobileNotificationSheetProps {
   open: boolean;
@@ -18,7 +21,10 @@ export default function MobileNotificationSheet({
   onClose,
 }: MobileNotificationSheetProps) {
   const { items, markAllRead, clearAll } = useNotifications();
+  const t = useTranslations("HeaderActions.notification");
+  const translate = useTranslations();
   const [mounted, setMounted] = useState(false);
+  const basePrefix = useBasePrefix();
 
   useEffect(() => {
     setMounted(true);
@@ -70,7 +76,7 @@ export default function MobileNotificationSheet({
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
               <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
-                Thông báo
+                {t("title")}
               </h2>
               <div className="flex items-center gap-3">
                 {items.length > 0 && (
@@ -78,7 +84,7 @@ export default function MobileNotificationSheet({
                     onClick={clearAll}
                     className="text-sm font-medium text-amber-700 hover:text-amber-600 dark:text-amber-300 dark:hover:text-amber-200"
                   >
-                    Xóa tất cả
+                    {t("clearAll")}
                   </button>
                 )}
                 <button
@@ -95,7 +101,7 @@ export default function MobileNotificationSheet({
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    Chưa có thông báo
+                    {t("empty")}
                   </p>
                 </div>
               ) : (
@@ -103,7 +109,7 @@ export default function MobileNotificationSheet({
                   {items.map((n) => (
                     <li key={n.id}>
                       <Link
-                        href={n.link || "#"}
+                        href={resolveLocaleHref(n.link, basePrefix) || "#"}
                         onClick={onClose}
                         className={cn(
                           "block rounded-xl px-4 py-3 text-sm transition-colors duration-200",
@@ -112,7 +118,7 @@ export default function MobileNotificationSheet({
                         )}
                       >
                         <div className="text-[13px] leading-snug">
-                          {n.message}
+                          {n.key ? translate(n.key, n.variables) : n.message}
                         </div>
                         <div className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
                           {new Date(n.createdAt).toLocaleString()}

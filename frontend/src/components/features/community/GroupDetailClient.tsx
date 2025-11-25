@@ -21,6 +21,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getSocket } from "@/lib/socket";
 import Link from "next/link";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
+import { useTranslations } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -51,6 +52,7 @@ export default function GroupDetailClient({
   const basePrefix = useBasePrefix();
   const { user } = useAuth();
   const { show: showConfirm, Modal } = useConfirmModal();
+  const t = useTranslations("community.groupDetail");
 
   const [group, setGroup] = React.useState<StudyGroup | null>(null);
   const [posts, setPosts] = React.useState<CommunityPost[]>([]);
@@ -72,7 +74,7 @@ export default function GroupDetailClient({
       });
       if (!r.ok) {
         if (r.status === 404) {
-          toast.error("Không tìm thấy nhóm");
+          toast.error(t("toast.notFound"));
           router.push(`${basePrefix}/community/groups`);
           return;
         }
@@ -99,7 +101,7 @@ export default function GroupDetailClient({
       setIsAdmin(userIsAdmin);
       setIsMember(userIsMember);
     } catch (e) {
-      toast.error("Không thể tải thông tin nhóm");
+      toast.error(t("toast.loadGroupError"));
       console.error("[loadGroup] ERROR", e);
     }
   }, [groupId, currentUserId, basePrefix, router]);
@@ -120,7 +122,7 @@ export default function GroupDetailClient({
         setTotal(j.total || 0);
         setPosts(j.items ?? []);
       } catch (e) {
-        toast.error("Không thể tải bài viết");
+        toast.error(t("toast.loadPostsError"));
         console.error("[loadPosts] ERROR", e);
       } finally {
         setLoading(false);
@@ -214,7 +216,7 @@ export default function GroupDetailClient({
 
   const handleJoin = async () => {
     if (!currentUserId) {
-      toast.error("Vui lòng đăng nhập");
+      toast.error(t("toast.authRequired"));
       return;
     }
     setJoining(true);
@@ -228,15 +230,15 @@ export default function GroupDetailClient({
       );
       if (!r.ok) {
         const data = await r.json().catch(() => ({}));
-        throw new Error(data.message || "Không thể tham gia nhóm");
+        throw new Error(data.message || t("toast.joinError"));
       }
       const data = await r.json();
       setGroup(data);
       setIsMember(true);
-      toast.success("Đã tham gia nhóm");
+      toast.success(t("toast.joinSuccess"));
       loadGroup();
     } catch (e: any) {
-      toast.error(e.message || "Không thể tham gia nhóm");
+      toast.error(e.message || t("toast.joinError"));
       console.error("[handleJoin] ERROR", e);
     } finally {
       setJoining(false);
@@ -245,7 +247,7 @@ export default function GroupDetailClient({
 
   const handleLeave = async () => {
     if (!currentUserId) {
-      toast.error("Vui lòng đăng nhập");
+      toast.error(t("toast.authRequired"));
       return;
     }
     setLeaving(true);
@@ -259,15 +261,15 @@ export default function GroupDetailClient({
       );
       if (!r.ok) {
         const data = await r.json().catch(() => ({}));
-        throw new Error(data.message || "Không thể rời nhóm");
+        throw new Error(data.message || t("toast.leaveError"));
       }
       const data = await r.json();
       setGroup(data);
       setIsMember(false);
-      toast.success("Đã rời nhóm");
+      toast.success(t("toast.leaveSuccess"));
       loadGroup();
     } catch (e: any) {
-      toast.error(e.message || "Không thể rời nhóm");
+      toast.error(e.message || t("toast.leaveError"));
       console.error("[handleLeave] ERROR", e);
     } finally {
       setLeaving(false);
@@ -283,17 +285,17 @@ export default function GroupDetailClient({
 
   const handleDeleteGroup = () => {
     if (!currentUserId) {
-      toast.error("Vui lòng đăng nhập");
+      toast.error(t("toast.authRequired"));
       return;
     }
 
     showConfirm(
       {
-        title: "Xác nhận xoá nhóm",
-        message: "Bạn có chắc muốn xoá nhóm này? Mọi bài viết trong nhóm cũng sẽ bị xoá. Hành động này không thể hoàn tác.",
+        title: t("confirmDelete.title"),
+        message: t("confirmDelete.message"),
         icon: "warning",
-        confirmText: "Xoá nhóm",
-        cancelText: "Hủy",
+        confirmText: t("confirmDelete.confirm"),
+        cancelText: t("confirmDelete.cancel"),
         confirmColor: "red",
       },
       async () => {
@@ -305,12 +307,12 @@ export default function GroupDetailClient({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || "Không thể xoá nhóm");
+        throw new Error(data.message || t("toast.deleteError"));
       }
-      toast.success("Đã xoá nhóm");
+      toast.success(t("toast.deleteSuccess"));
       router.replace(`${basePrefix}/community/groups`);
     } catch (e: any) {
-      toast.error(e.message || "Không thể xoá nhóm");
+      toast.error(e.message || t("toast.deleteError"));
       console.error("[handleDeleteGroup] ERROR", e);
     } finally {
       setDeleting(false);
@@ -334,7 +336,7 @@ export default function GroupDetailClient({
         <div className="flex flex-col items-center gap-3">
           <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Đang tải thông tin nhóm...
+            {t("loading.group")}
           </p>
         </div>
       </div>
@@ -370,7 +372,7 @@ export default function GroupDetailClient({
         className="inline-flex items-center gap-2 text-sm text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
       >
         <ArrowLeft className="h-4 w-4" />
-        <span>Quay lại danh sách nhóm</span>
+        <span>{t("backLink")}</span>
       </Link>
 
       {/* Group header card */}
@@ -413,21 +415,21 @@ export default function GroupDetailClient({
                   <span className="font-medium">
                     {group.membersCount || 0}
                   </span>
-                  <span>thành viên</span>
+                  <span>{t("stats.membersLabel")}</span>
                 </span>
                 {group.postsCount !== undefined && (
                   <span>
                     <span className="font-medium">
                       {group.postsCount}
                     </span>{" "}
-                    bài viết
+                    {t("stats.postsLabel")}
                   </span>
                 )}
                 {admin && (
                   <span>
-                    Quản trị viên:&nbsp;
+                    {t("stats.adminLabel")}&nbsp;
                     <span className="font-medium">
-                      {admin.name || "Không xác định"}
+                      {admin.name || t("stats.unknownAdmin")}
                     </span>
                   </span>
                 )}
@@ -445,12 +447,12 @@ export default function GroupDetailClient({
                   {deleting ? (
                     <>
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent dark:border-red-400" />
-                      <span>Đang xoá nhóm...</span>
+                      <span>{t("actions.delete.loading")}</span>
                     </>
                   ) : (
                     <>
                       <Trash2 className="h-4 w-4" />
-                      <span>Xoá nhóm</span>
+                      <span>{t("actions.delete.button")}</span>
                     </>
                   )}
                 </button>
@@ -466,12 +468,12 @@ export default function GroupDetailClient({
                         {leaving ? (
                           <>
                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent dark:border-red-400" />
-                            <span>Đang rời nhóm...</span>
+                            <span>{t("actions.leave.loading")}</span>
                           </>
                         ) : (
                           <>
                             <UserMinus className="h-4 w-4" />
-                            <span>Rời nhóm</span>
+                            <span>{t("actions.leave.button")}</span>
                           </>
                         )}
                       </button>
@@ -484,12 +486,12 @@ export default function GroupDetailClient({
                         {joining ? (
                           <>
                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                            <span>Đang tham gia...</span>
+                            <span>{t("actions.join.loading")}</span>
                           </>
                         ) : (
                           <>
                             <UserPlus className="h-4 w-4" />
-                            <span>Tham gia nhóm</span>
+                            <span>{t("actions.join.button")}</span>
                           </>
                         )}
                       </button>
@@ -506,7 +508,7 @@ export default function GroupDetailClient({
       {isMember && (
         <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm ring-1 ring-black/[0.02] dark:border-zinc-800/80 dark:bg-zinc-900">
           <h2 className="mb-4 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-            Tạo bài viết trong nhóm
+            {t("composer.title")}
           </h2>
           <NewPostForm groupId={groupId} onSuccess={handlePostCreated} />
         </div>
@@ -519,7 +521,7 @@ export default function GroupDetailClient({
             <div className="flex flex-col items-center gap-3">
               <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Đang tải bài viết...
+                {t("posts.loading")}
               </p>
             </div>
           </div>
@@ -531,12 +533,12 @@ export default function GroupDetailClient({
               <Users className="h-7 w-7 sm:h-8 sm:w-8" />
             </div>
             <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-              Chưa có bài viết nào
+              {t("posts.empty.title")}
             </h3>
             <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
               {isMember
-                ? "Hãy là người đầu tiên chia sẻ bài viết cho nhóm nhé!"
-                : "Hiện chưa có bài viết nào trong nhóm này."}
+                ? t("posts.empty.memberDescription")
+                : t("posts.empty.guestDescription")}
             </p>
           </div>
         )}

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
@@ -16,6 +16,7 @@ import { useAuth } from "@/context/AuthContext";
 import { postJson } from "@/lib/api/client";
 import { useSocket } from "@/hooks/common/useSocket";
 import { useChat } from "@/context/ChatContext";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 type Msg = {
   _id?: string;
@@ -40,13 +41,14 @@ function MessageContent({
   role: "user" | "admin";
   pending?: boolean;
 }) {
+  const t = useTranslations("layoutComponents.chat.admin");
   if (role === "user")
     return <div className="whitespace-pre-wrap">{content}</div>;
   if (pending) {
     return (
       <div className="flex items-center gap-2 text-sm opacity-80">
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        <span>Đang gửi…</span>
+        <span>{t("sending")}</span>
       </div>
     );
   }
@@ -58,9 +60,14 @@ export default function AdminChatContent({
 }: {
   isMobile?: boolean;
 }) {
+  const t = useTranslations("layoutComponents.chat.admin");
+  const ariaT = useTranslations("layoutComponents.chat.aria");
   const { user } = useAuth();
   const { socket } = useSocket();
   const { open, setUnreadCount } = useChat();
+  const basePrefix = useBasePrefix();
+  const loginHref = `${basePrefix}/login`;
+  const accountHref = `${basePrefix}/account`;
 
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
@@ -122,9 +129,7 @@ export default function AdminChatContent({
         if (response.status === 403) {
           const errorData = await response.json();
           if (errorData.code === "PREMIUM_REQUIRED") {
-            setError(
-              "Chức năng chat với Admin chỉ dành cho tài khoản Premium."
-            );
+            setError(t("premiumRequired"));
             return;
           }
         }
@@ -258,9 +263,7 @@ export default function AdminChatContent({
     if (!text || sending || !user) return;
 
     if (user.access !== "premium") {
-      setError(
-        "Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
-      );
+    setError(t("premiumRequired"));
       return;
     }
 
@@ -307,8 +310,7 @@ export default function AdminChatContent({
               return {
                 ...m,
                 pending: false,
-                content:
-                  "Admin sẽ trả lời sớm nhất có thể. Cảm ơn bạn đã liên hệ!",
+                content: t("welcome"),
               };
             }
             return m;
@@ -327,11 +329,9 @@ export default function AdminChatContent({
         errorMessage.includes("Premium") ||
         errorMessage.includes("premium")
       ) {
-        setError(
-          "Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
-        );
+        setError(t("premiumRequired"));
       } else {
-        setError(errorMessage);
+        setError(errorMessage || t("error"));
       }
 
       setMessages((prev) =>
@@ -340,8 +340,7 @@ export default function AdminChatContent({
             ? {
                 ...m,
                 pending: false,
-                content:
-                  "Admin sẽ trả lời sớm nhất có thể. Cảm ơn bạn đã liên hệ!",
+                content: t("welcome"),
               }
             : m
         )
@@ -349,6 +348,14 @@ export default function AdminChatContent({
     } finally {
       setSending(false);
     }
+  };
+
+  type Msg = {
+    id: string;
+    role: "user" | "admin";
+    content: string;
+    at: number;
+    pending?: boolean;
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -390,10 +397,10 @@ export default function AdminChatContent({
           <button
             onClick={clearChat}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-            aria-label="Xóa tất cả cuộc trò chuyện"
+            aria-label={ariaT("deleteAll")}
           >
             <FiTrash2 className="h-3.5 w-3.5" />
-            <span>Xóa tất cả</span>
+            <span>{t("clear")}</span>
           </button>
         </div>
       )}
@@ -427,10 +434,10 @@ export default function AdminChatContent({
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
               {!user
-                ? "Vui lòng đăng nhập để sử dụng chat admin"
+                ? t("loginRequired")
                 : user.access !== "premium"
-                ? "Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
-                : "Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với admin."}
+                ? t("premiumRequired")
+                : t("empty")}
             </p>
           </div>
         ) : (
@@ -462,7 +469,7 @@ export default function AdminChatContent({
                   {m.role === "admin" && (
                     <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-75">
                       <FaUserTie className="h-3.5 w-3.5" />
-                      <span className="font-medium">Admin</span>
+                      <span className="font-medium">{t("adminLabel")}</span>
                     </div>
                   )}
 
@@ -485,16 +492,16 @@ export default function AdminChatContent({
                           hour: "2-digit",
                           minute: "2-digit",
                         })
-                      : "Đang gửi..."}
+                      : t("timestampPending")}
                   </div>
 
                   {m.role === "admin" && !m.pending && (
                     <button
                       onClick={() => navigator.clipboard.writeText(m.content)}
                       className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow-md transition hover:scale-110 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                      aria-label="Sao chép tin nhắn"
+                      aria-label={ariaT("copy")}
                     >
-                      <FiCopy className="h-3.5 w-3.5 text-gray-600 dark:text-gray-300" />
+                      <FiCopy className="h-3.5 w-3.5" />
                     </button>
                   )}
                 </div>
@@ -521,7 +528,7 @@ export default function AdminChatContent({
                 />
               </div>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                Admin đang nhập...
+                {t("typing")}
               </span>
             </div>
           </div>
@@ -540,10 +547,10 @@ export default function AdminChatContent({
                 onKeyDown={onKeyDown}
                 placeholder={
                   !user
-                    ? "Đăng nhập để chat..."
+                    ? t("loginPlaceholder")
                     : user.access !== "premium"
-                    ? "Cần tài khoản Premium để sử dụng..."
-                    : "Nhập tin nhắn cho admin..."
+                    ? t("premiumPlaceholder")
+                    : t("placeholder")
                 }
                 disabled={!user || sending || user?.access !== "premium"}
                 rows={1}
@@ -574,18 +581,18 @@ export default function AdminChatContent({
 
         {!user && (
           <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-            <Link href="/login" className="text-orange-600 hover:underline">
-              Đăng nhập
+            <Link href={loginHref} className="text-orange-600 hover:underline">
+              {t("loginCta")}
             </Link>{" "}
-            để chat với admin
+            {t("loginFooter")}
           </p>
         )}
         {user && user.access !== "premium" && (
           <p className="mt-2 text-center text-xs text-orange-600 dark:text-orange-400">
-            <Link href="/account" className="hover:underline font-medium">
-              Nâng cấp lên Premium
+            <Link href={accountHref} className="hover:underline font-medium">
+              {t("premiumCta")}
             </Link>{" "}
-            để sử dụng chat với Admin
+            {t("premiumFooter")}
           </p>
         )}
       </div>

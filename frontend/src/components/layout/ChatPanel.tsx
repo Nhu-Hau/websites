@@ -10,8 +10,10 @@ import { createPortal } from "react-dom";
 import AdminChatContent from "./chat/AdminChatContent";
 import AIChatContent from "./chat/AIChatContent";
 import { useIsMobile } from "@/hooks/common/useIsMobile";
+import { useTranslations } from "next-intl";
 
 export default function ChatPanel() {
+  const t = useTranslations("layoutComponents.chat");
   const { open, setOpen, activeTab, setActiveTab } = useChat();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
@@ -57,7 +59,7 @@ export default function ChatPanel() {
                   }`}
                 >
                   <FaUserTie className="h-4 w-4" />
-                  <span>Chat với admin</span>
+                  <span>{t("tabs.admin")}</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("ai")}
@@ -68,7 +70,7 @@ export default function ChatPanel() {
                   }`}
                 >
                   <FaGraduationCap className="h-4 w-4" />
-                  <span>Chat AI TOEIC</span>
+                  <span>{t("tabs.ai")}</span>
                 </button>
               </div>
 
@@ -77,7 +79,7 @@ export default function ChatPanel() {
                 <button
                   onClick={() => setOpen(false)}
                   className="rounded-xl p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 transition dark:text-gray-400 dark:hover:bg-zinc-800 dark:hover:text-gray-200"
-                  aria-label="Đóng chat"
+                  aria-label={t("aria.close")}
                 >
                   <FiX className="h-4 w-4" />
                 </button>

@@ -3,6 +3,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { BookOpenCheck, Filter, Layers, Plus, Search, Tag } from "lucide-react";
 import { useVocabulary } from "@/hooks/vocabulary/useVocabulary";
 import { useVocabularyProgress } from "@/hooks/vocabulary/useVocabularyProgress";
@@ -27,14 +28,25 @@ import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 /* ------------------------------- HEADER UI ------------------------------- */
 
+type HeaderLabels = {
+  badge: string;
+  title: string;
+  description: string;
+  statsSets: string;
+  statsTerms: string;
+  cta: string;
+};
+
 function VocabularyHeader({
   totalSets,
   totalTerms,
   onCreate,
+  labels,
 }: {
   totalSets: number;
   totalTerms: number;
   onCreate: () => void;
+  labels: HeaderLabels;
 }) {
   return (
     <header className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/90 px-4 py-4 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5 backdrop-blur-xl xs:px-5 xs:py-5 sm:px-6 sm:py-6 dark:border-zinc-800/60 dark:bg-zinc-900/90 dark:shadow-black/20">
@@ -49,19 +61,17 @@ function VocabularyHeader({
             <BookOpenCheck className="h-4 w-4 text-white xs:h-5 xs:w-5" />
           </div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-            Vocabulary lab
+            {labels.badge}
           </div>
         </div>
 
         {/* Title + desc */}
         <div className="space-y-2">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 xs:text-3xl sm:text-[32px] sm:leading-tight dark:text-white">
-            Tạo lộ trình từ vựng chuẩn TOEIC
+            {labels.title}
           </h1>
           <p className="max-w-2xl text-[13px] leading-relaxed text-slate-600 xs:text-sm dark:text-zinc-300">
-            Quản lý bộ từ, luyện flashcard theo cấp độ và quiz nhanh để khóa
-            kiến thức mỗi ngày. Thiết kế tối ưu cho trải nghiệm giống Quizlet
-            nhưng theo lộ trình TOEIC.
+            {labels.description}
           </p>
         </div>
 
@@ -71,12 +81,12 @@ function VocabularyHeader({
           <div className="flex w-full gap-2 overflow-x-auto pb-1 xs:w-auto">
             <MiniStat
               icon={<Layers className="h-3.5 w-3.5" />}
-              label="Bộ từ"
+              label={labels.statsSets}
               value={totalSets}
             />
             <MiniStat
               icon={<Tag className="h-3.5 w-3.5" />}
-              label="Tổng từ"
+              label={labels.statsTerms}
               value={totalTerms}
             />
           </div>
@@ -87,7 +97,7 @@ function VocabularyHeader({
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 xs:w-auto"
           >
             <Plus className="h-4 w-4" />
-            <span className="whitespace-nowrap">Tạo bộ từ mới</span>
+            <span className="whitespace-nowrap">{labels.cta}</span>
           </button>
         </div>
       </div>
@@ -157,6 +167,10 @@ export function VocabularyPageClient() {
   const router = useRouter();
   const pathname = usePathname();
   const basePrefix = useBasePrefix();
+  const t = useTranslations("vocabulary.page");
+  const tToast = useTranslations("vocabulary.toast");
+  const tError = useTranslations("vocabulary.errors");
+  const tConfirm = useTranslations("vocabulary.confirm");
 
   const {
     sets,
@@ -307,10 +321,10 @@ export function VocabularyPageClient() {
     if (!filteredSets.length) {
       return (
         <div className="py-6 xs:py-8 sm:py-10">
-          <EmptyState
-            title="Chưa có bộ từ nào"
-            description="Tạo bộ từ đầu tiên hoặc import danh sách từ để bắt đầu học giống Quizlet nhưng tối ưu cho TOEIC."
-          />
+            <EmptyState
+              title={t("empty.title")}
+              description={t("empty.description")}
+            />
         </div>
       );
     }
@@ -337,12 +351,12 @@ export function VocabularyPageClient() {
             onEdit={() => setComposer({ open: true, mode: "edit", set })}
             onDuplicate={async () => {
               await createSet({
-                title: `${set.title} (copy)`,
+                title: `${set.title} ${t("duplicateSuffix")}`,
                 description: set.description,
                 topic: set.topic,
                 terms: set.terms.map(({ _id, ...rest }) => rest),
               });
-              toast.success("Đã nhân bản bộ từ");
+              toast.success(tToast("duplicateSuccess"));
             }}
             onDelete={() => setDeleteTarget(set)}
           />
@@ -361,6 +375,14 @@ export function VocabularyPageClient() {
           totalSets={Array.isArray(sets) ? sets.length : 0}
           totalTerms={totalTerms}
           onCreate={() => setComposer({ open: true, mode: "create" })}
+          labels={{
+            badge: t("header.badge"),
+            title: t("header.title"),
+            description: t("header.description"),
+            statsSets: t("header.stats.sets"),
+            statsTerms: t("header.stats.terms"),
+            cta: t("header.cta"),
+          }}
         />
 
         {/* Error */}
@@ -376,7 +398,7 @@ export function VocabularyPageClient() {
             {/* Search */}
             <div className="w-full md:max-w-md">
               <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-                Tìm kiếm nhanh
+                {t("filters.searchLabel")}
               </label>
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
@@ -385,7 +407,7 @@ export function VocabularyPageClient() {
                   onChange={(e) =>
                     setFilters((prev) => ({ ...prev, query: e.target.value }))
                   }
-                  placeholder="Nhập từ khóa, chủ đề hoặc ghi chú..."
+                  placeholder={t("filters.searchPlaceholder")}
                   className="w-full rounded-2xl border border-slate-200/80 bg-white 
              py-2 pl-9 pr-3 text-[13px] placeholder:text-[12px]
              xs:py-2.5 xs:pl-10 xs:text-sm xs:placeholder:text-sm
@@ -400,24 +422,24 @@ export function VocabularyPageClient() {
             {/* Chips */}
             <div className="w-full md:w-auto">
               <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-                Sắp xếp & lọc
+                {t("filters.sortLabel")}
               </label>
               <div className="flex gap-2 overflow-x-auto pb-1">
                 <FilterChip
                   icon={<Filter className="h-3.5 w-3.5" />}
-                  label="Mới cập nhật"
+                  label={t("filters.sortOptions.recent")}
                   active={filters.sort === "recent"}
                   onClick={() => setFilters((p) => ({ ...p, sort: "recent" }))}
                 />
                 <FilterChip
-                  label="Theo A–Z"
+                  label={t("filters.sortOptions.alphabetical")}
                   active={filters.sort === "alphabetical"}
                   onClick={() =>
                     setFilters((p) => ({ ...p, sort: "alphabetical" }))
                   }
                 />
                 <FilterChip
-                  label="Nhiều từ nhất"
+                  label={t("filters.sortOptions.terms")}
                   active={filters.sort === "terms"}
                   onClick={() => setFilters((p) => ({ ...p, sort: "terms" }))}
                 />
@@ -443,15 +465,15 @@ export function VocabularyPageClient() {
                 composer.set._id,
                 payload as UpdateVocabularySetDTO
               );
-              toast.success("Đã cập nhật bộ từ");
+              toast.success(tToast("setUpdateSuccess"));
             } else {
               await createSet(payload as CreateVocabularySetDTO);
-              toast.success("Đã tạo bộ từ mới");
+              toast.success(tToast("setCreateSuccess"));
             }
           } catch (err: any) {
             console.error("Error saving vocabulary set:", err);
             const message =
-              err instanceof Error ? err.message : "Không thể lưu bộ từ";
+              err instanceof Error ? err.message : tError("saveSet");
             // Only show error if it's a real error
             if (err?.status && err.status >= 400) {
               toast.error(message);
@@ -477,15 +499,15 @@ export function VocabularyPageClient() {
                 termModal.term._id!,
                 data as UpdateTermDTO
               );
-              toast.success("Đã cập nhật từ");
+              toast.success(tToast("termUpdateSuccess"));
             } else {
               await addTerm(termModal.setId, data as AddTermDTO);
-              toast.success("Đã thêm từ");
+              toast.success(tToast("termCreateSuccess"));
             }
           } catch (err: any) {
             console.error("Error saving vocabulary term:", err);
             const message =
-              err instanceof Error ? err.message : "Không thể lưu từ vựng";
+              err instanceof Error ? err.message : tError("saveTerm");
             // Only show error if it's a real error
             if (err?.status && err.status >= 400) {
               toast.error(message);
@@ -505,12 +527,12 @@ export function VocabularyPageClient() {
           if (!deleteTarget) return;
           try {
             await deleteSet(deleteTarget._id);
-            toast.success("Đã xóa bộ từ");
+            toast.success(tToast("setDeleteSuccess"));
             setDeleteTarget(null);
           } catch (err: any) {
             console.error("Error deleting vocabulary set:", err);
             const message =
-              err instanceof Error ? err.message : "Không thể xóa bộ từ";
+              err instanceof Error ? err.message : tError("deleteSet");
             // Only show error if it's a real error
             if (err?.status && err.status >= 400) {
               toast.error(message);
@@ -519,10 +541,10 @@ export function VocabularyPageClient() {
             }
           }
         }}
-        title="Xóa bộ từ vựng?"
-        message="Thao tác này không thể hoàn tác."
+        title={tConfirm("deleteSet.title")}
+        message={tConfirm("deleteSet.message")}
         icon="warning"
-        confirmText="Xóa"
+        confirmText={tConfirm("deleteSet.confirm")}
         confirmColor="red"
       />
 
@@ -536,12 +558,12 @@ export function VocabularyPageClient() {
               deleteTermTarget.set._id,
               deleteTermTarget.term._id!
             );
-            toast.success("Đã xóa từ");
+            toast.success(tToast("termDeleteSuccess"));
             setDeleteTermTarget(null);
           } catch (err: any) {
             console.error("Error deleting vocabulary term:", err);
             const message =
-              err instanceof Error ? err.message : "Không thể xóa từ";
+              err instanceof Error ? err.message : tError("deleteTerm");
             // Only show error if it's a real error
             if (err?.status && err.status >= 400) {
               toast.error(message);
@@ -550,10 +572,10 @@ export function VocabularyPageClient() {
             }
           }
         }}
-        title="Xóa từ?"
-        message="Bạn chắc chắn muốn xóa từ khỏi bộ?"
+        title={tConfirm("deleteTerm.title")}
+        message={tConfirm("deleteTerm.message")}
         icon="warning"
-        confirmText="Xóa từ"
+        confirmText={tConfirm("deleteTerm.confirm")}
         confirmColor="red"
       />
     </section>

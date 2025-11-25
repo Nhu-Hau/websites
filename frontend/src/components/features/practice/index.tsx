@@ -18,6 +18,7 @@ import { TestLoadingState } from "../test/TestLoadingState";
 import { TestStartScreen } from "../test/TestStartScreen";
 import { MobileQuickNavSheet } from "../test/MobileQuickNavSheet";
 import { CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /* ====== META ====== */
 const PART_META: Record<
@@ -39,9 +40,12 @@ function fmtTime(totalSec: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-function partLabel(partKey: string) {
+function partLabel(partKey: string, t: any) {
   const n = partKey.match(/\d+/)?.[0];
-  return n ? `Part ${n}` : partKey;
+  // return n ? `Part ${n}` : partKey;
+  // Use t("meta.partX")
+  if (n) return t(`meta.part${n}`);
+  return partKey;
 }
 
 type Level = 1 | 2 | 3;
@@ -96,6 +100,7 @@ const levelConfig: Record<
 };
 
 export default function PracticePage() {
+  const t = useTranslations("Practice");
   const {
     items,
     stimulusMap,
@@ -135,7 +140,7 @@ export default function PracticePage() {
 
   // Lấy duration từ PART_META
   const meta = PART_META[partKey] ?? {
-    title: `Practice • ${partKey}`,
+    title: t("start.title", { part: partKey }),
     defaultQuestions: 10,
     defaultDuration: 35,
   };
@@ -296,7 +301,7 @@ export default function PracticePage() {
   }, [user, partKey]);
 
   const onLoginRequest = () =>
-    toast.error("Vui lòng đăng nhập để bắt đầu làm bài");
+    toast.error(t("start.loginRequired"));
 
   const goPlacement = useCallback(() => {
     router.push(`${base}/placement`);
@@ -357,33 +362,37 @@ export default function PracticePage() {
     >
       <TestHeader
         badge={{
-          label: `Luyện tập TOEIC • ${partLabel(
-            partKey
-          )} • Level ${level} • Test ${test}`,
+          label: t("start.badge", {
+            part: partLabel(partKey, t),
+            level: level,
+            test: test,
+          }),
           dotColor: "bg-sky-500",
         }}
-        title={`Bài luyện tập ${partLabel(partKey)}`}
+        title={t("start.title", { part: partLabel(partKey, t) })}
         description={
           isListening ? (
-            <>
-              Luyện{" "}
-              <span className="font-semibold text-sky-600 dark:text-sky-400">
-                kỹ năng Nghe
-              </span>{" "}
-              ở <span className="font-semibold">Level {level}</span> –{" "}
-              <span className="font-semibold">Test {test}</span>. Hoàn thành bài
-              để xem phân tích chi tiết từng câu hỏi.
-            </>
+            t.rich("start.listeningDesc", {
+              level,
+              test,
+              highlight: (chunks) => (
+                <span className="font-semibold text-sky-600 dark:text-sky-400">
+                  {chunks}
+                </span>
+              ),
+              bold: (chunks) => <span className="font-semibold">{chunks}</span>,
+            })
           ) : (
-            <>
-              Luyện{" "}
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                kỹ năng Đọc
-              </span>{" "}
-              ở <span className="font-semibold">Level {level}</span> – Test{" "}
-              <span className="font-semibold">{test}</span>. Hoàn thành bài để
-              xem kết quả và giải thích chi tiết.
-            </>
+            t.rich("start.readingDesc", {
+              level,
+              test,
+              highlight: (chunks) => (
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {chunks}
+                </span>
+              ),
+              bold: (chunks) => <span className="font-semibold">{chunks}</span>,
+            })
           )
         }
         stats={{
@@ -395,31 +404,29 @@ export default function PracticePage() {
       />
 
       {loading ? (
-        <TestLoadingState message="Đang tải bài luyện tập…" />
+        <TestLoadingState message={t("start.loading")} />
       ) : !started && !resp ? (
         <TestStartScreen
           description={
             isRetake === null ? (
-              <span>Đang kiểm tra...</span>
+              <span>{t("start.checking")}</span>
             ) : isRetake ? (
-              <>
-                Đây là lần <b>làm lại</b> bài của{" "}
-                <b>
-                  {partLabel(partKey)} - Level {level} - Test {test}
-                </b>
-                . Điểm sẽ không ảnh hưởng đến level của bạn
-              </>
+              t.rich("start.retakeDesc", {
+                part: partLabel(partKey, t),
+                level,
+                test,
+                bold: (chunks) => <b>{chunks}</b>,
+              })
             ) : (
-              <>
-                Đây là <b>lần đầu</b> làm bài{" "}
-                <b>
-                  {partLabel(partKey)} - Level {level} - Test {test}
-                </b>{" "}
-                , Điểm sẽ dùng để đánh giá trình độ và đề xuất level phù hợp
-              </>
+              t.rich("start.firstTimeDesc", {
+                part: partLabel(partKey, t),
+                level,
+                test,
+                bold: (chunks) => <b>{chunks}</b>,
+              })
             )
           }
-          buttonText="Bắt đầu luyện tập"
+          buttonText={t("start.startButton")}
           onStart={handleStart}
         />
       ) : (

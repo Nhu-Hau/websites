@@ -7,11 +7,13 @@ import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileTopBar from "@/components/layout/MobileTopBar";
 import HeaderActions from "@/components/layout/HeaderActions";
 import UserMenu from "@/components/features/auth/UserMenu";
+import { useTranslations } from "next-intl";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { cn } from "@/lib/utils";
 
 export default function Header() {
   const base = useBasePrefix();
+  const t = useTranslations("Header");
 
   return (
     <>
@@ -31,8 +33,8 @@ export default function Header() {
           <div className="flex h-16 items-center justify-between">
             {/* LEFT: Logo */}
             <Link
-              href={base}
-              aria-label="Về trang chủ ToeicPrep"
+              href={`${base}/`}
+              aria-label={t("logoAria")}
               className={cn(
                 "group flex items-center gap-2.5 rounded-xl",
                 "transition-transform duration-300 ease-out",
@@ -43,8 +45,8 @@ export default function Header() {
               {/* Logo image + glow */}
               <div className="relative">
                 <Image
-                  src="/images/logotoeic.png"
-                  alt="Logo ToeicPrep"
+                  src="/logotoeic.png"
+                  alt={t("logoAlt")}
                   width={48}
                   height={48}
                   className="size-12 rounded-full object-contain"

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslations } from "next-intl";
 import HorizontalChipNav, { ChipItem } from "./HorizontalChipNav";
 
 export default function CommunityChipNav() {
@@ -24,6 +25,7 @@ export default function CommunityChipNav() {
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const { user } = useAuth();
+  const t = useTranslations("communityComponents.chipNav");
 
   const getActiveId = (): string => {
     // Normalize pathname for comparison
@@ -70,61 +72,61 @@ export default function CommunityChipNav() {
   const items: ChipItem[] = [
     {
       id: "new-post",
-      label: "Đăng bài",
+      label: t("newPost"),
       icon: Plus,
       href: `${basePrefix}/community/new`,
     },
     {
       id: "feed",
-      label: "Bảng tin",
+      label: t("feed"),
       icon: Home,
       href: `${basePrefix}/community`,
     },
     {
       id: "following",
-      label: "Đang theo dõi",
+      label: t("following"),
       icon: UserPlus,
       href: `${basePrefix}/community/following`,
     },
     {
       id: "trending",
-      label: "Xu hướng",
+      label: t("trending"),
       icon: TrendingUp,
       href: `${basePrefix}/community/trending`,
     },
     {
       id: "saved",
-      label: "Đã lưu",
+      label: t("saved"),
       icon: Bookmark,
       href: `${basePrefix}/community/saved`,
     },
     {
       id: "profile",
-      label: "Hồ sơ",
+      label: t("profile"),
       icon: User,
       href: user?.id ? `${basePrefix}/community/profile/${user.id}` : `${basePrefix}/community`,
     },
     {
       id: "groups",
-      label: "Nhóm học",
+      label: t("groups"),
       icon: Users,
       href: `${basePrefix}/community/groups`,
     },
     {
       id: "study-room",
-      label: "Phòng học",
+      label: t("studyRoom"),
       icon: GraduationCap,
       href: `${basePrefix}/study/create`,
     },
     {
       id: "explore",
-      label: "Khám phá",
+      label: t("explore"),
       icon: Search,
       href: `${basePrefix}/community/explore`,
     },
     {
       id: "settings",
-      label: "Cài đặt",
+      label: t("settings"),
       icon: Settings,
       href: `${basePrefix}/account`,
     },

@@ -4,7 +4,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Heart,
   MessageCircle,
@@ -26,6 +26,7 @@ import MediaGallery from "./MediaGallery";
 import ActionBar from "./ActionBar";
 import CommentItem from "./CommentItem";
 import NewPostForm from "./NewPostForm";
+import { useLocale, useTranslations } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -44,14 +45,22 @@ function AttachmentIcon({ type }: { type: "image" | "link" | "file" }) {
   return <LinkIcon className={iconClass} />;
 }
 
-function Avatar({ url, name }: { url?: string; name?: string }) {
+function Avatar({
+  url,
+  name,
+  altText,
+}: {
+  url?: string;
+  name?: string;
+  altText: string;
+}) {
   if (url) {
     const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
     return (
       <div className="relative h-10 w-10">
         <Image
           src={fullUrl}
-          alt={name || "avatar"}
+          alt={name || altText}
           fill
           className="rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
           unoptimized
@@ -73,32 +82,33 @@ function fmtSize(bytes?: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return "Vừa xong";
-  if (diffInSeconds < 3600) {
-    const minutes = Math.floor(diffInSeconds / 60);
-    return `${minutes} phút trước`;
-  }
-  if (diffInSeconds < 86400) {
-    const hours = Math.floor(diffInSeconds / 3600);
-    return `${hours} giờ trước`;
-  }
-  if (diffInSeconds < 604800) {
-    const days = Math.floor(diffInSeconds / 86400);
-    return `${days} ngày trước`;
-  }
-  return date.toLocaleDateString("vi-VN");
-}
-
 export default function PostDetail({ postId }: { postId: string }) {
   const router = useRouter();
-  const pathname = usePathname();
   const basePrefix = useBasePrefix();
   const { show, Modal: ConfirmModal } = useConfirmModal();
+  const locale = useLocale();
+  const postT = useTranslations("community.post");
+  const detailT = useTranslations("community.postDetail");
+  const commentT = useTranslations("community.comment");
+  const timeT = useTranslations("community.post.time");
+  const formatDate = React.useCallback(
+    (dateString: string) => {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+      if (diffInSeconds < 60) return timeT("justNow");
+      if (diffInSeconds < 3600)
+        return timeT("minutes", { count: Math.floor(diffInSeconds / 60) });
+      if (diffInSeconds < 86400)
+        return timeT("hours", { count: Math.floor(diffInSeconds / 3600) });
+      if (diffInSeconds < 604800)
+        return timeT("days", { count: Math.floor(diffInSeconds / 86400) });
+
+      return new Intl.DateTimeFormat(locale).format(date);
+    },
+    [locale, timeT]
+  );
 
   const [post, setPost] = React.useState<any>(null);
   const [originalPost, setOriginalPost] = React.useState<any>(null);
@@ -127,13 +137,13 @@ export default function PostDetail({ postId }: { postId: string }) {
           cache: "no-store",
         }
       );
-      if (!res.ok) throw new Error("Failed to load post");
+      if (!res.ok) throw new Error("LOAD_POST_ERROR");
       const data = await res.json();
       setPost(data.post);
       setOriginalPost(data.originalPost || null);
       setComments(data.comments?.items ?? []);
     } catch {
-      toast.error("Lỗi khi tải bài viết");
+      toast.error(detailT("toast.loadError"));
     } finally {
       setLoading(false);
       loadingRef.current = false;
@@ -218,7 +228,7 @@ export default function PostDetail({ postId }: { postId: string }) {
         likesCount: data.likesCount,
       }));
     } catch {
-      toast.error("Không thể thích bài viết");
+      toast.error(detailT("toast.likeError"));
     }
   };
 
@@ -255,7 +265,7 @@ export default function PostDetail({ postId }: { postId: string }) {
     if (submittingRef.current) return;
     const content = cmtInput.trim();
     if (!content && cmtAttaches.length === 0) {
-      toast.error("Vui lòng nhập nội dung hoặc đính kèm tệp");
+      toast.error(detailT("commentInput.required"));
       return;
     }
 
@@ -273,7 +283,7 @@ export default function PostDetail({ postId }: { postId: string }) {
           }),
         }
       );
-      if (!res.ok) throw new Error("Failed to submit comment");
+      if (!res.ok) throw new Error("COMMENT_FAILED");
       const comment = await res.json();
       setComments((prev) =>
         prev.some((c) => c._id === comment._id) ? prev : [...prev, comment]
@@ -283,9 +293,9 @@ export default function PostDetail({ postId }: { postId: string }) {
       );
       setCmtInput("");
       setCmtAttaches([]);
-      toast.success("Đã đăng bình luận!");
+      toast.success(detailT("toast.commentSuccess"));
     } catch {
-      toast.error("Lỗi khi đăng bình luận");
+      toast.error(detailT("toast.commentError"));
     } finally {
       submittingRef.current = false;
     }
@@ -315,25 +325,24 @@ export default function PostDetail({ postId }: { postId: string }) {
           body: JSON.stringify({ repostCaption: repostCaption.trim() }),
         }
       );
-      if (!res.ok) throw new Error("Failed to repost");
-      toast.success("Đã chia sẻ lại bài viết");
+      if (!res.ok) throw new Error("FAILED_REPOST");
+      toast.success(postT("toast.repostSuccess"));
       setShowRepostModal(false);
       setRepostCaption("");
       router.push(`${basePrefix}/community`);
     } catch {
-      toast.error("Lỗi khi chia sẻ lại bài viết");
+      toast.error(postT("toast.repostError"));
     }
   }, [postId, repostCaption, router, basePrefix]);
 
   const deletePost = async () => {
     show(
       {
-        title: "Xóa bài viết?",
-        message:
-          "Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.",
+        title: postT("confirmDelete.title"),
+        message: postT("confirmDelete.message"),
         icon: "warning",
-        confirmText: "Xóa",
-        cancelText: "Hủy",
+        confirmText: postT("confirmDelete.confirm"),
+        cancelText: postT("confirmDelete.cancel"),
         confirmColor: "red",
       },
       async () => {
@@ -342,7 +351,7 @@ export default function PostDetail({ postId }: { postId: string }) {
           credentials: "include",
         });
         if (res.ok) router.push(`${basePrefix}/community`);
-        else toast.error("Không thể xóa");
+        else toast.error(detailT("toast.deleteError"));
       }
     );
   };
@@ -350,11 +359,11 @@ export default function PostDetail({ postId }: { postId: string }) {
   const deleteComment = async (commentId: string) => {
     show(
       {
-        title: "Xóa bình luận?",
-        message: "Bạn có chắc chắn muốn xóa bình luận này?",
+        title: commentT("confirm.title"),
+        message: commentT("confirm.message"),
         icon: "warning",
-        confirmText: "Xóa",
-        cancelText: "Hủy",
+        confirmText: commentT("confirm.confirm"),
+        cancelText: commentT("confirm.cancel"),
         confirmColor: "red",
       },
       async () => {
@@ -366,7 +375,7 @@ export default function PostDetail({ postId }: { postId: string }) {
           }
         );
         if (res.ok) loadPost();
-        else toast.error("Không thể xóa bình luận");
+        else toast.error(commentT("toast.deleteError"));
       }
     );
   };
@@ -374,7 +383,7 @@ export default function PostDetail({ postId }: { postId: string }) {
   const sharePost = async () => {
     try {
       await navigator.share({
-        title: "Community Post",
+        title: postT("shareTitle"),
         text: post?.content?.slice(0, 100),
         url: window.location.href,
       });
@@ -387,7 +396,7 @@ export default function PostDetail({ postId }: { postId: string }) {
         <div className="flex flex-col items-center gap-3">
           <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Đang tải bài viết...
+            {detailT("loading")}
           </p>
         </div>
       </div>
@@ -403,13 +412,13 @@ export default function PostDetail({ postId }: { postId: string }) {
           <div className="px-4 sm:px-6 pt-4 pb-3 sm:pt-6 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800">
             <div className="flex items-center justify-between">
               <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                Chỉnh sửa bài viết
+                {postT("editTitle")}
               </h3>
               <button
                 onClick={() => setIsEditing(false)}
                 className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
               >
-                Hủy
+                {detailT("edit.cancel")}
               </button>
             </div>
           </div>
@@ -434,7 +443,11 @@ export default function PostDetail({ postId }: { postId: string }) {
         {/* Header */}
         <div className="px-4 sm:px-6 pt-4 pb-3 sm:pt-6 sm:pb-4 border-b border-zinc-100 dark:border-zinc-800">
           <div className="flex items-start gap-3">
-            <Avatar url={post.user?.picture} name={post.user?.name} />
+            <Avatar
+              url={post.user?.picture}
+              name={post.user?.name}
+              altText={postT("avatarAlt")}
+            />
             <div className="flex-1 min-w-0">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
                 {/* Left: info */}
@@ -447,14 +460,14 @@ export default function PostDetail({ postId }: { postId: string }) {
                     }
                     className="font-semibold text-sm sm:text-base text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
-                    {post.user?.name || "User"}
+                    {post.user?.name || postT("fallbackUser")}
                   </button>
                   <time className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
                     {formatDate(post.createdAt)}
                   </time>
                   {post.isEdited && post.editedAt && (
                     <span className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 italic">
-                      (Đã chỉnh sửa)
+                      {postT("labels.edited")}
                     </span>
                   )}
                   {post.repostedFrom && originalPost && (
@@ -467,13 +480,13 @@ export default function PostDetail({ postId }: { postId: string }) {
                       className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                     >
                       <Share2 className="h-3 w-3" />
-                      Đã chia sẻ - Xem bài gốc
+                      {detailT("shared.viewOriginal")}
                     </button>
                   )}
                   {post.repostedFrom && !originalPost && (
                     <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-blue-600 dark:text-blue-400">
                       <Share2 className="h-3 w-3" />
-                      Đã chia sẻ
+                      {detailT("shared.label")}
                     </span>
                   )}
                 </div>
@@ -508,6 +521,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                     <Avatar
                       url={originalPost.user?.picture}
                       name={originalPost.user?.name}
+                      altText={postT("avatarAlt")}
                     />
                   </button>
                   <div className="flex-1 min-w-0">
@@ -520,7 +534,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                         }
                         className="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                       >
-                        {originalPost.user?.name || "User"}
+                        {originalPost.user?.name || postT("fallbackUser")}
                       </button>
                       <time className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
                         {formatDate(originalPost.createdAt)}
@@ -537,7 +551,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                   }
                   className="self-start text-[11px] sm:text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                 >
-                  Xem bài viết →
+                  {detailT("original.viewPost")}
                 </button>
               </div>
 
@@ -603,7 +617,7 @@ export default function PostDetail({ postId }: { postId: string }) {
       <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
         <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-zinc-100 dark:border-zinc-800">
           <h2 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Bình luận ({comments.length})
+            {detailT("comments.title", { count: comments.length })}
           </h2>
         </div>
 
@@ -614,8 +628,11 @@ export default function PostDetail({ postId }: { postId: string }) {
               <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3 sm:mb-4">
                 <MessageCircle className="h-7 w-7 sm:h-8 sm:w-8 text-zinc-400 dark:text-zinc-600" />
               </div>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                {detailT("comments.emptyTitle")}
+              </p>
+              <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                {detailT("comments.emptyDescription")}
               </p>
             </div>
           ) : (
@@ -640,24 +657,30 @@ export default function PostDetail({ postId }: { postId: string }) {
                   className="relative inline-flex items-center gap-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg"
                 >
                   {a.type === "image" ? (
-                    <img
+                    <Image
                       src={
                         a.url.startsWith("http") ? a.url : `${API_BASE}${a.url}`
                       }
-                      alt=""
-                      className="h-12 w-16 object-cover rounded"
+                      alt={a.name || detailT("commentInput.imageAlt")}
+                      width={64}
+                      height={48}
+                      className="h-12 w-16 rounded object-cover"
+                      sizes="64px"
+                      unoptimized
                     />
                   ) : (
                     <>
                       <AttachmentIcon type={a.type} />
                       <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate max-w-[100px]">
-                        {a.name || "File"}
+                        {a.name || detailT("commentInput.fileFallback")}
                       </span>
                     </>
                   )}
                   <button
+                    type="button"
                     onClick={() => removeAttachment(i)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                    className="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 text-white transition-colors hover:bg-red-600"
+                    aria-label={detailT("commentInput.removeAttachmentAria")}
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -682,7 +705,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                   submitComment();
                 }
               }}
-              placeholder="Viết bình luận..."
+              placeholder={detailT("commentInput.placeholder")}
               className="flex-1 min-h-[60px] max-h-[160px] resize-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 sm:px-4 py-2.5 sm:py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
               rows={1}
             />
@@ -699,7 +722,7 @@ export default function PostDetail({ postId }: { postId: string }) {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="p-2.5 sm:p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                aria-label="Attach file"
+                aria-label={detailT("commentInput.attachAria")}
               >
                 <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
@@ -707,6 +730,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                 onClick={submitComment}
                 disabled={!cmtInput.trim() && cmtAttaches.length === 0}
                 className="px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                aria-label={detailT("commentInput.submitAria")}
               >
                 <Send className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
@@ -720,12 +744,12 @@ export default function PostDetail({ postId }: { postId: string }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4">
           <div className="w-full max-w-md rounded-2xl border border-zinc-200/80 bg-white/95 p-6 shadow-xl ring-1 ring-black/[0.06] dark:border-zinc-800/80 dark:bg-zinc-900/95">
             <h3 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Chia sẻ lại bài viết
+              {postT("repostModal.title")}
             </h3>
             <textarea
               value={repostCaption}
               onChange={(e) => setRepostCaption(e.target.value)}
-              placeholder="Thêm ghi chú của bạn (tùy chọn)..."
+              placeholder={postT("repostModal.placeholder")}
               className="mb-4 min-h-[100px] w-full rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 shadow-sm outline-none transition-colors focus:border-sky-500 focus:ring-2 focus:ring-sky-500/70 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-400"
               rows={4}
             />
@@ -737,13 +761,13 @@ export default function PostDetail({ postId }: { postId: string }) {
                 }}
                 className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
-                Hủy
+                {postT("repostModal.cancel")}
               </button>
               <button
                 onClick={handleRepostSubmit}
                 className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600"
               >
-                Chia sẻ lại
+                {postT("repostModal.submit")}
               </button>
             </div>
           </div>

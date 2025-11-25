@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import Flag from "react-world-flags";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 
 type Role = "user" | "admin" | "teacher";
 type Access = "free" | "premium";
@@ -55,22 +56,22 @@ const LV_BADGE: Record<
   { bg: string; border: string; text: string; icon: string }
 > = {
   1: {
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    border: "border-amber-300 dark:border-amber-700",
-    text: "text-amber-800 dark:text-amber-300",
-    icon: "text-amber-600 dark:text-amber-400",
+    bg: "bg-[#4C9C43]/10 dark:bg-[#4C9C43]/20",
+    border: "border-[#4C9C43]/30 dark:border-[#4C9C43]/50",
+    text: "text-[#4C9C43] dark:text-[#4C9C43]/90",
+    icon: "text-[#4C9C43] dark:text-[#4C9C43]/90",
   },
   2: {
-    bg: "bg-sky-100 dark:bg-sky-900/30",
-    border: "border-sky-300 dark:border-sky-700",
-    text: "text-sky-800 dark:text-sky-300",
-    icon: "text-sky-600 dark:text-sky-400",
+    bg: "bg-[#2E5EB8]/10 dark:bg-[#2E5EB8]/20",
+    border: "border-[#2E5EB8]/30 dark:border-[#2E5EB8]/50",
+    text: "text-[#2E5EB8] dark:text-[#2E5EB8]/90",
+    icon: "text-[#2E5EB8] dark:text-[#2E5EB8]/90",
   },
   3: {
-    bg: "bg-violet-100 dark:bg-violet-900/30",
-    border: "border-violet-300 dark:border-violet-700",
-    text: "text-violet-800 dark:text-violet-300",
-    icon: "text-violet-600 dark:text-violet-400",
+    bg: "bg-[#C44E1D]/10 dark:bg-[#C44E1D]/20",
+    border: "border-[#C44E1D]/30 dark:border-[#C44E1D]/50",
+    text: "text-[#C44E1D] dark:text-[#C44E1D]/90",
+    icon: "text-[#C44E1D] dark:text-[#C44E1D]/90",
   },
 };
 
@@ -132,10 +133,11 @@ export default function MobileAvatarSheet({
   user,
   me: initialMe,
 }: MobileAvatarSheetProps) {
+  const t = useTranslations("MobileAvatarSheet");
   const { logout, user: ctxUser } = useAuth();
   const router = useRouter();
   const { locale, hrefFor } = useLocaleSwitch();
-  const base = useBasePrefix(locale || "vi");
+  const base = useBasePrefix();
   const { theme, setTheme } = useTheme();
   const [me, setMe] = useState<any | null>(initialMe);
   const [mounted, setMounted] = useState(false);
@@ -179,13 +181,13 @@ export default function MobileAvatarSheet({
   }, [open, ctxUser]);
 
   const handleLogout = async () => {
-    onClose();
     try {
       await logout();
-      toast.success("Đăng xuất thành công");
+      toast.success(t("toast.logoutSuccess"));
+      onClose();
       router.push(`${base}/login`);
     } catch {
-      toast.error("Lỗi khi đăng xuất");
+      toast.error(t("toast.logoutError"));
     }
   };
 
@@ -195,7 +197,7 @@ export default function MobileAvatarSheet({
 
   const partRows = PARTS.map((key) => {
     const lv = levels?.[key] as Lvl | undefined;
-    const label = `Part ${key.split(".")[1]}`;
+    const label = t("part", { number: key.split(".")[1] });
     const href = lv
       ? `${base}/practice/${encodeURIComponent(key)}?level=${lv}`
       : `${base}/practice/${encodeURIComponent(key)}`;
@@ -263,12 +265,12 @@ export default function MobileAvatarSheet({
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0">
               <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
-                Tài khoản
+                {t("header")}
               </h2>
               <button
                 onClick={onClose}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                aria-label="Đóng"
+                aria-label={t("closeAria")}
               >
                 <X className="h-5 w-5 text-zinc-700 dark:text-zinc-200" />
               </button>
@@ -300,7 +302,7 @@ export default function MobileAvatarSheet({
                         {me?.name ||
                           user?.name ||
                           ctxUser?.name ||
-                          "Người dùng"}
+                          t("fallbackName")}
                       </p>
                       <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         {me?.email || user?.email || ctxUser?.email || "—"}
@@ -318,7 +320,7 @@ export default function MobileAvatarSheet({
                     >
                       <IdCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                       <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                        Trang cá nhân
+                        {t("profile")}
                       </span>
                     </Link>
 
@@ -327,7 +329,7 @@ export default function MobileAvatarSheet({
                       <div className="flex items-center gap-3">
                         <ShieldCheck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                         <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                          Quyền
+                          {t("role.label")}
                         </span>
                       </div>
                       <span
@@ -341,10 +343,10 @@ export default function MobileAvatarSheet({
                         )}
                       >
                         {userRole === "admin"
-                          ? "Quản trị"
+                          ? t("role.admin")
                           : userRole === "teacher"
-                          ? "Giáo viên"
-                          : "Người dùng"}
+                          ? t("role.teacher")
+                          : t("role.user")}
                       </span>
                     </div>
 
@@ -361,7 +363,7 @@ export default function MobileAvatarSheet({
                           <Star className="h-5 w-5 text-zinc-400" />
                         )}
                         <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                          Gói
+                          {t("access.label")}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -373,7 +375,9 @@ export default function MobileAvatarSheet({
                               : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300"
                           )}
                         >
-                          {userAccess === "premium" ? "Cao cấp" : "Miễn phí"}
+                          {userAccess === "premium"
+                            ? t("access.premium")
+                            : t("access.free")}
                         </span>
                       </div>
                     </Link>
@@ -381,7 +385,7 @@ export default function MobileAvatarSheet({
                     {/* Level từng part */}
                     <div className="pt-4 pb-5 px-4">
                       <p className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                        Level từng part
+                        {t("partLevel")}
                       </p>
                       <div className="grid grid-cols-2 gap-2">
                         {partRows.map((row) => {
@@ -410,7 +414,7 @@ export default function MobileAvatarSheet({
                                   )}
                                 >
                                   <Zap className={cn("h-3 w-3", config.icon)} />
-                                  Lv{row.lv}
+                                  {t("level", { level: row.lv ?? 0 })}
                                 </span>
                               ) : (
                                 <span className="text-xs text-zinc-400">—</span>
@@ -430,7 +434,9 @@ export default function MobileAvatarSheet({
                       >
                         <Globe className="h-5 w-5 text-sky-600 dark:text-sky-400" />
                         <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                          {locale === "vi" ? "English" : "Tiếng Việt"}
+                          {locale === "vi"
+                            ? t("language.en")
+                            : t("language.vi")}
                         </span>
                         <Flag
                           code={locale === "vi" ? "gb" : "vn"}
@@ -441,9 +447,10 @@ export default function MobileAvatarSheet({
 
                     {/* Đổi giao diện */}
                     <button
-                      onClick={() =>
-                        setTheme(theme === "light" ? "dark" : "light")
-                      }
+                      onClick={() => {
+                        setTheme(theme === "light" ? "dark" : "light");
+                        onClose();
+                      }}
                       className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-2 transition-all duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30"
                     >
                       {theme === "light" ? (
@@ -452,7 +459,7 @@ export default function MobileAvatarSheet({
                         <Sun className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
                       )}
                       <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                        {theme === "light" ? "Chế độ tối" : "Chế độ sáng"}
+                        {theme === "light" ? t("theme.dark") : t("theme.light")}
                       </span>
                     </button>
 
@@ -462,14 +469,14 @@ export default function MobileAvatarSheet({
                       className="mt-2 flex w-full items-center gap-3 rounded-xl px-4 py-2 text-red-600 transition-all duration-200 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
                     >
                       <LogOut className="h-5 w-5" />
-                      <span className="text-sm font-medium">Đăng xuất</span>
+                      <span className="text-sm font-medium">{t("logout")}</span>
                     </button>
                   </div>
                 </>
               ) : (
                 <div className="py-8 text-center">
                   <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
-                    Vui lòng đăng nhập để xem thông tin tài khoản
+                    {t("guest.message")}
                   </p>
                   <div className="space-y-3">
                     <Link
@@ -477,14 +484,14 @@ export default function MobileAvatarSheet({
                       onClick={onClose}
                       className="block w-full rounded-xl bg-sky-600 px-4 py-3 font-medium text-white transition-colors hover:bg-sky-700"
                     >
-                      Đăng nhập
+                      {t("guest.login")}
                     </Link>
                     <Link
                       href={`${base}/register`}
                       onClick={onClose}
                       className="block w-full rounded-xl border border-zinc-300 px-4 py-3 font-medium text-zinc-800 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                     >
-                      Đăng ký
+                      {t("guest.register")}
                     </Link>
                   </div>
                 </div>

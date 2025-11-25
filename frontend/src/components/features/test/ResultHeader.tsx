@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ListChecks, Timer } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type ResultHeaderProps = {
   badge: {
@@ -25,6 +26,8 @@ export function ResultHeader({
   description,
   stats,
 }: ResultHeaderProps) {
+  const t = useTranslations("practice.resultStats");
+
   return (
     <header className="mb-6 sm:mb-8">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -59,7 +62,7 @@ export function ResultHeader({
               </div>
               <div className="space-y-0.5">
                 <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-                  Số câu đúng
+                  {t("correctLabel")}
                 </p>
                 <p className="text-[15px] font-bold text-zinc-900 dark:text-zinc-50">
                   {stats.correct}/{stats.total}
@@ -79,7 +82,7 @@ export function ResultHeader({
               </div>
               <div className="space-y-0.5">
                 <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-                  Thời gian
+                  {t("timeLabel")}
                 </p>
                 <p className="text-[15px] font-bold text-zinc-900 dark:text-zinc-50">
                   {stats.timeLabel}
@@ -92,4 +95,3 @@ export function ResultHeader({
     </header>
   );
 }
-

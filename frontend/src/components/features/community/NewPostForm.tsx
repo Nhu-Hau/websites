@@ -6,6 +6,7 @@ import Image from "next/image";
 import { X, Image as ImageIcon, Video, Upload, Send, FolderUp, Images } from "lucide-react";
 import { toast } from "@/lib/toast";
 import type { Attachment } from "@/types/community.types";
+import { useTranslations } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -82,6 +83,7 @@ export default function NewPostForm({
   postId,
   groupId,
 }: NewPostFormProps) {
+  const t = useTranslations("community.form");
   const [content, setContent] = React.useState(initialContent);
   const [previews, setPreviews] = React.useState<PreviewItem[]>([]);
   const [uploading, setUploading] = React.useState(false);
@@ -111,9 +113,7 @@ export default function NewPostForm({
     const remainingSlots = MAX_FILES - previews.length;
 
     if (fileArray.length > remainingSlots) {
-      toast.error(
-        `Bạn chỉ có thể tải lên tối đa ${MAX_FILES} tệp. Còn ${remainingSlots} chỗ trống.`
-      );
+      toast.error(t("fileLimit", { max: MAX_FILES, remaining: remainingSlots }));
       return;
     }
 
@@ -136,19 +136,17 @@ export default function NewPostForm({
           file.name,
           file.type
         );
-        toast.error(
-          `${file.name} không phải là tệp hình ảnh hoặc video được hỗ trợ.`
-        );
+        toast.error(t("invalidType", { name: file.name }));
         continue;
       }
 
       if (file.size === 0) {
-        toast.error(`${file.name} là tệp rỗng.`);
+        toast.error(t("emptyFile", { name: file.name }));
         continue;
       }
 
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`${file.name} quá lớn. Kích thước tối đa là 50MB.`);
+        toast.error(t("fileTooLarge", { name: file.name }));
         continue;
       }
 
@@ -158,7 +156,7 @@ export default function NewPostForm({
         preview = type === "image" ? URL.createObjectURL(file) : "";
       } catch (error) {
         console.error("[handleFileSelect] Error creating preview:", error);
-        toast.error(`Không thể tạo preview cho ${file.name}`);
+        toast.error(t("previewError", { name: file.name }));
         continue;
       }
 
@@ -203,7 +201,7 @@ export default function NewPostForm({
 
       if (!res.ok) {
         const errorText = await res.text();
-        let errorMessage = "Upload failed";
+        let errorMessage = t("unknownError");
         try {
           const errorJson = JSON.parse(errorText);
           errorMessage = errorJson.message || errorMessage;
@@ -236,8 +234,13 @@ export default function NewPostForm({
         file.size
       );
       const errorMessage =
-        error instanceof Error ? error.message : "Lỗi không xác định";
-      toast.error(`Không thể tải lên ${file.name}: ${errorMessage}`);
+        error instanceof Error ? error.message : t("unknownError");
+      toast.error(
+        t("uploadFailed", {
+          name: file.name,
+          error: errorMessage || t("unknownError"),
+        })
+      );
       return null;
     }
   };
@@ -247,7 +250,7 @@ export default function NewPostForm({
 
     const text = content.trim();
     if (!text && previews.length === 0) {
-      toast.error("Vui lòng nhập nội dung hoặc đính kèm tệp");
+      toast.error(t("missingContent"));
       return;
     }
 
@@ -293,7 +296,7 @@ export default function NewPostForm({
       }
 
       if (hasUploadError) {
-        toast.error("Một số tệp tải lên thất bại. Vui lòng thử lại.");
+        toast.error(t("partialUpload"));
         setSubmitting(false);
         return;
       }
@@ -339,14 +342,14 @@ export default function NewPostForm({
         attachmentsCount: (responseData.post?.attachments || responseData.attachments || []).length
       });
 
-      toast.success(postId ? "Đã cập nhật bài viết!" : "Đã tạo bài viết!");
+      toast.success(postId ? t("updateSuccess") : t("createSuccess"));
       setContent("");
       setPreviews([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
       onSuccess?.();
     } catch (error) {
       console.error("[handleSubmit] ERROR", error);
-      toast.error("Lỗi khi tạo bài viết");
+      toast.error(t("submitError"));
     } finally {
       setSubmitting(false);
     }
@@ -393,7 +396,7 @@ export default function NewPostForm({
             el.style.height = Math.min(el.scrollHeight, 300) + "px";
           }}
           onKeyDown={handleTextareaKeyDown}
-          placeholder="Bạn đang nghĩ gì?"
+          placeholder={t("placeholder")}
           className="w-full min-h-[100px] max-h-[300px] resize-none rounded-xl border-0 bg-transparent px-0 py-3 text-[15px] leading-6 text-zinc-900 placeholder-zinc-500 outline-none transition-colors focus:outline-none dark:text-zinc-100 dark:placeholder-zinc-400"
           rows={4}
         />
@@ -423,7 +426,7 @@ export default function NewPostForm({
               {item.type === "image" ? (
                 <Image
                   src={item.preview}
-                  alt={`Preview ${index + 1}`}
+                  alt={t("previewAlt", { index: index + 1 })}
                   fill
                   className="object-cover"
                   unoptimized
@@ -443,7 +446,7 @@ export default function NewPostForm({
               <button
                 onClick={() => removePreview(index)}
                 className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur-sm transition-all hover:bg-black/80 group-hover:opacity-100"
-                aria-label="Remove"
+                aria-label={t("removeFile")}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -509,7 +512,7 @@ export default function NewPostForm({
                 </span>
               )}
             </div>
-            <span className="hidden sm:inline">Chọn tệp</span>
+            <span className="hidden sm:inline">{t("chooseFile")}</span>
           </button>
         </div>
 
@@ -526,13 +529,13 @@ export default function NewPostForm({
             <>
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
               <span className="hidden sm:inline">
-                {uploading ? "Đang tải lên..." : "Đang đăng..."}
+                {uploading ? t("uploading") : t("posting")}
               </span>
             </>
           ) : (
             <>
               <Send className="h-4 w-4" />
-              <span>{postId ? "Cập nhật" : "Đăng"}</span>
+              <span>{postId ? t("update") : t("post")}</span>
             </>
           )}
         </button>

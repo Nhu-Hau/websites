@@ -5,15 +5,17 @@ import Link from "next/link";
 import { LayoutDashboard, BookOpen, GraduationCap, Users } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export default function BottomTabBar() {
+  const t = useTranslations("BottomTabBar");
   const pathname = usePathname();
   const base = useBasePrefix();
 
   const tabs = [
     {
       id: "practice",
-      label: "Luyện L&R",
+      label: t("practice"),
       icon: BookOpen,
       href: `${base}/mobile/practice`,
       match: (path: string) =>
@@ -24,7 +26,7 @@ export default function BottomTabBar() {
     },
     {
       id: "study",
-      label: "Học tập",
+      label: t("study"),
       icon: GraduationCap,
       href: `${base}/mobile/study`,
       match: (path: string) =>
@@ -36,7 +38,7 @@ export default function BottomTabBar() {
     },
     {
       id: "community",
-      label: "Cộng đồng",
+      label: t("community"),
       icon: Users,
       href: `${base}/community`,
       match: (path: string) =>
@@ -46,7 +48,7 @@ export default function BottomTabBar() {
     },
     {
       id: "dashboard",
-      label: "Bảng điều khiển",
+      label: t("dashboard"),
       icon: LayoutDashboard,
       href: `${base}/mobile/dashboard`,
       match: (path: string) =>

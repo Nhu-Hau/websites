@@ -16,7 +16,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 // === UTILS ===
 function buildPracticeHref(locale: string, partKey: string, level: 1 | 2 | 3) {
@@ -59,6 +59,7 @@ export function ResultsPanel({
   variant?: "default" | "practice";
 }) {
   const locale = useLocale();
+  const t = useTranslations("test.results");
 
   const partsSorted = React.useMemo(() => {
     const entries = Object.entries(resp.partStats || {});
@@ -93,7 +94,7 @@ export function ResultsPanel({
               </div>
               <div className="space-y-0.5">
                 <p className="text-[11px] sm:text-xs font-medium uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-                  TOEIC ƯỚC LƯỢNG
+                  {t("estimatedToeic")}
                 </p>
                 <p className="text-xl sm:text-2xl font-black text-zinc-950 dark:text-zinc-50 leading-tight">
                   {predictedOverall}
@@ -102,7 +103,7 @@ export function ResultsPanel({
                   </span>
                 </p>
                 <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
-                  Tổng hợp từ Listening + Reading
+                  {t("combinedScore")}
                 </p>
               </div>
             </div>
@@ -116,13 +117,13 @@ export function ResultsPanel({
               </div>
               <div className="space-y-0.5">
                 <p className="text-[11px] sm:text-xs font-medium uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">
-                  Listening
+                  {t("listening")}
                 </p>
                 <p className="text-xl sm:text-2xl font-bold text-emerald-800 dark:text-emerald-200 leading-tight">
                   {predictedL} / 495
                 </p>
                 <p className="text-[11px] sm:text-xs text-emerald-700/80 dark:text-emerald-200/80 mt-0.5">
-                  Độ chính xác:{" "}
+                  {t("accuracy")}:{" "}
                   <span className="font-semibold">
                     {((resp.listening?.acc || 0) * 100).toFixed(0)}%
                   </span>
@@ -139,13 +140,13 @@ export function ResultsPanel({
               </div>
               <div className="space-y-0.5">
                 <p className="text-[11px] sm:text-xs font-medium uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">
-                  Reading
+                  {t("reading")}
                 </p>
                 <p className="text-xl sm:text-2xl font-bold text-sky-800 dark:text-sky-200 leading-tight">
                   {predictedR} / 495
                 </p>
                 <p className="text-[11px] sm:text-xs text-sky-700/80 dark:text-sky-200/80 mt-0.5">
-                  Độ chính xác:{" "}
+                  {t("accuracy")}:{" "}
                   <span className="font-semibold">
                     {((resp.reading?.acc || 0) * 100).toFixed(0)}%
                   </span>
@@ -159,13 +160,13 @@ export function ResultsPanel({
       {/* 2. OVERVIEW */}
       <section className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-900/90 shadow-sm shadow-zinc-900/5 dark:shadow-black/40 p-4 sm:p-5 lg:p-6">
         <h2 className="text-lg sm:text-xl font-bold text-center text-zinc-950 dark:text-zinc-50 mb-4 sm:mb-5">
-          TỔNG QUAN BÀI LÀM
+          {t("overview")}
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center">
           <div className="rounded-xl bg-zinc-50/90 dark:bg-zinc-800/70 px-3 sm:px-4 py-3 sm:py-4">
             <p className="text-[11px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              Số câu đúng
+              {t("correctCount")}
             </p>
             <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-zinc-50">
               {resp.correct}
@@ -178,7 +179,7 @@ export function ResultsPanel({
 
           <div className="rounded-xl bg-emerald-50/95 dark:bg-emerald-950/50 px-3 sm:px-4 py-3 sm:py-4">
             <p className="text-[11px] sm:text-xs font-medium text-emerald-700 dark:text-emerald-300/90">
-              Độ chính xác tổng
+              {t("totalAccuracy")}
             </p>
             <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">
               {(resp.acc * 100).toFixed(0)}%
@@ -187,7 +188,7 @@ export function ResultsPanel({
 
           <div className="rounded-xl bg-zinc-50/90 dark:bg-zinc-800/70 px-3 sm:px-4 py-3 sm:py-4">
             <p className="text-[11px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              Thời gian làm bài
+              {t("timeSpent")}
             </p>
             <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-zinc-50">
               {timeLabel || fmtTime(resp.timeSec)}
@@ -207,12 +208,12 @@ export function ResultsPanel({
             {showDetails ? (
               <>
                 <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5" />
-                Ẩn chi tiết đáp án
+                {t("hideDetails")}
               </>
             ) : (
               <>
                 <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5" />
-                Xem chi tiết đáp án
+                {t("showDetails")}
               </>
             )}
           </button>
@@ -230,16 +231,16 @@ export function ResultsPanel({
               </div>
               <div>
                 <h3 className="text-sm sm:text-base font-semibold text-zinc-950 dark:text-zinc-50">
-                  Phân tích theo Part
+                  {t("partAnalysis")}
                 </h3>
                 <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
-                  Xem độ chính xác từng Part & gợi ý luyện tập.
+                  {t("partAnalysisDesc")}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
               <Timer className="w-3.5 h-3.5" />
-              <span>Mini test - 55 câu - 35 phút</span>
+              <span>{t("miniTestInfo")}</span>
             </div>
           </div>
 
@@ -288,7 +289,7 @@ export function ResultsPanel({
                         className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] sm:text-xs font-semibold border ${config.border} ${config.bg} ${config.text}`}
                       >
                         <Zap className={`w-3 h-3 ${config.icon}`} />
-                        Level {lv}
+                        {t("level", { lv })}
                       </span>
                     ) : (
                       <span className="text-xs text-zinc-400">—</span>
@@ -299,7 +300,7 @@ export function ResultsPanel({
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-[11px] sm:text-xs">
                       <span className="text-zinc-500 dark:text-zinc-400">
-                        Độ chính xác lần này
+                        {t("currentAccuracy")}
                       </span>
                       <span className="font-semibold text-zinc-950 dark:text-zinc-50">
                         {isFiniteAcc ? `${lastAcc}%` : "—"}
@@ -324,7 +325,10 @@ export function ResultsPanel({
                       />
                     </div>
                     <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
-                      {stat.correct}/{stat.total} câu đúng
+                      {t("correctRatio", {
+                        correct: stat.correct,
+                        total: stat.total,
+                      })}
                     </p>
                   </div>
 
@@ -338,7 +342,7 @@ export function ResultsPanel({
                       }
                       className="inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-lg px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold bg-zinc-950 text-white hover:bg-zinc-800 shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 w-full"
                     >
-                      Luyện ngay
+                      {t("practiceNow")}
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
@@ -354,15 +358,14 @@ export function ResultsPanel({
               <p className="text-[12px] sm:text-sm font-medium text-amber-900 dark:text-amber-100">
                 {resp.weakParts?.length ? (
                   <>
-                    Ưu tiên luyện tập:{" "}
+                    {t("priorityPractice")}{" "}
                     <strong className="font-bold">
                       {resp.weakParts.map(partLabel).join(", ")}
-                    </strong>
-                    . Đây là các Part có tỷ lệ đúng thấp hơn, nên tập trung trước
-                    để kéo điểm tổng lên nhanh.
+                    </strong>{" "}
+                    {t("weakPartsDesc")}
                   </>
                 ) : (
-                  "Nhịp độ học rất ổn định! Bạn có thể tiếp tục luyện đều và nâng level ở những Part mạnh."
+                  t("steadyProgress")
                 )}
               </p>
             </div>

@@ -2,10 +2,12 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Camera, X } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useTranslations } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -13,6 +15,7 @@ const API_BASE =
 export default function CreateGroupClient() {
   const router = useRouter();
   const basePrefix = useBasePrefix();
+  const t = useTranslations("community.createGroup");
 
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
@@ -25,7 +28,7 @@ export default function CreateGroupClient() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Lỗi khi tải lên ảnh bìa");
+      toast.error(t("cover.errors.invalidType"));
       return;
     }
 
@@ -41,7 +44,7 @@ export default function CreateGroupClient() {
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Vui lòng nhập tên nhóm");
+      toast.error(t("toast.nameRequired"));
       return;
     }
 
@@ -61,7 +64,7 @@ export default function CreateGroupClient() {
           const uploadData = await uploadRes.json();
           coverImageUrl = uploadData.url;
         } else {
-          toast.error("Lỗi khi tải lên ảnh bìa");
+          toast.error(t("cover.errors.upload"));
           setCreating(false);
           return;
         }
@@ -82,18 +85,18 @@ export default function CreateGroupClient() {
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         const errorMessage =
-          errorData?.message || errorData?.error || "Lỗi khi tạo nhóm";
+          errorData?.message || errorData?.error || t("toast.error");
         throw new Error(errorMessage);
       }
 
       const data = await res.json();
       if (!data._id) {
-        throw new Error("Lỗi khi tạo nhóm");
+        throw new Error(t("toast.error"));
       }
-      toast.success("Đã tạo nhóm!");
+      toast.success(t("toast.success"));
       router.push(`${basePrefix}/community/groups/${data._id}`);
     } catch (error: any) {
-      const errorMessage = error?.message || "Lỗi khi tạo nhóm";
+      const errorMessage = error?.message || t("toast.error");
       toast.error(errorMessage);
     } finally {
       setCreating(false);
@@ -105,10 +108,10 @@ export default function CreateGroupClient() {
       {/* Page header */}
       <div className="mb-2">
         <h1 className="mb-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Tạo nhóm mới
+          {t("header.title")}
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Tạo không gian để cùng học TOEIC, thảo luận và chia sẻ tài nguyên.
+          {t("header.description")}
         </p>
       </div>
 
@@ -118,20 +121,25 @@ export default function CreateGroupClient() {
           {/* Cover Image */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-              Ảnh bìa
+              {t("cover.label")}
             </label>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
-              Gợi ý tỉ lệ 16:9, dung lượng &lt; 5MB. Ảnh bìa đẹp giúp nhóm của bạn
-              nổi bật hơn.
+              {t("cover.help")}
             </p>
             <div className="group relative h-48 w-full overflow-hidden rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 transition-all hover:border-sky-300 hover:bg-zinc-50/80 dark:border-zinc-700 dark:bg-zinc-900/80 dark:hover:border-sky-700">
               {coverPreview ? (
                 <>
-                  <img
-                    src={coverPreview}
-                    alt="Cover preview"
-                    className="h-full w-full object-cover"
-                  />
+                  <div className="relative h-full w-full">
+                    <Image
+                      src={coverPreview}
+                      alt={t("cover.previewAlt")}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 720px"
+                      unoptimized
+                      priority={false}
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
@@ -139,6 +147,7 @@ export default function CreateGroupClient() {
                       setCoverPreview(null);
                     }}
                     className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900 text-zinc-50 shadow-md transition-colors hover:bg-red-600"
+                    aria-label={t("cover.remove")}
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -156,10 +165,10 @@ export default function CreateGroupClient() {
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                      Tải lên ảnh bìa
+                      {t("cover.upload.title")}
                     </p>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                      Bấm để chọn ảnh từ thiết bị của bạn
+                      {t("cover.upload.description")}
                     </p>
                   </div>
                 </label>
@@ -170,13 +179,13 @@ export default function CreateGroupClient() {
           {/* Name */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-              Tên nhóm <span className="text-red-500">*</span>
+              {t("form.name.label")} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ví dụ: Nhóm Luyện Nghe TOEIC 500+"
+              placeholder={t("form.name.placeholder")}
               className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-500 outline-none transition-colors focus:border-sky-400 focus:ring-2 focus:ring-sky-400/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-sky-500 dark:focus:ring-sky-500/60"
               required
             />
@@ -185,12 +194,12 @@ export default function CreateGroupClient() {
           {/* Description */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-              Mô tả
+              {t("form.description.label")}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Giới thiệu mục tiêu, cách hoạt động hoặc quy định của nhóm…"
+              placeholder={t("form.description.placeholder")}
               rows={4}
               className="w-full resize-none rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-500 outline-none transition-colors focus:border-sky-400 focus:ring-2 focus:ring-sky-400/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-sky-500 dark:focus:ring-sky-500/60"
             />
@@ -203,14 +212,14 @@ export default function CreateGroupClient() {
               onClick={() => router.back()}
               className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              Hủy
+              {t("form.cancel")}
             </button>
             <button
               type="submit"
               disabled={creating}
               className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-sky-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-400"
             >
-              {creating ? "Đang tạo..." : "Tạo nhóm"}
+              {creating ? t("form.submitting") : t("form.submit")}
             </button>
           </div>
         </form>

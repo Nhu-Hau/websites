@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { Target, TrendingUp, Trophy, Loader2, X } from "lucide-react";
 import { toast } from "@/lib/toast";
 
+import { useTranslations } from "next-intl";
+
 interface GoalData {
   hasGoal: boolean;
   goal: {
@@ -28,6 +30,7 @@ const SECTION_LABEL_CLASS =
 export default function GoalProgressClient({
   initialData,
 }: GoalProgressClientProps) {
+  const t = useTranslations("dashboard.goal");
   const [data, setData] = useState<GoalData | null>(initialData);
   const [showDialog, setShowDialog] = useState(false);
   const [targetInput, setTargetInput] = useState("");
@@ -64,7 +67,7 @@ export default function GoalProgressClient({
   const handleSetGoal = async () => {
     const target = parseInt(targetInput);
     if (isNaN(target) || target < 10 || target > 990) {
-      toast.error("Điểm mục tiêu phải từ 10 đến 990");
+      toast.error(t("toast.rangeError"));
       return;
     }
 
@@ -79,17 +82,17 @@ export default function GoalProgressClient({
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        toast.error(err.message || "Đặt mục tiêu thất bại");
+        toast.error(err.message || t("toast.fail"));
         return;
       }
 
-      toast.success("Đặt mục tiêu thành công!");
+      toast.success(t("toast.success"));
       setShowDialog(false);
       setTargetInput("");
       await fetchGoal();
     } catch (e) {
       console.error(e);
-      toast.error("Đặt mục tiêu thất bại");
+      toast.error(t("toast.fail"));
     } finally {
       setIsUpdating(false);
     }
@@ -117,12 +120,12 @@ export default function GoalProgressClient({
               </div>
             </div>
             <div className="min-w-0">
-              <p className={SECTION_LABEL_CLASS}>Goal planning</p>
+              <p className={SECTION_LABEL_CLASS}>{t("empty.label")}</p>
               <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                Tiến độ đạt mục tiêu
+                {t("empty.title")}
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Chưa có mục tiêu TOEIC nào được thiết lập.
+                {t("empty.description")}
               </p>
             </div>
           </div>
@@ -134,18 +137,17 @@ export default function GoalProgressClient({
             <Target className="h-6 w-6 text-slate-400 dark:text-slate-500" />
           </div>
           <p className="mb-1 text-sm font-semibold text-slate-900 dark:text-slate-50">
-            Bạn chưa đặt mục tiêu TOEIC
+            {t("empty.cardTitle")}
           </p>
           <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
-            Đặt mục tiêu để hệ thống theo dõi tiến trình học và nhắc bạn luyện
-            tập đều hơn.
+            {t("empty.cardDesc")}
           </p>
           <button
             onClick={() => setShowDialog(true)}
             className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-violet-500/30 transition hover:brightness-110"
           >
             <Target className="h-4 w-4" />
-            Đặt mục tiêu ngay
+            {t("empty.button")}
           </button>
         </div>
 
@@ -217,14 +219,12 @@ export default function GoalProgressClient({
             </div>
           </div>
           <div className="min-w-0">
-            <p className={SECTION_LABEL_CLASS}>Goal tracking</p>
+            <p className={SECTION_LABEL_CLASS}>{t("tracking.label")}</p>
             <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-              Tiến độ đạt mục tiêu
+              {t("tracking.title")}
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              {isAchieved
-                ? "Chúc mừng! Bạn đã chạm mục tiêu TOEIC đã đặt."
-                : "Giữ nhịp luyện tập để tiến gần hơn tới mục tiêu."}
+              {isAchieved ? t("tracking.achieved") : t("tracking.ongoing")}
             </p>
           </div>
         </div>
@@ -236,7 +236,7 @@ export default function GoalProgressClient({
           }}
           className="self-start rounded-full bg-gradient-to-r from-violet-500 to-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-md shadow-violet-500/30 transition hover:brightness-110"
         >
-          Cập nhật
+          {t("tracking.update")}
         </button>
       </div>
 
@@ -244,7 +244,7 @@ export default function GoalProgressClient({
       <div className="mb-4 grid grid-cols-2 gap-3 text-center text-xs sm:grid-cols-3">
         <div className="rounded-2xl border border-slate-200/80 bg-white/70 px-3 py-3 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/70">
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Mục tiêu
+            {t("tracking.stats.target")}
           </p>
           <p className="text-lg font-semibold text-slate-900 dark:text-slate-50">
             {goal.targetScore}
@@ -252,7 +252,7 @@ export default function GoalProgressClient({
         </div>
         <div className="rounded-2xl border border-slate-200/80 bg-white/70 px-3 py-3 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/70">
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Hiện tại
+            {t("tracking.stats.current")}
           </p>
           <p className="text-lg font-semibold text-slate-900 dark:text-slate-50">
             {currentScore ?? "—"}
@@ -260,7 +260,7 @@ export default function GoalProgressClient({
         </div>
         <div className="col-span-2 rounded-2xl border border-slate-200/80 bg-white/70 px-3 py-3 text-center text-xs shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/70 sm:col-span-1">
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Hoàn thành
+            {t("tracking.stats.completed")}
           </p>
           <p className="text-lg font-semibold text-slate-900 dark:text-slate-50">
             {progressPercent.toFixed(1)}%
@@ -298,8 +298,8 @@ export default function GoalProgressClient({
         </div>
 
         <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-          <span>Bắt đầu: {goal.startScore}</span>
-          <span>Mục tiêu: {goal.targetScore}</span>
+          <span>{t("tracking.start", { score: goal.startScore })}</span>
+          <span>{t("tracking.target", { score: goal.targetScore })}</span>
         </div>
       </div>
 
@@ -313,15 +313,10 @@ export default function GoalProgressClient({
           }`}
         />
         <span className="text-center">
-          Từ{" "}
-          <span className="font-semibold text-slate-900 dark:text-slate-50">
-            {goal.startScore}
-          </span>{" "}
-          →{" "}
-          <span className="font-semibold text-slate-900 dark:text-slate-50">
-            {goal.targetScore}
-          </span>{" "}
-          điểm
+          {t("tracking.summary", {
+            start: goal.startScore,
+            target: goal.targetScore,
+          })}
         </span>
       </div>
 
@@ -362,6 +357,7 @@ function GoalDialog({
   isEdit: boolean;
   currentTarget?: number;
 }) {
+  const t = useTranslations("dashboard.goal");
   if (!showDialog) return null;
 
   return (
@@ -392,10 +388,10 @@ function GoalDialog({
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50 leading-tight">
-                {isEdit ? "Cập nhật mục tiêu" : "Đặt mục tiêu TOEIC"}
+                {isEdit ? t("dialog.updateTitle") : t("dialog.setTitle")}
               </h3>
               <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
-                Nhập điểm TOEIC mong muốn trong khoảng 10 – 990.
+                {t("dialog.desc")}
               </p>
             </div>
           </div>
@@ -423,7 +419,7 @@ function GoalDialog({
             "
           >
             <label className="text-sm sm:text-base font-semibold text-violet-700 dark:text-violet-300">
-              Điểm TOEIC mục tiêu *
+              {t("dialog.inputLabel")}
             </label>
 
             <input
@@ -432,7 +428,7 @@ function GoalDialog({
               max={990}
               value={targetInput}
               onChange={(e) => setTargetInput(e.target.value)}
-              placeholder="VD: 750"
+              placeholder={t("dialog.placeholder")}
               className="
                 mt-2 sm:mt-3 w-full rounded-lg sm:rounded-xl border border-violet-200 bg-white px-4 py-3 sm:py-3.5
                 text-base sm:text-lg font-medium text-zinc-900 shadow-sm 
@@ -443,7 +439,7 @@ function GoalDialog({
             />
             {currentTarget && isEdit && (
               <p className="mt-2 sm:mt-2.5 text-sm sm:text-base text-violet-600 dark:text-violet-400">
-                Hiện tại: {currentTarget} điểm
+                {t("dialog.current", { score: currentTarget })}
               </p>
             )}
           </div>
@@ -468,7 +464,7 @@ function GoalDialog({
               transition-colors
             "
           >
-            Hủy
+            {t("dialog.cancel")}
           </button>
 
           <button
@@ -487,11 +483,11 @@ function GoalDialog({
             {isUpdating ? (
               <>
                 <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
-                <span className="hidden sm:inline">Đang lưu...</span>
-                <span className="sm:hidden">Đang lưu</span>
+                <span className="hidden sm:inline">{t("dialog.saving")}</span>
+                <span className="sm:hidden">{t("dialog.saving")}</span>
               </>
             ) : (
-              "Xác nhận"
+              t("dialog.confirm")
             )}
           </button>
         </div>

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Calendar, Flame, Trophy } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface ActivityData {
   date: string;
@@ -27,6 +28,8 @@ interface ActivityHeatmapClientProps {
 export default function ActivityHeatmapClient({
   initialData,
 }: ActivityHeatmapClientProps) {
+  const t = useTranslations("dashboard.activity");
+
   /* ================= EMPTY STATE ================= */
   if (
     !initialData ||
@@ -47,10 +50,10 @@ export default function ActivityHeatmapClient({
           </div>
           <div className="min-w-0">
             <h3 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-gray-50 sm:text-xl">
-              Biểu đồ hoạt động học tập
+              {t("title")}
             </h3>
             <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 sm:text-[13px]">
-              Theo dõi thói quen học hằng ngày của bạn.
+              {t("subtitle")}
             </p>
           </div>
         </div>
@@ -60,10 +63,10 @@ export default function ActivityHeatmapClient({
             <Calendar className="h-7 w-7 text-gray-400 dark:text-gray-500 sm:h-8 sm:w-8" />
           </div>
           <p className="text-sm font-semibold text-gray-900 dark:text-gray-50 sm:text-base">
-            Chưa có dữ liệu hoạt động
+            {t("emptyTitle")}
           </p>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
-            Hãy làm bài luyện tập hoặc bài test để hệ thống vẽ heatmap cho bạn.
+            {t("emptyDesc")}
           </p>
         </div>
       </div>
@@ -136,10 +139,10 @@ export default function ActivityHeatmapClient({
           </div>
           <div className="min-w-0">
             <h2 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-gray-50 sm:text-xl">
-              Biểu đồ hoạt động học tập
+              {t("title")}
             </h2>
             <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 sm:text-[13px]">
-              Mỗi ô vuông là một ngày – màu càng đậm, bạn học càng chăm chỉ.
+              {t("subtitle")}
             </p>
           </div>
         </div>
@@ -147,13 +150,13 @@ export default function ActivityHeatmapClient({
         {/* Stats header */}
         <div className="flex flex-col items-start gap-1 rounded-xl bg-gray-50/80 px-3 py-2 text-xs text-gray-600 dark:bg-gray-900/70 dark:text-gray-300 sm:items-end sm:text-right">
           <div>
-            Tổng ngày học:{" "}
+            {t("totalDays")}:{" "}
             <span className="font-semibold text-gray-900 dark:text-gray-100">
               {stats.totalDays}
             </span>
           </div>
           <div className="text-[11px] sm:text-xs">
-            Tổng lượt làm bài:{" "}
+            {t("totalAttempts")}:{" "}
             <span className="font-semibold text-gray-900 dark:text-gray-100">
               {stats.totalAttempts}
             </span>
@@ -211,7 +214,7 @@ export default function ActivityHeatmapClient({
                 {stats.currentStreak}
               </p>
               <p className="text-[11px] font-medium text-gray-600 dark:text-gray-400 sm:text-xs">
-                Chuỗi hiện tại
+                {t("currentStreak")}
               </p>
             </div>
           </div>
@@ -229,7 +232,7 @@ export default function ActivityHeatmapClient({
                 {stats.maxStreak}
               </p>
               <p className="text-[11px] font-medium text-gray-600 dark:text-gray-400 sm:text-xs">
-                Chuỗi dài nhất
+                {t("maxStreak")}
               </p>
             </div>
           </div>
@@ -237,7 +240,7 @@ export default function ActivityHeatmapClient({
 
         {/* Legend */}
         <div className="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400 sm:text-xs">
-          <span>Ít</span>
+          <span>{t("legendLess")}</span>
           <div className="flex items-center gap-1.5">
             <div className="h-2.5 w-2.5 rounded-[4px] bg-gray-100 dark:bg-gray-800 sm:h-3 sm:w-3 md:h-3.5 md:w-3.5" />
             <div className="h-2.5 w-2.5 rounded-[4px] bg-blue-100 dark:bg-blue-950/50 sm:h-3 sm:w-3 md:h-3.5 md:w-3.5" />
@@ -245,7 +248,7 @@ export default function ActivityHeatmapClient({
             <div className="h-2.5 w-2.5 rounded-[4px] bg-blue-300 dark:bg-blue-800/80 sm:h-3 sm:w-3 md:h-3.5 md:w-3.5" />
             <div className="h-2.5 w-2.5 rounded-[4px] bg-blue-500 dark:bg-blue-700 sm:h-3 sm:w-3 md:h-3.5 md:w-3.5" />
           </div>
-          <span>Nhiều</span>
+          <span>{t("legendMore")}</span>
         </div>
       </div>
 
@@ -253,11 +256,7 @@ export default function ActivityHeatmapClient({
       {stats.currentStreak > 0 && (
         <div className="mt-4 rounded-xl border border-blue-700/25 bg-gradient-to-r from-blue-700/8 via-blue-600/8 to-indigo-600/8 px-4 py-3 text-center sm:mt-5 sm:px-5">
           <p className="text-[10px] font-semibold text-blue-800 dark:text-blue-300 sm:text-sm">
-            Bạn đang duy trì chuỗi học{" "}
-            <span className="text-lg font-bold text-blue-700 dark:text-blue-400 sm:text-xl">
-              {stats.currentStreak}
-            </span>{" "}
-            ngày liên tiếp 🔥 Tiếp tục giữ vững nhé!
+            {t("motivation", { streak: stats.currentStreak })}
           </p>
         </div>
       )}

@@ -5,6 +5,7 @@ import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { cn } from "@/lib/utils";
 import { BookOpen, Newspaper, ArrowRight } from "lucide-react";
 import { motion, Variants, easeOut } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 const easeOutBezier = easeOut;
 
@@ -20,35 +21,36 @@ const pageVariants: Variants = {
   },
 };
 
-const STUDY_OPTIONS = [
-  {
-    id: "vocabulary",
-    icon: BookOpen,
-    title: "Học từ vựng",
-    description: "Luyện từ vựng theo bộ, giống Quizlet nhưng tối ưu cho TOEIC.",
-    href: (base: string) => `${base}/vocabulary`,
-    gradient: "from-blue-500 to-blue-600",
-    bgGradient:
-      "from-blue-100/90 via-white to-blue-100/80 dark:from-blue-950/40 dark:via-zinc-950 dark:to-blue-900/30",
-    tag: "Tập trung từ vựng",
-    estimated: "~10–15 phút/bộ",
-  },
-  {
-    id: "news",
-    icon: Newspaper,
-    title: "Học qua tin tức",
-    description: "Đọc tin tiếng Anh, tra từ và lưu lại từ vựng thực tế.",
-    href: (base: string) => `${base}/news`,
-    gradient: "from-cyan-500 to-cyan-600",
-    bgGradient:
-      "from-cyan-100/90 via-white to-cyan-100/80 dark:from-cyan-950/40 dark:via-zinc-950 dark:to-cyan-900/30",
-    tag: "Đọc hiểu thực tế",
-    estimated: "~15–20 phút/bài",
-  },
-];
-
 export default function MobileStudyPage() {
   const base = useBasePrefix();
+  const t = useTranslations("mobile.study");
+
+  const STUDY_OPTIONS = [
+    {
+      id: "vocabulary",
+      icon: BookOpen,
+      title: t("vocabulary.title"),
+      description: t("vocabulary.description"),
+      href: (base: string) => `${base}/vocabulary`,
+      gradient: "from-blue-500 to-blue-600",
+      bgGradient:
+        "from-blue-100/90 via-white to-blue-100/80 dark:from-blue-950/40 dark:via-zinc-950 dark:to-blue-900/30",
+      tag: t("vocabulary.tag"),
+      estimated: t("vocabulary.estimated"),
+    },
+    {
+      id: "news",
+      icon: Newspaper,
+      title: t("news.title"),
+      description: t("news.description"),
+      href: (base: string) => `${base}/news`,
+      gradient: "from-cyan-500 to-cyan-600",
+      bgGradient:
+        "from-cyan-100/90 via-white to-cyan-100/80 dark:from-cyan-950/40 dark:via-zinc-950 dark:to-cyan-900/30",
+      tag: t("news.tag"),
+      estimated: t("news.estimated"),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#e5e7eb_0,_#fafafa_45%,_#f4f4f5_100%)] pt-14 pb-20 dark:bg-[radial-gradient(circle_at_top,_#020617_0,_#020617_40%,_#020617_100%)]">
@@ -62,23 +64,26 @@ export default function MobileStudyPage() {
         <header className="mb-6 space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-[11px] font-medium text-zinc-600 shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300">
             <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            <span>Lộ trình kỹ năng bổ trợ</span>
+            <span>{t("header.badge")}</span>
           </div>
 
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              Học tập
+              {t("header.title")}
             </h1>
             <p className="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Chọn cách học phù hợp:{" "}
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                từ vựng chủ động
-              </span>{" "}
-              hoặc{" "}
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                đọc hiểu qua tin tức
-              </span>
-              .
+              {t.rich("header.description", {
+                vocabulary: (chunks) => (
+                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                    {chunks}
+                  </span>
+                ),
+                news: (chunks) => (
+                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                    {chunks}
+                  </span>
+                ),
+              })}
             </p>
           </div>
         </header>
@@ -124,7 +129,7 @@ export default function MobileStudyPage() {
                         </h3>
                         {option.id === "vocabulary" && (
                           <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/60 dark:text-blue-200">
-                            Gợi ý cho bạn
+                            {t("vocabulary.suggested")}
                           </span>
                         )}
                       </div>
@@ -146,11 +151,11 @@ export default function MobileStudyPage() {
                       {/* CTA */}
                       <div className="mt-auto flex items-center justify-between">
                         <div className="flex items-center text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                          <span>Bắt đầu ngay</span>
+                          <span>{t("cta.start")}</span>
                           <ArrowRight className="ml-1.5 h-4 w-4 transition-transform group-hover:translate-x-1" />
                         </div>
                         <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                          Chạm để vào màn học
+                          {t("cta.tap")}
                         </span>
                       </div>
                     </div>
@@ -163,15 +168,18 @@ export default function MobileStudyPage() {
 
         {/* Small helper text */}
         <section className="mt-6 rounded-xl border border-dashed border-zinc-200 bg-white/80 px-3 py-2 text-[11px] leading-relaxed text-zinc-600 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
-          Tip: Bạn có thể xen kẽ{" "}
-          <span className="font-semibold text-blue-700 dark:text-blue-300">
-            Học từ vựng
-          </span>{" "}
-          và{" "}
-          <span className="font-semibold text-cyan-700 dark:text-cyan-300">
-            Học qua tin tức
-          </span>{" "}
-          để vừa nhớ từ vựng, vừa tăng khả năng đọc hiểu.
+          {t.rich("tip", {
+            vocabulary: (chunks) => (
+              <span className="font-semibold text-blue-700 dark:text-blue-300">
+                {chunks}
+              </span>
+            ),
+            news: (chunks) => (
+              <span className="font-semibold text-cyan-700 dark:text-cyan-300">
+                {chunks}
+              </span>
+            ),
+          })}
         </section>
       </motion.main>
     </div>

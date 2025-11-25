@@ -1,9 +1,11 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useTranslations } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -34,6 +36,7 @@ export default function FollowingModal({
 }: FollowingModalProps) {
   const router = useRouter();
   const basePrefix = useBasePrefix();
+  const t = useTranslations("community.followingModal");
 
   const [following, setFollowing] = React.useState(
     initialFollowing?.items || []
@@ -73,11 +76,17 @@ export default function FollowingModal({
     if (url) {
       const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
       return (
-        <img
-          src={fullUrl}
-          alt={name || "avatar"}
-          className="h-10 w-10 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-700"
-        />
+        <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-zinc-200 dark:ring-zinc-700">
+          <Image
+            src={fullUrl}
+            alt={name || t("avatarAlt")}
+            fill
+            className="object-cover"
+            sizes="40px"
+            unoptimized
+            priority={false}
+          />
+        </div>
       );
     }
     return (
@@ -101,11 +110,13 @@ export default function FollowingModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-4 py-3">
           <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-            Đang theo dõi
+            {t("title")}
           </h2>
           <button
+            type="button"
             onClick={onClose}
-            className="h-8 w-8 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-300"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            aria-label={t("closeAria")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -135,7 +146,7 @@ export default function FollowingModal({
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold text-zinc-900 transition-colors hover:text-sky-600 dark:text-zinc-100 dark:hover:text-sky-400">
-                      {user.name || "User"}
+                      {user.name || t("fallbackUser")}
                     </div>
                     {user.bio && (
                       <p className="mt-1 truncate text-xs text-zinc-600 dark:text-zinc-400">
@@ -144,7 +155,9 @@ export default function FollowingModal({
                     )}
                     {user.followersCount !== undefined && (
                       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
-                        {user.followersCount} người theo dõi
+                        {t("followerCount", {
+                          count: user.followersCount ?? 0,
+                        })}
                       </p>
                     )}
                   </div>
@@ -154,11 +167,10 @@ export default function FollowingModal({
           ) : (
             <div className="py-10 text-center">
               <p className="mb-2 text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                Chưa theo dõi ai
+                {t("empty.title")}
               </p>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Hãy khám phá cộng đồng và bắt đầu theo dõi những người dùng
-                khác.
+                {t("empty.description")}
               </p>
             </div>
           )}

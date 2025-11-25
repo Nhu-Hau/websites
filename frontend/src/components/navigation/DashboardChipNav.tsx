@@ -4,6 +4,7 @@ import React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { TrendingUp, BarChart3, Calendar, Trophy } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useTranslations } from "next-intl";
 import HorizontalChipNav, { ChipItem } from "./HorizontalChipNav";
 
 type TabId = "progress" | "results" | "activity" | "badges";
@@ -12,27 +13,28 @@ export default function DashboardChipNav() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const basePrefix = useBasePrefix();
+  const t = useTranslations("dashboardComponents.sideNav.tabs");
   const activeTab = (searchParams.get("tab") as TabId) || "progress";
 
   const items: ChipItem[] = [
     {
       id: "progress",
-      label: "Tiến độ",
+      label: t("progress"),
       icon: TrendingUp,
     },
     {
       id: "results",
-      label: "Kết quả",
+      label: t("results"),
       icon: BarChart3,
     },
     {
       id: "activity",
-      label: "Hoạt động",
+      label: t("activity"),
       icon: Calendar,
     },
     {
       id: "badges",
-      label: "Huy hiệu",
+      label: t("badges"),
       icon: Trophy,
     },
   ];

@@ -18,6 +18,7 @@ import {
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslations } from "next-intl";
 
 interface NavItem {
   label: string;
@@ -27,24 +28,25 @@ interface NavItem {
 }
 
 export default function SideNav() {
+  const t = useTranslations("SideNav");
   const pathname = usePathname();
   const basePrefix = useBasePrefix();
   const { user } = useAuth();
 
   const navItems: NavItem[] = [
-    { label: "Bảng tin", href: `${basePrefix}/community`, icon: Home },
-    { label: "Đang theo dõi", href: `${basePrefix}/community/following`, icon: UserPlus },
-    { label: "Xu hướng", href: `${basePrefix}/community/trending`, icon: TrendingUp },
-    { label: "Đã lưu", href: `${basePrefix}/community/saved`, icon: Bookmark },
+    { label: t("feed"), href: `${basePrefix}/community`, icon: Home },
+    { label: t("following"), href: `${basePrefix}/community/following`, icon: UserPlus },
+    { label: t("trending"), href: `${basePrefix}/community/trending`, icon: TrendingUp },
+    { label: t("saved"), href: `${basePrefix}/community/saved`, icon: Bookmark },
     {
-      label: "Hồ sơ cá nhân",
+      label: t("profile"),
       href: user?.id ? `${basePrefix}/community/profile/${user.id}` : `${basePrefix}/account`,
       icon: User,
     },
-    { label: "Nhóm học", href: `${basePrefix}/community/groups`, icon: Users },
-    { label: "Phòng học", href: `${basePrefix}/study/create`, icon: GraduationCap },
-    { label: "Khám phá", href: `${basePrefix}/community/explore`, icon: Search },
-    { label: "Cài đặt", href: `${basePrefix}/account`, icon: Settings },
+    { label: t("groups"), href: `${basePrefix}/community/groups`, icon: Users },
+    { label: t("classrooms"), href: `${basePrefix}/study/create`, icon: GraduationCap },
+    { label: t("explore"), href: `${basePrefix}/community/explore`, icon: Search },
+    { label: t("settings"), href: `${basePrefix}/account`, icon: Settings },
   ];
 
   const isActive = (href: string) => {
@@ -126,7 +128,7 @@ export default function SideNav() {
               )}
             >
               <Plus className="h-4 w-4" />
-              <span>Đăng bài mới</span>
+              <span>{t("newPost")}</span>
             </Link>
           </div>
 

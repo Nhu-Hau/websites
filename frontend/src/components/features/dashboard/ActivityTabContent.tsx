@@ -1,44 +1,56 @@
 import { Suspense } from "react";
+import { Calendar, AlarmClock } from "lucide-react";
 import ActivityHeatmapServer from "./ActivityHeatmapServer";
 import StudyScheduleServer from "./StudyScheduleServer";
+import DashboardChartLoaderCard from "./DashboardChartLoaderCard";
 
-function ActivityHeatmapSkeleton() {
+function ActivityHeatmapLoader() {
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 animate-pulse">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="h-10 w-10 rounded-lg bg-zinc-100 dark:bg-zinc-800" />
-        <div className="flex-1">
-          <div className="h-5 w-32 bg-zinc-100 dark:bg-zinc-800 rounded mb-2" />
-          <div className="h-4 w-48 bg-zinc-100 dark:bg-zinc-800 rounded" />
+    <DashboardChartLoaderCard
+      accentClass="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-800"
+      title="Biểu đồ hoạt động học tập"
+      subtitle="Theo dõi thói quen học theo từng ngày trong năm."
+      badgeLabel="Hoạt động"
+      heightClass="h-56 sm:h-64"
+      icon={
+        <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-200/60 via-blue-200/40 to-indigo-300/40 blur-xl" />
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
+            <Calendar className="h-5 w-5 text-white" />
+          </div>
         </div>
-      </div>
-      <div className="h-32 bg-zinc-50 dark:bg-zinc-950 rounded-lg" />
-    </div>
+      }
+    />
   );
 }
 
-function StudyScheduleSkeleton() {
+function StudyScheduleLoader() {
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 animate-pulse">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="h-10 w-10 rounded-lg bg-zinc-100 dark:bg-zinc-800" />
-        <div className="flex-1">
-          <div className="h-5 w-32 bg-zinc-100 dark:bg-zinc-800 rounded mb-2" />
-          <div className="h-4 w-48 bg-zinc-100 dark:bg-zinc-800 rounded" />
+    <DashboardChartLoaderCard
+      accentClass="bg-gradient-to-r from-[#3B8561] to-[#31694E]"
+      title="Lên lịch học thông minh"
+      subtitle="Hệ thống tự gợi ý và đồng bộ lịch nhắc."
+      badgeLabel="Planner"
+      heightClass="h-44 sm:h-48"
+      icon={
+        <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#3B8561]/60 via-[#31694E]/40 to-[#3B8561]/40 blur-xl" />
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#3B8561] to-[#31694E] shadow-md shadow-[#00000022] sm:h-10 sm:w-10">
+            <AlarmClock className="h-5 w-5 text-white" />
+          </div>
         </div>
-      </div>
-      <div className="h-32 bg-zinc-50 dark:bg-zinc-950 rounded-lg" />
-    </div>
+      }
+    />
   );
 }
 
 export default function ActivityTabContent() {
   return (
     <div className="space-y-6">
-      <Suspense fallback={<ActivityHeatmapSkeleton />}>
+      <Suspense fallback={<ActivityHeatmapLoader />}>
         <ActivityHeatmapServer />
       </Suspense>
-      <Suspense fallback={<StudyScheduleSkeleton />}>
+      <Suspense fallback={<StudyScheduleLoader />}>
         <StudyScheduleServer />
       </Suspense>
     </div>

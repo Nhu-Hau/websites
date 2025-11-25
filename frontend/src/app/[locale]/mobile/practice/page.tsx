@@ -5,16 +5,7 @@ import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import { motion, Variants, easeOut } from "framer-motion";
-
-const PARTS = [
-  { key: "part.1", num: "1", name: "Mô tả tranh" },
-  { key: "part.2", num: "2", name: "Hỏi - đáp" },
-  { key: "part.3", num: "3", name: "Đoạn hội thoại" },
-  { key: "part.4", num: "4", name: "Bài nói ngắn" },
-  { key: "part.5", num: "5", name: "Hoàn thành câu" },
-  { key: "part.6", num: "6", name: "Hoàn thành đoạn văn" },
-  { key: "part.7", num: "7", name: "Đọc hiểu" },
-];
+import { useTranslations } from "next-intl";
 const easeOutBezier = easeOut;
 
 const pageVariants: Variants = {
@@ -66,6 +57,17 @@ const helperVariants: Variants = {
 
 export default function MobilePracticePage() {
   const base = useBasePrefix();
+  const t = useTranslations("mobile.practice");
+  
+  const PARTS = [
+    { key: "part.1", num: "1", name: t("parts.part1") },
+    { key: "part.2", num: "2", name: t("parts.part2") },
+    { key: "part.3", num: "3", name: t("parts.part3") },
+    { key: "part.4", num: "4", name: t("parts.part4") },
+    { key: "part.5", num: "5", name: t("parts.part5") },
+    { key: "part.6", num: "6", name: t("parts.part6") },
+    { key: "part.7", num: "7", name: t("parts.part7") },
+  ];
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#e5e7eb_0,_#fafafa_40%,_#f4f4f5_100%)] pt-14 pb-20 dark:bg-[radial-gradient(circle_at_top,_#020617_0,_#020617_40%,_#020617_100%)]">
@@ -84,20 +86,22 @@ export default function MobilePracticePage() {
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-[11px] font-medium text-zinc-600 shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300">
             <span className="inline-flex h-1.5 w-1.5 rounded-full bg-sky-500" />
-            <span>Luyện Listening &amp; Reading theo từng Part</span>
+            <span>{t("header.badge")}</span>
           </div>
 
           <div>
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-                Luyện L&amp;R
+                {t("header.title")}
               </h1>
               <p className="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                Chọn Part bạn muốn luyện. Hệ thống mặc định bắt đầu từ{" "}
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                  Level 1
-                </span>{" "}
-                và tự điều chỉnh theo kết quả của bạn.
+                {t.rich("header.description", {
+                  level1: (chunks) => (
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      {chunks}
+                    </span>
+                  ),
+                })}
               </p>
             </div>
           </div>
@@ -112,16 +116,7 @@ export default function MobilePracticePage() {
         >
           {PARTS.map((part) => {
             const partIdx = part.key.split(".")[1];
-            const partLabels: Record<string, string> = {
-              "1": "Part 1: Mô tả tranh",
-              "2": "Part 2: Hỏi - đáp",
-              "3": "Part 3: Đoạn hội thoại",
-              "4": "Part 4: Bài nói ngắn",
-              "5": "Part 5: Hoàn thành câu",
-              "6": "Part 6: Hoàn thành đoạn văn",
-              "7": "Part 7: Đọc hiểu",
-            };
-            const partLabel = partLabels[partIdx] || `Part ${part.num}`;
+            const partLabel = t(`parts.full.${partIdx}`, { default: `Part ${part.num}` });
             const isListening = Number(part.num) <= 4;
 
             return (
@@ -181,21 +176,21 @@ export default function MobilePracticePage() {
                               : "border-emerald-200 dark:border-emerald-700"
                           )}
                         >
-                          <span
-                            className={cn(
-                              "mr-1 inline-block h-1.5 w-1.5 rounded-full",
-                              isListening ? "bg-sky-500" : "bg-emerald-500"
-                            )}
-                          />
-                          {isListening ? "Listening" : "Reading"}
+                        <span
+                          className={cn(
+                            "mr-1 inline-block h-1.5 w-1.5 rounded-full",
+                            isListening ? "bg-sky-500" : "bg-emerald-500"
+                          )}
+                        />
+                        {isListening ? t("listening") : t("reading")}
                         </span>
                       </div>
 
                       <div className="mt-2 flex items-center justify-between">
                         <div className="flex items-center gap-1 text-[11px] font-medium text-zinc-600 dark:text-zinc-300">
-                          <span>Bắt đầu từ Level 1</span>
+                          <span>{t("card.startFromLevel1")}</span>
                           <span className="text-zinc-400">•</span>
-                          <span>Tự động gợi ý lộ trình</span>
+                          <span>{t("card.autoSuggest")}</span>
                         </div>
                         <ArrowRight className="h-4 w-4 text-zinc-400 transition-transform group-hover:translate-x-1 group-hover:text-sky-600 dark:group-hover:text-sky-400" />
                       </div>
@@ -214,15 +209,18 @@ export default function MobilePracticePage() {
           initial="hidden"
           animate="show"
         >
-          Gợi ý: xen kẽ luyện{" "}
-          <span className="font-semibold text-sky-700 dark:text-sky-300">
-            Part 1–4
-          </span>{" "}
-          (Listening) và{" "}
-          <span className="font-semibold text-emerald-700 dark:text-emerald-300">
-            Part 5–7
-          </span>{" "}
-          (Reading) để cân bằng hai kỹ năng.
+          {t.rich("tip", {
+            listening: (chunks) => (
+              <span className="font-semibold text-sky-700 dark:text-sky-300">
+                {chunks}
+              </span>
+            ),
+            reading: (chunks) => (
+              <span className="font-semibold text-emerald-700 dark:text-emerald-300">
+                {chunks}
+              </span>
+            ),
+          })}
         </motion.section>
       </motion.main>
     </div>

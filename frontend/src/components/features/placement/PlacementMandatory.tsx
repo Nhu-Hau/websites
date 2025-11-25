@@ -3,6 +3,7 @@
 
 import { AlertTriangle, ArrowRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export default function MandatoryPlacementModal({
   open,
@@ -13,6 +14,8 @@ export default function MandatoryPlacementModal({
   onGoPlacement: () => void;
   onClose?: () => void; // optional (vì bắt buộc, có thể không render nút close)
 }) {
+  const t = useTranslations("placement.mandatory");
+
   if (!open) return null;
 
   return (
@@ -22,7 +25,7 @@ export default function MandatoryPlacementModal({
         {onClose && (
           <button
             onClick={onClose}
-            aria-label="Đóng"
+            aria-label={t("closeAria")}
             className={cn(
               "absolute right-4 top-4",
               "p-1.5 rounded-lg",
@@ -43,12 +46,21 @@ export default function MandatoryPlacementModal({
         </div>
 
         <h3 className="mb-3 text-center text-lg font-bold text-zinc-900 dark:text-zinc-100">
-          Hãy làm <span className="text-emerald-600 dark:text-emerald-400">Placement Test</span> trước
+          {t.rich("title", {
+            highlight: (chunks) => (
+              <span className="text-emerald-600 dark:text-emerald-400">
+                {chunks}
+              </span>
+            ),
+          })}
         </h3>
 
         <p className="mb-6 text-center text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-          Để phân chia Level theo năng lực và gợi ý lộ trình phù hợp, hệ thống yêu cầu bạn hoàn thành
-          <span className="font-semibold"> bài kiểm tra xếp trình độ</span> trước khi luyện Practice.
+          {t.rich("description", {
+            emphasis: (chunks) => (
+              <span className="font-semibold">{chunks}</span>
+            ),
+          })}
         </p>
 
         {/* Actions: chỉ cho phép đi tới Placement */}
@@ -65,7 +77,7 @@ export default function MandatoryPlacementModal({
             )}
           >
             <ArrowRight className="h-4 w-4" />
-            Bắt đầu Placement
+            {t("button")}
           </button>
         </div>
       </div>

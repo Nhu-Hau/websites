@@ -5,12 +5,14 @@ import { VocabularySet } from "@/types/vocabulary.types";
 import { useLearnMode } from "@/hooks/vocabulary/useLearnMode";
 import { LearnModeQuestionComponent } from "./LearnModeQuestion";
 import { CompletionScreen } from "./CompletionScreen";
+import { useTranslations } from "next-intl";
 
 interface QuizPageContentProps {
   set: VocabularySet;
 }
 
 export function QuizPageContent({ set }: QuizPageContentProps) {
+  const t = useTranslations("vocabularyComponents.quiz");
   const learn = useLearnMode({
     terms: set.terms ?? [],
   });
@@ -45,10 +47,10 @@ export function QuizPageContent({ set }: QuizPageContentProps) {
           <div className="mb-6">
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-zinc-400 xs:text-sm">
               <span>
-                Câu hỏi {learn.currentQuestionIndex + 1} / {learn.totalQuestions}
+                {t("question")} {learn.currentQuestionIndex + 1} / {learn.totalQuestions}
               </span>
               <span>
-                Điểm: {learn.correctAnswers} /{" "}
+                {t("complete.score")}: {learn.correctAnswers} /{" "}
                 {learn.currentQuestionIndex + (learn.showResult ? 1 : 0)}
               </span>
             </div>

@@ -7,6 +7,7 @@ import PostCard from "./PostCard";
 import { useAuth } from "@/context/AuthContext";
 import { useInfiniteScroll } from "@/hooks/community/useInfiniteScroll";
 import type { CommunityPost } from "@/types/community.types";
+import { useTranslations } from "next-intl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
@@ -30,6 +31,7 @@ export default function HashtagClient({ tag, initialData }: HashtagClientProps) 
   const [hasMore, setHasMore] = React.useState(
     initialData ? initialData.items.length < initialData.total : true
   );
+  const t = useTranslations("community.hashtag");
 
   const loadMore = React.useCallback(async () => {
     if (loading || !hasMore) return;
@@ -91,7 +93,9 @@ export default function HashtagClient({ tag, initialData }: HashtagClientProps) 
             </h1>
             {initialData?.hashtag && (
               <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                {initialData.hashtag.postsCount || 0} bài viết
+                {t("stats.postCount", {
+                  count: initialData.hashtag.postsCount || 0,
+                })}
               </p>
             )}
           </div>
@@ -128,10 +132,10 @@ export default function HashtagClient({ tag, initialData }: HashtagClientProps) 
             <Hash className="h-7 w-7 sm:h-8 sm:w-8" />
           </div>
           <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-            Chưa có bài viết nào
+            {t("empty.title")}
           </h3>
           <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
-            Chưa có bài viết nào với hashtag này.
+            {t("empty.description")}
           </p>
         </div>
       )}

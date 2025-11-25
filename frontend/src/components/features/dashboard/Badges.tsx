@@ -23,6 +23,7 @@ import {
   Sunset,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { useTranslations } from "next-intl";
 
 export type BadgeType =
   | "streak_7_days"
@@ -75,129 +76,87 @@ interface BadgesProps {
 export const BADGE_CONFIG: Record<
   BadgeType,
   {
-    name: string;
-    description: string;
     icon: React.ComponentType<{ className?: string }>;
     gradient: string;
   }
 > = {
   streak_7_days: {
-    name: "Chuỗi học 7 ngày",
-    description: "Học liên tiếp 7 ngày",
     icon: Flame,
     gradient: "from-sky-500 to-cyan-400",
   },
   streak_14_days: {
-    name: "Chuỗi học 14 ngày",
-    description: "Giữ streak 14 ngày liên tục",
     icon: Flame,
     gradient: "from-emerald-500 to-lime-500",
   },
   streak_30_days: {
-    name: "Chuỗi học 30 ngày",
-    description: "Học liên tiếp 30 ngày",
     icon: Calendar,
     gradient: "from-violet-500 to-fuchsia-500",
   },
   practice_10_tests: {
-    name: "Luyện tập chăm chỉ",
-    description: "Hoàn thành 10 bài Practice Test",
     icon: BookOpen,
     gradient: "from-indigo-500 to-sky-500",
   },
   practice_25_tests: {
-    name: "Bền bỉ luyện tập",
-    description: "Hoàn thành 25 bài Practice Test",
     icon: Medal,
     gradient: "from-amber-400 to-rose-400",
   },
   goal_50_percent: {
-    name: "Tiến độ mục tiêu",
-    description: "Đạt tiến độ mục tiêu TOEIC trên 50%",
     icon: Target,
     gradient: "from-emerald-500 to-teal-400",
   },
   goal_75_percent: {
-    name: "Sắp cán đích",
-    description: "Tiến độ mục tiêu đạt 75%",
     icon: Target,
     gradient: "from-blue-500 to-indigo-500",
   },
   part_improvement_20: {
-    name: "Cải thiện xuất sắc",
-    description: "Cải thiện điểm một Part trên 20 điểm",
     icon: TrendingUp,
     gradient: "from-cyan-500 to-emerald-500",
   },
   first_placement: {
-    name: "Bắt đầu hành trình",
-    description: "Làm bài Placement Test lần đầu",
     icon: Star,
     gradient: "from-amber-500 to-orange-400",
   },
   first_progress: {
-    name: "Kiểm tra tiến độ",
-    description: "Làm bài Progress Test lần đầu",
     icon: Award,
     gradient: "from-sky-500 to-indigo-500",
   },
   first_practice: {
-    name: "Bước đầu luyện tập",
-    description: "Làm bài Practice lần đầu",
     icon: Sparkles,
     gradient: "from-pink-500 to-rose-500",
   },
   perfect_score: {
-    name: "Điểm tuyệt đối",
-    description: "Đạt 100% trong một bài test",
     icon: Trophy,
     gradient: "from-yellow-400 to-amber-500",
   },
   early_bird: {
-    name: "Chim sớm",
-    description: "Học vào buổi sáng sớm (trước 7h)",
     icon: Sun,
     gradient: "from-amber-400 to-orange-500",
   },
   night_owl: {
-    name: "Cú đêm",
-    description: "Học vào buổi tối muộn (sau 22h)",
     icon: Moon,
     gradient: "from-slate-700 to-violet-600",
   },
   marathon: {
-    name: "Marathon học tập",
-    description: "Hoàn thành 5+ bài test trong một ngày",
     icon: Zap,
     gradient: "from-teal-500 to-cyan-400",
   },
   consistency_king: {
-    name: "Vua kiên trì",
-    description: "Học đều đặn trong 14 ngày",
     icon: Crown,
     gradient: "from-fuchsia-500 to-violet-500",
   },
   practice_50_tests: {
-    name: "Chiến binh luyện tập",
-    description: "Hoàn thành 50 bài Practice Test",
     icon: Trophy,
     gradient: "from-sky-600 to-indigo-600",
   },
   progress_5_tests: {
-    name: "Chuyên gia tiến độ",
-    description: "Hoàn thành 5 Progress Test",
     icon: Award,
     gradient: "from-emerald-500 to-lime-500",
   },
   goal_100_percent: {
-    name: "Chinh phục mục tiêu",
-    description: "Đạt 100% mục tiêu TOEIC đã đặt",
     icon: Target,
     gradient: "from-violet-500 to-rose-500",
   },
   weekend_warrior: {
-    name: "Chiến binh cuối tuần",
-    description: "Học tích cực mỗi cuối tuần",
     icon: Sunset,
     gradient: "from-orange-500 to-pink-500",
   },
@@ -206,13 +165,17 @@ export const BADGE_CONFIG: Record<
 /* ================== Badge items ================== */
 
 function BadgeItem({ badge }: { badge: Badge }) {
+  const t = useTranslations("dashboard.badges");
   const config = BADGE_CONFIG[badge.badgeType];
   if (!config) return null;
 
   const Icon = config.icon;
   const tooltipId = `badge-${badge._id}`;
 
-  let detailedDescription = config.description;
+  const name = t(`types.${badge.badgeType}.name`);
+  const description = t(`types.${badge.badgeType}.description`);
+
+  let detailedDescription = description;
   if (badge.metadata) {
     if (badge.metadata.partKey) {
       detailedDescription += ` (${badge.metadata.partKey.replace(
@@ -221,10 +184,14 @@ function BadgeItem({ badge }: { badge: Badge }) {
       )})`;
     }
     if (badge.metadata.improvement) {
-      detailedDescription += ` (+${badge.metadata.improvement} điểm)`;
+      detailedDescription += ` (+${badge.metadata.improvement} ${
+        t("points") || "điểm"
+      })`;
     }
     if (badge.metadata.streak) {
-      detailedDescription += ` (${badge.metadata.streak} ngày)`;
+      detailedDescription += ` (${badge.metadata.streak} ${
+        t("days") || "ngày"
+      })`;
     }
     if (badge.metadata.progress !== undefined) {
       detailedDescription += ` (${Math.round(badge.metadata.progress)}%)`;
@@ -260,36 +227,39 @@ function BadgeItem({ badge }: { badge: Badge }) {
     </>
   );
 }
-
 function LockedBadgeItem({ badgeType }: { badgeType: BadgeType }) {
+  const t = useTranslations("dashboard.badges");
   const config = BADGE_CONFIG[badgeType];
   const Icon = config.icon;
   const tooltipId = `badge-locked-${badgeType}`;
+  const description = t(`types.${badgeType}.description`);
 
   return (
     <>
       <div
         data-tooltip-id={tooltipId}
-        data-tooltip-content={`Chưa đạt: ${config.description}`}
+        data-tooltip-content={t("lockedDesc", { desc: description })}
         className={`
           group relative flex h-10 w-10 items-center justify-center overflow-hidden
-          rounded-2xl bg-gradient-to-br from-slate-200 to-slate-400
-          text-xs shadow-md shadow-slate-900/10
+          rounded-2xl bg-zinc-200/40 dark:bg-zinc-700/30
+          text-xs shadow-inner shadow-black/5
           transition-all duration-150
-          hover:-translate-y-0.5 hover:shadow-lg
           cursor-not-allowed
           sm:h-12 sm:w-12 md:h-14 md:w-14
         `}
       >
-        {/* viền trong nhẹ */}
-        <div className="absolute inset-0 rounded-2xl ring-1 ring-white/40 opacity-70" />
-        {/* icon xám */}
-        <Icon className="relative z-10 h-6 w-6 text-slate-600 dark:text-slate-300" />
-        {/* icon khóa nổi phía trên */}
+        {/* Vòng ring nhạt giống ProfileClient */}
+        <div className="absolute inset-0 rounded-2xl ring-1 ring-zinc-300/40 dark:ring-zinc-600/40" />
+
+        {/* Icon chính mờ đi để cảm giác bị khoá */}
+        <Icon className="relative z-10 h-6 w-6 text-zinc-500 dark:text-zinc-300 opacity-50" />
+
+        {/* Icon ổ khoá ở giữa */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <Lock className="h-4 w-4 text-slate-700/85 dark:text-slate-200/90 drop-shadow-sm" />
+          <Lock className="h-4 w-4 text-zinc-700/60 dark:text-zinc-200/70 drop-shadow-sm" />
         </div>
       </div>
+
       <Tooltip
         id={tooltipId}
         place="top"
@@ -308,6 +278,7 @@ export interface BadgesClientProps extends BadgesProps {
 }
 
 function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
+  const t = useTranslations("dashboard.badges");
   const [badges, setBadges] = useState<Badge[]>(initialBadges);
   const [newBadges, setNewBadges] = useState<BadgeType[]>([]);
   const [checking, setChecking] = useState(true);
@@ -352,6 +323,14 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
       newBadges.forEach((badgeType) => {
         const config = BADGE_CONFIG[badgeType];
         if (config) {
+          // Note: We can't use t() inside useEffect easily if keys are dynamic,
+          // but here we know the keys.
+          // However, toast content is rendered immediately.
+          // We'll use a simple string replacement or just hardcode for now if t is not available in effect?
+          // t is available in render scope, so we can use it here.
+
+          const name = t(`types.${badgeType}.name`);
+
           toast.success(
             <div className="flex items-center gap-3 p-1">
               <div
@@ -361,11 +340,15 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
               </div>
               <div>
                 <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                  Chúc mừng!
+                  {t("congratsTitle")}
                 </div>
                 <div className="text-xs text-slate-700 dark:text-slate-300">
-                  Bạn đã mở khóa huy hiệu{" "}
-                  <span className="font-semibold">{config.name}</span>.
+                  {t.rich("congratsMessage", {
+                    name: name,
+                    bold: (chunks) => (
+                      <span className="font-semibold">{chunks}</span>
+                    ),
+                  })}
                 </div>
               </div>
             </div>,
@@ -376,7 +359,7 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
       });
       setNewBadges([]);
     }
-  }, [newBadges, onNewBadge]);
+  }, [newBadges, onNewBadge, t]);
 
   const earnedCount = badges.length;
   const totalCount = Object.keys(BADGE_CONFIG).length;
@@ -398,10 +381,10 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
           </div>
           <div className="min-w-0">
             <h2 className="truncate text-lg font-semibold tracking-tight text-slate-900 dark:text-white xs:text-xl">
-              Bộ sưu tập huy hiệu
+              {t("title")}
             </h2>
             <p className="text-xs text-slate-600 dark:text-slate-400 sm:text-[13px]">
-              {earnedCount} / {totalCount} huy hiệu đã mở khóa
+              {t("earnedCount", { earned: earnedCount, total: totalCount })}
             </p>
           </div>
         </div>
@@ -409,15 +392,18 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
         {earnedCount > 0 && (
           <div className="mt-1 inline-flex items-center gap-1 self-start rounded-full border border-[#4063bb]/30 bg-[#4063bb]/8 px-3 py-1 text-[11px] font-semibold text-[#35519a] shadow-sm sm:mt-0 sm:self-auto">
             <Star className="h-3.5 w-3.5" />
-            <span>{earnedCount} huy hiệu</span>
+            <span>{t("badgeCount", { count: earnedCount })}</span>
           </div>
         )}
       </div>
 
       {/* Body */}
       {checking ? (
-        <div className="flex items-center justify-center py-6 sm:py-8">
+        <div className="flex flex-col items-center justify-center gap-2 py-6 sm:py-8">
           <Loader2 className="h-6 w-6 animate-spin text-slate-500 dark:text-slate-400" />
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {t("syncing")}
+          </p>
         </div>
       ) : badges.length === 0 ? (
         <div className="py-6 text-center sm:py-8">
@@ -425,11 +411,10 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
             <Trophy className="h-6 w-6 text-slate-400 dark:text-slate-500 sm:h-7 sm:w-7" />
           </div>
           <p className="mb-1 text-sm font-semibold text-slate-800 dark:text-slate-200">
-            Chưa có huy hiệu nào
+            {t("emptyTitle")}
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Làm bài đều đặn, giữ streak và đặt mục tiêu để mở khóa huy hiệu đầu
-            tiên.
+            {t("emptyDesc")}
           </p>
         </div>
       ) : (
@@ -443,10 +428,11 @@ function BadgesClient({ onNewBadge, initialBadges }: BadgesClientProps) {
 
           {/* Locked badges */}
           {badges.length < totalCount && (
-            <div className="border-t border-slate-200/80 pt-4 text-left text-[11px] dark:border-slate-800/80">
-              <p className="mb-3 text-center font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Huy hiệu chưa mở khóa
+            <div className="border-t border-zinc-200/80 pt-4 text-left text-[11px] dark:border-zinc-800/80">
+              <p className="mb-3 text-center font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                {t("lockedTitle")}
               </p>
+
               <div className="flex flex-wrap gap-2.5 sm:gap-3">
                 {Object.keys(BADGE_CONFIG)
                   .filter((type) => !badges.some((b) => b.badgeType === type))

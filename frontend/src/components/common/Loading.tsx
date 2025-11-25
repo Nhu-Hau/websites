@@ -7,6 +7,7 @@
 
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
@@ -43,7 +44,10 @@ interface LoadingOverlayProps {
   fullScreen?: boolean;
 }
 
-export function LoadingOverlay({ show, text = "Đang tải...", fullScreen = false }: LoadingOverlayProps) {
+export function LoadingOverlay({ show, text, fullScreen = false }: LoadingOverlayProps) {
+  const t = useTranslations("Common.Loading");
+  const displayText = text || t("defaultText");
+  
   if (!show) return null;
 
   return (
@@ -57,9 +61,9 @@ export function LoadingOverlay({ show, text = "Đang tải...", fullScreen = fal
     >
       <div className="flex flex-col items-center gap-4">
         <LoadingSpinner size="lg" />
-        {text && (
+        {displayText && (
           <p className="text-base font-medium text-gray-700 dark:text-gray-300">
-            {text}
+            {displayText}
           </p>
         )}
       </div>
@@ -93,13 +97,29 @@ export function ButtonLoading({ loading, children, className }: ButtonLoadingPro
 /**
  * Inline loading text
  */
-export function LoadingText({ text = "Đang tải..." }: { text?: string }) {
+export function LoadingText({ text }: { text?: string }) {
+  const t = useTranslations("Common.Loading");
+  const displayText = text || t("defaultText");
+  
   return (
     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
       <LoadingSpinner size="sm" />
-      <span>{text}</span>
+      <span>{displayText}</span>
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

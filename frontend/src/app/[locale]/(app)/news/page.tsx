@@ -1,15 +1,17 @@
 // frontend/src/app/[locale]/(app)/news/page.tsx
 import { NewsListClient } from "@/components/features/news/NewsListClient";
 import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
+import { getTranslations } from "next-intl/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "pages.news.meta" });
   const path = locale === "vi" ? "/news" : `/${locale}/news`;
   
   return genMeta({
-    title: "Tin tức TOEIC - Cập nhật mới nhất về kỳ thi TOEIC",
-    description: "Cập nhật tin tức mới nhất về kỳ thi TOEIC, mẹo làm bài, chiến lược học tập, và thông tin quan trọng từ ETS. Đọc các bài viết chuyên sâu về TOEIC.",
-    keywords: ["tin tức TOEIC", "TOEIC news", "mẹo thi TOEIC", "chiến lược TOEIC", "TOEIC tips"],
+    title: t("title"),
+    description: t("description"),
+    keywords: t("keywords").split(", "),
     canonical: generateCanonical(path, locale),
     ogType: "website",
   }, locale);

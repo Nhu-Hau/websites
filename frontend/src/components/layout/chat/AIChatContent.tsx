@@ -19,15 +19,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { useChat } from "@/context/ChatContext";
-
-const CHAT_COPY = {
-  demoReply:
-    "Xin chào! Tôi là trợ lý AI chuyên về TOEIC. Tôi có thể giúp bạn luyện thi, giải thích ngữ pháp, từ vựng và chiến lược làm bài. Bạn muốn hỏi gì?",
-  empty:
-    "Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với trợ lý AI TOEIC.",
-  aiLabel: "AI",
-  placeholder: "Nhập tin nhắn...",
-};
+import { useTranslations } from "next-intl";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 type Msg = {
   _id?: string;
@@ -53,6 +46,7 @@ function MessageContent({
   role: "user" | "assistant";
   pending?: boolean;
 }) {
+  const t = useTranslations("layoutComponents.chat.ai");
   if (role === "user") {
     return <div className="whitespace-pre-wrap">{content}</div>;
   }
@@ -61,7 +55,7 @@ function MessageContent({
     return (
       <div className="flex items-center gap-2 text-sm opacity-80">
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        <span>Đang trả lời…</span>
+        <span>{t("responding")}</span>
       </div>
     );
   }
@@ -141,6 +135,7 @@ function MessageContent({
 }
 
 function LearningInsightCard({ insightText }: { insightText: string }) {
+  const t = useTranslations("layoutComponents.chat.ai.learningInsight");
   const [goalData, setGoalData] = useState<{
     hasGoal: boolean;
     goal: { targetScore: number; startScore: number } | null;
@@ -198,7 +193,7 @@ function LearningInsightCard({ insightText }: { insightText: string }) {
     if (!activityData || activityData.activityData.length === 0) {
       return (
         <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">
-          Chưa có dữ liệu hoạt động
+          {t("heatmapEmpty")}
         </div>
       );
     }
@@ -241,7 +236,7 @@ function LearningInsightCard({ insightText }: { insightText: string }) {
             <div
               key={idx}
               className={`w-2.5 h-2.5 rounded-sm ${colors[intensity]}`}
-              title={`${day.date}: ${day.count} bài`}
+              title={t("tooltip", { date: day.date, count: day.count })}
             />
           );
         })}
@@ -295,7 +290,7 @@ function LearningInsightCard({ insightText }: { insightText: string }) {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                  Tiến độ đạt mục tiêu TOEIC
+                  {t("goalProgressTitle")}
                 </span>
                 <span className="font-semibold text-sky-600 dark:text-sky-400">
                   {Math.round(goalData.progress)}%
@@ -312,15 +307,18 @@ function LearningInsightCard({ insightText }: { insightText: string }) {
               {goalData.goal && goalData.currentScore !== null && (
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                   <span>
-                    {goalData.goal.startScore} → {goalData.currentScore} /{" "}
-                    {goalData.goal.targetScore}
+                    {t("range", {
+                      start: goalData.goal.startScore,
+                      current: goalData.currentScore,
+                      target: goalData.goal.targetScore,
+                    })}
                   </span>
                 </div>
               )}
             </div>
           ) : (
             <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg">
-              💡 Hãy đặt mục tiêu TOEIC để theo dõi tiến độ
+              {t("goalPrompt")}
             </div>
           )}
 
@@ -328,22 +326,27 @@ function LearningInsightCard({ insightText }: { insightText: string }) {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium text-gray-700 dark:text-gray-300">
-                  Hoạt động học tập (30 ngày)
+                  {t("activityTitle")}
                 </span>
                 <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                   {activityData.stats.currentStreak > 0 && (
                     <span className="flex items-center gap-1">
-                      🔥 {activityData.stats.currentStreak} ngày
+                      🔥{" "}
+                      {t("streak", {
+                        days: activityData.stats.currentStreak,
+                      })}
                     </span>
                   )}
-                  <span>{activityData.stats.totalAttempts} bài</span>
+                  <span>
+                    {t("attempts", { count: activityData.stats.totalAttempts })}
+                  </span>
                 </div>
               </div>
               {renderMiniHeatmap()}
             </div>
           ) : (
             <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">
-              Chưa có dữ liệu Learning Insight
+              {t("activityEmpty")}
             </div>
           )}
         </div>
@@ -357,8 +360,13 @@ export default function AIChatContent({
 }: {
   isMobile?: boolean;
 }) {
+  const t = useTranslations("layoutComponents.chat.ai");
+  const ariaT = useTranslations("layoutComponents.chat.aria");
   const { user } = useAuth();
   const { open, setUnreadCount } = useChat();
+  const basePrefix = useBasePrefix();
+  const loginHref = `${basePrefix}/login`;
+  const accountHref = `${basePrefix}/account`;
 
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
@@ -379,7 +387,7 @@ export default function AIChatContent({
         if (response.status === 403) {
           const errorData = await response.json();
           if (errorData.code === "PREMIUM_REQUIRED") {
-            setError("Chức năng chat với AI chỉ dành cho tài khoản Premium.");
+            setError(t("premiumRequired"));
             return;
           }
         }
@@ -526,9 +534,7 @@ export default function AIChatContent({
     if (!text || sending || !user) return;
 
     if (user.access !== "premium") {
-      setError(
-        "Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
-      );
+    setError(t("premiumRequired"));
       return;
     }
 
@@ -599,7 +605,7 @@ export default function AIChatContent({
       );
     } catch (err: unknown) {
       console.error("Failed to send message:", err);
-      let errorMessage = "Có lỗi xảy ra khi gửi tin nhắn";
+      let errorMessage = t("error");
       let errorCode = "";
 
       if (err instanceof Error) {
@@ -616,9 +622,7 @@ export default function AIChatContent({
         errorMessage.includes("Premium") ||
         errorMessage.includes("premium")
       ) {
-        setError(
-          "Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
-        );
+        setError(t("premiumRequired"));
       } else {
         setError(errorMessage);
       }
@@ -626,7 +630,7 @@ export default function AIChatContent({
       setMessages((prev) =>
         prev.map((m) =>
           m.id === tempAssistantId
-            ? { ...m, pending: false, content: CHAT_COPY.demoReply }
+            ? { ...m, pending: false, content: t("welcome") }
             : m
         )
       );
@@ -667,10 +671,10 @@ export default function AIChatContent({
           <button
             onClick={clearChat}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-            aria-label="Xóa tất cả cuộc trò chuyện"
+            aria-label={ariaT("deleteAll")}
           >
             <FiTrash2 className="h-3.5 w-3.5" />
-            <span>Xóa tất cả</span>
+            <span>{t("clear")}</span>
           </button>
         </div>
       )}
@@ -704,10 +708,10 @@ export default function AIChatContent({
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
               {!user
-                ? "Vui lòng đăng nhập để bắt đầu trò chuyện"
+                ? t("loginRequired")
                 : user.access !== "premium"
-                ? "Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng."
-                : CHAT_COPY.empty}
+                ? t("premiumRequired")
+                : t("empty")}
             </p>
           </div>
         ) : (
@@ -739,7 +743,7 @@ export default function AIChatContent({
                   {m.role === "assistant" && (
                     <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-75">
                       <FaGraduationCap className="h-3.5 w-3.5" />
-                      <span className="font-medium">{CHAT_COPY.aiLabel}</span>
+                      <span className="font-medium">{t("aiLabel")}</span>
                     </div>
                   )}
 
@@ -766,14 +770,14 @@ export default function AIChatContent({
                           hour: "2-digit",
                           minute: "2-digit",
                         })
-                      : "Đang gửi..."}
+                      : t("timestampPending")}
                   </div>
 
                   {m.role === "assistant" && !m.pending && (
                     <button
                       onClick={() => navigator.clipboard.writeText(m.content)}
                       className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow-md transition hover:scale-110 focus:outline-none focus:ring-2 focus:ring-sky-400"
-                      aria-label="Sao chép"
+                      aria-label={ariaT("copy")}
                     >
                       <FiCopy className="h-3.5 w-3.5 text-gray-600 dark:text-gray-300" />
                     </button>
@@ -802,7 +806,7 @@ export default function AIChatContent({
                 />
               </div>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                AI đang suy nghĩ...
+                {t("typing")}
               </span>
             </div>
           </div>
@@ -821,10 +825,10 @@ export default function AIChatContent({
                 onKeyDown={onKeyDown}
                 placeholder={
                   !user
-                    ? "Đăng nhập để chat..."
+                    ? t("loginPlaceholder")
                     : user.access !== "premium"
-                    ? "Cần tài khoản Premium để sử dụng..."
-                    : CHAT_COPY.placeholder
+                    ? t("premiumPlaceholder")
+                    : t("placeholder")
                 }
                 disabled={!user || sending || user?.access !== "premium"}
                 rows={1}
@@ -854,18 +858,18 @@ export default function AIChatContent({
 
         {!user && (
           <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-            <Link href="/login" className="text-sky-600 hover:underline">
-              Đăng nhập
+            <Link href={loginHref} className="text-sky-600 hover:underline">
+              {t("loginCta")}
             </Link>{" "}
-            để sử dụng
+            {t("loginFooter")}
           </p>
         )}
         {user && user.access !== "premium" && (
           <p className="mt-2 text-center text-xs text-orange-600 dark:text-orange-400">
-            <Link href="/account" className="hover:underline font-medium">
-              Nâng cấp lên Premium
+            <Link href={accountHref} className="hover:underline font-medium">
+              {t("premiumCta")}
             </Link>{" "}
-            để sử dụng chat với AI
+            {t("premiumFooter")}
           </p>
         )}
       </div>

@@ -70,6 +70,7 @@ export interface IUser extends Document {
   currentToeicSource?: "unknown" | "self_report_official" | null;
   currentToeicScore?: number | null;
   currentToeicExamDate?: string | null;
+  premiumExpiryDate?: Date | null; // Ngày hết hạn premium
 
   comparePassword(candidate: string): Promise<boolean>;
 }
@@ -189,6 +190,7 @@ const userSchema = new Schema<IUser>(
     },
     currentToeicScore: { type: Number, default: null },
     currentToeicExamDate: { type: String, default: null },
+    premiumExpiryDate: { type: Date, default: null },
   },
   { timestamps: true, versionKey: false }
 );

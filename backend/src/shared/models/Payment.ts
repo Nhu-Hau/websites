@@ -8,6 +8,8 @@ export enum PaymentStatus {
   EXPIRED = "expired",
 }
 
+export type PaymentPlan = "monthly_79" | "monthly_159";
+
 export interface IPayment extends Document {
   _id: Types.ObjectId;
   userId: Types.ObjectId;
@@ -24,6 +26,8 @@ export interface IPayment extends Document {
   promoCode?: string | null;
   amountBefore?: number | null;
   amountAfter?: number | null;
+  plan?: PaymentPlan | null; // "monthly_79" (1 tháng) hoặc "monthly_159" (3 tháng)
+  premiumExpiryDate?: Date | null; // Ngày hết hạn premium
   createdAt: Date;
   updatedAt: Date;
 }
@@ -62,6 +66,12 @@ const paymentSchema = new Schema<IPayment>(
     cancelUrl: String,
     returnUrl: String,
     paidAt: Date,
+    plan: {
+      type: String,
+      enum: ["monthly_79", "monthly_159"],
+      required: false,
+    },
+    premiumExpiryDate: Date,
   },
   { timestamps: true, versionKey: false }
 );

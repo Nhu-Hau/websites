@@ -3,6 +3,7 @@
 
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type Props = {
   page: number;
@@ -17,6 +18,7 @@ export default function Pagination({
   pageSize,
   onChange,
 }: Props) {
+  const t = useTranslations("community.pagination");
   const totalPages = Math.max(1, Math.ceil((total || 0) / pageSize));
 
   const handlePrev = React.useCallback(() => {
@@ -50,13 +52,13 @@ export default function Pagination({
   return (
     <nav
       className="flex items-center justify-center gap-1"
-      aria-label="Pagination"
+      aria-label={t("ariaLabel")}
     >
       <button
         onClick={handlePrev}
         disabled={page <= 1}
         className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        aria-label="Previous page"
+        aria-label={t("prev")}
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
@@ -91,7 +93,7 @@ export default function Pagination({
         onClick={handleNext}
         disabled={page >= totalPages}
         className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        aria-label="Next page"
+        aria-label={t("next")}
       >
         <ChevronRight className="h-5 w-5" />
       </button>

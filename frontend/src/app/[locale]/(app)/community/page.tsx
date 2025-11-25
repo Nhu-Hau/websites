@@ -1,7 +1,27 @@
 import { Suspense } from "react";
 import { getCommunityPosts, getMe } from "@/lib/server/api";
 import CommunityPageClient from "@/components/features/community/CommunityPageClient";
+import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
 import { PageMotion } from "@/components/layout/PageMotion";
+import { getTranslations } from "next-intl/server";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const path = locale === "vi" ? "/community" : `/${locale}/community`;
+  const t = await getTranslations({ locale, namespace: "community.metadata" });
+  const keywords = (t.raw("keywords") as string[]) ?? [];
+
+  return genMeta(
+    {
+      title: t("title"),
+      description: t("description"),
+      keywords,
+      canonical: generateCanonical(path, locale),
+      ogType: "website",
+    },
+    locale
+  );
+}
 
 // Loading skeleton
 function CommunityPostsSkeleton() {

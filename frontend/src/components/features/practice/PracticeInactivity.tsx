@@ -4,6 +4,7 @@
 import React from "react";
 import { useNotifications } from "@/hooks/common/useNotifications";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useTranslations } from "next-intl";
 
 /** Phản hồi từ BE /api/practice/inactivity */
 type InactResp = {
@@ -21,8 +22,11 @@ type InactResp = {
 const KEY_PREFIX = "practice:inactivity:nudged:";
 const POLL_MS = 15_000; // poll nhẹ, chỉ đổi env là test được
 const CREATE_DB_NOTIFICATION = true; // muốn tắt lưu DB thì set false
+const INACTIVITY_TITLE_KEY = "Practice.inactivity.title";
+const INACTIVITY_MESSAGE_KEY = "Practice.inactivity.message";
 
 export default function PracticeInactivityWatcher() {
+  const t = useTranslations("Practice.inactivity");
   const { pushLocal } = useNotifications();
   const basePrefix = useBasePrefix(); // vd: /vi hoặc /en
 
@@ -61,7 +65,7 @@ export default function PracticeInactivityWatcher() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             type: "system",
-            message: "Lâu rồi bạn chưa luyện Practice. Vào luyện tập ngay!",
+            message: t("dbMessage"),
             link: linkHref,
             meta: { sig },
           }),
@@ -71,12 +75,14 @@ export default function PracticeInactivityWatcher() {
       // 3) Đẩy vào chuông + corner (useNotifications đã chống trùng nội bộ)
       pushLocal({
         type: "system",
-        title: "Lâu rồi bạn chưa luyện Practice",
-        message: "Vào luyện tập ngay để duy trì nhịp học nhé!",
+        key: INACTIVITY_MESSAGE_KEY,
+        message: t("message"),
+        titleKey: INACTIVITY_TITLE_KEY,
+        title: t("title"),
         link: linkHref,
       });
     },
-    [pushLocal]
+    [pushLocal, t]
   );
 
   const check = React.useCallback(async () => {

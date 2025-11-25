@@ -89,31 +89,32 @@ export function TranslationMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed z-[100] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden min-w-[140px] sm:min-w-[160px]"
+      className="fixed z-[100] bg-white dark:bg-gray-800 rounded-xl xs:rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden min-w-[140px] xs:min-w-[160px] sm:min-w-[180px]"
       style={{
         left: `${adjustedPosition.x}px`,
         top: `${adjustedPosition.y}px`,
       }}
     >
-      <div className="flex items-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3">
+      <div className="flex items-center gap-1.5 xs:gap-2 px-3 py-2.5 xs:px-4 xs:py-3">
         <button
           onClick={() => {
             onTranslate();
             onClose();
           }}
-          className="flex-1 flex items-center gap-2 text-sm sm:text-base text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium min-w-0"
+          className="flex-1 flex items-center gap-1.5 xs:gap-2 text-xs xs:text-sm sm:text-base text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium min-w-0 touch-manipulation active:opacity-70"
         >
-          <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+          <BookOpen className="h-4 w-4 xs:h-4 xs:w-4 sm:h-5 sm:w-5 flex-shrink-0" />
           <span className="truncate">Tra từ</span>
         </button>
         <button
           onClick={onClose}
-          className="flex-shrink-0 p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded"
+          className="flex-shrink-0 p-1.5 xs:p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded active:scale-95 touch-manipulation"
           aria-label="Đóng"
         >
-          <X className="h-4 w-4 sm:h-5 sm:w-5" />
+          <X className="h-4 w-4 xs:h-4 xs:w-4 sm:h-5 sm:w-5" />
         </button>
       </div>
     </div>
   );
 }
+

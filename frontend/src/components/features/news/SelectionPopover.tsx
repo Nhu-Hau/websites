@@ -83,7 +83,7 @@ export function SelectionPopover({
   return (
     <div
       ref={popoverRef}
-      className="fixed z-[100] bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 p-4 max-w-lg"
+      className="fixed z-[100] bg-white dark:bg-gray-800 rounded-xl xs:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-3 xs:p-4 max-w-[calc(100vw-2rem)] xs:max-w-md sm:max-w-lg"
       style={{
         left: `${adjustedPosition.x}px`,
         top: `${adjustedPosition.y}px`,
@@ -91,73 +91,73 @@ export function SelectionPopover({
     >
       {loading ? (
         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-          <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm">Translating...</span>
+          <div className="w-4 h-4 xs:w-5 xs:h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs xs:text-sm">Translating...</span>
         </div>
       ) : (
         <>
           {/* Header */}
-          <div className="flex items-start justify-between gap-4 mb-3">
-            <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+          <div className="flex items-start justify-between gap-2 xs:gap-3 mb-2 xs:mb-3">
+            <h4 className="text-xs xs:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
               Dịch
             </h4>
             <button
               onClick={onClose}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300 active:scale-95"
+              className="flex h-8 w-8 xs:h-7 xs:w-7 items-center justify-center rounded-lg text-gray-400 transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300 active:scale-95 flex-shrink-0"
               title="Đóng"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4 xs:h-3.5 xs:w-3.5" />
             </button>
           </div>
 
           {/* Original Text with Speaker */}
-          <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+          <div className="mb-2 xs:mb-3 p-2.5 xs:p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
             <div className="flex items-start justify-between gap-2">
-              <p className="text-sm text-gray-600 dark:text-gray-400 italic flex-1">
+              <p className="text-xs xs:text-sm text-gray-600 dark:text-gray-400 italic flex-1 leading-relaxed">
                 &quot;{data.originalText}&quot;
               </p>
               <button
                 onClick={() => speak(data.originalText)}
                 disabled={speaking}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-600 transition-all duration-200 hover:bg-gray-100 hover:text-[#4063bb] dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-sky-400 active:scale-95 disabled:opacity-50 flex-shrink-0"
+                className="flex h-8 w-8 xs:h-7 xs:w-7 items-center justify-center rounded-lg text-gray-600 transition-all duration-200 hover:bg-gray-100 hover:text-[#4063bb] dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-sky-400 active:scale-95 disabled:opacity-50 flex-shrink-0"
                 title="Đọc to"
               >
-                <Volume2 className={`h-4 w-4 ${speaking ? 'text-[#4063bb] dark:text-sky-400' : ''}`} />
+                <Volume2 className={`h-4 w-4 xs:h-3.5 xs:w-3.5 ${speaking ? 'text-[#4063bb] dark:text-sky-400' : ''}`} />
               </button>
             </div>
           </div>
 
           {/* Translation */}
-          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <p className="text-sm text-gray-800 dark:text-gray-200">
+          <div className="mb-3 xs:mb-4 p-2.5 xs:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <p className="text-xs xs:text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
               {data.translation}
             </p>
           </div>
 
           {/* Key Words */}
           {data.keyWords && data.keyWords.length > 0 && (
-            <div className="space-y-3">
-              <h5 className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+            <div className="space-y-2 xs:space-y-3">
+              <h5 className="text-[10px] xs:text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
                 Key Vocabulary
               </h5>
               {data.keyWords.map((word, i) => (
                 <div
                   key={i}
-                  className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-2"
+                  className="p-2.5 xs:p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-1.5 xs:space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-gray-900 dark:text-white">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-semibold text-xs xs:text-sm text-gray-900 dark:text-white">
                         {word.word}
                       </span>
                       {word.partOfSpeech && (
-                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">
+                        <span className="ml-1.5 xs:ml-2 text-[10px] xs:text-xs text-gray-500 dark:text-gray-400 italic">
                           {word.partOfSpeech}
                         </span>
                       )}
                     </div>
                   </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <p className="text-xs xs:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                     {word.vietnameseMeaning}
                   </p>
                   <SaveVocabularyButton

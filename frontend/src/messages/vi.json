@@ -1,1 +1,3391 @@
-{}
+{
+  "marketing": {
+    "hero": {
+      "badge": "Cấu trúc bám sát đề thi TOEIC thật",
+      "title": "Xây lộ trình <highlight>TOEIC thông minh</highlight> cho riêng bạn",
+      "description": "Chỉ với <minutes>35 phút</minutes> làm <mini>Mini TOEIC 55 câu</mini>, hệ thống sẽ ước lượng <score>điểm TOEIC (0–990)</score>, xếp <level>Level 1–3</level> và đề xuất <highlight>lộ trình học cá nhân hóa</highlight>.",
+      "cta": {
+        "primary": "Bắt đầu Mini TOEIC 55 câu",
+        "primaryLoading": "Đang kiểm tra...",
+        "secondary": "Xem bộ đề luyện tập"
+      },
+      "meta": "* Sau khi làm bài sẽ nhận <report>báo cáo chi tiết</report> và <plan>lộ trình học cá nhân hóa</plan> gửi qua email.",
+      "stats": {
+        "mini": {
+          "number": "55 câu",
+          "label": "Mini TOEIC"
+        },
+        "time": {
+          "number": "35 phút",
+          "label": "Thời gian"
+        },
+        "score": {
+          "number": "0–990",
+          "label": "Điểm ước lượng"
+        }
+      },
+      "card": {
+        "eyebrow": "Bài kiểm tra đang chờ",
+        "title": "Mini TOEIC – Placement Test",
+        "duration": "35 phút",
+        "steps": [
+          "Làm bài Mini TOEIC rút gọn.",
+          "Hệ thống ước lượng điểm & xếp level.",
+          "Gợi ý lộ trình học phù hợp."
+        ],
+        "tags": {
+          "listening": {
+            "title": "Listening",
+            "meta": "Part 1–4"
+          },
+          "reading": {
+            "title": "Reading",
+            "meta": "Part 5–7"
+          },
+          "roadmap": {
+            "title": "Lộ trình",
+            "meta": "Tự động"
+          }
+        },
+        "cta": {
+          "default": "Bắt đầu ngay bây giờ",
+          "loading": "Đang kiểm tra..."
+        }
+      },
+      "notifications": {
+        "loginRequired": "Vui lòng đăng nhập để làm Mini TOEIC 55 câu",
+        "sessionExpired": "Phiên đăng nhập đã hết hạn",
+        "sessionExpiredAction": "Đăng nhập lại",
+        "startMessage": "Bắt đầu Mini TOEIC 55 câu! Chúc bạn làm bài thật tốt",
+        "attemptExists": "Bạn đã làm Placement Test rồi",
+        "attemptExistsAction": "Xem kết quả"
+      }
+    },
+    "workflow": {
+      "eyebrow": "Quy trình học",
+      "title": "Học TOEIC hiệu quả trong 4 bước đơn giản",
+      "description": "Từ việc xác định trình độ đến lúc chạm mục tiêu điểm số của bạn.",
+      "steps": [
+        {
+          "title": "Làm Placement Test",
+          "desc": "Hoàn thành bài Mini TOEIC 55 câu trong 35 phút để xác định trình độ hiện tại của bạn."
+        },
+        {
+          "title": "Nhận lộ trình học",
+          "desc": "Hệ thống ước lượng điểm TOEIC và đề xuất lộ trình cá nhân hóa dựa trên điểm yếu của bạn."
+        },
+        {
+          "title": "Luyện tập theo Part",
+          "desc": "Thực hành từng Part với bài tập được phân theo độ khó phù hợp với level của bạn."
+        },
+        {
+          "title": "Theo dõi tiến độ",
+          "desc": "Xem báo cáo chi tiết, phân tích lỗi và theo dõi sự tiến bộ theo thời gian."
+        }
+      ]
+    },
+    "testimonials": {
+      "eyebrow": "Cảm nhận người học",
+      "title": "Hàng nghìn người đã tăng điểm",
+      "description": "Kinh nghiệm thật – kết quả thật từ những học viên đã sử dụng nền tảng của chúng tôi.",
+      "items": [
+        {
+          "name": "Ngọc Hân",
+          "score": "+180 điểm",
+          "quote": "Sau bài placement test, hệ thống gợi ý level cho từng part — mình yếu Part 2 và 3 nên tập trung luyện ở đó. Cực kỳ hiệu quả!"
+        },
+        {
+          "name": "Trung Kiên",
+          "score": "+200 điểm",
+          "quote": "Web chia level rõ ràng, luyện đúng khả năng nên không bị nản. Sau 1 tháng mình tăng điểm Listening rõ rệt."
+        },
+        {
+          "name": "Mai Linh",
+          "score": "+165 điểm",
+          "quote": "Mỗi part đều có đề cập nhật, lời giải chi tiết và báo cáo tiến bộ sau từng buổi luyện. Mình cảm giác như được kèm riêng vậy!"
+        }
+      ],
+      "studentLabel": "Học viên TOEIC",
+      "impact": {
+        "summary": "<percent>98%</percent> học viên cải thiện điểm số sau <duration>4 tuần</duration> luyện tập đều đặn.",
+        "source": "Dữ liệu từ 12.000+ học viên"
+      }
+    },
+    "pricing": {
+      "eyebrow": "Nâng cấp trải nghiệm luyện thi",
+      "title": "Gói học phù hợp với bạn",
+      "description": "Thử miễn phí, không cần thẻ. Khi sẵn sàng, bạn có thể nâng cấp lên Premium với nhiều quyền lợi hơn.",
+      "plans": {
+        "period": {
+          "month": "/ tháng",
+          "quarter": "/ 3 tháng"
+        },
+        "free": {
+          "name": "Gói Free",
+          "price": "0đ",
+          "description": "Làm placement test, luyện tập cơ bản và làm quen giao diện học TOEIC.",
+          "features": [
+            "20 Practice Tests mỗi tháng",
+            "Lộ trình gợi ý cơ bản theo level",
+            "Báo cáo điểm tổng quan sau mỗi bài",
+            "Cập nhật đề & bài đọc thường xuyên"
+          ],
+          "cta": "Bắt đầu miễn phí"
+        },
+        "monthly": {
+          "name": "Premium",
+          "price": "79k",
+          "description": "Mở khóa toàn bộ Practice Tests, AI Chat, livestream, tài liệu và Learning Insight cá nhân hóa.",
+          "features": [
+            "Không giới hạn Practice Tests & mini tests",
+            "Chat AI & Admin/Giảng viên bất cứ lúc nào",
+            "Livestream không giới hạn bình luận & tài liệu",
+            "Learning Insight cá nhân hoá theo kết quả học"
+          ]
+        },
+        "quarterly": {
+          "name": "Premium",
+          "price": "159k",
+          "highlight": "Tiết kiệm hơn, phù hợp lộ trình ôn TOEIC 2–3 tháng liên tục",
+          "description": "Giữ toàn bộ quyền lợi Premium, ưu tiên cho những bạn luyện thi giai đoạn nước rút với cường độ cao.",
+          "badge": {
+            "current": "Bạn đang dùng",
+            "recommended": "Gói khuyến nghị"
+          },
+          "features": [
+            "Toàn bộ quyền lợi của Premium 79k/tháng",
+            "Lý tưởng khi học với tần suất cao, nhiều buổi livestream",
+            "Ưu tiên hỗ trợ trong các buổi học online"
+          ]
+        }
+      },
+      "promo": {
+        "applied": "Đã áp dụng mã: {code}",
+        "placeholder": "Nhập mã khuyến mãi (nếu có)",
+        "apply": "Áp dụng",
+        "priceAfter": "Giá sau giảm: {price}"
+      },
+      "buttons": {
+        "upgradeMonthly": "Nâng cấp 79k/tháng",
+        "upgradeMonthlyPromo": "Nâng cấp {price}k/tháng",
+        "upgradeQuarterly": "Nâng cấp 159k / 3 tháng",
+        "upgradeQuarterlyPromo": "Nâng cấp {price}k / 3 tháng",
+        "processing": "Đang xử lý...",
+        "currentPlan": "Bạn đang dùng Premium"
+      },
+      "errors": {
+        "promoInvalid": "Mã không hợp lệ hoặc đã hết hạn",
+        "promoCheckFailed": "Không thể kiểm tra mã, vui lòng thử lại",
+        "paymentLink": "Không thể tạo link thanh toán",
+        "missingCheckout": "Thiếu checkoutUrl từ hệ thống thanh toán",
+        "paymentGeneric": "Có lỗi xảy ra khi tạo link thanh toán"
+      },
+      "comparison": {
+        "heading": "So sánh chi tiết tính năng Free vs Premium",
+        "description": "Dựa trên các module thật của hệ thống (Practice, AI Chat, Livestream, Learning Insight, Groups).",
+        "columns": {
+          "feature": "Tính năng",
+          "free": "Free",
+          "premium": "Premium"
+        },
+        "locked": "Bị khóa",
+        "unlocked": "Mở khóa",
+        "unlimited": "Không giới hạn",
+        "practice": {
+          "label": "Practice Tests",
+          "description": "Luyện đề theo Part & Level",
+          "free": "20 bài/tháng",
+          "pro": "Không giới hạn"
+        },
+        "aiChat": {
+          "label": "AI Chat (Gia sư TOEIC)",
+          "description": "Trao đổi với AI về ngữ pháp, từ vựng, chiến lược làm bài"
+        },
+        "adminChat": {
+          "label": "Admin / Teacher Chat",
+          "description": "Hỏi đáp trực tiếp với admin hoặc giảng viên"
+        },
+        "vocab": {
+          "label": "Dịch từ vựng trên bài báo",
+          "description": "Dịch & lưu từ vựng trực tiếp khi đọc news"
+        },
+        "livestream": {
+          "label": "Livestream Comments",
+          "description": "Chat trong phòng học livestream",
+          "free": "10 comment/buổi <note>(giới hạn)</note>"
+        },
+        "download": {
+          "label": "Tải file giảng viên",
+          "description": "Download tài liệu được gửi trong phòng học"
+        },
+        "upload": {
+          "label": "Upload file trong livestream",
+          "description": "Upload tài liệu hỗ trợ buổi học trực tuyến"
+        },
+        "insight": {
+          "label": "Learning Insight",
+          "description": "AI phân tích kết quả làm bài & thói quen học"
+        },
+        "groups": {
+          "label": "Tạo Groups học chung",
+          "description": "Tạo nhóm học, mời bạn bè vào học chung"
+        }
+      },
+      "cta": {
+        "practice": "Làm thử bài luyện miễn phí",
+        "upgrade": "Nâng cấp Premium ngay"
+      }
+    },
+    "faq": {
+      "eyebrow": "Câu hỏi thường gặp",
+      "title": "Có thắc mắc? Chúng tôi sẵn sàng trả lời",
+      "description": "Tìm câu trả lời cho những câu hỏi phổ biến về nền tảng học TOEIC của chúng tôi.",
+      "items": [
+        {
+          "question": "Placement Test có mất phí không?",
+          "answer": "Không, Placement Test hoàn toàn miễn phí. Bạn có thể làm bài kiểm tra để xác định trình độ của mình mà không cần trả phí."
+        },
+        {
+          "question": "Tôi có thể làm Placement Test bao nhiêu lần?",
+          "answer": "Bạn có thể làm Placement Test một lần để nhận lộ trình học ban đầu. Nếu muốn đánh giá lại trình độ sau một thời gian học tập, vui lòng liên hệ bộ phận hỗ trợ."
+        },
+        {
+          "question": "Lộ trình học được cá nhân hóa như thế nào?",
+          "answer": "Dựa trên kết quả Placement Test, hệ thống phân tích điểm mạnh và điểm yếu rồi đề xuất lộ trình phù hợp cho từng Part và Level."
+        },
+        {
+          "question": "Gói Premium có gì khác biệt so với gói Miễn phí?",
+          "answer": "Gói Premium cung cấp luyện đề không giới hạn, Full Test với giải thích chi tiết, truy cập AI Chat và Admin Chat, tải file từ giảng viên, phân tích lỗi nâng cao và hỗ trợ ưu tiên."
+        },
+        {
+          "question": "Tôi có thể hủy gói Premium bất cứ lúc nào không?",
+          "answer": "Có, bạn có thể hủy gói Premium bất cứ lúc nào và vẫn dùng được các tính năng đến hết chu kỳ thanh toán."
+        },
+        {
+          "question": "Hệ thống có hỗ trợ tiếng Anh không?",
+          "answer": "Giao diện chính được thiết kế bằng tiếng Việt để phục vụ học viên Việt Nam, nhưng toàn bộ nội dung bài thi và câu hỏi vẫn bằng tiếng Anh như kỳ thi TOEIC thật."
+        }
+      ],
+      "contact": {
+        "prompt": "Vẫn còn thắc mắc?",
+        "cta": "Liên hệ hỗ trợ"
+      }
+    },
+    "finalCta": {
+      "title": "Sẵn sàng chinh phục mục tiêu TOEIC của bạn?",
+      "description": "Tham gia luyện tập hôm nay, theo dõi tiến bộ mỗi ngày và đạt điểm mong muốn.",
+      "primaryCta": "Bắt đầu miễn phí",
+      "secondaryCta": "Khám phá bộ đề"
+    }
+  },
+  "layout": {
+    "footer": {
+      "brand": {
+        "tagline": "Luyện TOEIC cá nhân hóa",
+        "description": "ToeicPrep kết hợp Placement Test, luyện tập thích ứng và phòng học trực tuyến để bạn luôn biết nên học gì tiếp theo.",
+        "stats": {
+          "learners": "35.000+ học viên",
+          "scoreGain": "+180 điểm trung bình"
+        }
+      },
+      "contact": {
+        "title": "Liên hệ",
+        "emailLabel": "Email",
+        "emailValue": "hausu999@gmail.com",
+        "addressLabel": "Studio",
+        "addressValue": "TP. Hồ Chí Minh, Việt Nam",
+        "hoursLabel": "Giờ hỗ trợ",
+        "hoursValue": "09:00–21:00 (GMT+7)"
+      },
+      "socials": {
+        "title": "Kết nối",
+        "twitter": "Twitter",
+        "youtube": "YouTube",
+        "instagram": "Instagram",
+        "github": "GitHub",
+        "aria": "ToeicPrep trên {network}"
+      },
+      "sections": {
+        "product": {
+          "title": "Sản phẩm",
+          "links": {
+            "placement": "Bài Placement Test",
+            "practice": "Luyện theo Part",
+            "vocabulary": "Phòng từ vựng",
+            "progress": "Báo cáo tiến độ",
+            "pricing": "Gói giá"
+          }
+        },
+        "study": {
+          "title": "Chế độ học",
+          "links": {
+            "studyRooms": "Phòng học live",
+            "createRoom": "Tạo phòng học",
+            "teacherRegister": "Đăng ký giáo viên"
+          }
+        },
+        "community": {
+          "title": "Cộng đồng & nội dung",
+          "links": {
+            "feed": "Bảng tin cộng đồng",
+            "groups": "Nhóm học",
+            "explore": "Khám phá chủ đề",
+            "trending": "Bài viết nổi bật",
+            "news": "Tin tức"
+          }
+        }
+      },
+      "language": {
+        "title": "Ngôn ngữ",
+        "options": {
+          "vi": "Tiếng Việt",
+          "en": "English"
+        }
+      },
+      "legal": {
+        "rights": "© {year} ToeicPrep. Giữ toàn quyền."
+      }
+    }
+  },
+  "navbar": {
+    "practice": {
+      "label": "Luyện L&R",
+      "parts": {
+        "part1": "Part 1: Mô tả tranh",
+        "part2": "Part 2: Hỏi - đáp",
+        "part3": "Part 3: Đoạn hội thoại",
+        "part4": "Part 4: Bài nói ngắn",
+        "part5": "Part 5: Hoàn thành câu",
+        "part6": "Part 6: Hoàn thành đoạn văn",
+        "part7": "Part 7: Đọc hiểu"
+      }
+    },
+    "learn": {
+      "label": "Học tập",
+      "community": "Cộng đồng",
+      "vocabulary": "Học từ vựng",
+      "news": "Học qua tin tức"
+    },
+    "dashboard": {
+      "label": "Tổng quan",
+      "title": "Bảng điều khiển",
+    "goal": {
+      "empty": {
+        "label": "Kế hoạch mục tiêu",
+        "title": "Đặt mục tiêu TOEIC",
+        "description": "Theo dõi tiến độ đến số điểm bạn mong muốn.",
+        "cardTitle": "Chưa có mục tiêu",
+        "cardDesc": "Đặt điểm TOEIC mong muốn để mở khóa bảng theo dõi.",
+        "button": "Đặt mục tiêu"
+      },
+      "toast": {
+        "rangeError": "Vui lòng nhập điểm từ 10 đến 990",
+        "fail": "Không thể lưu mục tiêu",
+        "success": "Đã cập nhật mục tiêu!"
+      },
+      "tracking": {
+        "label": "Theo dõi mục tiêu",
+        "title": "Tiến độ mục tiêu TOEIC",
+        "achieved": "Bạn đã chạm mục tiêu – xuất sắc!",
+        "ongoing": "Tiếp tục luyện tập để bứt phá.",
+        "update": "Cập nhật mục tiêu",
+        "stats": {
+          "target": "Điểm mục tiêu",
+          "current": "Điểm hiện tại",
+          "completed": "Hoàn thành"
+        },
+        "start": "Xuất phát: {score}",
+        "target": "Đích đến: {score}",
+        "summary": "Hành trình từ {start} đến {target} điểm TOEIC – cứ giữ nhịp luyện tập nhé."
+      },
+      "dialog": {
+        "setTitle": "Đặt mục tiêu TOEIC",
+        "updateTitle": "Cập nhật mục tiêu",
+        "desc": "Nhập số điểm TOEIC bạn muốn đạt để hệ thống theo dõi tiến độ.",
+        "inputLabel": "Điểm mục tiêu (10–990)",
+        "placeholder": "Ví dụ: 750",
+        "current": "Mục tiêu hiện tại: {score}",
+        "cancel": "Hủy",
+        "confirm": "Lưu mục tiêu",
+        "saving": "Đang lưu..."
+      }
+    },
+      "assessment": {
+        "overviewTitle": "Tổng quan đánh giá",
+        "selfReported": "Điểm khai báo",
+        "placementTest": "Placement Test",
+        "latestProgress": "Progress Test mới nhất",
+        "comparison": {
+          "matchMsg": "Điểm placement test khá gần với điểm TOEIC bạn khai báo.",
+          "matchSub": "Bạn khai báo: {reported} điểm • Placement test ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Hệ thống sẽ dùng kết quả placement để đề xuất lộ trình chi tiết cho từng Part.",
+          "mediumMsg": "Điểm placement test hơi lệch so với điểm TOEIC bạn khai báo.",
+          "mediumSub": "Bạn khai báo: {reported} điểm • Placement test ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Nguyên nhân có thể do thời gian làm bài khác với đề thi thật, điểm TOEIC bạn thi đã cách đây một thời gian, hoặc bài placement chỉ gồm 55 câu nên có sai số nhất định. Hệ thống vẫn ưu tiên dùng placement test để gợi ý lộ trình.",
+          "largeMsg": "Điểm placement test lệch khá nhiều so với điểm TOEIC bạn khai báo.",
+        "largeSub": "Bạn khai báo: {reported} điểm • Placement test ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do bạn làm bài khi chưa tập trung, điểm TOEIC bạn nhập là từ kỳ thi đã khá lâu, hoặc đây chỉ là điểm ước lượng trên 55 câu. Hệ thống sẽ ưu tiên dùng kết quả placement để phân level hiện tại. Nếu bạn cảm thấy kết quả chưa phản ánh đúng trình độ, hãy luyện thêm một thời gian rồi làm lại progress test để hệ thống đánh giá ổn định hơn.",
+        "show": "Hiện thẻ so sánh",
+        "hide": "Ẩn thẻ so sánh"
+        },
+        "eligibility": {
+          "eligible": "Đã đủ điều kiện làm Progress Test",
+          "insufficient": "Chưa đủ điều kiện làm Progress Test",
+          "waiting": "Đang chờ mở Progress Test",
+          "reopen": "Sẽ mở lại vào {time}",
+          "remaining": "Còn lại: {time}",
+          "descEligible": "Bạn có thể làm bài để cập nhật điểm dự đoán mới nhất.",
+          "descNoPractice": "Hãy làm ít nhất 1 bài Practice để mở Progress Test.",
+          "descInsufficient": "Bạn cần hoàn thành {remaining} bài Practice Test nữa (đã làm {current}/{required} bài).",
+          "descNoPracticeAfter": "Bạn cần hoàn thành một bài Practice sau lần Progress Test gần nhất.",
+          "descWaiting": "Bạn vừa luyện xong Practice, hệ thống sẽ mở Progress Test sau đủ thời gian theo chu kỳ.",
+          "descDefault": "Hệ thống tự mở Progress Test theo chu kỳ luyện tập 5 ngày.",
+          "anchor": "Mốc tính từ {time}",
+          "cycle": "chu kỳ {days} ngày",
+          "actionStart": "Làm Progress Test",
+          "actionLocked": "Đang khóa"
+        },
+        "chart": {
+          "title": "Điểm TOEIC theo thời gian",
+          "subtitle": "Listening, Reading & Overall (đã quy đổi thang điểm TOEIC)",
+          "loading": "Đang tải dữ liệu...",
+          "tooltip": "{score} điểm",
+          "kindBaseline": "Baseline",
+          "kindPlacement": "Placement Test",
+          "kindProgress": "Progress Test"
+        },
+        "time": {
+          "days": "ngày",
+          "hours": "giờ",
+          "minutes": "phút",
+          "seconds": "giây",
+          "fewMinutes": "ít phút nữa"
+        }
+      },
+      "schedule": {
+        "title": "Lên lịch học thông minh",
+        "subtitle": "Đặt lịch luyện tập cố định để giữ nhịp học TOEIC bạn nhé.",
+        "notifyLabel": "Lời nhắc Email / Web",
+        "recurrence": {
+          "label": "Chu kỳ lặp",
+          "once": "Một lần",
+          "daily": "Hàng ngày",
+          "weekdays": "Thứ 2–6",
+          "custom": "Tuỳ chọn"
+        },
+        "weekdays": {
+          "sun": "CN",
+          "mon": "T2",
+          "tue": "T3",
+          "wed": "T4",
+          "thu": "T5",
+          "fri": "T6",
+          "sat": "T7"
+        },
+        "dateTime": {
+          "label": "Ngày & giờ học",
+          "today": "Hôm nay",
+          "tomorrow": "Ngày mai",
+          "pickDate": "Chọn ngày"
+        },
+        "plan": {
+          "label": "Loại buổi học",
+          "auto": "Tự động (Smart Auto)",
+          "progress": "Progress Test",
+          "miniProgress": "Mini-Progress",
+          "part1": "Luyện Part 1",
+          "part2": "Luyện Part 2",
+          "part3": "Luyện Part 3",
+          "part4": "Luyện Part 4",
+          "part5": "Luyện Part 5",
+          "part6": "Luyện Part 6",
+          "part7": "Luyện Part 7"
+        },
+        "duration": {
+          "label": "Thời lượng",
+          "minutes": "{minutes} phút"
+        },
+        "remind": {
+          "label": "Nhắc trước",
+          "minutes": "{minutes} phút"
+        },
+        "notify": {
+          "label": "Nhắc lịch",
+          "email": "Email",
+          "web": "Web push"
+        },
+        "submit": "Lưu lịch học",
+        "submitLoading": "Đang lưu lịch học...",
+        "upcoming": {
+          "title": "Lịch học sắp tới",
+          "emptyTitle": "Chưa có lịch sắp tới",
+          "emptyDesc": "Hãy tạo một lịch học ở trên, hệ thống sẽ nhắc bạn đúng giờ như các app edtech pro.",
+          "completed": "Buổi học gần nhất đã hoàn thành.",
+          "missed": "Bạn đã bỏ lỡ buổi học trước.",
+          "reminder": "Nhớ tham gia đúng giờ để giữ streak nhé!",
+          "statusCompleted": "Hoàn thành buổi học!",
+          "statusMissed": "Bạn đã bỏ lỡ buổi học",
+          "streak": "Chuỗi hiện tại: {days} ngày"
+        }
+      },
+      "heatmap": {
+        "title": "Biểu đồ hoạt động học tập",
+        "subtitle": "Mỗi ô vuông là một ngày – màu càng đậm, bạn học càng chăm chỉ.",
+        "emptyTitle": "Chưa có dữ liệu hoạt động",
+        "emptyDesc": "Hãy làm bài luyện tập hoặc bài test để hệ thống vẽ heatmap cho bạn.",
+        "totalDays": "Tổng ngày học",
+        "totalAttempts": "Tổng lượt làm bài",
+        "currentStreak": "Chuỗi hiện tại",
+        "maxStreak": "Chuỗi dài nhất",
+        "legendLess": "Ít",
+        "legendMore": "Nhiều",
+        "motivation": "Bạn đang duy trì chuỗi học {streak} ngày liên tiếp 🔥 Tiếp tục giữ vững nhé!"
+      }
+    },
+    "loading": "Đang tải dữ liệu...",
+    "badges": {
+      "title": "Bộ sưu tập huy hiệu",
+      "subtitle": "Đếm huy hiệu đã mở khóa và chờ đồng bộ dữ liệu mới nhất.",
+      "badgeLabel": "Badges",
+      "congratsTitle": "Chúc mừng!",
+      "congratsMessage": "Bạn đã mở khóa huy hiệu <bold>{name}</bold>.",
+      "earnedCount": "{earned} / {total} huy hiệu đã mở khóa",
+      "badgeCount": "{count} huy hiệu",
+      "syncing": "Đang đồng bộ huy hiệu mới...",
+      "emptyTitle": "Chưa có huy hiệu nào",
+      "emptyDesc": "Làm bài đều đặn, giữ streak và đặt mục tiêu để mở khóa huy hiệu đầu tiên.",
+      "lockedTitle": "Huy hiệu chưa mở khóa",
+      "lockedDesc": "Chưa đạt: {desc}",
+      "types": {
+        "streak_7_days": {
+          "name": "Chuỗi học 7 ngày",
+          "description": "Học liên tiếp 7 ngày"
+        },
+        "streak_14_days": {
+          "name": "Chuỗi học 14 ngày",
+          "description": "Giữ streak 14 ngày liên tục"
+        },
+        "streak_30_days": {
+          "name": "Chuỗi học 30 ngày",
+          "description": "Học liên tiếp 30 ngày"
+        },
+        "practice_10_tests": {
+          "name": "Luyện tập chăm chỉ",
+          "description": "Hoàn thành 10 bài Practice Test"
+        },
+        "practice_25_tests": {
+          "name": "Bền bỉ luyện tập",
+          "description": "Hoàn thành 25 bài Practice Test"
+        },
+        "goal_50_percent": {
+          "name": "Tiến độ mục tiêu",
+          "description": "Đạt tiến độ mục tiêu TOEIC trên 50%"
+        },
+        "goal_75_percent": {
+          "name": "Sắp cán đích",
+          "description": "Tiến độ mục tiêu đạt 75%"
+        },
+        "part_improvement_20": {
+          "name": "Cải thiện xuất sắc",
+          "description": "Cải thiện điểm một Part trên 20 điểm"
+        },
+        "first_placement": {
+          "name": "Bắt đầu hành trình",
+          "description": "Làm bài Placement Test lần đầu"
+        },
+        "first_progress": {
+          "name": "Kiểm tra tiến độ",
+          "description": "Làm bài Progress Test lần đầu"
+        },
+        "first_practice": {
+          "name": "Bước đầu luyện tập",
+          "description": "Làm bài Practice lần đầu"
+        },
+        "perfect_score": {
+          "name": "Điểm tuyệt đối",
+          "description": "Đạt 100% trong một bài test"
+        },
+        "early_bird": {
+          "name": "Chim sớm",
+          "description": "Học vào buổi sáng sớm (trước 7h)"
+        },
+        "night_owl": {
+          "name": "Cú đêm",
+          "description": "Học vào buổi tối muộn (sau 22h)"
+        },
+        "marathon": {
+          "name": "Marathon học tập",
+          "description": "Hoàn thành 5+ bài test trong một ngày"
+        },
+        "consistency_king": {
+          "name": "Vua kiên trì",
+          "description": "Học đều đặn trong 14 ngày"
+        },
+        "practice_50_tests": {
+          "name": "Chiến binh luyện tập",
+          "description": "Hoàn thành 50 bài Practice Test"
+        },
+        "progress_5_tests": {
+          "name": "Chuyên gia tiến độ",
+          "description": "Hoàn thành 5 Progress Test"
+        },
+        "goal_100_percent": {
+          "name": "Chinh phục mục tiêu",
+          "description": "Đạt 100% mục tiêu TOEIC đã đặt"
+        },
+        "weekend_warrior": {
+          "name": "Chiến binh cuối tuần",
+          "description": "Học tích cực mỗi cuối tuần"
+        }
+      }
+    }
+  },
+  "community": {
+    "metadata": {
+      "title": "Cộng đồng TOEIC – Thảo luận và chia sẻ kinh nghiệm",
+      "description": "Cập nhật bài viết mới nhất từ cộng đồng TOEIC, đặt câu hỏi, chia sẻ chiến lược và nhận góp ý từ hàng nghìn học viên đang luyện thi.",
+      "keywords": [
+        "cộng đồng toeic",
+        "thảo luận toeic",
+        "kinh nghiệm luyện thi toeic"
+      ]
+    },
+    "page": {
+      "title": "Bảng tin",
+      "description": "Bạn có thể đăng câu hỏi, kinh nghiệm luyện TOEIC, hoặc chia sẻ tài liệu hữu ích cho các bạn khác.",
+      "loading": "Đang tải bài viết...",
+      "emptyTitle": "Chưa có bài viết nào",
+      "emptyDescription": "Bảng tin cộng đồng đang trống. Hãy chia sẻ bài viết đầu tiên với mọi người.",
+      "loadError": "Lỗi khi tải bài viết"
+    },
+    "post": {
+      "editTitle": "Chỉnh sửa bài viết",
+      "avatarAlt": "Ảnh đại diện",
+      "fallbackUser": "Người dùng",
+      "shareTitle": "Bài viết cộng đồng",
+      "reportAria": "Báo cáo bài viết",
+      "labels": {
+        "edited": "(Đã chỉnh sửa)",
+        "reposted": "Đã chia sẻ lại",
+        "originalLoading": "Đang tải bài viết gốc..."
+      },
+      "confirmDelete": {
+        "title": "Xóa bài viết?",
+        "message": "Bạn có chắc muốn xóa bài viết này? Hành động này không thể hoàn tác.",
+        "confirm": "Xóa",
+        "cancel": "Hủy"
+      },
+      "confirmReport": {
+        "title": "Báo cáo bài viết?",
+        "message": "Bạn có chắc muốn báo cáo bài viết này?",
+        "confirm": "Báo cáo",
+        "cancel": "Hủy"
+      },
+      "repostModal": {
+        "title": "Chia sẻ lại bài viết",
+        "placeholder": "Thêm ghi chú của bạn (tùy chọn)...",
+        "cancel": "Hủy",
+        "submit": "Chia sẻ lại"
+      },
+      "toast": {
+        "deleteSuccess": "Đã xóa bài viết",
+        "deleteError": "Lỗi khi xóa bài viết",
+        "repostSuccess": "Đã chia sẻ lại bài viết",
+        "repostError": "Lỗi khi chia sẻ lại bài viết",
+        "reportSuccess": "Đã báo cáo bài viết",
+        "reportError": "Lỗi khi báo cáo bài viết"
+      },
+      "time": {
+        "justNow": "Vừa xong",
+        "minutes": "{count} phút trước",
+        "hours": "{count} giờ trước",
+        "days": "{count} ngày trước"
+      }
+    },
+    "actionBar": {
+      "toast": {
+        "likeError": "Lỗi khi thích bài viết",
+        "save": "Đã lưu bài viết",
+        "unsave": "Đã bỏ lưu bài viết",
+        "saveError": "Lỗi khi lưu bài viết"
+      },
+      "aria": {
+        "like": "Thích",
+        "unlike": "Bỏ thích",
+        "comment": "Bình luận",
+        "repost": "Chia sẻ lại",
+        "share": "Chia sẻ",
+        "save": "Lưu",
+        "unsave": "Bỏ lưu",
+        "edit": "Chỉnh sửa",
+        "delete": "Xóa"
+      }
+    },
+    "media": {
+      "playVideo": "Phát video",
+      "videoThumbnailAlt": "Ảnh xem trước video",
+      "imageAlt": "Hình ảnh đính kèm",
+      "loadError": "Không thể tải ảnh",
+      "prevImage": "Media trước",
+      "nextImage": "Media tiếp theo",
+      "goToSlide": "Chuyển đến slide {index}"
+    },
+    "pagination": {
+      "ariaLabel": "Phân trang",
+      "prev": "Trang trước",
+      "next": "Trang sau"
+    },
+    "form": {
+      "placeholder": "Bạn đang nghĩ gì?",
+      "fileLimit": "Bạn chỉ có thể tải lên tối đa {max} tệp. Còn {remaining} chỗ trống.",
+      "invalidType": "{name} không phải là tệp hình ảnh hoặc video được hỗ trợ.",
+      "emptyFile": "{name} là tệp rỗng.",
+      "fileTooLarge": "{name} quá lớn. Kích thước tối đa là 50MB.",
+      "previewError": "Không thể tạo preview cho {name}.",
+      "unknownError": "Lỗi không xác định",
+      "uploadFailed": "Không thể tải lên {name}: {error}",
+      "missingContent": "Vui lòng nhập nội dung hoặc đính kèm tệp.",
+      "partialUpload": "Một số tệp tải lên thất bại. Vui lòng thử lại.",
+      "updateSuccess": "Đã cập nhật bài viết!",
+      "createSuccess": "Đã tạo bài viết!",
+      "submitError": "Lỗi khi đăng bài viết.",
+      "removeFile": "Xóa tệp",
+      "chooseFile": "Chọn tệp",
+      "uploading": "Đang tải lên...",
+      "posting": "Đang đăng...",
+      "update": "Cập nhật",
+      "post": "Đăng",
+      "previewAlt": "Xem trước {index}"
+    },
+    "newPost": {
+      "title": "Tạo bài viết mới",
+      "description": "Chia sẻ suy nghĩ, mẹo học tập hoặc tài nguyên của bạn với cộng đồng TOEIC."
+    },
+    "groups": {
+      "header": {
+        "title": "Nhóm học",
+        "description": "Tham gia các nhóm học TOEIC để luyện tập cùng mọi người."
+      },
+      "actions": {
+        "searchPlaceholder": "Tìm nhóm theo tên...",
+        "create": "Tạo nhóm"
+      },
+      "loading": "Đang tải danh sách nhóm...",
+      "delete": {
+        "button": "Xóa nhóm",
+        "confirm": {
+          "title": "Xác nhận xóa nhóm",
+          "message": "Bạn có chắc muốn xóa nhóm này? Hành động này không thể hoàn tác.",
+          "confirm": "Xóa nhóm",
+          "cancel": "Hủy"
+        },
+        "toast": {
+          "success": "Đã xóa nhóm",
+          "error": "Không thể xóa nhóm"
+        }
+      },
+      "card": {
+        "memberCount": "{count} thành viên",
+        "visibility": {
+          "private": "Riêng tư",
+          "public": "Công khai"
+        }
+      },
+      "empty": {
+        "title": "Chưa có nhóm phù hợp",
+        "description": "Bạn chưa tham gia hoặc tạo nhóm nào. Hãy tạo nhóm đầu tiên để học TOEIC cùng bạn bè."
+      }
+    },
+    "createGroup": {
+      "header": {
+        "title": "Tạo nhóm mới",
+        "description": "Tạo không gian để cùng học TOEIC, thảo luận và chia sẻ tài nguyên."
+      },
+      "cover": {
+        "label": "Ảnh bìa",
+        "help": "Gợi ý tỉ lệ 16:9, dung lượng dưới 5MB. Ảnh bìa đẹp giúp nhóm của bạn nổi bật hơn.",
+        "previewAlt": "Ảnh bìa xem trước",
+        "remove": "Xóa ảnh bìa",
+        "upload": {
+          "title": "Tải lên ảnh bìa",
+          "description": "Nhấn để chọn ảnh từ thiết bị của bạn"
+        },
+        "errors": {
+          "invalidType": "Vui lòng chọn tệp ảnh hợp lệ",
+          "upload": "Lỗi khi tải lên ảnh bìa"
+        }
+      },
+      "form": {
+        "name": {
+          "label": "Tên nhóm",
+          "placeholder": "Ví dụ: Nhóm luyện nghe TOEIC 500+"
+        },
+        "description": {
+          "label": "Mô tả",
+          "placeholder": "Giới thiệu mục tiêu, cách hoạt động hoặc quy định của nhóm..."
+        },
+        "cancel": "Hủy",
+        "submit": "Tạo nhóm",
+        "submitting": "Đang tạo..."
+      },
+      "toast": {
+        "success": "Đã tạo nhóm",
+        "error": "Lỗi khi tạo nhóm",
+        "nameRequired": "Vui lòng nhập tên nhóm"
+      }
+    },
+    "comment": {
+      "avatarAlt": "Ảnh đại diện",
+      "fallbackUser": "Người dùng",
+      "confirm": {
+        "title": "Xóa bình luận?",
+        "message": "Bạn có chắc chắn muốn xóa bình luận này?",
+        "confirm": "Xóa",
+        "cancel": "Hủy"
+      },
+      "toast": {
+        "deleteSuccess": "Đã xóa bình luận",
+        "deleteError": "Lỗi khi xóa bình luận",
+        "updateSuccess": "Đã cập nhật bình luận",
+        "updateError": "Lỗi khi cập nhật bình luận"
+      },
+      "edit": {
+        "title": "Chỉnh sửa bình luận",
+        "saveAria": "Lưu bình luận",
+        "cancelAria": "Hủy chỉnh sửa bình luận"
+      },
+      "labels": {
+        "edited": "(đã chỉnh sửa)"
+      },
+      "aria": {
+        "edit": "Chỉnh sửa bình luận",
+        "delete": "Xóa bình luận"
+      }
+    },
+    "postDetail": {
+      "toast": {
+        "loadError": "Không thể tải bài viết",
+        "likeError": "Không thể thích bài viết",
+        "commentSuccess": "Đã đăng bình luận",
+        "commentError": "Không thể đăng bình luận",
+        "deleteError": "Không thể xóa bài viết"
+      },
+      "commentInput": {
+        "required": "Vui lòng nhập nội dung hoặc đính kèm tệp",
+        "imageAlt": "Ảnh đính kèm bình luận",
+        "fileFallback": "Tệp",
+        "removeAttachmentAria": "Xóa đính kèm",
+        "placeholder": "Viết bình luận...",
+        "attachAria": "Đính kèm tệp",
+        "submitAria": "Đăng bình luận"
+      },
+      "loading": "Đang tải bài viết...",
+      "edit": {
+        "cancel": "Hủy"
+      },
+      "shared": {
+        "viewOriginal": "Đã chia sẻ · Xem bài gốc",
+        "label": "Đã chia sẻ"
+      },
+      "original": {
+        "viewPost": "Xem bài gốc →"
+      },
+      "comments": {
+        "title": "Bình luận ({count})",
+        "emptyTitle": "Chưa có bình luận",
+        "emptyDescription": "Hãy là người đầu tiên lên tiếng nhé."
+      }
+    },
+    "explore": {
+      "header": {
+        "title": "Khám phá",
+        "description": "Tìm những chủ đề và nhóm học thú vị trong cộng đồng TOEIC."
+      },
+      "hashtags": {
+        "title": "Hashtag đang thịnh hành",
+        "description": "Xem các chủ đề được cộng đồng tương tác nhiều nhất",
+        "postCount": "{count} bài viết",
+        "empty": "Chưa có hashtag nào đang thịnh hành."
+      },
+      "quickLinks": {
+        "trending": {
+          "title": "Xu hướng",
+          "description": "Xem những bài viết được quan tâm nhất 24 giờ qua."
+        },
+        "groups": {
+          "title": "Nhóm học",
+          "description": "Tham gia các nhóm học theo mục tiêu và trình độ."
+        }
+      }
+    },
+    "followersModal": {
+      "title": "Người theo dõi",
+      "closeAria": "Đóng danh sách người theo dõi",
+      "avatarAlt": "Ảnh người theo dõi",
+      "fallbackUser": "Người dùng",
+      "followerCount": "{count} người theo dõi",
+      "empty": {
+        "title": "Chưa có người theo dõi",
+        "description": "Khi người khác theo dõi bạn, họ sẽ xuất hiện ở đây."
+      }
+    },
+    "followingModal": {
+      "title": "Đang theo dõi",
+      "closeAria": "Đóng danh sách đang theo dõi",
+      "avatarAlt": "Ảnh người đang theo dõi",
+      "fallbackUser": "Người dùng",
+      "followerCount": "{count} người theo dõi",
+      "empty": {
+        "title": "Chưa theo dõi ai",
+        "description": "Hãy khám phá cộng đồng và theo dõi những người dùng khác."
+      }
+    },
+    "followingList": {
+      "header": {
+        "title": "Đang theo dõi",
+        "description": "Danh sách tài khoản bạn đang theo dõi"
+      },
+      "avatarAlt": "Ảnh người đang theo dõi",
+      "fallbackUser": "Người dùng",
+      "followerCount": "{count} người theo dõi",
+      "empty": {
+        "title": "Chưa theo dõi ai",
+        "description": "Hãy khám phá cộng đồng và theo dõi những người học mà bạn quan tâm."
+      },
+      "reload": {
+        "label": "Làm mới danh sách",
+        "aria": "Làm mới danh sách đang theo dõi"
+      }
+    },
+    "followingFeed": {
+      "header": {
+        "title": "Bảng tin đang theo dõi",
+        "description": "Bài viết mới nhất từ những tài khoản bạn quan tâm"
+      },
+      "loading": "Đang tải bài viết...",
+      "empty": {
+        "title": "Chưa có bài viết nào",
+        "description": "Hãy theo dõi thêm một số người dùng để xem bài viết của họ tại đây."
+      }
+    },
+    "saved": {
+      "header": {
+        "title": "Bài viết đã lưu",
+        "description": "Những bài viết bạn lưu lại để xem sau."
+      },
+      "toast": {
+        "authRequired": "Vui lòng đăng nhập để xem bài viết đã lưu",
+        "loadError": "Không thể tải bài viết đã lưu",
+        "genericError": "Có lỗi xảy ra khi tải bài viết đã lưu"
+      },
+      "loading": "Đang tải bài viết đã lưu...",
+      "empty": {
+        "title": "Chưa có bài viết nào",
+        "description": "Hãy lưu những bài viết hữu ích để truy cập nhanh hơn."
+      }
+    },
+    "trending": {
+      "header": {
+        "title": "Xu hướng",
+        "description": "Những bài viết được tương tác nhiều nhất trong 24 giờ qua."
+      },
+      "loading": "Đang tải bài viết xu hướng...",
+      "empty": {
+        "title": "Chưa có bài viết nào trong xu hướng",
+        "description": "Khi bài viết nhận được nhiều tương tác hơn, chúng sẽ xuất hiện tại đây."
+      }
+    },
+    "hashtag": {
+      "stats": {
+        "postCount": "{count} bài viết"
+      },
+      "empty": {
+        "title": "Chưa có bài viết nào",
+        "description": "Chưa có ai sử dụng hashtag này."
+      }
+    },
+    "reactionPicker": {
+      "toast": {
+        "authRequired": "Vui lòng đăng nhập để thả cảm xúc",
+        "error": "Không thể cập nhật reaction"
+      }
+    },
+    "poll": {
+      "toast": {
+        "authRequired": "Vui lòng đăng nhập để bình chọn",
+        "voteFailed": "Không thể bình chọn",
+        "genericError": "Có lỗi xảy ra khi bình chọn"
+      },
+      "status": {
+        "ended": "Đã kết thúc",
+        "votersCount": "{count} lượt bình chọn"
+      },
+      "prompt": {
+        "select": "Chọn một phương án"
+      }
+    },
+    "imageCropper": {
+      "title": "Cắt ảnh",
+      "zoomLabel": "Phóng to: {percent}%",
+      "rotationLabel": "Xoay: {degrees}°",
+      "cancel": "Hủy",
+      "done": "Xong",
+      "processing": "Đang xử lý..."
+    },
+    "groupDetail": {
+      "toast": {
+        "notFound": "Không tìm thấy nhóm",
+        "loadGroupError": "Không thể tải thông tin nhóm",
+        "loadPostsError": "Không thể tải bài viết",
+        "authRequired": "Vui lòng đăng nhập",
+        "joinError": "Không thể tham gia nhóm",
+        "joinSuccess": "Đã tham gia nhóm",
+        "leaveError": "Không thể rời nhóm",
+        "leaveSuccess": "Đã rời nhóm",
+        "deleteError": "Không thể xóa nhóm",
+        "deleteSuccess": "Đã xóa nhóm"
+      },
+      "confirmDelete": {
+        "title": "Xóa nhóm này?",
+        "message": "Xóa nhóm sẽ xóa toàn bộ bài viết bên trong. Hành động này không thể hoàn tác.",
+        "confirm": "Xóa nhóm",
+        "cancel": "Hủy"
+      },
+      "loading": {
+        "group": "Đang tải thông tin nhóm..."
+      },
+      "backLink": "Quay lại danh sách nhóm",
+      "stats": {
+        "membersLabel": "thành viên",
+        "postsLabel": "bài viết",
+        "adminLabel": "Quản trị viên:",
+        "unknownAdmin": "Không xác định"
+      },
+      "actions": {
+        "delete": {
+          "button": "Xóa nhóm",
+          "loading": "Đang xóa nhóm..."
+        },
+        "leave": {
+          "button": "Rời nhóm",
+          "loading": "Đang rời nhóm..."
+        },
+        "join": {
+          "button": "Tham gia nhóm",
+          "loading": "Đang tham gia..."
+        }
+      },
+      "composer": {
+        "title": "Tạo bài viết trong nhóm"
+      },
+      "posts": {
+        "loading": "Đang tải bài viết...",
+        "empty": {
+          "title": "Chưa có bài viết nào",
+          "memberDescription": "Hãy là người đầu tiên chia sẻ bài viết cho nhóm nhé!",
+          "guestDescription": "Hiện chưa có bài viết nào trong nhóm này."
+        }
+      }
+    },
+    "profile": {
+      "loading": "Đang tải hồ sơ...",
+      "avatarAlt": "Ảnh đại diện",
+      "fallbackName": "Người dùng",
+      "uploading": "Đang cập nhật ảnh...",
+      "toast": {
+        "follow": {
+          "success": "Đã theo dõi",
+          "error": "Không thể theo dõi người dùng này"
+        },
+        "unfollow": {
+          "success": "Đã bỏ theo dõi",
+          "error": "Không thể bỏ theo dõi người dùng này"
+        },
+        "cover": {
+          "removeSuccess": "Đã xóa ảnh bìa",
+          "removeError": "Không thể xóa ảnh bìa",
+          "updateSuccess": "Đã cập nhật ảnh bìa",
+          "updateError": "Không thể cập nhật ảnh bìa"
+        },
+        "avatar": {
+          "removeSuccess": "Đã xóa ảnh đại diện",
+          "removeError": "Không thể xóa ảnh đại diện",
+          "updateSuccess": "Đã cập nhật ảnh đại diện",
+          "updateError": "Không thể cập nhật ảnh đại diện"
+        }
+      },
+      "upload": {
+        "invalidImage": "Vui lòng chọn tệp ảnh hợp lệ",
+        "readError": "Không thể đọc tệp ảnh"
+      },
+      "cover": {
+        "removeConfirm": {
+          "title": "Xóa ảnh bìa?",
+          "message": "Ảnh bìa sẽ được xóa khỏi hồ sơ của bạn.",
+          "confirm": "Xóa",
+          "cancel": "Hủy"
+        }
+      },
+      "avatar": {
+        "actions": {
+          "update": "Cập nhật ảnh",
+          "remove": "Xóa ảnh"
+        },
+        "removeConfirm": {
+          "title": "Xóa ảnh đại diện?",
+          "message": "Bạn có chắc muốn xóa ảnh đại diện?",
+          "confirm": "Xóa",
+          "cancel": "Hủy"
+        }
+      },
+      "actions": {
+        "editProfile": "Chỉnh sửa hồ sơ",
+        "processing": "Đang xử lý...",
+        "unfollow": "Bỏ theo dõi",
+        "follow": "Theo dõi"
+      },
+      "stats": {
+        "posts": "bài viết",
+        "followers": "người theo dõi",
+        "following": "đang theo dõi"
+      },
+      "goal": {
+        "title": "Mục tiêu TOEIC",
+        "current": "Điểm hiện tại",
+        "target": "Mục tiêu"
+      },
+      "badges": {
+        "title": "Bộ sưu tập huy hiệu",
+        "progress": "{unlocked} / {total} huy hiệu đã mở khóa",
+        "pill": "{count} huy hiệu",
+        "emptyTitle": "Chưa có huy hiệu nào",
+        "emptyDescription": "Luyện tập đều đặn, giữ streak để mở khóa huy hiệu đầu tiên.",
+        "lockedTitle": "Huy hiệu chưa mở",
+        "lockedTooltip": "Chưa đạt: {description}"
+      },
+      "posts": {
+        "title": "Bài viết",
+        "emptyTitle": "Chưa có bài viết",
+        "emptyDescription": "Người dùng này chưa đăng bài nào trong cộng đồng."
+      }
+    }
+  },
+  "vocabulary": {
+    "page": {
+      "header": {
+        "badge": "Vocabulary lab",
+        "title": "Tạo lộ trình từ vựng chuẩn TOEIC",
+        "description": "Quản lý bộ từ, luyện flashcard theo cấp độ và quiz nhanh để khóa kiến thức mỗi ngày.",
+        "stats": {
+          "sets": "Bộ từ",
+          "terms": "Tổng từ"
+        },
+        "cta": "Tạo bộ từ mới"
+      },
+      "filters": {
+        "searchLabel": "Tìm kiếm nhanh",
+        "searchPlaceholder": "Nhập từ khóa, chủ đề hoặc ghi chú...",
+        "sortLabel": "Sắp xếp & lọc",
+        "sortOptions": {
+          "recent": "Mới cập nhật",
+          "alphabetical": "Theo A–Z",
+          "terms": "Nhiều từ nhất"
+        }
+      },
+      "empty": {
+        "title": "Chưa có bộ từ nào",
+        "description": "Tạo bộ từ đầu tiên hoặc import danh sách từ để bắt đầu học giống Quizlet nhưng tối ưu cho TOEIC."
+      },
+      "duplicateSuffix": "(bản sao)"
+    },
+    "toast": {
+      "duplicateSuccess": "Đã nhân bản bộ từ",
+      "setCreateSuccess": "Đã tạo bộ từ mới",
+      "setUpdateSuccess": "Đã cập nhật bộ từ",
+      "setDeleteSuccess": "Đã xóa bộ từ",
+      "termCreateSuccess": "Đã thêm từ",
+      "termUpdateSuccess": "Đã cập nhật từ",
+      "termDeleteSuccess": "Đã xóa từ"
+    },
+    "errors": {
+      "saveSet": "Không thể lưu bộ từ",
+      "saveTerm": "Không thể lưu từ vựng",
+      "deleteSet": "Không thể xóa bộ từ",
+      "deleteTerm": "Không thể xóa từ"
+    },
+    "confirm": {
+      "deleteSet": {
+        "title": "Xóa bộ từ vựng?",
+        "message": "Thao tác này không thể hoàn tác.",
+        "confirm": "Xóa"
+      },
+      "deleteTerm": {
+        "title": "Xóa từ?",
+        "message": "Bạn chắc chắn muốn xóa từ khỏi bộ?",
+        "confirm": "Xóa từ"
+      }
+    }
+  },
+  "news": {
+    "page": {
+      "header": {
+        "badge": "Reading lab",
+        "title": "Đọc báo luyện tiếng Anh",
+        "description": "Chọn bài báo tiếng Anh, đọc trong ngữ cảnh, nhấn vào từ để xem nghĩa và lưu từ mới.",
+        "totalLabel": "Tổng bài viết",
+        "categoryLabel": "Danh mục"
+      },
+      "categories": {
+        "all": "Tất cả",
+        "education": "Giáo dục",
+        "politics": "Chính trị",
+        "travel": "Du lịch",
+        "technology": "Công nghệ",
+        "sports": "Thể thao",
+        "entertainment": "Giải trí",
+        "business": "Kinh doanh",
+        "society": "Xã hội",
+        "health": "Sức khỏe",
+        "culture": "Văn hóa"
+      },
+      "card": {
+        "hint": "Nhấn để đọc bài và học từ mới trực tiếp trên văn bản."
+      },
+      "empty": {
+        "title": "Chưa có bài đọc nào",
+        "description": "Thử chuyển sang danh mục khác để tiếp tục luyện đọc và học từ vựng."
+      },
+      "pagination": {
+        "label": "Trang",
+        "prev": "Trang trước",
+        "next": "Trang sau",
+        "of": "/ {total}"
+      }
+    }
+  },
+  "Header": {
+    "logoAria": "Về trang chủ ToeicPrep",
+    "logoAlt": "Logo ToeicPrep"
+  },
+  "HomePage": {
+    "loading": "Đang tải {label}...",
+    "labels": {
+      "workflow": "quy trình",
+      "testimonials": "cảm nhận học viên",
+      "pricing": "bảng giá",
+      "faq": "FAQ",
+      "cta": "lời kêu gọi hành động"
+    },
+    "meta": {
+      "title": "Luyện thi TOEIC trực tuyến - Thi thử đề thật, chấm điểm nhanh",
+      "description": "Luyện thi TOEIC trực tuyến với hàng nghìn câu hỏi thực tế. Thi thử đề thật, chấm điểm nhanh, giải thích chi tiết. Học từ vựng, luyện nghe, đọc hiểu TOEIC hiệu quả.",
+      "keywords": "TOEIC, luyện thi TOEIC, thi thử TOEIC, học TOEIC online, TOEIC practice test, TOEIC listening, TOEIC reading, từ vựng TOEIC, TOEIC online, TOEIC test preparation"
+    },
+    "jsonLd": {
+      "faq": [
+        {
+          "question": "TOEIC PREP là gì?",
+          "answer": "TOEIC PREP là nền tảng luyện thi TOEIC trực tuyến với hàng nghìn câu hỏi thực tế, giúp bạn chuẩn bị tốt nhất cho kỳ thi TOEIC."
+        },
+        {
+          "question": "Làm thế nào để bắt đầu luyện thi TOEIC?",
+          "answer": "Bạn có thể đăng ký tài khoản miễn phí và bắt đầu làm bài thi thử TOEIC ngay. Hệ thống sẽ đánh giá trình độ và đề xuất lộ trình học phù hợp."
+        },
+        {
+          "question": "Có những phần nào trong bài thi TOEIC?",
+          "answer": "Bài thi TOEIC gồm 7 phần: Part 1 (Photographs), Part 2 (Question-Response), Part 3 (Conversations), Part 4 (Talks), Part 5 (Incomplete Sentences), Part 6 (Text Completion), Part 7 (Reading Comprehension)."
+        }
+      ]
+    }
+  },
+  "MobileTopBar": {
+    "logoAria": "Trang chủ",
+    "logoAlt": "Logo TOEIC Practice",
+    "notificationAria": "Thông báo"
+  },
+  "HeaderActions": {
+    "language": {
+      "aria": "Chọn ngôn ngữ",
+      "tooltip": "Chọn ngôn ngữ",
+      "title": "Chọn ngôn ngữ",
+      "vi": {
+        "label": "Tiếng Việt",
+        "desc": "Ngôn ngữ Việt Nam"
+      },
+      "en": {
+        "label": "Tiếng Anh",
+        "desc": "Ngôn ngữ quốc tế"
+      }
+    },
+    "notification": {
+      "aria": "Thông báo",
+      "tooltip": "Xem thông báo",
+      "title": "Thông báo",
+      "clearAll": "Xoá tất cả",
+      "empty": "Chưa có thông báo"
+    },
+    "theme": {
+      "aria": "Chuyển đổi giao diện",
+      "light": "Chuyển sang chế độ sáng",
+      "dark": "Chuyển sang chế độ tối"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Đăng nhập",
+      "noAccount": "Chưa có tài khoản?",
+      "register": "Đăng ký",
+      "continueWithGoogle": "Tiếp tục với Google",
+      "email": "Email",
+      "emailPlaceholder": "Nhập email của bạn",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "Nhập mật khẩu của bạn",
+      "forgotPassword": "Quên mật khẩu?",
+      "processing": "Đang xử lý...",
+      "submit": "Đăng nhập",
+      "success": "Đăng nhập thành công!",
+      "errors": {
+        "emailRequired": "Vui lòng nhập email",
+        "emailInvalid": "Email không hợp lệ",
+        "passwordRequired": "Vui lòng nhập mật khẩu",
+        "passwordLen": "Mật khẩu phải có tối thiểu 8 ký tự"
+      }
+    },
+    "register": {
+      "title": "Tạo tài khoản",
+      "alreadyAccount": "Đã có tài khoản?",
+      "login": "Đăng nhập",
+      "google": "Tiếp tục với Google",
+      "name": "Họ và tên",
+      "placeholderName": "Nhập họ và tên của bạn",
+      "email": "Email",
+      "placeholderEmail": "Nhập email của bạn",
+      "password": "Mật khẩu",
+      "placeholderPassword": "Tối thiểu 8 ký tự",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "confirmPlaceholder": "Nhập lại mật khẩu",
+      "submitting": "Đang xử lý...",
+      "submit": "Đăng ký",
+      "success": "Đăng ký thành công!",
+      "verification": {
+        "label": "Mã xác thực email",
+        "placeholder": "Nhập mã 6 số",
+        "sending": "Đang gửi…",
+        "resend": "Gửi lại mã ({seconds}s)",
+        "send": "Gửi mã",
+        "help": "Nếu không nhận được mã, bạn có thể yêu cầu gửi lại sau 30 giây.",
+        "errorEmailRequired": "Vui lòng nhập email trước",
+        "errorEmailInvalid": "Email không hợp lệ",
+        "sentSuccess": "Đã gửi mã",
+        "sentCooldown": "Bạn vừa gửi mã. Vui lòng thử lại sau {seconds}s",
+        "sendFailed": "Gửi mã thất bại",
+        "sendError": "Không thể gửi mã. Vui lòng thử lại."
+      },
+      "errors": {
+        "emailRequired": "Vui lòng nhập email",
+        "emailInvalid": "Email không hợp lệ",
+        "nameRequired": "Vui lòng nhập họ tên",
+        "nameInvalid": "Tên chỉ gồm chữ cái, khoảng trắng, dấu gạch nối, nháy đơn và chấm (2–50 ký tự)",
+        "passwordRequired": "Vui lòng nhập mật khẩu",
+        "passwordWeak": "Mật khẩu tối thiểu 8 ký tự, có chữ và số, không khoảng trắng đầu/cuối",
+        "confirmRequired": "Vui lòng nhập lại mật khẩu",
+        "confirmMismatch": "Mật khẩu xác nhận không khớp"
+      }
+    },
+    "changePassword": {
+      "errorMissingFields": "Vui lòng điền đầy đủ các mật khẩu.",
+      "errorPasswordLength": "Mật khẩu mới phải có ít nhất 8 ký tự.",
+      "errorPasswordMismatch": "Mật khẩu xác nhận không khớp.",
+      "errorGeneric": "Đổi mật khẩu thất bại. Vui lòng thử lại.",
+      "success": "Đổi mật khẩu thành công! Vui lòng đăng nhập lại.",
+      "title": "Đổi mật khẩu",
+      "subtitle": "Bảo vệ tài khoản với mật khẩu mới.",
+      "currentPasswordLabel": "Mật khẩu hiện tại",
+      "currentPasswordPlaceholder": "Nhập mật khẩu hiện tại",
+      "newPasswordLabel": "Mật khẩu mới",
+      "newPasswordPlaceholder": "Tối thiểu 8 ký tự",
+      "confirmPasswordLabel": "Nhập lại mật khẩu mới",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
+      "submitLoading": "Đang cập nhật...",
+      "submit": "Lưu mật khẩu mới",
+      "backToHome": "Về trang chủ"
+    },
+    "completeGoogle": {
+      "errorPasswordLength": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "errorPasswordMismatch": "Mật khẩu xác nhận không khớp.",
+      "errorGeneric": "Có lỗi xảy ra. Vui lòng thử lại.",
+      "success": "Tạo mật khẩu thành công! Bạn có thể tiếp tục sử dụng ToeicPrep.",
+      "title": "Tạo mật khẩu",
+      "subtitle": "Bảo vệ tài khoản Google của bạn bằng mật khẩu ToeicPrep.",
+      "passwordLabel": "Mật khẩu",
+      "passwordPlaceholder": "Nhập mật khẩu",
+      "confirmPasswordLabel": "Xác nhận mật khẩu",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
+      "submitLoading": "Đang lưu...",
+      "submit": "Hoàn tất"
+    },
+    "forgotPassword": {
+      "errorEmailRequired": "Vui lòng nhập email.",
+      "successStep1": "Đã gửi mã xác thực! Kiểm tra hộp thư của bạn.",
+      "errorCodeInvalid": "Vui lòng nhập đúng mã xác thực.",
+      "errorPasswordLength": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "errorPasswordMismatch": "Mật khẩu xác nhận không khớp.",
+      "successStep2": "Đặt lại mật khẩu thành công!",
+      "title": "Quên mật khẩu",
+      "resetTitle": "Đặt lại mật khẩu",
+      "subtitleStep1": "Nhập email đã đăng ký để nhận mã gồm 6 chữ số.",
+      "subtitleStep2": "Nhập mã trong email và đặt mật khẩu mới.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "ban@example.com",
+      "submitStep1Loading": "Đang gửi...",
+      "submitStep1": "Gửi mã",
+      "backToLogin": "Quay lại đăng nhập",
+      "checkSpam": "Không nhận được email? Hãy kiểm tra <span>Spam/Quảng cáo</span> hoặc thử lại sau 60 giây.",
+      "codeLabel": "Mã xác thực",
+      "codePlaceholder": "Nhập mã 6 chữ số",
+      "resendCode": "Gửi lại mã",
+      "resendWait": "Gửi lại sau {seconds}s",
+      "newPasswordLabel": "Mật khẩu mới",
+      "newPasswordPlaceholder": "Nhập mật khẩu mới",
+      "confirmPasswordLabel": "Xác nhận mật khẩu",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
+      "submitStep2Loading": "Đang đặt lại...",
+      "submitStep2": "Cập nhật mật khẩu",
+      "sendCodeError": "Không thể gửi mã. Vui lòng thử lại.",
+      "missingEmail": "Thiếu email.",
+      "resetCodeError": "Mã không hợp lệ hoặc đã hết hạn. Vui lòng thử lại."
+    }
+  },
+  "UserMenu": {
+    "aria": {
+      "manage": "Quản lý tài khoản",
+      "login": "Đăng nhập/Đăng ký"
+    },
+    "tooltip": {
+      "manage": "Quản lý tài khoản",
+      "login": "Đăng nhập/Đăng ký"
+    },
+    "fallbackName": "Người dùng",
+    "profile": "Trang cá nhân",
+    "role": {
+      "label": "Quyền",
+      "admin": "Quản trị",
+      "teacher": "Giáo viên",
+      "user": "Người dùng"
+    },
+    "access": {
+      "label": "Gói",
+      "premium": "Cao cấp",
+      "free": "Miễn phí"
+    },
+    "suggestions": "Gợi ý theo phần",
+    "part": "Part {number}",
+    "level": "Level {level}",
+    "logout": "Đăng xuất",
+    "account": "Tài khoản",
+    "loginAction": {
+      "title": "Đăng nhập",
+      "desc": "Đã có tài khoản"
+    },
+    "registerAction": {
+      "title": "Đăng ký",
+      "desc": "Tạo tài khoản mới"
+    },
+    "toast": {
+      "logoutSuccess": "Đăng xuất thành công",
+      "logoutError": "Lỗi khi đăng xuất"
+    }
+  },
+  "SideNav": {
+    "feed": "Bảng tin",
+    "following": "Đang theo dõi",
+    "trending": "Xu hướng",
+    "saved": "Đã lưu",
+    "profile": "Hồ sơ cá nhân",
+    "groups": "Nhóm học",
+    "classrooms": "Phòng học",
+    "explore": "Khám phá",
+    "settings": "Cài đặt",
+    "newPost": "Đăng bài mới"
+  },
+  "MobileAvatarSheet": {
+    "header": "Tài khoản",
+    "closeAria": "Đóng",
+    "fallbackName": "Người dùng",
+    "profile": "Trang cá nhân",
+    "role": {
+      "label": "Quyền",
+      "admin": "Quản trị",
+      "teacher": "Giáo viên",
+      "user": "Người dùng"
+    },
+    "access": {
+      "label": "Gói",
+      "premium": "Cao cấp",
+      "free": "Miễn phí"
+    },
+    "partLevel": "Level từng part",
+    "part": "Part {number}",
+    "level": "Lv{level}",
+    "language": {
+      "en": "English",
+      "vi": "Tiếng Việt"
+    },
+    "theme": {
+      "dark": "Chế độ tối",
+      "light": "Chế độ sáng"
+    },
+    "logout": "Đăng xuất",
+    "guest": {
+      "message": "Vui lòng đăng nhập để xem thông tin tài khoản",
+      "login": "Đăng nhập",
+      "register": "Đăng ký"
+    },
+    "toast": {
+      "logoutSuccess": "Đăng xuất thành công",
+      "logoutError": "Lỗi khi đăng xuất"
+    }
+  },
+  "mobile": {
+    "practice": {
+      "parts": {
+        "part1": "Part 1 · Mô tả tranh",
+        "part2": "Part 2 · Hỏi đáp",
+        "part3": "Part 3 · Hội thoại",
+        "part4": "Part 4 · Bài nói",
+        "part5": "Part 5 · Hoàn thành câu",
+        "part6": "Part 6 · Điền đoạn",
+        "part7": "Part 7 · Đọc hiểu",
+        "full": {
+          "1": "Part 1 · Mô tả tranh",
+          "2": "Part 2 · Hỏi đáp",
+          "3": "Part 3 · Hội thoại",
+          "4": "Part 4 · Bài nói",
+          "5": "Part 5 · Hoàn thành câu",
+          "6": "Part 6 · Điền đoạn",
+          "7": "Part 7 · Đọc hiểu"
+        }
+      },
+      "header": {
+        "badge": "Luyện TOEIC",
+        "title": "Luyện từng Part TOEIC mọi lúc mọi nơi",
+        "description": "Bắt đầu với <level1>các bộ Level 1</level1> để lấy lại nhịp, rồi tăng độ khó khi đã sẵn sàng."
+      },
+      "listening": "Listening",
+      "reading": "Reading",
+      "card": {
+        "startFromLevel1": "Bắt đầu từ Level 1",
+        "autoSuggest": "Lộ trình tự điều chỉnh"
+      },
+      "tip": "Kết hợp <listening>các Part Listening</listening> khi bạn chỉ có vài phút và <reading>các Part Reading</reading> khi có nhiều thời gian tập trung."
+    },
+    "study": {
+      "vocabulary": {
+        "title": "Vocabulary Lab",
+        "description": "Ôn bộ từ, lật flashcard và làm quiz ngắn để giữ streak.",
+        "tag": "Flashcard + Quiz",
+        "estimated": "≈10 phút",
+        "suggested": "Đề xuất"
+      },
+      "news": {
+        "title": "Học qua tin tức",
+        "description": "Đọc bài viết chọn lọc, chạm để dịch tức thời và lưu từ mới.",
+        "tag": "Reading lab",
+        "estimated": "≈12 phút"
+      },
+      "header": {
+        "badge": "Study modes",
+        "title": "Học linh hoạt mọi lúc",
+        "description": "Luân phiên <vocabulary>Vocabulary Lab</vocabulary> cho các lượt ôn nhanh và <news>Reading Lab</news> khi muốn đắm mình trong bài đọc."
+      },
+      "cta": {
+        "start": "Mở chế độ",
+        "tap": "Chạm để khám phá"
+      },
+      "tip": "Dùng <vocabulary>Vocabulary</vocabulary> khi có thể tương tác, chuyển sang <news>News</news> lúc di chuyển hoặc thư giãn."
+    }
+  },
+  "Account": {
+    "header": {
+      "title": "Cài đặt tài khoản",
+      "desc": "Quản lý thông tin cá nhân và cài đặt tài khoản của bạn",
+      "viewProfile": "Xem hồ sơ công khai"
+    },
+    "profile": {
+      "noAvatar": "Chưa có ảnh",
+      "changeAvatar": "Đổi ảnh đại diện",
+      "role": {
+        "admin": "Quản trị viên",
+        "teacher": "Giáo viên",
+        "user": "Người dùng"
+      },
+      "access": {
+        "title": "Gói truy cập",
+        "free": "Miễn phí",
+        "premium": "Cao cấp"
+      },
+      "updatedAt": "Cập nhật:",
+      "toeicEstimate": "TOEIC ước lượng",
+      "upgradePrompt": "Nâng cấp gói để mở thêm bài luyện"
+    },
+    "stats": {
+      "createdAt": "Thời gian tạo",
+      "lastPlacement": "Placement gần nhất",
+      "viewResult": "Xem kết quả",
+      "noResult": "Chưa có",
+      "practiceHistory": "Lịch sử luyện tập",
+      "viewHistory": "Xem lịch sử",
+      "upcomingSchedule": "Lịch học sắp tới",
+      "viewSchedule": "Xem lịch học"
+    },
+    "activity": {
+      "title": "Hoạt động gần đây",
+      "part": "Part {number}",
+      "test": "Test {number}",
+      "practice": "Luyện tập",
+      "viewAll": "Xem tất cả"
+    },
+    "toast": {
+      "loginRequired": "Vui lòng đăng nhập",
+      "loadError": "Không thể tải hồ sơ",
+      "invalidImage": "Vui lòng chọn file ảnh hợp lệ",
+      "readError": "Không thể đọc file ảnh",
+      "noAvatar": "Bạn chưa có ảnh đại diện",
+      "deleteSuccess": "Đã xoá ảnh đại diện",
+      "deleteError": "Không thể xoá ảnh đại diện",
+      "updateSuccess": "Đã cập nhật ảnh đại diện",
+      "updateError": "Lỗi khi cập nhật ảnh đại diện"
+    },
+    "confirm": {
+      "deleteAvatar": {
+        "title": "Xóa ảnh đại diện?",
+        "message": "Bạn có chắc muốn xoá ảnh đại diện không?",
+        "confirm": "Xóa",
+        "cancel": "Hủy"
+      }
+    }
+  },
+  "Practice": {
+    "meta": {
+      "part1": "Part 1",
+      "part2": "Part 2",
+      "part3": "Part 3",
+      "part4": "Part 4",
+      "part5": "Part 5",
+      "part6": "Part 6",
+      "part7": "Part 7"
+    },
+    "levels": {
+      "level1": "Level 1",
+      "level1Desc": "Cơ bản",
+      "level2": "Level 2",
+      "level2Desc": "Trung cấp",
+      "level3": "Level 3",
+      "level3Desc": "Nâng cao"
+    },
+    "start": {
+      "loginRequired": "Vui lòng đăng nhập để bắt đầu làm bài",
+      "badge": "Luyện tập TOEIC • {part} • Level {level} • Test {test}",
+      "title": "Bài luyện tập {part}",
+      "listeningDesc": "Luyện <highlight>kỹ năng Nghe</highlight> ở <bold>Level {level}</bold> – <bold>Test {test}</bold>. Hoàn thành bài để xem phân tích chi tiết từng câu hỏi.",
+      "readingDesc": "Luyện <highlight>kỹ năng Đọc</highlight> ở <bold>Level {level}</bold> – Test <bold>{test}</bold>. Hoàn thành bài để xem kết quả và giải thích chi tiết.",
+      "loading": "Đang tải bài luyện tập…",
+      "checking": "Đang kiểm tra...",
+      "retakeDesc": "Đây là lần <bold>làm lại</bold> bài của <bold>{part} - Level {level} - Test {test}</bold>. Điểm sẽ không ảnh hưởng đến level của bạn",
+      "firstTimeDesc": "Đây là <bold>lần đầu</bold> làm bài <bold>{part} - Level {level} - Test {test}</bold>. Điểm sẽ dùng để đánh giá trình độ và đề xuất level phù hợp",
+      "startButton": "Bắt đầu luyện tập"
+    },
+    "result": {
+      "notFoundHistory": "Không tìm thấy lịch sử này",
+      "loadError": "Không tải được dữ liệu lịch sử",
+      "loading": "Đang tải dữ liệu…",
+      "notFound": "Không tìm thấy bài làm",
+      "notFoundDesc": "Có thể bản ghi đã bị xóa hoặc không tồn tại.",
+      "badge": "Luyện tập",
+      "title": "Xem lại bài đã làm",
+      "completedAt": "Hoàn thành lúc <bold>{time}</bold>.",
+      "heading": "KẾT QUẢ",
+      "correct": "Số câu đúng",
+      "accuracy": "Độ chính xác",
+      "time": "Thời gian",
+      "hideDetails": "Ẩn chi tiết",
+      "showDetails": "Xem chi tiết đáp án"
+    },
+    "history": {
+      "badge": "Lịch sử luyện tập",
+      "title": "Lịch sử luyện tập",
+      "description": "Theo dõi tiến trình, xem lại kết quả và cải thiện từng ngày.",
+      "stats": {
+        "totalCorrect": "Tổng câu đúng",
+        "average": "Trung bình",
+        "totalTime": "Tổng thời gian"
+      },
+      "empty": {
+        "title": "Chưa có lịch sử",
+        "description": "Bạn chưa làm bài nào. Hãy vào phần luyện tập và bắt đầu ngay hôm nay!",
+        "startButton": "Bắt đầu luyện tập"
+      },
+      "list": {
+        "title": "Các bài đã làm",
+        "pagination": "{count} bài • Trang {page}",
+        "showing": "Hiển thị {shown} trong {total} bài • Trang {page}",
+        "viewDetails": "Xem chi tiết"
+      }
+    },
+    "inactivity": {
+      "title": "Lâu rồi bạn chưa luyện Practice",
+      "message": "Vào luyện tập ngay để duy trì nhịp học nhé!",
+      "dbMessage": "Lâu rồi bạn chưa luyện Practice. Vào luyện tập ngay!"
+    }
+  },
+  "Common": {
+    "ConfirmModal": {
+      "confirm": "Xác nhận",
+      "cancel": "Hủy",
+      "close": "Đóng",
+      "processing": "Đang xử lý...",
+      "processingShort": "Đang xử lý"
+    },
+    "CornerToast": {
+      "closeNotification": "Đóng thông báo"
+    },
+    "Loading": {
+      "defaultText": "Đang tải...",
+      "loading": "Loading"
+    }
+  },
+  "pages": {
+    "pricing": {
+      "meta": {
+        "title": "Gói học TOEIC Premium - Nâng cấp tài khoản",
+        "description": "Nâng cấp lên Premium để mở khóa toàn bộ tính năng: không giới hạn Practice Tests, AI Chat, Admin Chat, Livestream, Learning Insight và nhiều hơn nữa.",
+        "keywords": "TOEIC Premium, nâng cấp TOEIC, gói học TOEIC, TOEIC 79k, TOEIC 159k, luyện thi TOEIC"
+      }
+    },
+    "news": {
+      "meta": {
+        "title": "Tin tức TOEIC - Cập nhật mới nhất về kỳ thi TOEIC",
+        "description": "Cập nhật tin tức mới nhất về kỳ thi TOEIC, mẹo làm bài, chiến lược học tập, và thông tin quan trọng từ ETS. Đọc các bài viết chuyên sâu về TOEIC.",
+        "keywords": "tin tức TOEIC, TOEIC news, mẹo thi TOEIC, chiến lược TOEIC, TOEIC tips"
+      }
+    },
+    "dashboard": {
+      "meta": {
+        "title": "Dashboard - Theo dõi tiến độ học TOEIC",
+        "description": "Xem tổng quan tiến độ học tập, thống kê điểm số, lịch sử luyện tập và kế hoạch học TOEIC của bạn.",
+        "keywords": "dashboard TOEIC, tiến độ học, thống kê TOEIC, lịch sử luyện tập"
+      }
+    },
+    "practice": {
+      "meta": {
+        "title": "Luyện tập TOEIC - Practice Tests theo từng Part",
+        "description": "Luyện tập TOEIC với hàng nghìn câu hỏi theo từng Part, phân loại theo Level. Hệ thống chấm điểm tự động và phân tích chi tiết.",
+        "keywords": "luyện tập TOEIC, practice test, TOEIC part, bài tập TOEIC",
+        "part1": "Part 1 – Mô tả tranh",
+        "part2": "Part 2 – Hỏi đáp",
+        "part3": "Part 3 – Đoạn hội thoại",
+        "part4": "Part 4 – Bài nói ngắn",
+        "part5": "Part 5 – Hoàn thành câu",
+        "part6": "Part 6 – Hoàn thành đoạn văn",
+        "part7": "Part 7 – Đọc hiểu"
+      },
+      "parts": {
+        "part": {
+          "1": {
+            "title": "Part 1 – Photographs",
+            "description": "Luyện tập Part 1 TOEIC - Mô tả tranh. Luyện nghe và chọn câu mô tả đúng nhất cho bức tranh.",
+            "keywords": "TOEIC, TOEIC part.1, luyện thi TOEIC, thi thử TOEIC, Part 1 – Photographs"
+          },
+          "2": {
+            "title": "Part 2 – Question–Response",
+            "description": "Luyện tập Part 2 TOEIC - Hỏi đáp. Luyện nghe câu hỏi và chọn câu trả lời phù hợp nhất.",
+            "keywords": "TOEIC, TOEIC part.2, luyện thi TOEIC, thi thử TOEIC, Part 2 – Question–Response"
+          },
+          "3": {
+            "title": "Part 3 – Conversations",
+            "description": "Luyện tập Part 3 TOEIC - Đoạn hội thoại. Luyện nghe các cuộc hội thoại ngắn và trả lời câu hỏi.",
+            "keywords": "TOEIC, TOEIC part.3, luyện thi TOEIC, thi thử TOEIC, Part 3 – Conversations"
+          },
+          "4": {
+            "title": "Part 4 – Talks",
+            "description": "Luyện tập Part 4 TOEIC - Bài nói ngắn. Luyện nghe các bài nói và trả lời câu hỏi liên quan.",
+            "keywords": "TOEIC, TOEIC part.4, luyện thi TOEIC, thi thử TOEIC, Part 4 – Talks"
+          },
+          "5": {
+            "title": "Part 5 – Incomplete Sentences",
+            "description": "Luyện tập Part 5 TOEIC - Hoàn thành câu. Luyện ngữ pháp và từ vựng để hoàn thành câu đúng.",
+            "keywords": "TOEIC, TOEIC part.5, luyện thi TOEIC, thi thử TOEIC, Part 5 – Incomplete Sentences"
+          },
+          "6": {
+            "title": "Part 6 – Text Completion",
+            "description": "Luyện tập Part 6 TOEIC - Hoàn thành đoạn văn. Luyện đọc và điền từ phù hợp vào chỗ trống.",
+            "keywords": "TOEIC, TOEIC part.6, luyện thi TOEIC, thi thử TOEIC, Part 6 – Text Completion"
+          },
+          "7": {
+            "title": "Part 7 – Reading Comprehension",
+            "description": "Luyện tập Part 7 TOEIC - Đọc hiểu. Luyện đọc các đoạn văn dài và trả lời câu hỏi hiểu biết.",
+            "keywords": "TOEIC, TOEIC part.7, luyện thi TOEIC, thi thử TOEIC, Part 7 – Reading Comprehension"
+          }
+        }
+      }
+    },
+    "study": {
+      "meta": {
+        "create": {
+          "title": "Tạo phòng học TOEIC - Học cùng bạn bè",
+          "description": "Tạo phòng học trực tuyến để học TOEIC cùng bạn bè, chia sẻ tài liệu và thảo luận.",
+          "keywords": "phòng học TOEIC, học nhóm, học online TOEIC"
+        },
+        "teacher": {
+          "title": "Đăng ký Giáo viên - Gia nhập đội ngũ giảng dạy",
+          "description": "Đăng ký trở thành giáo viên TOEIC, chia sẻ kiến thức và kinh nghiệm với học viên.",
+          "keywords": "giáo viên TOEIC, đăng ký giảng dạy, dạy TOEIC online"
+        }
+      }
+    },
+    "vocabulary": {
+      "meta": {
+        "title": "Từ vựng TOEIC - Học từ vựng theo chủ đề",
+        "description": "Học từ vựng TOEIC theo chủ đề với flashcard, quiz và bài tập thực hành. Hệ thống ghi nhớ thông minh.",
+        "keywords": "từ vựng TOEIC, TOEIC vocabulary, học từ vựng, flashcard TOEIC"
+      }
+    },
+    "payment": {
+      "success": {
+        "meta": {
+          "title": "Thanh toán thành công - TOEIC Premium",
+          "description": "Thanh toán thành công. Tài khoản Premium của bạn đã được kích hoạt."
+        }
+      },
+      "cancel": {
+        "meta": {
+          "title": "Thanh toán bị hủy",
+          "description": "Thanh toán chưa hoàn tất. Bạn có thể thử lại bất cứ lúc nào."
+        }
+      }
+    }
+  },
+  "vocabularyComponents": {
+    "card": {
+      "status": {
+        "notStarted": "Chưa bắt đầu",
+        "learning": "Đang làm quen",
+        "goodProgress": "Tiến độ tốt",
+        "nearComplete": "Gần hoàn thành"
+      },
+      "badge": "Bộ từ vựng",
+      "terms": "từ",
+      "sessions": "phiên",
+      "actions": {
+        "viewDetail": "Xem chi tiết",
+        "duplicate": "Nhân bản",
+        "edit": "Chỉnh sửa",
+        "delete": "Xóa bộ từ",
+        "moreActions": "Xem thêm hành động"
+      },
+      "buttons": {
+        "flashcard": "Flashcard",
+        "quiz": "Quiz"
+      },
+      "empty": {
+        "noTerms": "Chưa có từ nào trong bộ này",
+        "addFirst": "Nhấn mở bộ từ để thêm từ vựng đầu tiên.",
+        "noTermsShort": "Chưa có từ nào trong bộ này"
+      },
+      "hasTerms": {
+        "title": "Đã có {count} từ trong bộ này",
+        "subtitle": "Bấm \"Học flashcard\" để bắt đầu theo dõi tiến độ học."
+      },
+      "progress": {
+        "label": "Tiến độ học",
+        "labelShort": "Tiến độ",
+        "mastered": "đã thuộc",
+        "needReview": "cần ôn"
+      },
+      "toast": {
+        "noTermsInfo": "Bộ từ này chưa có từ nào. Hãy thêm từ vựng để bắt đầu học!"
+      }
+    },
+    "modal": {
+      "createSet": {
+        "aria": {
+          "close": "Đóng"
+        },
+        "badgeCreate": "Tạo bộ từ",
+        "badgeEdit": "Chỉnh sửa",
+        "titleCreate": "Thiết lập bộ từ",
+        "titleEdit": "Cập nhật bộ từ",
+        "description": "Tạo bộ từ theo một chủ đề hoặc bối cảnh cụ thể.",
+        "editDescription": "Chỉnh sửa thông tin để bộ từ rõ ràng và dễ quản lý.",
+        "buttonCreate": "Tạo bộ từ",
+        "fields": {
+          "title": "Tên bộ từ",
+          "topic": "Chủ đề / tag",
+          "description": "Mô tả (tùy chọn)"
+        },
+        "buttons": {
+          "cancel": "Hủy",
+          "create": "Tạo bộ từ",
+          "update": "Cập nhật"
+        },
+        "labels": {
+          "setName": "Tên bộ từ",
+          "topic": "Chủ đề / tag",
+          "description": "Mô tả (tùy chọn)"
+        },
+        "placeholders": {
+          "setName": "VD: TOEIC – Office Communication",
+          "topic": "VD: Office, Meetings, Customer service"
+        },
+        "actions": {
+          "cancel": "Hủy",
+          "saving": "Đang lưu..."
+        }
+      },
+      "addTerm": {
+        "aria": {
+          "close": "Đóng"
+        },
+        "createTitle": "Thêm từ mới",
+        "createBadge": "Từ vựng",
+        "editTitle": "Cập nhật từ vựng",
+        "editBadge": "Chỉnh sửa",
+        "fields": {
+          "definition": "Định nghĩa",
+          "definitionPlaceholder": "VD: hoàn thành, đạt được",
+          "example": "Ví dụ (không bắt buộc)",
+          "examplePlaceholder": "VD: She accomplished her goal."
+        },
+        "buttons": {
+          "cancel": "Hủy",
+          "add": "Thêm từ",
+          "update": "Cập nhật"
+        },
+        "labels": {
+          "vietnameseDef": "Nghĩa tiếng Việt",
+          "englishDef": "Nghĩa tiếng Anh",
+          "phonetic": "Phiên âm",
+          "partOfSpeech": "Từ loại",
+          "example": "Ví dụ"
+        },
+        "placeholders": {
+          "selectType": "Chọn từ loại",
+          "example": "Ví dụ: \"She accomplished her goal of learning English.\""
+        },
+        "actions": {
+          "cancel": "Hủy",
+          "saving": "Đang lưu..."
+        }
+      }
+    },
+    "study": {
+      "switchToQuiz": "Chuyển sang Quiz",
+      "controls": {
+        "previous": "Trước",
+        "next": "Sau",
+        "flip": "Lật thẻ"
+      },
+      "actions": {
+        "difficult": "Chưa nhớ",
+        "mastered": "Đã nhớ"
+      },
+      "progress": {
+        "current": "Hiện tại",
+        "mastered": "Đã thuộc",
+        "needReview": "Cần ôn"
+      }
+    },
+    "quiz": {
+      "switchToFlashcard": "Chuyển sang Flashcard",
+      "question": "Câu hỏi",
+      "complete": {
+        "title": "Hoàn thành!",
+        "score": "Điểm số",
+        "correct": "Đúng",
+        "incorrect": "Sai"
+      },
+      "types": {
+        "multipleChoice": "Trắc nghiệm",
+        "fillInBlank": "Điền từ"
+      },
+      "actions": {
+        "submit": "Nộp câu trả lời",
+        "next": "Câu tiếp theo"
+      },
+      "placeholders": {
+        "answer": "Nhập đáp án..."
+      },
+      "result": {
+        "correct": "Chính xác!",
+        "correctAnswer": "Đáp án đúng: {answer}"
+      }
+    },
+    "setDetail": {
+      "actions": {
+        "editSet": "Chỉnh sửa bộ",
+        "deleteSet": "Xóa bộ",
+        "addTerm": "Thêm từ",
+        "quickQuiz": "Quiz nhanh",
+        "editTerm": "Chỉnh sửa",
+        "deleteTerm": "Xóa"
+      },
+      "confirm": {
+        "deleteSet": {
+          "title": "Xóa bộ từ này?",
+          "message": "Bạn có chắc muốn xóa bộ từ này không?",
+          "confirm": "Xóa"
+        },
+        "deleteTerm": {
+          "title": "Xóa từ khỏi bộ?",
+          "message": "Bạn có chắc muốn xóa từ này không?",
+          "confirm": "Xóa từ"
+        }
+      }
+    }
+  },
+  "testComponents": {
+    "start": {
+      "button": "Bắt đầu làm bài"
+    },
+    "loading": {
+      "message": "Đang tải bài kiểm tra…"
+    },
+    "card": {
+      "notStarted": "Chưa làm bài",
+      "notStartedDesc": "Bắt đầu ngay để theo dõi tiến độ."
+    },
+    "sidebar": {
+      "time": "Thời gian",
+      "timeSpent": "Thời gian làm",
+      "questions": "Câu hỏi",
+      "question": "Câu"
+    },
+    "stimulus": {
+      "question": "Câu",
+      "skipped": "Đã bỏ qua",
+      "selected": "Đã chọn",
+      "notSelected": "Chưa chọn"
+    },
+    "header": {
+      "time": "Thời gian"
+    },
+    "result": {
+      "time": "Thời gian",
+      "timeSpent": "Thời gian làm bài"
+    },
+    "ai": {
+      "loading": "Đang tải...",
+      "noInsight": "Chưa có nhận xét. Hãy thử tải lại sau."
+    },
+    "focus": {
+      "start": "Bắt đầu",
+      "question": "Câu"
+    },
+    "level": {
+      "continueWith": "Tiếp tục với Level",
+      "noTests": "Chưa có đề thi cho Level"
+    },
+    "mobile": {
+      "question": "Câu",
+      "study": {
+        "header": {
+          "badge": "Lộ trình kỹ năng bổ trợ",
+          "title": "Học tập",
+          "description": "Chọn cách học phù hợp: <vocabulary>từ vựng chủ động</vocabulary> hoặc <news>đọc hiểu qua tin tức</news>."
+        },
+        "vocabulary": {
+          "title": "Học từ vựng",
+          "description": "Luyện từ vựng theo bộ, giống Quizlet nhưng tối ưu cho TOEIC.",
+          "tag": "Tập trung từ vựng",
+          "estimated": "~10–15 phút/bộ",
+          "suggested": "Gợi ý cho bạn"
+        },
+        "news": {
+          "title": "Học qua tin tức",
+          "description": "Đọc tin tiếng Anh, tra từ và lưu lại từ vựng thực tế.",
+          "tag": "Đọc hiểu thực tế",
+          "estimated": "~15–20 phút/bài"
+        },
+        "cta": {
+          "start": "Bắt đầu ngay",
+          "tap": "Chạm để vào màn học"
+        },
+        "tip": "Tip: Bạn có thể xen kẽ <vocabulary>Học từ vựng</vocabulary> và <news>Học qua tin tức</news> để vừa nhớ từ vựng, vừa tăng khả năng đọc hiểu."
+      },
+      "practice": {
+        "header": {
+          "badge": "Luyện Listening & Reading theo từng Part",
+          "title": "Luyện L&R",
+          "description": "Chọn Part bạn muốn luyện. Hệ thống mặc định bắt đầu từ <level1>Level 1</level1> và tự điều chỉnh theo kết quả của bạn."
+        },
+        "parts": {
+          "part1": "Mô tả tranh",
+          "part2": "Hỏi - đáp",
+          "part3": "Đoạn hội thoại",
+          "part4": "Bài nói ngắn",
+          "part5": "Hoàn thành câu",
+          "part6": "Hoàn thành đoạn văn",
+          "part7": "Đọc hiểu",
+          "full": {
+            "1": "Part 1: Mô tả tranh",
+            "2": "Part 2: Hỏi - đáp",
+            "3": "Part 3: Đoạn hội thoại",
+            "4": "Part 4: Bài nói ngắn",
+            "5": "Part 5: Hoàn thành câu",
+            "6": "Part 6: Hoàn thành đoạn văn",
+            "7": "Part 7: Đọc hiểu"
+          }
+        },
+        "listening": "Listening",
+        "reading": "Reading",
+        "card": {
+          "startFromLevel1": "Bắt đầu từ Level 1",
+          "autoSuggest": "Tự động gợi ý lộ trình"
+        },
+        "tip": "Gợi ý: xen kẽ luyện <listening>Part 1–4</listening> (Listening) và <reading>Part 5–7</reading> (Reading) để cân bằng hai kỹ năng."
+      }
+    }
+  },
+  "BottomTabBar": {
+    "practice": "Luyện tập",
+    "study": "Từ vựng",
+    "community": "Cộng đồng",
+    "dashboard": "Tổng quan"
+  },
+  "layoutComponents": {
+    "chat": {
+      "tabs": {
+        "admin": "Chat với admin",
+        "adminShort": "Admin",
+        "ai": "Chat AI TOEIC",
+        "aiShort": "AI"
+      },
+      "aria": {
+        "close": "Đóng chat",
+        "open": "Mở chat",
+        "deleteAll": "Xóa tất cả cuộc trò chuyện",
+        "copy": "Sao chép tin nhắn"
+      },
+      "ai": {
+        "welcome": "Xin chào! Tôi là trợ lý AI chuyên về TOEIC. Tôi có thể giúp bạn luyện thi, giải thích ngữ pháp, từ vựng và chiến lược làm bài. Bạn muốn hỏi gì?",
+        "placeholder": "Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với trợ lý AI TOEIC.",
+        "premiumOnly": "Chức năng chat với AI chỉ dành cho tài khoản Premium.",
+        "premiumRequired": "Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.",
+        "loginRequired": "Vui lòng đăng nhập để bắt đầu trò chuyện",
+        "loginPlaceholder": "Đăng nhập để chat...",
+        "premiumPlaceholder": "Cần tài khoản Premium để sử dụng...",
+        "sending": "Đang gửi...",
+        "responding": "Đang trả lời…",
+        "typing": "AI đang suy nghĩ...",
+        "timestampPending": "Đang gửi...",
+        "empty": "Hãy hỏi bất kỳ điều gì về luyện thi TOEIC để bắt đầu.",
+        "aiLabel": "Trợ lý AI",
+        "clear": "Xóa tất cả",
+        "loginCta": "Đăng nhập",
+        "loginFooter": "để trò chuyện với AI",
+        "premiumCta": "Nâng cấp lên Premium",
+        "premiumFooter": "để dùng chat AI",
+        "error": "Có lỗi xảy ra khi gửi tin nhắn",
+        "learningInsight": {
+          "goalProgressTitle": "Tiến độ đạt mục tiêu TOEIC",
+          "goalPrompt": "💡 Hãy đặt mục tiêu TOEIC để theo dõi tiến độ",
+          "range": "{start} → {current} / {target}",
+          "activityTitle": "Hoạt động học tập (30 ngày)",
+          "activityEmpty": "Chưa có dữ liệu Learning Insight",
+          "heatmapEmpty": "Chưa có dữ liệu hoạt động",
+          "attempts": "{count} bài",
+          "streak": "{days} ngày",
+          "tooltip": "{date}: {count} bài"
+        }
+      },
+      "admin": {
+        "welcome": "Admin sẽ trả lời sớm nhất có thể. Cảm ơn bạn đã liên hệ!",
+        "placeholder": "Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với admin.",
+        "premiumOnly": "Chức năng chat với Admin chỉ dành cho tài khoản Premium.",
+        "premiumRequired": "Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.",
+        "loginRequired": "Vui lòng đăng nhập để sử dụng chat admin",
+        "loginPlaceholder": "Đăng nhập để chat...",
+        "premiumPlaceholder": "Cần tài khoản Premium để sử dụng...",
+        "sending": "Đang gửi...",
+        "typing": "Admin đang nhập...",
+        "timestampPending": "Đang gửi...",
+        "empty": "Cần hỗ trợ luyện TOEIC? Hãy bắt đầu trò chuyện với admin.",
+        "adminLabel": "Admin",
+        "clear": "Xóa tất cả",
+        "loginCta": "Đăng nhập",
+        "loginFooter": "để chat với Admin",
+        "premiumCta": "Nâng cấp lên Premium",
+        "premiumFooter": "để chat với Admin",
+        "error": "Có lỗi xảy ra khi gửi tin nhắn"
+      }
+    },
+    "nav": {
+      "aria": {
+        "openMenu": "Mở menu",
+        "closeMenu": "Đóng menu"
+      }
+    }
+  },
+  "dashboardComponents": {
+    "sideNav": {
+      "tabs": {
+        "progress": "Tiến độ luyện tập",
+        "results": "Kết quả kiểm tra",
+        "activity": "Hoạt động & lịch học",
+        "badges": "Bộ sưu tập huy hiệu"
+      }
+    }
+  },
+  "placement": {
+    "aria": {
+      "close": "Đóng"
+    },
+    "mandatory": {
+      "title": "Hãy làm <highlight>Placement Test</highlight> trước",
+      "description": "Để phân chia Level theo năng lực và gợi ý lộ trình phù hợp, hệ thống yêu cầu bạn hoàn thành <emphasis>bài kiểm tra xếp trình độ</emphasis> trước khi luyện Practice.",
+      "button": "Bắt đầu Placement",
+      "closeAria": "Đóng"
+    },
+    "errors": {
+      "notFound": "Không tìm thấy kết quả gần nhất",
+      "unknown": "Lỗi không xác định",
+      "loginRequired": "Vui lòng đăng nhập để bắt đầu làm bài",
+      "noQuestions": "Không tìm thấy danh sách câu hỏi"
+    },
+    "loading": "Đang tải kết quả bài kiểm tra…",
+    "loadingTest": "Đang tải bài kiểm tra…",
+    "result": {
+      "label": "Kết quả • Mini TOEIC",
+      "title": "Kết quả bài kiểm tra xếp trình độ TOEIC",
+      "description": "Hoàn thành lúc <time>{datetime}</time>. Dưới đây là điểm TOEIC ước lượng và phân tích chi tiết theo từng kỹ năng."
+    },
+    "test": {
+      "label": "Mini TOEIC • 55 câu • 35 phút",
+      "title": "Bài kiểm tra xếp trình độ TOEIC",
+      "description": "Bài kiểm tra gồm <strong>{count} câu</strong> trong <strong>{duration} phút</strong>. Sau khi nộp, bạn sẽ nhận"
+    },
+    "complete": "Bạn đã hoàn thành Placement, chuyển đến trang kết quả.",
+    "resultPage": {
+      "reload": "Tải lại",
+      "attemptId": "Attempt ID: {id}",
+      "empty": {
+        "title": "Không có câu hỏi để hiển thị.",
+        "stats": "Items: {items}, Groups: {groups}"
+      },
+      "groupError": {
+        "title": "Không thể nhóm câu hỏi để hiển thị.",
+        "stats": "Items: {items}, Stimulus keys: {keys}"
+      },
+      "errors": {
+        "detail": "Không thể tải chi tiết: {status}",
+        "history": "Không thể tải lịch sử: {status}",
+        "result": "Không thể tải kết quả ({status}): {message}",
+        "questions": "Không thể tải câu hỏi: {status} - {message}",
+        "loadData": "Lỗi khi tải dữ liệu: {message}"
+      }
+    },
+    "page": {
+      "desc": {
+        "start": "Đề rút gọn giúp bạn ước lượng",
+        "score": "điểm TOEIC 0–990",
+        "middle": "và nhận",
+        "roadmap": "lộ trình học cá nhân hóa",
+        "end": "phù hợp điểm mạnh – điểm yếu từng kỹ năng."
+      },
+      "start": {
+        "questions": "Bài kiểm tra gồm <bold>{count} câu</bold> trong",
+        "minutes": "<bold>{minutes} phút</bold>. Sau khi nộp, bạn sẽ nhận",
+        "result": "<bold>kết quả & lộ trình học</bold> ngay lập tức."
+      }
+    }
+  },
+  "progress": {
+    "loading": "Đang tải kết quả bài kiểm tra…",
+    "errors": {
+      "notFound": "Không tìm thấy kết quả gần nhất",
+      "unknown": "Lỗi không xác định",
+      "history": "Không thể tải lịch sử: {status}",
+      "detail": "Không thể tải chi tiết: {status}",
+      "result": "Không thể tải kết quả ({status}): {message}",
+      "questions": "Không thể tải câu hỏi: {status} - {message}",
+      "noQuestions": "Không tìm thấy danh sách câu hỏi"
+    },
+    "result": {
+      "badge": "Progress Test",
+      "badgeWithVersion": "Progress Test • Test {version}",
+      "title": "Kết quả bài kiểm tra tiến độ TOEIC",
+      "description": "Hoàn thành lúc <time>{datetime}</time>. Dưới đây là điểm TOEIC ước lượng và phân tích chi tiết theo từng kỹ năng."
+    },
+    "resultPage": {
+      "reload": "Tải lại",
+      "attemptId": "Attempt ID: {id}",
+      "empty": {
+        "title": "Không có câu hỏi để hiển thị.",
+        "stats": "Items: {items}, Groups: {groups}"
+      },
+      "groupError": {
+        "title": "Không thể nhóm câu hỏi để hiển thị.",
+        "stats": "Items: {items}, Stimulus keys: {keys}"
+      },
+      "errors": {
+        "detail": "Không thể tải chi tiết: {status}",
+        "history": "Không thể tải lịch sử: {status}",
+        "result": "Không thể tải kết quả ({status}): {message}",
+        "questions": "Không thể tải câu hỏi: {status} - {message}",
+        "loadData": "Lỗi khi tải dữ liệu: {message}"
+      }
+    }
+  },
+  "vocabularyExtra": {
+    "loadingSet": "Đang tải bộ từ vựng...",
+    "errors": {
+      "loadFailed": "Không thể tải bộ từ vựng này.",
+      "notFound": "Không tìm thấy bộ từ vựng",
+      "titleRequired": "Tên bộ từ vựng là bắt buộc.",
+      "saveFailed": "Không thể lưu bộ từ vựng. Hãy thử lại.",
+      "termRequired": "Từ tiếng Anh và nghĩa tiếng Việt là bắt buộc.",
+      "termSaveFailed": "Không thể lưu từ vựng. Thử lại sau.",
+      "setUpdateFailed": "Không thể cập nhật bộ từ",
+      "deleteFailed": "Không thể xóa từ",
+      "setDeleteFailed": "Không thể xóa bộ từ",
+      "saveTermFailed": "Không thể lưu từ vựng"
+    },
+    "flashcard": {
+      "term": "Thuật ngữ",
+      "listen": "Nghe",
+      "read": "Đọc",
+      "tapToFlip": "Chạm để lật",
+      "meaning": "Nghĩa",
+      "example": "Ví dụ",
+      "tapToFlipBack": "Nhấn để lật lại",
+      "flipHint": "Chạm vào thẻ hoặc nhấn Space để lật"
+    },
+    "completion": {
+      "quizComplete": "Bạn đã hoàn tất quiz!",
+      "flashcardComplete": "Vòng flashcard hoàn thành!",
+      "correct": "Câu đúng",
+      "incorrect": "Câu sai",
+      "remembered": "Đã nhớ",
+      "notYet": "Chưa nhớ",
+      "legendary": "Huyền thoại!",
+      "greatJob": "Làm tốt lắm!",
+      "keepGoing": "Cố lên!",
+      "practiceMore": "Luyện tập thêm",
+      "score": "Điểm số",
+      "weakHint": "Gợi ý: Có {count} từ/câu hỏi bạn chưa chắc chắn – ôn lại ngay để ghi nhớ sâu hơn.",
+      "retryRound": "Luyện lại vòng này",
+      "reviewWeak": "Ôn từ khó ({count})",
+      "switchToQuizMode": "Chuyển sang quiz",
+      "reviewFlashcards": "Luyện lại flashcard"
+    },
+    "controls": {
+      "previous": "Trước",
+      "next": "Tiếp theo",
+      "notRemembered": "Chưa nhớ",
+      "remembered": "Đã nhớ",
+      "saveChanges": "Lưu thay đổi",
+      "addTerm": "Thêm từ"
+    },
+    "toast": {
+      "termSaved": "Đã lưu từ vào bộ từ vựng!",
+      "termUpdated": "Đã cập nhật từ vựng",
+      "termAdded": "Đã thêm từ mới",
+      "termDeleted": "Đã xóa từ vựng",
+      "setUpdated": "Đã cập nhật bộ từ",
+      "setDeleted": "Đã xóa bộ từ vựng",
+      "noSetId": "Không xác định được bộ từ để lưu",
+      "noSetIdUpdate": "Không xác định được bộ từ để cập nhật"
+    },
+    "setDetail": {
+      "noDescription": "Chưa có mô tả cho bộ từ này.",
+      "searchPlaceholder": "Nhập từ khóa, nghĩa, phiên âm hoặc ví dụ...",
+      "filterNew": "Mới thêm",
+      "noResults": "Không có từ nào khớp với tìm kiếm.",
+      "noTerms": "Chưa có từ vựng nào trong bộ này.",
+      "deleteConfirm": "Thao tác không thể hoàn tác. Bạn có chắc chắn muốn xóa?"
+    },
+    "errorMap": {
+      "failedToAddTerm": "Không thể thêm từ vựng. Vui lòng thử lại.",
+      "permissionDenied": "Không thể thêm từ vựng. Có thể do lỗi quyền truy cập hoặc lỗi cơ sở dữ liệu.",
+      "setNotFound": "Không tìm thấy bộ từ vựng",
+      "accessDenied": "Bạn không có quyền truy cập bộ từ vựng này",
+      "invalidSetId": "ID bộ từ vựng không hợp lệ"
+    },
+    "placeholders": {
+      "setDescription": "VD: Từ vựng thường gặp trong hội thoại văn phòng.",
+      "term": "Ví dụ: accomplish",
+      "definition": "Ví dụ: hoàn thành, đạt được",
+      "englishDef": "Ví dụ: to achieve or complete successfully",
+      "pronunciation": "Ví dụ: /əˈkʌmplɪʃ/"
+    },
+    "actions": {
+      "editSet": "Chỉnh sửa bộ",
+      "deleteSet": "Xóa bộ",
+      "backToList": "Trở về danh sách",
+      "back": "Trở về",
+      "switchToQuiz": "Chuyển sang Quiz",
+      "addTerm": "Thêm từ mới",
+      "practiceFlashcard": "Luyện flashcard",
+      "quickQuiz": "Quiz nhanh",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa",
+      "cancel": "Hủy",
+      "saving": "Đang lưu..."
+    },
+    "labels": {
+      "totalTerms": "Tổng từ:",
+      "topic": "Chủ đề:",
+      "quickSearch": "Tìm kiếm nhanh",
+      "sortFilter": "Sắp xếp & lọc",
+      "studyDeck": "Study deck",
+      "termList": "Danh sách từ",
+      "termListHint": "Nhấn vào từng dòng để xem nhanh, chỉnh sửa hoặc xóa từ vựng.",
+      "setName": "Tên bộ từ",
+      "description": "Mô tả (tùy chọn)",
+      "word": "Từ vựng"
+    },
+    "sort": {
+      "alphabetical": "Theo A–Z",
+      "partOfSpeech": "Theo từ loại"
+    },
+    "modals": {
+      "deleteTerm": {
+        "title": "Xóa từ khỏi bộ?",
+        "message": "Từ vựng sẽ bị xóa khỏi bộ này.",
+        "confirm": "Xóa từ"
+      }
+    }
+  },
+  "dashboard": {
+    "label": "Tổng quan",
+    "title": "Bảng điều khiển",
+    "assessment": {
+      "overviewTitle": "Tổng quan đánh giá",
+      "selfReported": "Điểm tự báo cáo",
+      "placementTest": "Bài kiểm tra trình độ",
+      "latestProgress": "Bài kiểm tra tiến độ mới nhất",
+      "comparison": {
+        "matchMsg": "Điểm kiểm tra trình độ khá sát với điểm TOEIC bạn báo cáo.",
+        "matchSub": "Bạn báo cáo: {reported} điểm • Kiểm tra trình độ ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Hệ thống sẽ sử dụng kết quả trình độ để gợi ý lộ trình chi tiết cho từng Part.",
+        "mediumMsg": "Điểm kiểm tra trình độ hơi lệch so với điểm TOEIC bạn báo cáo.",
+        "mediumSub": "Bạn báo cáo: {reported} điểm • Kiểm tra trình độ ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do thời điểm thi khác nhau, điểm báo cáo đã cũ, hoặc bài trình độ chỉ có 55 câu. Hệ thống vẫn ưu tiên kết quả trình độ để gợi ý lộ trình.",
+        "largeMsg": "Điểm kiểm tra trình độ lệch nhiều so với điểm TOEIC bạn báo cáo.",
+        "largeSub": "Bạn báo cáo: {reported} điểm • Kiểm tra trình độ ước tính: {placement} điểm (chênh lệch khoảng {diff} điểm). Có thể do mất tập trung, điểm báo cáo đã cũ, hoặc đây chỉ là ước tính từ 55 câu. Hệ thống sẽ ưu tiên kết quả trình độ để đánh giá trình độ hiện tại. Nếu bạn thấy kết quả chưa chính xác, hãy luyện tập một thời gian và làm lại bài kiểm tra tiến độ để có đánh giá ổn định hơn.",
+        "show": "Hiện thẻ so sánh",
+        "hide": "Ẩn thẻ so sánh"
+      },
+      "eligibility": {
+        "eligible": "Đủ điều kiện làm bài kiểm tra tiến độ",
+        "insufficient": "Chưa đủ điều kiện làm bài kiểm tra tiến độ",
+        "waiting": "Đang chờ mở bài kiểm tra tiến độ",
+        "reopen": "Sẽ mở lại lúc {time}",
+        "remaining": "Còn lại: {time}",
+        "descEligible": "Bạn có thể làm bài kiểm tra để cập nhật điểm dự đoán mới nhất.",
+        "descNoPractice": "Hoàn thành ít nhất 1 bài Luyện tập để mở khóa bài kiểm tra tiến độ.",
+        "descInsufficient": "Bạn cần hoàn thành thêm {remaining} bài Luyện tập (đã hoàn thành {current}/{required}).",
+        "descNoPracticeAfter": "Bạn cần hoàn thành một bài Luyện tập sau bài kiểm tra tiến độ cuối cùng.",
+        "descWaiting": "Bạn vừa hoàn thành Luyện tập, hệ thống sẽ mở bài kiểm tra tiến độ sau thời gian chu kỳ.",
+        "descDefault": "Hệ thống tự động mở bài kiểm tra tiến độ sau mỗi chu kỳ luyện tập 5 ngày.",
+        "anchor": "Mốc từ {time}",
+        "cycle": "Chu kỳ {days} ngày",
+        "actionStart": "Bắt đầu kiểm tra tiến độ",
+        "actionLocked": "Đã khóa"
+      },
+      "chart": {
+        "title": "Điểm TOEIC theo thời gian",
+        "subtitle": "Nghe, Đọc & Tổng điểm (quy đổi sang thang điểm TOEIC)",
+        "loading": "Đang tải dữ liệu...",
+        "tooltip": "{score} điểm",
+        "kindBaseline": "Mốc ban đầu",
+        "kindPlacement": "Kiểm tra trình độ",
+        "kindProgress": "Kiểm tra tiến độ"
+      },
+      "time": {
+        "days": "ngày",
+        "hours": "giờ",
+        "minutes": "phút",
+        "seconds": "giây",
+        "fewMinutes": "vài phút"
+      }
+    },
+    "schedule": {
+      "title": "Lịch học thông minh",
+      "subtitle": "Đặt lịch luyện tập cố định để duy trì nhịp học TOEIC.",
+      "notifyLabel": "Nhắc nhở qua Email / Web",
+      "planner": {
+        "title": "Lên kế hoạch buổi học tiếp theo",
+        "subtitle": "Chọn thời gian, hình thức và nhắc nhở – ToeicPrep sẽ theo sát bạn.",
+        "reminderBadge": "Đang bật nhắc nhở",
+        "recurrenceLabel": "Chu kỳ lặp",
+        "dateTimeLabel": "Ngày & giờ",
+        "planTypeLabel": "Chọn loại buổi học",
+        "durationLabel": "Thời lượng",
+        "remindLabel": "Nhắc trước",
+        "notifyLabel": "Kênh nhắc nhở",
+        "notifyEmail": "Nhắc qua Email",
+        "notifyWeb": "Nhắc qua Web push",
+        "saving": "Đang lưu lịch...",
+        "save": "Lưu lịch học"
+      },
+      "recurrence": {
+        "label": "Chu kỳ lặp lại",
+        "once": "Một lần",
+        "daily": "Hàng ngày",
+        "weekdays": "Thứ 2 - Thứ 6",
+        "custom": "Tùy chỉnh"
+      },
+      "weekdays": {
+        "sun": "CN",
+        "mon": "T2",
+        "tue": "T3",
+        "wed": "T4",
+        "thu": "T5",
+        "fri": "T6",
+        "sat": "T7"
+      },
+        "today": "Hôm nay",
+        "tomorrow": "Ngày mai",
+      "pickDate": "Chọn ngày",
+      "minutes": "phút",
+      "plans": {
+        "auto": "Tự động (Smart Auto)",
+        "progress": "Kiểm tra tiến độ",
+        "mini_progress": "Mini-Progress",
+        "practice_p1": "Luyện tập Part 1",
+        "practice_p2": "Luyện tập Part 2",
+        "practice_p3": "Luyện tập Part 3",
+        "practice_p4": "Luyện tập Part 4",
+        "practice_p5": "Luyện tập Part 5",
+        "practice_p6": "Luyện tập Part 6",
+        "practice_p7": "Luyện tập Part 7"
+      },
+      "plan": {
+        "label": "Loại bài học",
+        "auto": "Tự động (Smart Auto)",
+        "progress": "Kiểm tra tiến độ",
+        "miniProgress": "Mini-Progress",
+        "part1": "Luyện tập Part 1",
+        "part2": "Luyện tập Part 2",
+        "part3": "Luyện tập Part 3",
+        "part4": "Luyện tập Part 4",
+        "part5": "Luyện tập Part 5",
+        "part6": "Luyện tập Part 6",
+        "part7": "Luyện tập Part 7"
+      },
+      "duration": {
+        "label": "Thời lượng",
+        "minutes": "{minutes} phút"
+      },
+      "remind": {
+        "label": "Nhắc trước",
+        "minutes": "{minutes} phút"
+      },
+      "notify": {
+        "label": "Nhắc nhở",
+        "email": "Email",
+        "web": "Web push"
+      },
+      "successSave": "Đã lưu lịch học",
+      "errorSave": "Không thể lưu lịch học",
+      "errorGeneric": "Có lỗi xảy ra, vui lòng thử lại.",
+      "successUpdate": "Đã cập nhật lịch học",
+      "errorUpdate": "Không thể cập nhật lịch học",
+      "successCancel": "Đã hủy lịch học",
+      "errorCancel": "Không thể hủy lịch học",
+      "upcoming": {
+        "title": "Lịch học sắp tới",
+        "loading": "Đang tải lịch học sắp tới...",
+        "emptyTitle": "Chưa có lịch học",
+        "emptyDesc": "Tạo lịch học ở trên, hệ thống sẽ nhắc bạn đúng giờ như các ứng dụng giáo dục chuyên nghiệp.",
+        "completed": "Buổi học cuối đã hoàn thành.",
+        "missed": "Bạn đã bỏ lỡ buổi học cuối.",
+        "reminder": "Nhớ tham gia đúng giờ để giữ streak nhé!",
+        "statusCompleted": "Đã hoàn thành buổi học!",
+        "statusMissed": "Bạn đã bỏ lỡ buổi học",
+        "statusScheduled": "Buổi học đã lên lịch",
+        "completedTitle": "Tuyệt! Bạn đã hoàn thành buổi học.",
+        "missedTitle": "Bạn đã bỏ lỡ buổi học này",
+        "remindBefore": "Nhắc trước {minutes} phút",
+        "streak": "Streak hiện tại: {days} ngày"
+      }
+    },
+    "progressChart": {
+      "listening": {
+        "title": "Biểu đồ độ chính xác Listening",
+        "description": "Theo dõi độ chính xác theo từng Part và Level để thấy Listening của bạn đang tiến bộ ra sao.",
+        "emptyTitle": "Chưa có dữ liệu Listening",
+        "emptyDesc": "Hoàn thành một bài {part} để mở biểu đồ Listening."
+      },
+      "reading": {
+        "title": "Biểu đồ độ chính xác Reading",
+        "description": "Quan sát độ chính xác từng Part Reading để điều chỉnh trọng tâm luyện tập.",
+        "emptyTitle": "Chưa có dữ liệu Reading",
+        "emptyDesc": "Hoàn thành một bài {part} để mở biểu đồ Reading."
+      },
+      "loading": "Đang tải biểu đồ...",
+      "latest": "Mới nhất",
+      "level": "Level {level}",
+      "test": "Test {test}",
+      "legend": {
+        "solid": "Độ chính xác từng lần làm",
+        "dashed": "Xu hướng trung bình",
+        "retake": "Lần làm lại"
+      },
+      "tooltip": {
+        "retake": "Lần làm lại",
+        "firstTime": "Lần đầu"
+      }
+    },
+    "activity": {
+      "title": "Biểu đồ nhiệt hoạt động học tập",
+      "subtitle": "Mỗi ô vuông là một ngày – màu càng đậm, bạn học càng chăm chỉ.",
+      "emptyTitle": "Chưa có dữ liệu hoạt động",
+      "emptyDesc": "Hoàn thành bài luyện tập hoặc bài kiểm tra để hệ thống vẽ biểu đồ nhiệt của bạn.",
+      "totalDays": "Tổng ngày học",
+      "totalAttempts": "Tổng số lần làm bài",
+      "currentStreak": "Streak hiện tại",
+      "maxStreak": "Streak cao nhất",
+      "legendLess": "Ít",
+      "legendMore": "Nhiều",
+      "motivation": "Bạn đang duy trì chuỗi {streak} ngày học liên tiếp 🔥 Cố lên!"
+    },
+    "loading": "Đang tải dữ liệu...",
+    "badges": {
+      "title": "Bộ sưu tập huy hiệu",
+      "subtitle": "Đếm số huy hiệu đã mở khóa và chờ đồng bộ dữ liệu mới nhất.",
+      "badgeLabel": "Huy hiệu",
+      "points": "điểm",
+      "days": "ngày",
+      "congratsTitle": "Chúc mừng!",
+      "congratsMessage": "Bạn đã mở khóa huy hiệu <bold>{name}</bold>.",
+      "earnedCount": "Đã mở khóa {earned} / {total} huy hiệu",
+      "badgeCount": "{count} huy hiệu",
+      "syncing": "Đang đồng bộ huy hiệu mới...",
+      "emptyTitle": "Chưa có huy hiệu nào",
+      "emptyDesc": "Luyện tập thường xuyên, giữ streak và đặt mục tiêu để mở khóa huy hiệu đầu tiên.",
+      "lockedTitle": "Huy hiệu chưa mở",
+      "lockedDesc": "Chưa đạt: {desc}",
+      "types": {
+        "streak_7_days": {
+          "name": "Streak 7 Ngày",
+          "description": "Học liên tục trong 7 ngày"
+        },
+        "streak_14_days": {
+          "name": "Streak 14 Ngày",
+          "description": "Duy trì chuỗi 14 ngày học liên tục"
+        },
+        "streak_30_days": {
+          "name": "Streak 30 Ngày",
+          "description": "Học liên tục trong 30 ngày"
+        },
+        "practice_10_tests": {
+          "name": "Ong chăm chỉ",
+          "description": "Hoàn thành 10 bài luyện tập"
+        },
+        "practice_25_tests": {
+          "name": "Người học bền bỉ",
+          "description": "Hoàn thành 25 bài luyện tập"
+        },
+        "goal_50_percent": {
+          "name": "Đi được một nửa",
+          "description": "Đạt 50% mục tiêu TOEIC của bạn"
+        },
+        "goal_75_percent": {
+          "name": "Gần về đích",
+          "description": "Đạt 75% mục tiêu TOEIC của bạn"
+        },
+        "part_improvement_20": {
+          "name": "Tiến bộ vượt bậc",
+          "description": "Cải thiện điểm một Part thêm 20+ điểm"
+        },
+        "first_placement": {
+          "name": "Khởi đầu hành trình",
+          "description": "Làm bài kiểm tra trình độ lần đầu tiên"
+        },
+        "first_progress": {
+          "name": "Kiểm tra tiến độ",
+          "description": "Làm bài kiểm tra tiến độ lần đầu tiên"
+        },
+        "first_practice": {
+          "name": "Bài luyện đầu tiên",
+          "description": "Làm bài luyện tập lần đầu tiên"
+        },
+        "perfect_score": {
+          "name": "Điểm tuyệt đối",
+          "description": "Đạt 100% điểm trong một bài kiểm tra"
+        },
+        "early_bird": {
+          "name": "Dậy sớm học bài",
+          "description": "Học vào buổi sáng sớm (trước 7 giờ sáng)"
+        },
+        "night_owl": {
+          "name": "Cú đêm",
+          "description": "Học vào đêm muộn (sau 10 giờ tối)"
+        },
+        "marathon": {
+          "name": "Marathon học tập",
+          "description": "Hoàn thành 5+ bài kiểm tra trong một ngày"
+        },
+        "consistency_king": {
+          "name": "Vua kiên trì",
+          "description": "Học đều đặn trong 14 ngày"
+        },
+        "practice_50_tests": {
+          "name": "Chiến binh luyện đề",
+          "description": "Hoàn thành 50 bài luyện tập"
+        },
+        "progress_5_tests": {
+          "name": "Chuyên gia tiến độ",
+          "description": "Hoàn thành 5 bài kiểm tra tiến độ"
+        },
+        "goal_100_percent": {
+          "name": "Chinh phục mục tiêu",
+          "description": "Đạt 100% mục tiêu TOEIC đã đặt ra"
+        },
+        "weekend_warrior": {
+          "name": "Chiến binh cuối tuần",
+          "description": "Học tích cực vào mỗi cuối tuần"
+        }
+      }
+    },
+    "progressChart": {
+      "listening": {
+        "title": "Độ chính xác Listening",
+        "description": "Theo dõi độ chính xác từng Part 1–4 và phát hiện xu hướng luyện tập.",
+        "emptyTitle": "Chưa có dữ liệu Listening",
+        "emptyDesc": "Hãy luyện {part} để thấy độ chính xác."
+      },
+      "reading": {
+        "title": "Độ chính xác Reading",
+        "description": "Quan sát tiến độ ở các Part 5–7 để cân đối giữa ngữ pháp và đọc hiểu.",
+        "emptyTitle": "Chưa có dữ liệu Reading",
+        "emptyDesc": "Hoàn thành {part} để hiển thị dữ liệu."
+      },
+      "latest": "Gần nhất",
+      "level": "Level {level}",
+      "test": "Test {test}",
+      "loading": "Đang tải dữ liệu...",
+      "legend": {
+        "solid": "Đường liền: Accuracy từng lần",
+        "dashed": "Đường gạch: Moving Avg (3 lần)",
+        "retake": "Viền đậm: Retake"
+      },
+      "tooltip": {
+        "retake": "Retake",
+        "firstTime": "Lần đầu"
+      }
+    },
+    "goal": {
+      "toast": {
+        "rangeError": "Điểm mục tiêu phải từ 10 đến 990",
+        "fail": "Đặt mục tiêu thất bại",
+        "success": "Đặt mục tiêu thành công!"
+      },
+      "empty": {
+        "label": "Goal Planning",
+        "title": "Tiến độ đạt mục tiêu",
+        "description": "Chưa có mục tiêu TOEIC nào được thiết lập.",
+        "cardTitle": "Bạn chưa đặt mục tiêu TOEIC",
+        "cardDesc": "Đặt mục tiêu để hệ thống theo dõi tiến trình học và nhắc bạn luyện tập đều hơn.",
+        "button": "Đặt mục tiêu ngay"
+      },
+      "tracking": {
+        "label": "Goal Tracking",
+        "title": "Tiến độ đạt mục tiêu",
+        "achieved": "Chúc mừng! Bạn đã chạm mục tiêu TOEIC đã đặt.",
+        "ongoing": "Giữ nhịp luyện tập để tiến gần hơn tới mục tiêu.",
+        "update": "Cập nhật",
+        "stats": {
+          "target": "Mục tiêu",
+          "current": "Hiện tại",
+          "completed": "Hoàn thành"
+        },
+        "start": "Bắt đầu: {score}",
+        "target": "Mục tiêu: {score}",
+        "summary": "Từ {start} → {target} điểm"
+      },
+      "dialog": {
+        "updateTitle": "Cập nhật mục tiêu",
+        "setTitle": "Đặt mục tiêu TOEIC",
+        "desc": "Nhập điểm TOEIC mong muốn trong khoảng 10 – 990.",
+        "inputLabel": "Điểm TOEIC mục tiêu *",
+        "placeholder": "VD: 750",
+        "current": "Hiện tại: {score} điểm",
+        "cancel": "Hủy",
+        "confirm": "Xác nhận",
+        "saving": "Đang lưu..."
+      }
+    }
+  },
+  "study": {
+    "room": {
+      "leave": "Rời phòng",
+      "esc": "(Esc)",
+      "waitingHost": "Đang chờ chủ phòng...",
+      "teacherJoined": "Khi giáo viên tham gia...",
+      "cameraOff": "Camera chưa bật",
+      "shareScreen": "Chia sẻ màn hình",
+      "stopShare": "Dừng chia sẻ màn hình",
+      "participants": "Người tham gia",
+      "you": "(Bạn)",
+      "kick": "Kick",
+      "heart": "Thả tim",
+      "like": "Thả like",
+      "tokenError": "Không thể lấy token tham gia phòng.",
+      "shareScreenError": "Không thể chia sẻ màn hình",
+      "kickConfirmTitle": "Xác nhận",
+      "kickConfirmMessage": "Bạn có chắc muốn kick \"{name}\" khỏi phòng?",
+      "kickConfirmOk": "Có, kick",
+      "cancel": "Hủy",
+      "kickSuccess": "Đã kick \"{name}\" khỏi phòng",
+      "kickFailed": "Kick thất bại",
+      "kickReason": "Bị kick bởi giáo viên/quản trị viên",
+      "cannotJoin": "Không thể vào phòng",
+      "retry": "Thử lại",
+      "connecting": "Đang kết nối phòng…",
+      "leftRoom": "Bạn đã rời phòng",
+      "chatRoom": "Chat phòng học"
+    },
+    "teacherRegister": {
+      "title": "Đăng ký trở thành Giáo viên",
+      "subtitle": "Chia sẻ kiến thức và kiếm thêm thu nhập cùng chúng tôi",
+      "instruction": "Điền thông tin liên hệ và năng lực giảng dạy để ban quản trị xem xét hồ sơ của bạn.",
+      "loading": "Đang tải...",
+      "form": {
+        "fullName": "Họ và tên",
+        "email": "Email",
+        "phone": "Số điện thoại",
+        "scoreOrCert": "Điểm số / Chứng chỉ",
+        "experience": "Kinh nghiệm giảng dạy",
+        "availability": "Thời gian có thể giảng dạy",
+        "message": "Ghi chú thêm (tùy chọn)",
+        "bio": "Giới thiệu bản thân",
+        "submit": "Gửi thông tin",
+        "submitting": "Đang gửi...",
+        "cancel": "Hủy",
+        "placeholders": {
+          "fullName": "Nguyễn Văn A",
+          "email": "giaovien@example.com",
+          "phone": "Ví dụ: 0912 345 678",
+          "scoreOrCert": "TOEIC 900, IELTS 7.5...",
+          "experience": "Tóm tắt ngắn gọn kinh nghiệm giảng dạy của bạn.",
+          "availability": "Ví dụ: tối 2–4–6, cuối tuần.",
+          "message": "Bất kỳ thông tin bổ sung nào bạn muốn chia sẻ..."
+        }
+      },
+      "fileUpload": {
+        "label": "Tệp / Ảnh chứng chỉ, bằng cấp",
+        "hint": "PDF, JPG, PNG · tối đa 5",
+        "dropzone": "Nhấn để chọn tệp",
+        "dropzoneDesc": "Bảng điểm, chứng chỉ hoặc giấy tờ liên quan (nếu có).",
+        "selected": "Tệp đã chọn",
+        "remove": "Xóa"
+      },
+      "validation": {
+        "requiredAll": "Vui lòng điền đầy đủ tất cả các trường bắt buộc."
+      },
+      "toast": {
+        "success": "Đã gửi thông tin đăng ký giáo viên. Admin sẽ liên hệ nếu hồ sơ phù hợp.",
+        "error": "Gửi thông tin thất bại. Vui lòng thử lại sau."
+      },
+      "success": {
+        "title": "Đã gửi thành công!",
+        "message": "Cảm ơn bạn đã gửi thông tin đăng ký giáo viên. Admin sẽ xem xét hồ sơ và liên hệ với bạn trong thời gian sớm nhất nếu hồ sơ phù hợp.",
+        "backToRoom": "Quay lại phòng học"
+      },
+      "error": {
+        "title": "Đăng ký thất bại",
+        "message": "Có lỗi xảy ra. Vui lòng thử lại sau."
+      }
+    },
+    "chat": {
+      "title": "Bình luận",
+      "room": "Phòng",
+      "close": "Đóng chat",
+      "emptyState": {
+        "title": "Hãy là người bình luận đầu tiên!",
+        "description": "Trao đổi với bạn bè hoặc giảng viên ngay trong phòng học này."
+      },
+      "uploadTitle": "Tải tệp lên và gửi vào chat",
+      "limitReachedPlaceholder": "Đã đạt giới hạn comment",
+      "inputPlaceholder": "Nhập tin nhắn…",
+      "send": "Gửi",
+      "commentCount": "Comment",
+      "download": "Tải xuống",
+      "downloadButton": "Tải",
+      "locked": "Khóa",
+      "premiumOnlyTitle": "Chỉ Premium hoặc Teacher/Admin",
+      "limitReached": "Bạn đã đạt giới hạn tin nhắn miễn phí.",
+      "uploadCert": "Tệp / Ảnh chứng chỉ...",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa",
+      "document": "Tài liệu",
+      "file": "Tệp tin",
+      "sentDoc": "Đã gửi tài liệu vào chat",
+      "sendError": "Không thể gửi tin nhắn",
+      "uploadError": "Upload thất bại",
+      "downloadError": "Download thất bại",
+      "premiumOnly": "Chỉ tài khoản Premium mới có thể gửi tin nhắn.",
+      "editError": "Không thể chỉnh sửa tin nhắn",
+      "edited": "Đã chỉnh sửa",
+      "deleteError": "Không thể xóa tin nhắn",
+      "confirmDelete": "Bạn có chắc chắn muốn xóa tin nhắn này?",
+      "deleted": "Đã xóa comment",
+      "cancel": "Hủy",
+      "save": "Lưu",
+      "fileTooLarge": "File quá lớn",
+      "maxSize": "Tối đa 50MB",
+      "limit5": "Bạn đã đạt giới hạn 5 comment",
+      "limit10": "Bạn đã đạt giới hạn 10 comment",
+      "upgradeHint": "Nâng cấp Premium để comment không giới hạn.",
+      "cannotEdit": "Không thể chỉnh sửa comment này",
+      "cannotDelete": "Không thể xóa comment này",
+      "deleteTitle": "Xóa bình luận?",
+      "deleteConfirm": "Xóa"
+    },
+    "createRoom": {
+      "validation": {
+        "empty": "Tên phòng không được để trống",
+        "min": "Tên phòng quá ngắn (tối thiểu 3 ký tự)",
+        "max": "Tên phòng quá dài (tối đa 32 ký tự)",
+        "pattern": "Tên phòng chỉ chứa chữ thường, số và dấu gạch ngang"
+      },
+      "toast": {
+        "invalidName": "Tên phòng không hợp lệ",
+        "noPermission": {
+          "title": "Bạn không có quyền tạo phòng",
+          "description": "Chỉ giáo viên hoặc admin mới có thể tạo phòng."
+        },
+        "createSuccess": {
+          "title": "Tạo phòng thành công",
+          "description": "Đang chuyển hướng vào phòng..."
+        },
+        "createError": "Không thể tạo phòng",
+        "genericError": "Lỗi khi tạo phòng",
+        "listError": "Không thể tải danh sách phòng",
+        "autoDelete": "Đã xóa phòng trống: {room}",
+        "deleteSuccess": "Đã xóa phòng {room}",
+        "deleteError": "Không thể xóa phòng",
+        "modalSuccess": "Đã tạo phòng thành công"
+      },
+      "states": {
+        "unauthenticated": {
+          "title": "Bạn chưa đăng nhập",
+          "description": "Vui lòng đăng nhập để tham gia hoặc tạo phòng học."
+        },
+        "forbidden": {
+          "title": "Quyền truy cập bị từ chối",
+          "roleLabel": "Vai trò hiện tại của bạn:",
+          "contact": "Liên hệ admin nếu bạn nghĩ đây là sự nhầm lẫn."
+        }
+      },
+      "form": {
+        "title": "Tạo phòng học mới",
+        "description": "Tạo không gian học tập và mời mọi người cùng tham gia.",
+        "nameLabel": "Tên phòng (Slug)",
+        "placeholder": "vi-du-ten-phong-hoc",
+        "helperValid": "Tên phòng hợp lệ",
+        "cancel": "Hủy bỏ",
+        "submit": "Tạo phòng",
+        "submitting": "Đang tạo..."
+      },
+      "dialogs": {
+        "delete": {
+          "title": "Xóa phòng học?",
+          "message": "Bạn có chắc muốn xóa phòng \"{room}\"?",
+          "confirm": "Xóa phòng",
+          "cancel": "Hủy"
+        }
+      },
+      "page": {
+        "loading": "Đang tải danh sách phòng..."
+      }
+    },
+    "rooms": {
+      "hero": {
+        "title": "Phòng học trực tuyến",
+        "description": "Tham gia các phòng học để luyện tập cùng giáo viên và bạn bè."
+      },
+      "notice": {
+        "student": {
+          "badge": "Dành cho học viên",
+          "title": "Tham gia phòng học",
+          "description": "Bạn có thể tham gia các phòng học đang mở bên dưới. <strong\u003eLưu ý:\u003c/strong\u003e Chỉ giáo viên mới có thể tạo phòng.",
+          "tips": {
+            "link": "Chọn phòng phù hợp với trình độ",
+            "list": "Chuẩn bị \u003cb\u003emic & camera\u003c/b\u003e để tương tác tốt nhất"
+          }
+        },
+        "teacher": {
+          "title": "Bạn là giáo viên?",
+          "description": "Đăng ký để trở thành giáo viên và tạo phòng học riêng.",
+          "cta": "Đăng ký giáo viên"
+        }
+      },
+      "errors": {
+        "retry": "Thử lại"
+      },
+      "list": {
+        "title": "Danh sách phòng đang mở",
+        "empty": {
+          "title": "Chưa có phòng học nào",
+          "creator": "Hãy là người đầu tiên tạo phòng học!",
+          "student": "Hiện chưa có phòng nào đang mở. Vui lòng quay lại sau."
+        },
+        "card": {
+          "online": "{count} đang online",
+          "join": "Tham gia ngay",
+          "deleting": "Đang xóa...",
+          "delete": "Xóa phòng"
+        }
+      }
+    },
+    "header": {
+      "create": {
+        "full": "Tạo phòng mới",
+        "short": "Tạo phòng"
+      },
+      "refresh": {
+        "full": "Làm mới",
+        "short": "Làm mới"
+      }
+    }
+  },
+  "newsHooks": {
+    "translation": {
+      "premiumRequired": "Nâng cấp Premium để dịch đoạn đã chọn.",
+      "selectionError": "Không thể nhận diện đoạn văn bản bạn chọn.",
+      "wordError": "Không thể dịch từ này. Vui lòng thử từ khác."
+    }
+  },
+  "test": {
+    "results": {
+      "estimatedToeic": "TOEIC ƯỚC LƯỢNG",
+      "combinedScore": "Tổng hợp từ Listening + Reading",
+      "listening": "LISTENING",
+      "reading": "READING",
+      "accuracy": "Độ chính xác",
+      "overview": "TỔNG QUAN BÀI LÀM",
+      "correctCount": "Số câu đúng",
+      "totalAccuracy": "Độ chính xác tổng",
+      "timeSpent": "Thời gian làm bài",
+      "hideDetails": "Ẩn chi tiết đáp án",
+      "showDetails": "Xem chi tiết đáp án",
+      "partAnalysis": "Phân tích theo Part",
+      "partAnalysisDesc": "Xem độ chính xác từng Part & gợi ý luyện tập.",
+      "miniTestInfo": "Mini test - 55 câu - 35 phút",
+      "currentAccuracy": "Độ chính xác lần này",
+      "correctSentences": "câu đúng",
+      "level": "Level {lv}",
+      "correctRatio": "{correct}/{total} câu đúng",
+      "practiceNow": "Luyện ngay",
+      "priorityPractice": "Ưu tiên luyện tập",
+      "weakPartsDesc": "Đây là các Part có tỷ lệ đúng thấp hơn, nên tập trung trước để kéo điểm tổng lên nhanh.",
+      "steadyProgress": "Nhịp độ học rất ổn định! Bạn có thể tiếp tục luyện đều và nâng level ở những Part mạnh."
+    },
+    "aiInsight": {
+      "title": "Nhận xét từ AI",
+      "subtitle": "Phân tích điểm mạnh/yếu và lộ trình khuyến nghị",
+      "view": "Xem nhận xét",
+      "create": "Tạo nhận xét",
+      "loading": "Đang tải...",
+      "noInsight": "Chưa có nhận xét. Hãy thử tải lại sau.",
+      "createError": "Không thể tạo nhận xét",
+      "loadError": "Lỗi khi tải nhận xét"
+    },
+    "hud": {
+      "minutes": "phút",
+      "questions": "câu",
+      "start": "Bắt đầu",
+      "submit": "Nộp",
+      "quickNav": "Điều hướng nhanh",
+      "toggleSidebar": "Mở/Đóng sidebar (phím F)"
+    },
+    "sidebar": {
+      "focus": "Focus",
+      "progress": "Tiến độ",
+      "questions": "câu",
+      "time": "Thời gian",
+      "submit": "Nộp bài",
+      "timeSpent": "Thời gian làm",
+      "hideAnswers": "Ẩn đáp án & giải thích",
+      "showAnswers": "Hiện đáp án & giải thích",
+      "questionList": "Câu hỏi",
+      "quickJump": "Nhấn để chuyển nhanh",
+      "ariaLabel": "Thanh điều hướng bài làm",
+      "focusModeTitle": "Focus mode (phím F)",
+      "questionTitle": "Câu {n}"
+    },
+    "stimulus": {
+      "transcript": "Transcript",
+      "explanation": "Giải thích",
+      "question": "Câu {n}",
+      "correct": "Chính xác",
+      "incorrect": "Sai",
+      "correctAnswer": "Đúng: {n}",
+      "skipped": "Đã bỏ qua",
+      "selected": "Đã chọn: {n}",
+      "notSelected": "Chưa chọn",
+      "explainQuestion": "Giải thích câu {n}",
+      "imageAlt": "Hình minh họa câu hỏi {n}"
+    },
+    "card": {
+      "lastAttempt": "Lần gần nhất:",
+      "highScore": "High score",
+      "level": "Lv.",
+      "questions": "câu",
+      "minutes": "phút",
+      "correctSentences": "câu đúng",
+      "notStarted": "Chưa làm bài",
+      "startDesc": "Bắt đầu ngay để theo dõi tiến độ.",
+      "startNow": "Làm bài ngay",
+      "retry": "Làm lại"
+    },
+    "levelSuggestModal": {
+      "title": "Level bạn chọn khác với gợi ý",
+      "subtitle": "Hệ thống đề xuất Level phù hợp với năng lực hiện tại.",
+      "aria": {
+        "close": "Đóng"
+      },
+      "levels": {
+        "1": {
+          "label": "Level 1",
+          "desc": "Cơ bản"
+        },
+        "2": {
+          "label": "Level 2",
+          "desc": "Trung bình"
+        },
+        "3": {
+          "label": "Level 3",
+          "desc": "Nâng cao"
+        }
+      },
+      "current": {
+        "selected": "{desc} – bạn đang chọn"
+      },
+      "suggested": {
+        "badge": "GỢI Ý HỆ THỐNG",
+        "description": "{desc} – phù hợp với kết quả học hiện tại."
+      },
+      "message": {
+        "prefix": "Bạn vẫn có thể tiếp tục với",
+        "currentLevel": "Level {level}",
+        "middle": ", nhưng chúng tôi khuyến khích thử",
+        "suffix": "để có lộ trình tốt hơn."
+      },
+      "actions": {
+        "change": "Đổi Level khác",
+        "continue": "Tiếp tục với Level {currentLevel}"
+      }
+    }
+  },
+  "practiceComponents": {
+    "listening": "Luyện Listening TOEIC",
+    "reading": "Luyện Reading TOEIC"
+  },
+  "communityComponents": {
+    "chipNav": {
+      "newPost": "Đăng bài",
+      "feed": "Bảng tin",
+      "following": "Đang theo dõi",
+      "trending": "Xu hướng",
+      "saved": "Đã lưu",
+      "profile": "Hồ sơ",
+      "groups": "Nhóm học",
+      "studyRoom": "Phòng học",
+      "explore": "Khám phá",
+      "settings": "Cài đặt"
+    }
+  },
+  "paymentComponents": {
+    "upgrade": {
+      "title": "Nâng cấp lên Premium",
+      "description": "Mở khóa tất cả tính năng"
+    },
+    "cancel": {
+      "title": "Thanh toán đã bị hủy",
+      "description": "Bạn đã hủy quá trình thanh toán. Bạn có thể thử lại bất cứ lúc nào.",
+      "retry": "Thử lại thanh toán",
+      "home": "Về trang chủ"
+    },
+    "success": {
+      "verifying": "Đang xác thực thanh toán...",
+      "title": "Thanh toán thành công!",
+      "description": "Chúc mừng! Bạn đã nâng cấp lên gói Pro thành công.",
+      "redirect": "Hệ thống sẽ tự chuyển về trang chủ sau <bold>{seconds}</bold> giây…",
+      "homeNow": "Quay về trang chủ ngay",
+      "error": {
+        "title": "Không thể xác thực thanh toán",
+        "description": "Vui lòng liên hệ hỗ trợ nếu bạn đã thanh toán thành công.",
+        "home": "Quay lại trang chủ"
+      }
+    }
+  },
+  "newsComponents": {
+    "categories": {
+      "all": "Tất cả",
+      "tips": "Mẹo & Thủ thuật",
+      "strategy": "Chiến thuật",
+      "updates": "Cập nhật",
+      "education": "Giáo dục",
+      "politics": "Chính trị",
+      "travel": "Du lịch",
+      "technology": "Công nghệ",
+      "sports": "Thể thao",
+      "entertainment": "Giải trí",
+      "business": "Kinh doanh",
+      "society": "Xã hội",
+      "health": "Sức khỏe",
+      "culture": "Văn hóa"
+    },
+    "premiumGuard": {
+      "title": "Premium Feature",
+      "description": "Chức năng dịch và luyện từ vựng chỉ dành cho tài khoản Premium. Nâng cấp ngay để:",
+      "features": {
+        "translate": "Dịch từ và cụm từ tức thì",
+        "pronunciation": "Phát âm tiếng Anh chuẩn",
+        "saveVocab": "Lưu từ vựng vào bộ từ cá nhân",
+        "suggestions": "Gợi ý từ vựng quan trọng"
+      },
+      "close": "Đóng",
+      "upgrade": "Nâng cấp Premium"
+    },
+    "saveVocab": {
+      "button": "Lưu vào bộ từ vựng"
+    },
+    "detail": {
+      "notFound": "Không tìm thấy bài viết",
+      "notFoundDesc": "Bài viết này có thể đã bị xóa hoặc không tồn tại",
+      "backToList": "Quay lại danh sách",
+      "back": "Quay lại",
+      "viewCount": "{count} lượt xem",
+      "premiumBanner": {
+        "title": "Nâng cấp lên Premium",
+        "description": "Truy cập tính năng dịch từ và lưu từ vựng khi đọc bài viết!"
+      }
+    },
+    "progress": {
+      "notification": {
+        "title": "Đến lúc kiểm tra tiến bộ!",
+        "message": "Đến lúc kiểm tra tiến bộ! Nhấn để bắt đầu Progress Test."
+      }
+    }
+  },
+  "practice": {
+    "meta": {
+      "part1": "Part 1 – Photographs",
+      "part2": "Part 2 – Question–Response",
+      "part3": "Part 3 – Conversations",
+      "part4": "Part 4 – Talks",
+      "part5": "Part 5 – Incomplete Sentences",
+      "part6": "Part 6 – Text Completion",
+      "part7": "Part 7 – Reading Comprehension"
+    },
+    "levels": {
+      "l1": {
+        "label": "Level 1",
+        "desc": "Beginner"
+      },
+      "l2": {
+        "label": "Level 2",
+        "desc": "Intermediate"
+      },
+      "l3": {
+        "label": "Level 3",
+        "desc": "Advanced"
+      }
+    },
+    "header": {
+      "listening": "Luyện Nghe TOEIC",
+      "reading": "Luyện Đọc TOEIC",
+      "desc": "Mỗi Part được chia thành <strong>3 cấp độ</strong>. Chọn Level phù hợp, luyện đề theo thời gian chuẩn TOEIC, và theo dõi tiến độ ngay trên hệ thống.",
+      "placement": "Nên làm <link>Placement Test</link> trước để hệ thống gợi ý lộ trình chính xác hơn."
+    },
+    "switcher": {
+      "label": "Cấp độ luyện tập",
+      "history": "Lịch sử luyện tập",
+      "review": "Xem lại kết quả"
+    },
+    "suggestion": {
+      "label": "Gợi ý:",
+      "match": "phù hợp với trình độ hiện tại của bạn.",
+      "switch": "Chuyển level"
+    },
+    "empty": {
+      "title": "Chưa có đề thi cho Level {level}",
+      "desc": "Hãy thử cấp độ khác hoặc quay lại sau. Admin có thể đang cập nhật thêm đề cho Part này."
+    },
+    "stats": {
+      "questionsLabel": "Số câu hỏi",
+      "questionsUnit": "câu",
+      "timeLabel": "Thời gian",
+      "timeUnit": "phút"
+    },
+    "nav": {
+      "title": "Điều hướng nhanh",
+      "close": "Đóng",
+      "question": "Câu"
+    },
+    "loading": "Đang tải bài kiểm tra...",
+    "resultStats": {
+      "correctLabel": "Số câu đúng",
+      "timeLabel": "Thời gian"
+    },
+    "modal": {
+      "title": "Level bạn chọn khác với gợi ý",
+      "subtitle": "Hệ thống đề xuất Level phù hợp với năng lực hiện tại",
+      "close": "Đóng",
+      "currentDesc": "bạn đang chọn",
+      "suggestedBadge": "GỢI Ý HỆ THỐNG",
+      "suggestedDesc": "phù hợp với kết quả học hiện tại.",
+      "message": "Bạn vẫn có thể tiếp tục với <current>Level {current}</current>, nhưng chúng tôi khuyến khích thử <suggested>{suggested}</suggested> để có lộ trình tốt hơn.",
+      "changeLevel": "Đổi Level khác",
+      "continue": "Tiếp tục với Level {level}"
+    },
+    "levelDesc": {
+      "beginner": "Cơ bản",
+      "intermediate": "Trung bình",
+      "advanced": "Nâng cao"
+    },
+    "startScreen": {
+      "title": "Sẵn sàng bắt đầu chưa?",
+      "button": "Bắt đầu làm bài"
+    }
+  },
+  "authComponents": {
+    "layout": {
+      "or": "HOẶC"
+    },
+    "passwordField": {
+      "show": "Hiện mật khẩu",
+      "hide": "Ẩn mật khẩu"
+    }
+  },
+  "metadata": {
+    "title": {
+      "default": "ToeicPrep - Luyện thi TOEIC Online",
+      "template": "%s | ToeicPrep"
+    },
+    "description": "Nền tảng luyện thi TOEIC thông minh với lộ trình cá nhân hóa.",
+    "siteName": "ToeicPrep",
+    "ogImageAlt": "ToeicPrep Banner"
+  },
+  "baselineModal": {
+    "title": "Thiết lập baseline TOEIC",
+    "subtitle": "Giúp hệ thống cá nhân hóa lộ trình học",
+    "optionUnknown": {
+      "title": "Tôi chưa thi TOEIC / chưa xác định",
+      "desc": "Hệ thống sẽ dùng điểm placement test làm baseline."
+    },
+    "optionSelfReport": {
+      "title": "Tôi đã thi TOEIC và nhớ điểm",
+      "desc": "Nhập điểm thi chính thức gần nhất của bạn."
+    },
+    "scoreLabel": "Điểm TOEIC của bạn *",
+    "scorePlaceholder": "VD: 650",
+    "scoreValidation": "Điểm TOEIC phải từ 10 đến 990",
+    "saveFailed": "Lưu thất bại",
+    "saving": "Đang lưu...",
+    "savingShort": "Đang lưu",
+    "saveButton": "Lưu baseline",
+    "footerNote": "Vui lòng điền thông tin để tiếp tục sử dụng dashboard"
+  }
+}

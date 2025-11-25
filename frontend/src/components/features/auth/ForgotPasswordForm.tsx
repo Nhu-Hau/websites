@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react"; // Nếu dùng lucide-react
+import { useTranslations } from "next-intl";
 
 import AuthLayout from "@/components/features/auth/AuthLayout";
 import PasswordField from "@/components/features/auth/PasswordField";
@@ -15,6 +16,7 @@ import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 export default function ForgotPasswordForm() {
   const basePrefix = useBasePrefix();
   const router = useRouter();
+  const t = useTranslations("auth.forgotPassword");
 
   const newPw = usePasswordToggle(false);
   const confirmPw = usePasswordToggle(false);
@@ -41,7 +43,7 @@ export default function ForgotPasswordForm() {
   // Step 1: Gửi email
   async function sendCode(e?: React.FormEvent) {
     e?.preventDefault();
-    if (!email.trim()) return toast.error("Vui lòng nhập email");
+    if (!email.trim()) return toast.error(t("errorEmailRequired"));
 
     setLoading(true);
     try {
@@ -55,12 +57,12 @@ export default function ForgotPasswordForm() {
 
       if (res.ok) {
         toast.success(
-          data.message || "Nếu email tồn tại, chúng tôi đã gửi mã xác nhận."
+          data.message || t("successStep1")
         );
         setStep(2);
         setCooldown(60);
       } else {
-        toast.error(data.message || "Không thể gửi mã. Vui lòng thử lại.");
+        toast.error(data.message || t("sendCodeError"));
       }
     } finally {
       setLoading(false);
@@ -70,11 +72,11 @@ export default function ForgotPasswordForm() {
   // Step 2: Đặt lại mật khẩu
   async function onResetWithCode(e: React.FormEvent) {
     e.preventDefault();
-    if (!email) return toast.error("Thiếu email");
+    if (!email) return toast.error(t("missingEmail"));
     if (!code || code.length < 4)
-      return toast.error("Mã xác nhận không hợp lệ");
-    if (pw.length < 8) return toast.error("Mật khẩu phải có ít nhất 8 ký tự");
-    if (pw !== cpw) return toast.error("Mật khẩu không khớp");
+      return toast.error(t("errorCodeInvalid"));
+    if (pw.length < 8) return toast.error(t("errorPasswordLength"));
+    if (pw !== cpw) return toast.error(t("errorPasswordMismatch"));
 
     setLoading(true);
     try {
@@ -86,10 +88,10 @@ export default function ForgotPasswordForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        toast.success(data.message || "Đặt lại mật khẩu thành công!");
+        toast.success(data.message || t("successStep2"));
         router.push(`${basePrefix}/login`);
       } else {
-        toast.error(data.message || "Mã không hợp lệ. Vui lòng thử lại.");
+        toast.error(data.message || t("resetCodeError"));
       }
     } finally {
       setLoading(false);
@@ -98,16 +100,16 @@ export default function ForgotPasswordForm() {
 
   return (
     <AuthLayout
-      title={step === 1 ? "Quên mật khẩu" : "Đặt lại mật khẩu"}
+      title={step === 1 ? t("title") : t("resetTitle")}
       subtitle={
         step === 1 ? (
-          "Nhập email để nhận mã xác nhận"
+          t("subtitleStep1")
         ) : (
           <div className="flex items-center gap-1 text-sm">
             <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300">
               2
             </span>
-            Nhập mã và mật khẩu mới
+            {t("subtitleStep2")}
           </div>
         )
       }
@@ -151,7 +153,7 @@ export default function ForgotPasswordForm() {
               htmlFor="email"
               className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
             >
-              Email
+              {t("emailLabel")}
             </label>
             <input
               id="email"
@@ -161,7 +163,7 @@ export default function ForgotPasswordForm() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Nhập email của bạn"
+              placeholder={t("emailPlaceholder")}
               className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 
                          bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm
                          text-zinc-900 dark:text-zinc-100 
@@ -198,10 +200,10 @@ export default function ForgotPasswordForm() {
                   />
                   <path fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                 </svg>
-                Đang gửi...
+                {t("submitStep1Loading")}
               </span>
             ) : (
-              "Gửi mã xác nhận"
+              t("submitStep1")
             )}
           </button>
 
@@ -215,12 +217,14 @@ export default function ForgotPasswordForm() {
                          hover:no-underline transition-all duration-200"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Quay lại đăng nhập
+              {t("backToLogin")}
             </Link>
           </div>
 
           <p className="text-xs text-center text-zinc-500 dark:text-zinc-400">
-            Kiểm tra hộp thư (và mục <span className="font-medium">Spam</span>)
+            {t.rich("checkSpam", {
+              span: (chunks) => <span className="font-medium">{chunks}</span>
+            })}
           </p>
         </form>
       ) : (
@@ -228,7 +232,7 @@ export default function ForgotPasswordForm() {
           {/* Email (disabled) */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Email
+              {t("emailLabel")}
             </label>
             <input
               type="email"
@@ -244,7 +248,7 @@ export default function ForgotPasswordForm() {
           {/* Code */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Mã xác nhận
+              {t("codeLabel")}
             </label>
             <input
               inputMode="numeric"
@@ -252,7 +256,7 @@ export default function ForgotPasswordForm() {
               maxLength={6}
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-              placeholder="123456"
+              placeholder={t("codePlaceholder")}
               autoFocus
               className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 
                          bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm text-center font-mono tracking-widest
@@ -271,7 +275,7 @@ export default function ForgotPasswordForm() {
                            underline underline-offset-2 disabled:no-underline disabled:opacity-50
                            transition-colors"
               >
-                {canResend ? "Gửi lại mã" : `Gửi lại sau ${cooldown}s`}
+                {canResend ? t("resendCode") : t("resendWait", { seconds: cooldown })}
               </button>
             </div>
           </div>
@@ -281,8 +285,8 @@ export default function ForgotPasswordForm() {
             <PasswordField
               id="password"
               name="password"
-              label="Mật khẩu mới"
-              placeholder="Tối thiểu 8 ký tự"
+              label={t("newPasswordLabel")}
+              placeholder={t("newPasswordPlaceholder")}
               className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 
                          bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm
                          text-zinc-900 dark:text-zinc-100 
@@ -302,8 +306,8 @@ export default function ForgotPasswordForm() {
             <PasswordField
               id="confirm"
               name="confirm"
-              label="Xác nhận mật khẩu"
-              placeholder="Nhập lại mật khẩu"
+              label={t("confirmPasswordLabel")}
+              placeholder={t("confirmPasswordPlaceholder")}
               className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 
                          bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm
                          text-zinc-900 dark:text-zinc-100 
@@ -345,10 +349,10 @@ export default function ForgotPasswordForm() {
                   />
                   <path fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                 </svg>
-                Đang xử lý...
+                {t("submitStep2Loading")}
               </span>
             ) : (
-              "Đặt lại mật khẩu"
+              t("submitStep2")
             )}
           </button>
         </form>

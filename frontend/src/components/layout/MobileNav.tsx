@@ -1,4 +1,5 @@
 import NavMenu from "@/components/navigation/NavMenu";
+import { useTranslations } from "next-intl";
 
 interface MobileNavProps {
   open: boolean;
@@ -7,10 +8,12 @@ interface MobileNavProps {
 }
 
 export default function MobileNav({ open, menuRef }: MobileNavProps) {
+  const t = useTranslations("layoutComponents.nav.aria");
+
   return (
     <div
       ref={menuRef}
-      aria-label={open ? "Đóng menu" : "Mở menu"}
+      aria-label={open ? t("closeMenu") : t("openMenu")}
       className={`lg:hidden overflow-hidden transition-[max-height] duration-300 ease-out
                   ${open ? "max-h-[30rem]" : "max-h-0"}`}
     >

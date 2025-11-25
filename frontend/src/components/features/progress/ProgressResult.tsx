@@ -16,6 +16,7 @@ import { TestLoadingState } from "@/components/features/test/TestLoadingState";
 import { AIInsightSection } from "@/components/features/test/AIInsightSection";
 import { useAuth } from "@/context/AuthContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useTranslations } from "next-intl";
 
 type AttemptItem = {
   id: string;
@@ -53,6 +54,7 @@ function fmtTime(totalSec: number) {
 }
 
 export default function ProgressResult() {
+  const t = useTranslations("progress");
   const { attemptId } = useParams<{ attemptId: string }>();
   const router = useRouter();
   const basePrefix = useBasePrefix();
@@ -101,17 +103,17 @@ export default function ProgressResult() {
                 const errorText = await detailRes.text();
                 console.error("Failed to fetch attempt detail:", errorText);
                 if (mounted) {
-                  setError(`Không thể tải chi tiết: ${detailRes.status}`);
+                  setError(t("errors.detail", { status: detailRes.status }));
                 }
               }
             } else if (mounted) {
-              setError("Không tìm thấy kết quả gần nhất");
+              setError(t("errors.notFound"));
             }
           } else {
             const errorText = await hist.text();
             console.error("Failed to fetch attempt history:", errorText);
             if (mounted) {
-              setError(`Không thể tải lịch sử: ${hist.status}`);
+              setError(t("errors.history", { status: hist.status }));
             }
           }
         } else {
@@ -130,9 +132,10 @@ export default function ProgressResult() {
             console.error("Failed to fetch attempt:", res.status, errorText);
             if (mounted) {
               setError(
-                `Không thể tải kết quả (${res.status}): ${
-                  errorText || "Lỗi không xác định"
-                }`
+                t("errors.result", {
+                  status: res.status,
+                  message: errorText || t("errors.unknown"),
+                })
               );
             }
           }
@@ -190,20 +193,25 @@ export default function ProgressResult() {
               const errorText = await r.text();
               console.error("Failed to fetch items from fallback:", errorText);
               if (mounted) {
-                setError(`Không thể tải câu hỏi: ${r.status} - ${errorText}`);
+                setError(
+                  t("errors.questions", {
+                    status: r.status,
+                    message: errorText || t("errors.unknown"),
+                  })
+                );
               }
             }
           } else if (mounted) {
-            setError("Không tìm thấy danh sách câu hỏi");
+            setError(t("errors.noQuestions"));
           }
         }
       } catch (e) {
         console.error("Error fetching progress result:", e);
         if (mounted) {
           setError(
-            `Lỗi khi tải dữ liệu: ${
-              e instanceof Error ? e.message : "Lỗi không xác định"
-            }`
+            t("resultPage.errors.loadData", {
+              message: e instanceof Error ? e.message : t("errors.unknown"),
+            })
           );
         }
       } finally {
@@ -271,7 +279,7 @@ export default function ProgressResult() {
   if (loading) {
     return (
       <div className="mt-16 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50/70 dark:bg-zinc-950/80">
-        <TestLoadingState message="Đang tải kết quả bài kiểm tra…" />
+        <TestLoadingState message={t("loading")} />
       </div>
     );
   }
@@ -287,7 +295,7 @@ export default function ProgressResult() {
             onClick={() => window.location.reload()}
             className="mt-4 inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 transition-colors"
           >
-            Thử tải lại
+            {t("resultPage.reload")}
           </button>
         </div>
       </div>
@@ -299,10 +307,10 @@ export default function ProgressResult() {
       <div className="mt-16 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50/70 dark:bg-zinc-950/80">
         <div className="max-w-md w-full rounded-2xl border border-zinc-200/70 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-900/95 px-5 py-6 shadow-lg text-center">
           <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-            Không tìm thấy kết quả.
+            {t("errors.notFound")}
           </p>
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            Attempt ID: {attemptId}
+            {t("resultPage.attemptId", { id: attemptId })}
           </p>
         </div>
       </div>
@@ -343,20 +351,17 @@ export default function ProgressResult() {
       {/* Header */}
       <ResultHeader
         badge={{
-          label: `Progress Test${typeof attempt.version === "number" ? ` • Test ${attempt.version}` : ""}`,
+          label:
+            typeof attempt.version === "number"
+              ? t("result.badgeWithVersion", { version: attempt.version })
+              : t("result.badge"),
           dotColor: "bg-sky-500",
         }}
-        title="Kết quả bài kiểm tra tiến độ TOEIC"
-        description={
-          <>
-            Hoàn thành lúc{" "}
-            <span className="font-medium">
-              {new Date(attempt.submittedAt).toLocaleString()}
-            </span>
-            . Dưới đây là điểm TOEIC ước lượng và phân tích chi tiết theo
-            từng kỹ năng.
-          </>
-        }
+        title={t("result.title")}
+        description={t.rich("result.description", {
+          time: (chunks) => <span className="font-medium">{chunks}</span>,
+          datetime: new Date(attempt.submittedAt).toLocaleString(),
+        })}
         stats={{
           correct: attempt.correct,
           total: attempt.total,
@@ -388,20 +393,25 @@ export default function ProgressResult() {
         {items.length === 0 ? (
           <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
             <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
-              Không có câu hỏi để hiển thị.
+              {t("resultPage.empty.title")}
             </p>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Items: {items.length}, Groups: {groups.length}
+              {t("resultPage.empty.stats", {
+                items: items.length,
+                groups: groups.length,
+              })}
             </p>
           </div>
         ) : groups.length === 0 ? (
           <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
             <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
-              Không thể nhóm câu hỏi để hiển thị.
+              {t("resultPage.groupError.title")}
             </p>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Items: {items.length}, StimulusMap keys:{" "}
-              {Object.keys(stimulusMap).length}
+              {t("resultPage.groupError.stats", {
+                items: items.length,
+                keys: Object.keys(stimulusMap).length,
+              })}
             </p>
           </div>
         ) : (

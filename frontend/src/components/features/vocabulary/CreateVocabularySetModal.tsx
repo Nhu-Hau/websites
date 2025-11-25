@@ -8,6 +8,7 @@ import {
   VocabularySet,
 } from "@/types/vocabulary.types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export interface SetComposerModalProps {
   open: boolean;
@@ -26,6 +27,8 @@ export function SetComposerModal({
   onClose,
   onSubmit,
 }: SetComposerModalProps) {
+  const t = useTranslations("vocabularyComponents.modal.createSet");
+  const tExtra = useTranslations("vocabularyExtra");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [topic, setTopic] = useState("");
@@ -74,9 +77,9 @@ export function SetComposerModal({
   const subtitle = useMemo(
     () =>
       mode === "create"
-        ? "Tạo bộ từ theo một chủ đề hoặc bối cảnh cụ thể."
-        : "Chỉnh sửa thông tin để bộ từ rõ ràng và dễ quản lý.",
-    [mode]
+        ? t("description")
+        : t("editDescription"),
+    [mode, t]
   );
 
   if (!open) return null;
@@ -91,7 +94,7 @@ export function SetComposerModal({
     event.preventDefault();
 
     if (!title.trim()) {
-      setError("Tên bộ từ vựng là bắt buộc.");
+      setError(tExtra("errors.titleRequired"));
       return;
     }
 
@@ -111,7 +114,7 @@ export function SetComposerModal({
       setError(
         err instanceof Error
           ? err.message
-          : "Không thể lưu bộ từ vựng. Hãy thử lại."
+          : tExtra("errors.saveFailed")
       );
     } finally {
       setLoading(false);
@@ -145,7 +148,7 @@ export function SetComposerModal({
           type="button"
           onClick={onClose}
           disabled={loading}
-          aria-label="Đóng"
+          aria-label={t("aria.close")}
           className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/80 text-zinc-500 ring-1 ring-zinc-200/80 shadow-sm transition hover:bg-white hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed xs:right-4 xs:top-4 xs:h-9 xs:w-9 sm:h-10 sm:w-10 dark:bg-zinc-900/80 dark:text-zinc-300 dark:ring-zinc-700/80 dark:hover:bg-zinc-800"
         >
           <X className="h-4 w-4 xs:h-5 xs:w-5 sm:h-5 sm:h-5" />
@@ -158,14 +161,14 @@ export function SetComposerModal({
               <BookOpenCheck className="h-4 w-4 text-white xs:h-5 xs:w-5" />
             </div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-              {mode === "create" ? "Tạo bộ từ" : "Chỉnh sửa"}
+              {mode === "create" ? t("badgeCreate") : t("badgeEdit")}
             </div>
           </div>
           <h2
             id="modal-title"
             className="mt-3 text-lg font-bold tracking-tight text-slate-900 xs:mt-4 xs:text-xl sm:text-2xl dark:text-white"
           >
-            {mode === "create" ? "Thiết lập bộ từ" : "Cập nhật bộ từ"}
+            {mode === "create" ? t("titleCreate") : t("titleEdit")}
           </h2>
           <p
             id="modal-description"
@@ -189,12 +192,12 @@ export function SetComposerModal({
           {/* Title */}
           <div className="space-y-1.5">
             <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-              Tên bộ từ <span className="text-red-500">*</span>
+              {t("labels.setName")} <span className="text-red-500">*</span>
             </label>
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="VD: TOEIC – Office Communication"
+              placeholder={t("placeholders.setName")}
               maxLength={80}
               className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-3 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
@@ -203,12 +206,12 @@ export function SetComposerModal({
           {/* Topic */}
           <div className="space-y-1.5">
             <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-              Chủ đề / tag
+              {t("labels.topic")}
             </label>
             <input
               value={topic}
               onChange={(event) => setTopic(event.target.value)}
-              placeholder="VD: Office, Meetings, Customer service"
+              placeholder={t("placeholders.topic")}
               className="w-full rounded-2xl border border-slate-200/80 bg-white py-2.5 pl-3 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
           </div>
@@ -216,13 +219,13 @@ export function SetComposerModal({
           {/* Description */}
           <div className="space-y-1.5">
             <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-              Mô tả (tùy chọn)
+              {t("labels.description")}
             </label>
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               rows={3}
-              placeholder="VD: Từ vựng thường gặp trong hội thoại văn phòng."
+              placeholder={tExtra("placeholders.setDescription")}
               className="w-full rounded-2xl border border-slate-200/80 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
           </div>
@@ -235,7 +238,7 @@ export function SetComposerModal({
               disabled={loading}
               className="inline-flex w-full items-center justify-center rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed xs:w-auto dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-50"
             >
-              Hủy
+              {t("actions.cancel")}
             </button>
             <button
               type="submit"
@@ -264,12 +267,12 @@ export function SetComposerModal({
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  <span>Đang lưu...</span>
+                  <span>{t("actions.saving")}</span>
                 </>
               ) : mode === "create" ? (
-                "Tạo bộ từ"
+                t("buttonCreate")
               ) : (
-                "Lưu thay đổi"
+                tExtra("controls.saveChanges")
               )}
             </button>
           </div>

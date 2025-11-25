@@ -160,6 +160,9 @@ function SectionChartCard({
   chartData,
   loading,
 }: SectionChartCardProps) {
+  const t = useTranslations("dashboard.progressChart");
+  const tPart = useTranslations("pages.practice.meta");
+
   const latest =
     chartData.length > 0 ? chartData[chartData.length - 1] : undefined;
   const config = toneConfig[tone];
@@ -208,12 +211,12 @@ function SectionChartCard({
         {latest && (
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200/80 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700/80">
             <span className="text-[10px] uppercase tracking-[0.16em] text-slate-400 dark:text-zinc-500">
-              Gần nhất
+              {t("latest")}
             </span>
             <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-zinc-500" />
             <span className="truncate">
-              Level {latest.level}
-              {latest.test != null && ` • Test ${latest.test}`}
+              {t("level", { level: latest.level })}
+              {latest.test != null && ` • ${t("test", { test: latest.test })}`}
             </span>
             <span className="font-semibold text-slate-900 dark:text-slate-50">
               {Math.round(latest.acc)}%
@@ -239,7 +242,7 @@ function SectionChartCard({
                     : "border border-gray-200 bg-white/95 text-slate-700 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
                 }`}
               >
-                {PART_SHORT_LABEL[p]}
+                {tPart(p.replace(".", ""))}
               </button>
             );
           })}
@@ -252,7 +255,7 @@ function SectionChartCard({
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Đang tải dữ liệu...
+              {t("loading")}
             </p>
           </div>
         ) : chartData.length > 0 ? (
@@ -299,14 +302,14 @@ function SectionChartCard({
                 }}
                 cursor={{ stroke: "#94a3b8", strokeWidth: 1 }}
                 labelFormatter={(label) =>
-                  `${PART_SHORT_LABEL[selectedPart]} • ${label}`
+                  `${tPart(selectedPart.replace(".", ""))} • ${label}`
                 }
                 formatter={(value: number, _name: string, props: any) => {
                   const payload = props?.payload;
-                  const level = payload?.level ? `Level ${payload.level}` : "";
+                  const level = payload?.level ? t("level", { level: payload.level }) : "";
                   const test =
-                    payload?.test != null ? `Test ${payload.test}` : "";
-                  const isRetake = payload?.isRetake ? "Retake" : "Lần đầu";
+                    payload?.test != null ? t("test", { test: payload.test }) : "";
+                  const isRetake = payload?.isRetake ? t("tooltip.retake") : t("tooltip.firstTime");
                   const meta = [level, test, isRetake]
                     .filter(Boolean)
                     .join(" • ");
@@ -352,12 +355,12 @@ function SectionChartCard({
             </div>
             <div>
               <p className="mb-1 text-sm font-medium text-slate-900 dark:text-slate-50">
-                {config.emptyTitle}
+                {t(`${tone}.emptyTitle`)}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {tone === "listening"
-                  ? `Hãy luyện ${PART_SHORT_LABEL[selectedPart]} để thấy độ chính xác.`
-                  : `Hoàn thành ${PART_SHORT_LABEL[selectedPart]} để hiển thị dữ liệu.`}
+                {t(`${tone}.emptyDesc`, {
+                  part: tPart(selectedPart.replace(".", "")),
+                })}
               </p>
             </div>
           </div>
@@ -374,12 +377,12 @@ function SectionChartCard({
                   tone === "listening" ? "bg-sky-500" : "bg-[#64b855]"
                 }`}
               />
-              <span>Đường liền: Accuracy từng lần</span>
+              <span>{t("legend.solid")}</span>
             </div>
             {chartData.some((d) => d.movingAvg != null) && (
               <div className="flex items-center gap-1.5">
                 <span className="h-0.5 w-4 border-t border-dashed border-slate-400" />
-                <span>Đường gạch: Moving Avg (3 lần)</span>
+                <span>{t("legend.dashed")}</span>
               </div>
             )}
           </div>
@@ -387,19 +390,19 @@ function SectionChartCard({
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-[#22c55e]" />
-              <span>Level 1</span>
+              <span>{t("level", { level: 1 })}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-[#0ea5e9]" />
-              <span>Level 2</span>
+              <span>{t("level", { level: 2 })}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-[#f97316]" />
-              <span>Level 3</span>
+              <span>{t("level", { level: 3 })}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="inline-block h-2 w-2 rounded-full border border-slate-400" />
-              <span>Viền đậm: Retake</span>
+              <span>{t("legend.retake")}</span>
             </div>
           </div>
         </div>
@@ -408,8 +411,13 @@ function SectionChartCard({
   );
 }
 
+import { useTranslations } from "next-intl";
+
 /* ===================== Component ===================== */
 export default function PracticeProgressChart() {
+  const t = useTranslations("dashboard.progressChart");
+  const tPart = useTranslations("pages.practice.meta");
+
   const [practiceHist, setPracticeHist] = React.useState<PracticeAttemptDoc[]>(
     []
   );
@@ -541,8 +549,8 @@ export default function PracticeProgressChart() {
     <div className="space-y-6">
       <SectionChartCard
         tone="listening"
-        title="Listening accuracy"
-        description="Theo dõi độ chính xác từng Part 1–4 và phát hiện xu hướng luyện tập."
+        title={t("listening.title")}
+        description={t("listening.description")}
         parts={LISTENING_PARTS}
         selectedPart={listeningPart}
         onSelectPart={setListeningPart}
@@ -551,8 +559,8 @@ export default function PracticeProgressChart() {
       />
       <SectionChartCard
         tone="reading"
-        title="Reading accuracy"
-        description="Quan sát tiến độ ở các Part 5–7 để cân đối giữa ngữ pháp và đọc hiểu."
+        title={t("reading.title")}
+        description={t("reading.description")}
         parts={READING_PARTS}
         selectedPart={readingPart}
         onSelectPart={setReadingPart}

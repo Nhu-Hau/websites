@@ -1,10 +1,10 @@
 // frontend/src/components/features/study/StudyHeader.tsx
 "use client";
 
-import { Plus, RefreshCw, Loader2, Video } from "lucide-react";
+import { Plus, RefreshCw, Loader2 } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { useAuth } from "@/context/AuthContext";
-import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 
 type Role = "user" | "teacher" | "admin";
 
@@ -27,6 +27,7 @@ export default function StudyHeader({
   const isAdmin = role === "admin";
   const isTeacher = role === "teacher";
   const canCreate = isAdmin || isTeacher;
+  const t = useTranslations("study.header");
 
   return (
     <header className="sticky top-16 z-40 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
@@ -41,8 +42,10 @@ export default function StudyHeader({
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-sm hover:shadow"
               >
                 <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Tạo phòng</span>
-                <span className="sm:hidden">Tạo</span>
+                <span className="hidden sm:inline">
+                  {t("create.full")}
+                </span>
+                <span className="sm:hidden">{t("create.short")}</span>
               </button>
             )}
 
@@ -60,8 +63,8 @@ export default function StudyHeader({
               ) : (
                 <RefreshCw className="h-4 w-4" />
               )}
-              <span className="hidden sm:inline">Làm mới</span>
-              <span className="sm:hidden">Refresh</span>
+              <span className="hidden sm:inline">{t("refresh.full")}</span>
+              <span className="sm:hidden">{t("refresh.short")}</span>
             </button>
           </nav>
         </div>

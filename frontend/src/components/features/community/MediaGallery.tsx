@@ -1,12 +1,13 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import type { Attachment } from "@/types/community.types";
+import { useTranslations } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
-
 type MediaGalleryProps = {
   attachments: Attachment[];
   className?: string;
@@ -18,6 +19,7 @@ function getFullUrl(url: string): string {
 }
 
 function VideoPlayer({ attachment }: { attachment: Attachment }) {
+  const t = useTranslations("community.media");
   const [playing, setPlaying] = React.useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
@@ -36,34 +38,42 @@ function VideoPlayer({ attachment }: { attachment: Attachment }) {
     ? getFullUrl(attachment.thumbnail)
     : null;
 
+  const showThumbnail = !!thumbnail && !playing;
+
   return (
-    <div className="relative w-full h-full group">
-      {!playing && (
-        <div
-          className="absolute inset-0 flex items-center justify-center bg-zinc-900/50 cursor-pointer z-10"
-          onClick={handlePlay}
-        >
-          <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg hover:bg-white transition-colors">
-            <Play className="w-8 h-8 text-zinc-900 ml-1" fill="currentColor" />
-          </div>
-        </div>
-      )}
-      {thumbnail && !playing && (
-        <img
+    <div className="relative w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900 group">
+      {showThumbnail && (
+        <Image
           src={thumbnail}
-          alt="Video thumbnail"
-          className="absolute inset-0 w-full h-full object-cover"
+          alt={t("videoThumbnailAlt")}
+          width={0}
+          height={0}
+          sizes="100vw"
+          className="w-full h-auto object-contain"
+          priority={false}
         />
       )}
       <video
         ref={videoRef}
         src={url}
         controls={playing}
-        className="w-full h-full object-contain"
+        className={`w-full h-auto ${showThumbnail ? "hidden" : "block"}`}
         onPlay={handlePlay}
         onPause={handlePause}
         playsInline
       />
+      {!playing && (
+        <button
+          type="button"
+          className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center bg-zinc-900/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+          onClick={handlePlay}
+          aria-label={t("playVideo")}
+        >
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 shadow-lg transition-colors hover:bg-white">
+            <Play className="ml-1 h-8 w-8 text-zinc-900" fill="currentColor" />
+          </div>
+        </button>
+      )}
     </div>
   );
 }
@@ -75,6 +85,7 @@ function ImageItem({
   attachment: Attachment;
   className?: string;
 }) {
+  const t = useTranslations("community.media");
   const url = getFullUrl(attachment.url);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(false);
@@ -82,34 +93,38 @@ function ImageItem({
   if (error) {
     return (
       <div
-        className={`bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center ${className}`}
+        className={`bg-zinc-100 dark:bg-zinc-800 flex w-full items-center justify-center rounded-xl ${className}`}
       >
-        <span className="text-xs text-zinc-500">Failed to load image</span>
+        <span className="text-xs text-zinc-500">{t("loadError")}</span>
       </div>
     );
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative w-full overflow-hidden rounded-xl ${className}`}>
       {loading && (
-        <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+        <div className="absolute inset-0 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-800" />
       )}
-      <img
+      <Image
         src={url}
-        alt={attachment.name || "Image"}
-        className="w-full h-full object-contain"
-        onLoad={() => setLoading(false)}
+        alt={attachment.name || t("imageAlt")}
+        width={0}
+        height={0}
+        className="w-full h-auto rounded-xl object-contain"
+        sizes="100vw"
+        onLoadingComplete={() => setLoading(false)}
         onError={() => {
           setLoading(false);
           setError(true);
         }}
-        loading="lazy"
+        priority={false}
       />
     </div>
   );
 }
 
 function CarouselGallery({ attachments }: { attachments: Attachment[] }) {
+  const t = useTranslations("community.media");
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const validAttachments = attachments.filter(
     (a) => a && a.url && (a.type === "image" || a.type === "video")
@@ -128,50 +143,49 @@ function CarouselGallery({ attachments }: { attachments: Attachment[] }) {
 
   if (allMedia.length === 0) return null;
 
+  const activeMedia = allMedia[currentIndex];
+  const renderMedia = (media: Attachment) =>
+    media.type === "video" ? (
+      <VideoPlayer attachment={media} />
+    ) : (
+      <ImageItem attachment={media} />
+    );
+
   return (
-    <div className="relative w-full aspect-square bg-zinc-100 dark:bg-zinc-900 rounded-lg overflow-hidden">
-      {allMedia.map((media, idx) => (
-        <div
-          key={idx}
-          className={`absolute inset-0 transition-opacity duration-300 ${
-            idx === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
-          }`}
-        >
-          {media.type === "video" ? (
-            <VideoPlayer attachment={media} />
-          ) : (
-            <ImageItem attachment={media} className="w-full h-full" />
-          )}
-        </div>
-      ))}
+    <div className="relative w-full rounded-lg bg-zinc-100 dark:bg-zinc-900">
+      <div className="w-full">{renderMedia(activeMedia)}</div>
 
       {allMedia.length > 1 && (
         <>
           <button
+            type="button"
             onClick={goPrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
-            aria-label="Previous"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
+            aria-label={t("prevImage")}
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="h-5 w-5" />
           </button>
           <button
+            type="button"
             onClick={goNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
-            aria-label="Next"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
+            aria-label={t("nextImage")}
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="h-5 w-5" />
           </button>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1">
+          <div className="absolute bottom-2 left-1/2 z-20 flex -translate-x-1/2 gap-1">
             {allMedia.map((_, idx) => (
               <button
                 key={idx}
+                type="button"
                 onClick={() => setCurrentIndex(idx)}
                 className={`h-1.5 rounded-full transition-all ${
                   idx === currentIndex
                     ? "w-6 bg-white"
                     : "w-1.5 bg-white/50 hover:bg-white/75"
                 }`}
-                aria-label={`Go to slide ${idx + 1}`}
+                aria-label={t("goToSlide", { index: idx + 1 })}
+                aria-current={idx === currentIndex ? "true" : undefined}
               />
             ))}
           </div>
@@ -194,16 +208,16 @@ function GridGallery({ attachments }: { attachments: Attachment[] }) {
   // Grid 2x2
   if (allMedia.length === 4) {
     return (
-      <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
+      <div className="grid grid-cols-2 gap-1 rounded-lg">
         {allMedia.map((media, idx) => (
           <div
             key={idx}
-            className="relative aspect-square bg-zinc-100 dark:bg-zinc-900"
+            className="rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900"
           >
             {media.type === "video" ? (
               <VideoPlayer attachment={media} />
             ) : (
-              <ImageItem attachment={media} className="w-full h-full" />
+              <ImageItem attachment={media} />
             )}
           </div>
         ))}
@@ -213,18 +227,18 @@ function GridGallery({ attachments }: { attachments: Attachment[] }) {
 
   // Less than 4 items - still use grid but adjust
   return (
-    <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
+    <div className="grid grid-cols-2 gap-1 rounded-lg">
       {allMedia.map((media, idx) => (
         <div
           key={idx}
-          className={`relative bg-zinc-100 dark:bg-zinc-900 ${
-            allMedia.length === 1 ? "col-span-2 aspect-square" : "aspect-square"
+          className={`rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900 ${
+            allMedia.length === 1 ? "col-span-2" : ""
           }`}
         >
           {media.type === "video" ? (
             <VideoPlayer attachment={media} />
           ) : (
-            <ImageItem attachment={media} className="w-full h-full" />
+            <ImageItem attachment={media} />
           )}
         </div>
       ))}
@@ -236,6 +250,7 @@ export default function MediaGallery({
   attachments,
   className = "",
 }: MediaGalleryProps) {
+  const t = useTranslations("community.media");
   // Filter and validate attachments
   const validAttachments = attachments.filter(
     (a) => a && a.url && (a.type === "image" || a.type === "video")
@@ -251,18 +266,21 @@ export default function MediaGallery({
     const media = allMedia[0];
     return (
       <div className={`w-full ${className}`}>
-        <div className="w-full rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+        <div className="w-full overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
           {media.type === "video" ? (
             <div className="aspect-video">
               <VideoPlayer attachment={media} />
             </div>
           ) : (
-            <div className="relative w-full flex items-center justify-center">
-              <img
+            <div className="w-full">
+              <Image
                 src={getFullUrl(media.url)}
-                alt={media.name || "Image"}
-                className="w-full h-auto object-contain"
-                loading="lazy"
+                alt={media.name || t("imageAlt")}
+                width={0}
+                height={0}
+                sizes="100vw"
+                className="w-full h-auto rounded-lg object-contain"
+                priority={false}
               />
             </div>
           )}

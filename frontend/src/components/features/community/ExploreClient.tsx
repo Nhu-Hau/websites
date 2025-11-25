@@ -5,6 +5,7 @@ import React from "react";
 import { Hash, Users, TrendingUp } from "lucide-react";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -13,6 +14,7 @@ export default function ExploreClient() {
   const basePrefix = useBasePrefix();
   const [trendingHashtags, setTrendingHashtags] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const t = useTranslations("community.explore");
 
   React.useEffect(() => {
     fetch(`${API_BASE}/api/community/hashtags/trending`)
@@ -31,10 +33,10 @@ export default function ExploreClient() {
       {/* Header */}
       <div className="mb-2">
         <h1 className="mb-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Khám phá
+          {t("header.title")}
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Tìm những chủ đề và nhóm học thú vị trong cộng đồng TOEIC.
+          {t("header.description")}
         </p>
       </div>
 
@@ -47,10 +49,10 @@ export default function ExploreClient() {
             </div>
             <div>
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                Hashtag đang thịnh hành
+                {t("hashtags.title")}
               </h2>
               <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                Xem các chủ đề được cộng đồng tương tác nhiều nhất
+                {t("hashtags.description")}
               </p>
             </div>
           </div>
@@ -74,7 +76,7 @@ export default function ExploreClient() {
                     {tag.name}
                   </span>
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {tag.postsCount} bài viết
+                    {t("hashtags.postCount", { count: tag.postsCount })}
                   </span>
                 </div>
                 {tag.samplePost && (
@@ -87,7 +89,7 @@ export default function ExploreClient() {
           </div>
         ) : (
           <div className="py-8 text-center text-sm text-zinc-600 dark:text-zinc-400">
-            Chưa có hashtag nào đang thịnh hành.
+            {t("hashtags.empty")}
           </div>
         )}
       </section>
@@ -104,28 +106,51 @@ export default function ExploreClient() {
             </div>
           </div>
           <div>
-            <h3 className="mb-1 text-base font-semibold">Xu hướng</h3>
+            <h3 className="mb-1 text-base font-semibold">
+              {t("quickLinks.trending.title")}
+            </h3>
             <p className="text-xs text-sky-50/90">
-              Xem những bài viết đang được quan tâm nhiều nhất.
+              {t("quickLinks.trending.description")}
             </p>
           </div>
         </Link>
 
         <Link
           href={`${basePrefix}/community/groups`}
-          className="group flex flex-col justify-between rounded-2xl border border-zinc-200/80 bg-gradient-to-br from-sky-50 to-sky-100 p-5 text-zinc-900 shadow-sm ring-1 ring-sky-100/70 transition-all duration-150 hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white hover:shadow-lg dark:border-zinc-800/80 dark:bg-zinc-900/95 dark:ring-sky-900/40"
+          className="
+    group flex flex-col justify-between rounded-2xl border 
+    border-zinc-200/80 bg-gradient-to-br from-sky-50 to-sky-100 
+    p-5 text-zinc-900 shadow-sm ring-1 ring-sky-100/70 
+    transition-all duration-150 hover:-translate-y-0.5 
+    hover:border-sky-300 hover:bg-white hover:shadow-lg
+
+    /* DARK */
+    dark:border-zinc-800/70 
+    dark:bg-gradient-to-br dark:from-[#0f172a] dark:via-[#0b1a33] dark:to-[#082032]
+    dark:text-zinc-100
+    dark:ring-[#4063bb33]
+    dark:hover:border-[#4063bb66]
+    dark:hover:bg-[#0f1d34]
+  "
         >
           <div className="mb-4 flex items-center justify-between gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300">
+            <div
+              className="
+        flex h-10 w-10 items-center justify-center rounded-xl 
+        bg-sky-100 text-sky-600 
+        dark:bg-[#4063bb33] dark:text-sky-300
+      "
+            >
               <Users className="h-6 w-6" />
             </div>
           </div>
+
           <div>
             <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-              Nhóm học
+              {t("quickLinks.groups.title")}
             </h3>
             <p className="text-xs text-zinc-600 dark:text-zinc-400">
-              Tham gia các nhóm học TOEIC theo mục tiêu và trình độ.
+              {t("quickLinks.groups.description")}
             </p>
           </div>
         </Link>

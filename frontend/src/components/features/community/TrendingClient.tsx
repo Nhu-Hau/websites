@@ -5,6 +5,7 @@ import PostCard from "./PostCard";
 import type { CommunityPost } from "@/types/community.types";
 import { useAuth } from "@/context/AuthContext";
 import { Flame } from "lucide-react"; // ⭐ icon cho xu hướng
+import { useTranslations } from "next-intl";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -24,6 +25,7 @@ export default function TrendingClient({ initialPosts }: TrendingClientProps) {
     initialPosts?.items || []
   );
   const [loading, setLoading] = React.useState(false);
+  const t = useTranslations("community.trending");
 
   const handlePostChanged = React.useCallback(() => {
     setLoading(true);
@@ -45,10 +47,10 @@ export default function TrendingClient({ initialPosts }: TrendingClientProps) {
       {/* Header */}
       <div className="mb-2">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Xu hướng
+          {t("header.title")}
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Những bài viết được tương tác nhiều nhất trong 24 giờ qua.
+          {t("header.description")}
         </p>
       </div>
 
@@ -58,7 +60,7 @@ export default function TrendingClient({ initialPosts }: TrendingClientProps) {
           <div className="flex flex-col items-center gap-3">
             <div className="h-7 w-7 sm:h-8 sm:w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent dark:border-sky-400" />
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Đang tải bài viết xu hướng...
+              {t("loading")}
             </p>
           </div>
         </div>
@@ -86,11 +88,10 @@ export default function TrendingClient({ initialPosts }: TrendingClientProps) {
             <Flame className="h-7 w-7 sm:h-8 sm:w-8" />
           </div>
           <h3 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-            Chưa có bài viết nào trong xu hướng
+            {t("empty.title")}
           </h3>
           <p className="max-w-sm text-sm text-zinc-600 dark:text-zinc-400">
-            Khi các bài viết nhận được nhiều lượt thích và bình luận hơn, chúng
-            sẽ xuất hiện tại đây.
+            {t("empty.description")}
           </p>
         </div>
       )}

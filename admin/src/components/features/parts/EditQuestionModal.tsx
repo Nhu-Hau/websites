@@ -9,7 +9,7 @@ interface EditQuestionModalProps {
   item: AdminPart | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdate: () => void;
+  onUpdate: (updatedItem: AdminPart) => void;
 }
 
 export default function EditQuestionModal({ item, isOpen, onClose, onUpdate }: EditQuestionModalProps) {
@@ -58,7 +58,7 @@ export default function EditQuestionModal({ item, isOpen, onClose, onUpdate }: E
     }
 
     try {
-      await adminUpdatePart(item._id, {
+      const res = await adminUpdatePart(item._id, {
         stem: form.stem || undefined,
         answer: form.answer,
         explain: form.explain || undefined,
@@ -67,7 +67,7 @@ export default function EditQuestionModal({ item, isOpen, onClose, onUpdate }: E
         choices: form.choices,
       } as Partial<AdminPart>);
       toast.success("Cập nhật câu hỏi thành công!");
-      onUpdate();
+      onUpdate(res.item);
       onClose();
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : "Lỗi cập nhật câu hỏi";

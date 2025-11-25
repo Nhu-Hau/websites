@@ -745,7 +745,7 @@ export default function PartsPage() {
           isOpen={!!editStimulus}
           onClose={() => setEditStimulus(null)}
           stimulus={editStimulus}
-          onSuccess={async () => {
+          onUpdate={async () => {
             setEditStimulus(null);
             // Reload test items
             const key = Object.entries(testStimuli).find(([_, map]) => map[editStimulus.id])?.[0];
@@ -767,8 +767,8 @@ export default function PartsPage() {
         <EditQuestionModal
           isOpen={!!editQuestion}
           onClose={() => setEditQuestion(null)}
-          question={editQuestion}
-          onSuccess={async (updatedItem) => {
+          item={editQuestion}
+          onUpdate={async (updatedItem) => {
             setEditQuestion(null);
             const key = Object.entries(testItems).find(([_, items]) =>
               items.some(i => i._id === updatedItem._id)
@@ -829,7 +829,7 @@ export default function PartsPage() {
             setImportPreviewData(null);
             if (fileInputRef.current) fileInputRef.current.value = "";
           }}
-          previewData={importPreviewData}
+          data={importPreviewData}
           onConfirm={handleConfirmImport}
           busy={busy}
         />

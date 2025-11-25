@@ -50,8 +50,3 @@ module.exports = {
     },
   ],
 };
-
-
-
-
-

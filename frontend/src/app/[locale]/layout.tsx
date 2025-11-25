@@ -16,7 +16,7 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-const siteUrl = process.env.NEXT_PUBLIC_API_BASE ?? "https://toeicprep.com.vn";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://toeicprep.com.vn";
 const ogImage = `${siteUrl}/bannerTOEICPREP.png`;
 
 export async function generateMetadata({

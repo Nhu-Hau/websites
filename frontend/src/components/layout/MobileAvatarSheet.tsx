@@ -181,10 +181,10 @@ export default function MobileAvatarSheet({
   }, [open, ctxUser]);
 
   const handleLogout = async () => {
-    onClose();
     try {
       await logout();
       toast.success(t("toast.logoutSuccess"));
+      onClose();
       router.push(`${base}/login`);
     } catch {
       toast.error(t("toast.logoutError"));
@@ -375,7 +375,9 @@ export default function MobileAvatarSheet({
                               : "border-zinc-300 bg-zinc-100 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300"
                           )}
                         >
-                          {userAccess === "premium" ? t("access.premium") : t("access.free")}
+                          {userAccess === "premium"
+                            ? t("access.premium")
+                            : t("access.free")}
                         </span>
                       </div>
                     </Link>
@@ -432,7 +434,9 @@ export default function MobileAvatarSheet({
                       >
                         <Globe className="h-5 w-5 text-sky-600 dark:text-sky-400" />
                         <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                          {locale === "vi" ? t("language.en") : t("language.vi")}
+                          {locale === "vi"
+                            ? t("language.en")
+                            : t("language.vi")}
                         </span>
                         <Flag
                           code={locale === "vi" ? "gb" : "vn"}
@@ -443,9 +447,10 @@ export default function MobileAvatarSheet({
 
                     {/* Đổi giao diện */}
                     <button
-                      onClick={() =>
-                        setTheme(theme === "light" ? "dark" : "light")
-                      }
+                      onClick={() => {
+                        setTheme(theme === "light" ? "dark" : "light");
+                        onClose();
+                      }}
                       className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-2 transition-all duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30"
                     >
                       {theme === "light" ? (

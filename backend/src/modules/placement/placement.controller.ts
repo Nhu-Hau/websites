@@ -107,7 +107,7 @@ async function loadPlacementItems(
   const docs = (await itemsCol
     .find(match, { projection })
     .sort({ order: 1, id: 1 })
-    .toArray()) as PlacementItemDoc[];
+    .toArray()) as unknown as PlacementItemDoc[];
 
   const uniqueById = new Map<string, PlacementItemDoc>();
   for (const doc of docs) {

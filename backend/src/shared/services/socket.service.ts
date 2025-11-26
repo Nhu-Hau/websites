@@ -7,15 +7,24 @@ export interface AuthenticatedSocket extends Socket {
 }
 
 // Helper để đếm số người online (có userId)
+// Helper để đếm số người online (có userId + anonymous, TRỪ admin)
 export function getOnlineUsersCount(io: SocketIOServer): number {
   const sockets = io.sockets.sockets;
   const userIds = new Set<string>();
+  let anonymousCount = 0;
+
   sockets.forEach((socket: AuthenticatedSocket) => {
+    // Bỏ qua nếu là admin dashboard (đã join room "admin")
+    if (socket.rooms.has("admin")) return;
+
     if (socket.userId) {
       userIds.add(socket.userId);
+    } else {
+      anonymousCount++;
     }
   });
-  return userIds.size;
+
+  return userIds.size + anonymousCount;
 }
 
 // Helper để emit online users count cho admin
@@ -253,8 +262,8 @@ export function emitNotifyUser(
       data.type === "comment"
         ? "Bình luận mới"
         : data.type === "like"
-        ? "Lượt thích mới"
-        : "Gợi ý làm Progress Test",
+          ? "Lượt thích mới"
+          : "Gợi ý làm Progress Test",
     message: data.message,
     link: data.link,
   });

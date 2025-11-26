@@ -235,15 +235,31 @@ export default function PostDetail({ postId }: { postId: string }) {
   const handleFileUpload = async (files: FileList) => {
     for (const file of Array.from(files)) {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", file, file.name);
+
       try {
+        console.log("[handleFileUpload] Uploading file:", {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+        });
+
         const res = await fetch(`${API_BASE}/api/community/upload`, {
           method: "POST",
           credentials: "include",
           body: formData,
         });
-        if (!res.ok) continue;
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("[handleFileUpload] Upload failed:", res.status, errorText);
+          toast.error(detailT("commentInput.uploadError") || "Upload failed");
+          continue;
+        }
+
         const data = await res.json();
+        console.log("[handleFileUpload] Upload success:", data);
+
         setCmtAttaches((prev) => [
           ...prev,
           {
@@ -253,7 +269,10 @@ export default function PostDetail({ postId }: { postId: string }) {
             size: data.size,
           },
         ]);
-      } catch {}
+      } catch (error) {
+        console.error("[handleFileUpload] ERROR:", error);
+        toast.error(detailT("commentInput.uploadError") || "Upload failed");
+      }
     }
   };
 
@@ -387,7 +406,7 @@ export default function PostDetail({ postId }: { postId: string }) {
         text: post?.content?.slice(0, 100),
         url: window.location.href,
       });
-    } catch {}
+    } catch { }
   };
 
   if (loading) {
@@ -604,7 +623,7 @@ export default function PostDetail({ postId }: { postId: string }) {
             onSaveChange={(saved, count) => {
               setPost((p: any) => (p ? { ...p, saved, savedCount: count } : p));
             }}
-            onCommentClick={() => {}}
+            onCommentClick={() => { }}
             onShareClick={sharePost}
             onRepostClick={handleRepost}
             onEditClick={handleEdit}
@@ -713,6 +732,7 @@ export default function PostDetail({ postId }: { postId: string }) {
               <input
                 type="file"
                 multiple
+                accept="image/*,video/*,image/heic,image/heif,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov"
                 hidden
                 ref={fileInputRef}
                 onChange={(e) =>

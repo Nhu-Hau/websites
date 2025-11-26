@@ -150,9 +150,10 @@ export default function PracticePage() {
     defaultQuestions: 10,
     defaultDuration: 35,
   };
-  const meta = partKey === "part.7" && PART7_BY_LEVEL[level]
-    ? { ...baseMeta, ...PART7_BY_LEVEL[level] }
-    : baseMeta;
+  const meta =
+    partKey === "part.7" && (level === 1 || level === 2 || level === 3) && PART7_BY_LEVEL[level]
+      ? { ...baseMeta, ...PART7_BY_LEVEL[level] }
+      : baseMeta;
   const durationMin = meta.defaultDuration;
   const countdownTotal = durationMin * 60;
   const leftSec = useMemo(
@@ -335,16 +336,16 @@ export default function PracticePage() {
       resp={
         resp
           ? {
-              ...resp,
-              answersMap: resp.answersMap
-                ? Object.fromEntries(
-                    Object.entries(resp.answersMap).map(([key, value]) => [
-                      key,
-                      { correctAnswer: value.correctAnswer as ChoiceId },
-                    ])
-                  )
-                : undefined,
-            }
+            ...resp,
+            answersMap: resp.answersMap
+              ? Object.fromEntries(
+                Object.entries(resp.answersMap).map(([key, value]) => [
+                  key,
+                  { correctAnswer: value.correctAnswer as ChoiceId },
+                ])
+              )
+              : undefined,
+          }
           : null
       }
       total={total}

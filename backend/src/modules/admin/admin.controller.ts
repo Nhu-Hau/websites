@@ -116,11 +116,11 @@ export async function overviewPlacementScores(_req: Request, res: Response) {
     }
 
     const attempts = await PlacementAttempt.find({ _id: { $in: attemptIds } })
-      .select("listening reading submittedAt userId")
+      .select("listening reading predicted submittedAt userId")
       .lean();
 
     // Tính điểm ước lượng giống placement.controller
-    const toToeic = (acc: number) => Math.max(0, Math.min(495, Math.round((acc || 0) * 495)));
+    const toToeic = (acc: number) => Math.max(0, Math.min(495, Math.round(((acc || 0) * 495) / 5) * 5));
 
     const userIdToAttempt: Record<string, any> = {};
     for (const a of attempts) {
@@ -145,9 +145,9 @@ export async function overviewPlacementScores(_req: Request, res: Response) {
     for (const u of users as any[]) {
       const a = userIdToAttempt[String(u._id)];
       if (!a) continue;
-      const listening = toToeic(a.listening?.acc || 0);
-      const reading = toToeic(a.reading?.acc || 0);
-      const overall = listening + reading; // 0..990
+      const listening = a.predicted?.listening ?? toToeic(a.listening?.acc || 0);
+      const reading = a.predicted?.reading ?? toToeic(a.reading?.acc || 0);
+      const overall = a.predicted?.overall ?? (listening + reading); // 0..990
       sumOverall += overall;
 
       // Histogram
@@ -183,10 +183,10 @@ export async function userScores(_req: Request, res: Response) {
     }
 
     const attempts = await PlacementAttempt.find({ _id: { $in: attemptIds } })
-      .select("listening reading submittedAt userId")
+      .select("listening reading predicted submittedAt userId")
       .lean();
 
-    const toToeic = (acc: number) => Math.max(0, Math.min(495, Math.round((acc || 0) * 495)));
+    const toToeic = (acc: number) => Math.max(0, Math.min(495, Math.round(((acc || 0) * 495) / 5) * 5));
     const userIdToAttempt: Record<string, any> = {};
     for (const a of attempts) {
       userIdToAttempt[String(a.userId)] = a;
@@ -196,9 +196,9 @@ export async function userScores(_req: Request, res: Response) {
       .map((u: any) => {
         const a = userIdToAttempt[String(u._id)];
         if (!a) return null;
-        const listening = toToeic(a.listening?.acc || 0);
-        const reading = toToeic(a.reading?.acc || 0);
-        const overall = listening + reading;
+        const listening = a.predicted?.listening ?? toToeic(a.listening?.acc || 0);
+        const reading = a.predicted?.reading ?? toToeic(a.reading?.acc || 0);
+        const overall = a.predicted?.overall ?? (listening + reading);
         return {
           _id: u._id,
           name: u.name,
@@ -336,7 +336,7 @@ export async function listPlacementAttempts(req: Request, res: Response) {
       PlacementAttempt.countDocuments(filter),
     ]);
 
-    const toToeic = (acc: number) => Math.max(0, Math.min(495, Math.round((acc || 0) * 495)));
+    const toToeic = (acc: number) => Math.max(0, Math.min(495, Math.round(((acc || 0) * 495) / 5) * 5));
 
     const items = attempts.map((a: any) => ({
       _id: String(a._id),
@@ -350,17 +350,17 @@ export async function listPlacementAttempts(req: Request, res: Response) {
         total: a.listening?.total || 0,
         correct: a.listening?.correct || 0,
         acc: a.listening?.acc || 0,
-        score: toToeic(a.listening?.acc || 0),
+        score: a.predicted?.listening ?? toToeic(a.listening?.acc || 0),
       },
       reading: {
         total: a.reading?.total || 0,
         correct: a.reading?.correct || 0,
         acc: a.reading?.acc || 0,
-        score: toToeic(a.reading?.acc || 0),
+        score: a.predicted?.reading ?? toToeic(a.reading?.acc || 0),
       },
       level: a.level || 1,
       predicted: a.predicted || null,
-      overall: toToeic(a.listening?.acc || 0) + toToeic(a.reading?.acc || 0),
+      overall: a.predicted?.overall ?? (toToeic(a.listening?.acc || 0) + toToeic(a.reading?.acc || 0)),
       submittedAt: a.submittedAt ? a.submittedAt.toISOString() : new Date().toISOString(),
     }));
 
@@ -400,7 +400,7 @@ export async function listProgressAttempts(req: Request, res: Response) {
       ProgressAttempt.countDocuments(filter),
     ]);
 
-    const toToeic = (acc: number) => Math.max(0, Math.min(495, Math.round((acc || 0) * 495)));
+    const toToeic = (acc: number) => Math.max(0, Math.min(495, Math.round(((acc || 0) * 495) / 5) * 5));
 
     const items = attempts.map((a: any) => ({
       _id: String(a._id),
@@ -414,17 +414,17 @@ export async function listProgressAttempts(req: Request, res: Response) {
         total: a.listening?.total || 0,
         correct: a.listening?.correct || 0,
         acc: a.listening?.acc || 0,
-        score: toToeic(a.listening?.acc || 0),
+        score: a.predicted?.listening ?? toToeic(a.listening?.acc || 0),
       },
       reading: {
         total: a.reading?.total || 0,
         correct: a.reading?.correct || 0,
         acc: a.reading?.acc || 0,
-        score: toToeic(a.reading?.acc || 0),
+        score: a.predicted?.reading ?? toToeic(a.reading?.acc || 0),
       },
       level: a.level || 1,
       predicted: a.predicted || null,
-      overall: toToeic(a.listening?.acc || 0) + toToeic(a.reading?.acc || 0),
+      overall: a.predicted?.overall ?? (toToeic(a.listening?.acc || 0) + toToeic(a.reading?.acc || 0)),
       submittedAt: a.submittedAt ? a.submittedAt.toISOString() : new Date().toISOString(),
     }));
 

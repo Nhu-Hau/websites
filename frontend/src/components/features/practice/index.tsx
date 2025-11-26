@@ -25,13 +25,19 @@ const PART_META: Record<
   string,
   { title: string; defaultQuestions: number; defaultDuration: number }
 > = {
-  "part.1": { title: "Part 1", defaultQuestions: 6, defaultDuration: 6 },
-  "part.2": { title: "Part 2", defaultQuestions: 25, defaultDuration: 11 },
-  "part.3": { title: "Part 3", defaultQuestions: 39, defaultDuration: 20 },
-  "part.4": { title: "Part 4", defaultQuestions: 30, defaultDuration: 13 },
-  "part.5": { title: "Part 5", defaultQuestions: 30, defaultDuration: 17 },
-  "part.6": { title: "Part 6", defaultQuestions: 16, defaultDuration: 12 },
-  "part.7": { title: "Part 7", defaultQuestions: 54, defaultDuration: 55 },
+  "part.1": { title: "Part 1", defaultQuestions: 12, defaultDuration: 10 },
+  "part.2": { title: "Part 2", defaultQuestions: 24, defaultDuration: 10 },
+  "part.3": { title: "Part 3", defaultQuestions: 36, defaultDuration: 16 },
+  "part.4": { title: "Part 4", defaultQuestions: 27, defaultDuration: 14 },
+  "part.5": { title: "Part 5", defaultQuestions: 30, defaultDuration: 10 },
+  "part.6": { title: "Part 6", defaultQuestions: 24, defaultDuration: 12 },
+  "part.7": { title: "Part 7", defaultQuestions: 60, defaultDuration: 55 },
+};
+
+const PART7_BY_LEVEL: Record<1 | 2 | 3, { defaultQuestions: number; defaultDuration: number }> = {
+  1: { defaultQuestions: 42, defaultDuration: 40 },
+  2: { defaultQuestions: 60, defaultDuration: 55 },
+  3: { defaultQuestions: 60, defaultDuration: 60 },
 };
 
 function fmtTime(totalSec: number) {
@@ -138,12 +144,15 @@ export default function PracticePage() {
   const isListening = /^part\.[1-4]$/.test(partKey);
   const progress = total ? Math.round((answered / total) * 100) : 0;
 
-  // Lấy duration từ PART_META
-  const meta = PART_META[partKey] ?? {
+  // Lấy duration từ PART_META (Part 7 theo level)
+  const baseMeta = PART_META[partKey] ?? {
     title: t("start.title", { part: partKey }),
     defaultQuestions: 10,
     defaultDuration: 35,
   };
+  const meta = partKey === "part.7" && PART7_BY_LEVEL[level]
+    ? { ...baseMeta, ...PART7_BY_LEVEL[level] }
+    : baseMeta;
   const durationMin = meta.defaultDuration;
   const countdownTotal = durationMin * 60;
   const leftSec = useMemo(

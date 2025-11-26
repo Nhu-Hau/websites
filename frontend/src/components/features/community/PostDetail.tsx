@@ -733,14 +733,28 @@ export default function PostDetail({ postId }: { postId: string }) {
                 type="file"
                 multiple
                 accept="image/*,video/*,image/heic,image/heif,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov"
-                hidden
                 ref={fileInputRef}
-                onChange={(e) =>
-                  e.target.files && handleFileUpload(e.target.files)
-                }
+                onChange={(e) => {
+                  if (e.target.files) handleFileUpload(e.target.files);
+                  e.target.value = "";
+                }}
+                style={{
+                  position: "absolute",
+                  width: "1px",
+                  height: "1px",
+                  opacity: 0,
+                  overflow: "hidden",
+                }}
               />
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                    fileInputRef.current.click();
+                  }
+                }}
                 className="p-2.5 sm:p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                 aria-label={detailT("commentInput.attachAria")}
               >

@@ -593,7 +593,7 @@ export default function AssessmentChart() {
                 </div>
               </div>
               <div className="space-y-1">
-                <p className={SECTION_LABEL_CLASS}>{t("eligibility.cycle", { days: 5 }).split(" ")[0] + " Progress Test"}</p>
+                <p className={SECTION_LABEL_CLASS}>{t("eligibility.cycle", { days: 5 })} Progress Test</p>
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                   {progressEligibility.eligible
                     ? t("eligibility.eligible")

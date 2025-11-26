@@ -28,37 +28,49 @@ import { useTranslations } from "next-intl";
 /* ====== META ====== */
 const PART_META: Record<
   string,
-  { defaultQuestions: number; defaultDuration: number }
+  { defaultQuestions: number; defaultDuration: number } | { byLevel: Record<1 | 2 | 3, { defaultQuestions: number; defaultDuration: number }> }
 > = {
   "part.1": {
-    defaultQuestions: 6,
-    defaultDuration: 6,
+    defaultQuestions: 12,
+    defaultDuration: 10,
   },
   "part.2": {
-    defaultQuestions: 25,
-    defaultDuration: 11,
+    defaultQuestions: 24,
+    defaultDuration: 10,
   },
   "part.3": {
-    defaultQuestions: 39,
-    defaultDuration: 20,
+    defaultQuestions: 36,
+    defaultDuration: 16,
   },
   "part.4": {
-    defaultQuestions: 30,
-    defaultDuration: 13,
+    defaultQuestions: 27,
+    defaultDuration: 14,
   },
   "part.5": {
     defaultQuestions: 30,
-    defaultDuration: 17,
+    defaultDuration: 10,
   },
   "part.6": {
-    defaultQuestions: 16,
+    defaultQuestions: 24,
     defaultDuration: 12,
   },
   "part.7": {
-    defaultQuestions: 54,
-    defaultDuration: 55,
+    byLevel: {
+      1: { defaultQuestions: 42, defaultDuration: 40 },
+      2: { defaultQuestions: 60, defaultDuration: 55 },
+      3: { defaultQuestions: 60, defaultDuration: 60 },
+    },
   },
 };
+
+function getPartMeta(partKey: string, level: 1 | 2 | 3): { defaultQuestions: number; defaultDuration: number } {
+  const meta = PART_META[partKey];
+  if (!meta) return { defaultQuestions: 10, defaultDuration: 10 };
+  if ("byLevel" in meta) {
+    return meta.byLevel[level];
+  }
+  return meta;
+}
 
 type L = 1 | 2 | 3;
 type AttemptMap = Record<number, AttemptSummary>;
@@ -175,10 +187,7 @@ export default function PracticePart() {
   const levelParam = Number(sp.get("level") ?? 1);
   const level: L = [1, 2, 3].includes(levelParam) ? (levelParam as L) : 1;
 
-  const meta = PART_META[partKey] ?? {
-    defaultQuestions: 10,
-    defaultDuration: 10,
-  };
+  const meta = getPartMeta(partKey, level);
 
   const [tests, setTests] = React.useState<number[]>([]);
   const [progressByTest, setProgressByTest] = React.useState<AttemptMap>({});

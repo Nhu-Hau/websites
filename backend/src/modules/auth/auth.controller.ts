@@ -88,7 +88,7 @@ export async function uploadAvatar(req: Request, res: Response) {
     // But first try to upload as-is, S3 can handle it
     let finalMime = normalizedMime;
     let finalName = f.originalname;
-    
+
     // If it's HEIC/HEIF, change extension to .jpg for better browser compatibility
     if (normalizedMime === "image/heic" || normalizedMime === "image/heif") {
       const baseName = f.originalname.substring(0, f.originalname.lastIndexOf("."));
@@ -456,9 +456,8 @@ export async function login(req: Request, res: Response) {
 
       await user.save();
       return res.status(401).json({
-        message: `Email hoặc mật khẩu không chính xác. Bạn còn ${
-          MAX_ATTEMPTS - user.loginAttempts
-        } lần thử.`,
+        message: `Email hoặc mật khẩu không chính xác. Bạn còn ${MAX_ATTEMPTS - user.loginAttempts
+          } lần thử.`,
       });
     }
 
@@ -523,7 +522,7 @@ export function googleCallback(
           // picture: profile.photo,
         });
         res.cookie(signupCookieName, signupToken, signupCookieOpts);
-        return res.redirect(`${CLIENT_URL}/vi/complete-google`);
+        return res.redirect(`${CLIENT_URL}/complete-google`);
       } catch (e) {
         return res
           .status(500)

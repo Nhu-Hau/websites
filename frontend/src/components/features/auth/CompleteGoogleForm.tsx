@@ -42,7 +42,7 @@ export default function CompleteGoogleForm() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/complete-google", {
+      const res = await fetch("/api/auth/google/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

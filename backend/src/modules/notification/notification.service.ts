@@ -17,6 +17,12 @@ export async function notifyUser(
     return null;
   }
 
+  console.log("[notifyUser] Creating notification:", {
+    userId: payload.userId,
+    type: payload.type,
+    message: payload.message,
+  });
+
   const doc = await Notification.create({
     userId: payload.userId,
     type: payload.type || "system",
@@ -27,6 +33,8 @@ export async function notifyUser(
   });
 
   const id = String(doc._id);
+
+  console.log(`[notifyUser] Emitting to room: user:${payload.userId}, notificationId: ${id}`);
 
   // dropdown chuông
   io.to(`user:${payload.userId}`).emit("notify:user", {
@@ -45,6 +53,8 @@ export async function notifyUser(
     message: doc.message,
     link: doc.link,
   });
+
+  console.log("[notifyUser] Notification sent successfully");
 
   return doc;
 }

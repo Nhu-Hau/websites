@@ -59,12 +59,12 @@ function readJSON<T = any>(k: string): T | null {
 function writeJSON(k: string, v: any) {
   try {
     localStorage.setItem(k, JSON.stringify(v));
-  } catch {}
+  } catch { }
 }
 function removeKey(k: string) {
   try {
     localStorage.removeItem(k);
-  } catch {}
+  } catch { }
 }
 
 export function useNotifications() {
@@ -196,7 +196,7 @@ export function useNotifications() {
         });
         if (!r.ok) return null;
         const j = await r.json();
-        return j?.user?._id ? String(j.user._id) : null;
+        return j?.id ? String(j.id) : null;
       } catch {
         return null;
       }
@@ -244,7 +244,7 @@ export function useNotifications() {
       // lấy uid trước
       const newUid = await fetchMe();
       const oldUid = prevUidRef.current;
-      
+
       // Nếu user thay đổi, clear state cũ
       if (oldUid !== null && oldUid !== newUid) {
         console.log("[useNotifications] User changed, clearing old notifications", { oldUid, newUid });
@@ -256,7 +256,7 @@ export function useNotifications() {
         removeKey(KEY_TEMP);
         removeKey(KEY_LAST_UID);
       }
-      
+
       // Update refs
       prevUidRef.current = newUid;
       uidRef.current = newUid;
@@ -282,7 +282,7 @@ export function useNotifications() {
             ? j.items
             : [];
           if (dbItems.length) mergeIn(dbItems);
-        } catch {}
+        } catch { }
       }
 
       if (s.connected) joinMyRoom();
@@ -307,7 +307,7 @@ export function useNotifications() {
     fetch(`${API_BASE}/api/notifications/mark-read-all`, {
       method: "POST",
       credentials: "include",
-    }).catch(() => {});
+    }).catch(() => { });
   }, [saveBox]);
 
   const clearAll = React.useCallback(async () => {
@@ -319,7 +319,7 @@ export function useNotifications() {
         method: "DELETE",
         credentials: "include",
       });
-    } catch {}
+    } catch { }
   }, []);
 
   return { items, unread, markAllRead, clearAll, pushLocal };

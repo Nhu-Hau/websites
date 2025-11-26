@@ -62,16 +62,18 @@ export async function updateUser(req: Request, res: Response) {
 
     const user = await User.findByIdAndUpdate(id, { $set: allowed }, { new: true });
     if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
-    return res.json({ user: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      access: user.access,
-      level: user.level,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    }});
+    return res.json({
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        access: user.access,
+        level: user.level,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      }
+    });
   } catch (e) {
     return res.status(500).json({ message: "Lỗi khi cập nhật người dùng" });
   }
@@ -127,13 +129,18 @@ export async function overviewPlacementScores(_req: Request, res: Response) {
 
     let sumOverall = 0;
     const histBuckets: { min: number; max: number; count: number }[] = [
-      { min: 0, max: 200, count: 0 },
-      { min: 200, max: 400, count: 0 },
-      { min: 400, max: 600, count: 0 },
-      { min: 600, max: 800, count: 0 },
-      { min: 800, max: 1000, count: 0 },
+      { min: 0, max: 99, count: 0 },
+      { min: 100, max: 199, count: 0 },
+      { min: 200, max: 299, count: 0 },
+      { min: 300, max: 399, count: 0 },
+      { min: 400, max: 499, count: 0 },
+      { min: 500, max: 599, count: 0 },
+      { min: 600, max: 699, count: 0 },
+      { min: 700, max: 799, count: 0 },
+      { min: 800, max: 899, count: 0 },
+      { min: 900, max: 990, count: 0 },
     ];
-    const byLevel: Record<1|2|3, number> = { 1: 0, 2: 0, 3: 0 };
+    const byLevel: Record<1 | 2 | 3, number> = { 1: 0, 2: 0, 3: 0 };
 
     for (const u of users as any[]) {
       const a = userIdToAttempt[String(u._id)];
@@ -144,11 +151,11 @@ export async function overviewPlacementScores(_req: Request, res: Response) {
       sumOverall += overall;
 
       // Histogram
-      const b = histBuckets.find((b) => overall >= b.min && overall < b.max + (b.max === 1000 ? 0 : 0));
+      const b = histBuckets.find((b) => overall >= b.min && overall <= b.max);
       if (b) b.count++;
 
       // Level
-      if ([1,2,3].includes(u.level)) byLevel[u.level as 1|2|3]++;
+      if ([1, 2, 3].includes(u.level)) byLevel[u.level as 1 | 2 | 3]++;
     }
 
     const totalUsers = attempts.length;
@@ -243,17 +250,17 @@ export async function userToeicPred(_req: Request, res: Response) {
 export async function visitorCount(_req: Request, res: Response) {
   try {
     const totalUsers = await User.countDocuments();
-    
+
     // Unique visitors trong 30 ngày gần nhất (users có placement attempt trong 30 ngày)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     const recentAttempts = await PlacementAttempt.find({
       submittedAt: { $gte: thirtyDaysAgo }
     })
       .select("userId")
       .lean();
-    
+
     const uniqueUserIds = new Set(recentAttempts.map((a: any) => String(a.userId)));
     const uniqueVisitorsLast30Days = uniqueUserIds.size;
 
@@ -280,7 +287,7 @@ export async function onlineUsersCount(_req: Request, res: Response) {
     // Số người hoạt động trong 5 phút gần nhất (dựa trên attempts)
     const fiveMinutesAgo = new Date();
     fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
-    
+
     const [placementAttempts, progressAttempts, practiceAttempts] = await Promise.all([
       PlacementAttempt.find({
         submittedAt: { $gte: fiveMinutesAgo }
@@ -292,12 +299,12 @@ export async function onlineUsersCount(_req: Request, res: Response) {
         submittedAt: { $gte: fiveMinutesAgo }
       }).select("userId").lean(),
     ]);
-    
+
     const uniqueUserIds = new Set<string>();
     [...placementAttempts, ...progressAttempts, ...practiceAttempts].forEach((a: any) => {
       if (a.userId) uniqueUserIds.add(String(a.userId));
     });
-    
+
     const activeUsers = uniqueUserIds.size;
 
     return res.json({ onlineUsers, activeUsers });
@@ -508,7 +515,7 @@ export async function deletePlacementAttempt(req: Request, res: Response) {
     }
 
     const userId = attempt.userId;
-    
+
     // Xóa attempt
     await attempt.deleteOne();
 
@@ -519,7 +526,7 @@ export async function deletePlacementAttempt(req: Request, res: Response) {
       const latestAttempt = await PlacementAttempt.findOne({ userId })
         .sort({ submittedAt: -1 })
         .select("_id");
-      
+
       if (latestAttempt) {
         user.lastPlacementAttemptId = latestAttempt._id;
       } else {
@@ -597,7 +604,7 @@ export async function deleteUserScore(req: Request, res: Response) {
     }
 
     const attemptId = user.lastPlacementAttemptId;
-    
+
     // Xóa attempt
     await PlacementAttempt.findByIdAndDelete(attemptId);
 
@@ -646,16 +653,16 @@ export async function vpsStats(_req: Request, res: Response) {
       return acc + Object.values(cpu.times).reduce((sum, time) => sum + time, 0);
     }, 0);
     const idle1 = cpus1.reduce((acc, cpu) => acc + cpu.times.idle, 0);
-    
+
     // Đợi 100ms để đo lần 2
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     const cpus2 = os.cpus();
     const total2 = cpus2.reduce((acc, cpu) => {
       return acc + Object.values(cpu.times).reduce((sum, time) => sum + time, 0);
     }, 0);
     const idle2 = cpus2.reduce((acc, cpu) => acc + cpu.times.idle, 0);
-    
+
     const totalDiff = total2 - total1;
     const idleDiff = idle2 - idle1;
     const cpuUsage = totalDiff > 0 ? Math.max(0, Math.min(100, Math.round(100 - (idleDiff / totalDiff) * 100))) : 0;
@@ -713,7 +720,7 @@ export async function vpsStats(_req: Request, res: Response) {
     try {
       const platform = os.platform();
       let command: string;
-      
+
       if (platform === "win32") {
         // Windows: sử dụng wmic
         command = 'wmic logicaldisk get size,freespace,caption';
@@ -791,7 +798,7 @@ export async function vpsStats(_req: Request, res: Response) {
       const freeMem = os.freemem();
       const usedMem = totalMem - freeMem;
       const memoryUsage = Math.round((usedMem / totalMem) * 100);
-      
+
       return res.json({
         cpu: 0,
         realMemory: memoryUsage,
@@ -812,7 +819,7 @@ export async function restartServer(_req: Request, res: Response) {
   try {
     // Gửi response trước khi restart
     res.json({ message: "Đang khởi động lại server..." });
-    
+
     // Đợi một chút để response được gửi đi
     setTimeout(() => {
       // Thử dùng PM2 để restart nếu có
@@ -842,7 +849,7 @@ export async function getPm2Logs(req: Request, res: Response) {
   try {
     const appName = req.params.app; // 'admin', 'frontend', hoặc 'api'
     const lines = parseInt(String(req.query.lines || "100"), 10); // Số dòng logs, mặc định 100
-    
+
     // Validate app name
     const validApps = ['admin', 'frontend', 'api'];
     if (!validApps.includes(appName)) {
@@ -852,7 +859,7 @@ export async function getPm2Logs(req: Request, res: Response) {
     const platform = os.platform();
     if (platform !== "linux") {
       // Windows hoặc dev environment: trả về logs mẫu hoặc thông báo
-      return res.json({ 
+      return res.json({
         logs: `[${new Date().toISOString()}] PM2 logs chỉ khả dụng trên Linux server.\nApp: ${appName}\nPlatform: ${platform}`,
         app: appName,
         lines: 0
@@ -884,7 +891,7 @@ export async function getPm2Logs(req: Request, res: Response) {
 
       // Đọc log files (lấy N dòng cuối)
       let combinedLogs = '';
-      
+
       try {
         // Đọc output log (lấy N dòng cuối)
         const { stdout: outLog } = await execAsync(`tail -n ${lines} "${logPath.out}" 2>/dev/null || echo ""`);
@@ -915,7 +922,7 @@ export async function getPm2Logs(req: Request, res: Response) {
       });
     } catch (fileError: any) {
       console.error("Error reading log files:", fileError);
-      return res.status(500).json({ 
+      return res.status(500).json({
         message: `Lỗi khi đọc logs cho app ${appName}`,
         error: fileError.message || String(fileError)
       });

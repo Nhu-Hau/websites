@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { Users, TrendingUp, BarChart3, FileText, Trash2, Wifi, AlertCircle } from "lucide-react";
+import { Users, TrendingUp, BarChart3, FileText, Trash2, Wifi, AlertCircle, Trophy } from "lucide-react";
 import { adminDeleteUserScore, adminOverview, adminUserScores } from "@/lib/apiClient";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -42,6 +42,26 @@ export default function OverviewTab({
     const height = 260;
     const pad = 32;
     const bw = (width - pad * 2) / (bars.length || 1);
+
+    const points = bars.map((b, i) => {
+        const h = ((b.count || 0) / maxCount) * (height - pad * 2);
+        const x = pad + i * bw + bw / 2;
+        const y = height - pad - h;
+        return { x, y, count: b.count, label: `${b.min}-${b.max}` };
+    });
+
+    const pathD = points.length > 0
+        ? points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(" ")
+        : "";
+
+    const areaD = points.length > 0
+        ? `${pathD} L ${points[points.length - 1].x} ${height - pad} L ${points[0].x} ${height - pad} Z`
+        : "";
+
+    // Find user with highest score
+    const highestScoreUser = userScores.length > 0
+        ? userScores.reduce((prev, current) => (prev.overall > current.overall ? prev : current))
+        : null;
 
     const handleDelete = async (userId: string, name: string) => {
         if (!confirm(`Xóa điểm của "${name}"?\nHành động này không thể hoàn tác.`)) return;
@@ -90,21 +110,6 @@ export default function OverviewTab({
                         </div>
                     </div>
 
-                    {/* Average Score */}
-                    <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
-                        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
-                        <div className="relative flex items-center justify-between">
-                            <div>
-                                <p className="text-emerald-100 text-sm font-medium">Điểm trung bình</p>
-                                <p className="text-4xl font-bold mt-2">{Math.round(data?.avgOverall ?? 0)}</p>
-                                <p className="text-emerald-100 text-xs mt-3 opacity-90">TOEIC Overall</p>
-                            </div>
-                            <div className="p-4 bg-white/20 rounded-2xl backdrop-blur">
-                                <TrendingUp className="h-9 w-9" />
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Online Users */}
                     <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
                         <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
@@ -123,23 +128,40 @@ export default function OverviewTab({
                         </div>
                     </div>
 
-                    {/* Total Submissions */}
+                    {/* Average Score */}
+                    <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
+                        <div className="relative flex items-center justify-between">
+                            <div>
+                                <p className="text-emerald-100 text-sm font-medium">Điểm trung bình</p>
+                                <p className="text-4xl font-bold mt-2">{Math.round(data?.avgOverall ?? 0)}</p>
+                                <p className="text-emerald-100 text-xs mt-3 opacity-90">TOEIC Overall</p>
+                            </div>
+                            <div className="p-4 bg-white/20 rounded-2xl backdrop-blur">
+                                <TrendingUp className="h-9 w-9" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Highest Score */}
                     <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
                         <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
                         <div className="relative flex items-center justify-between">
                             <div>
-                                <p className="text-orange-100 text-sm font-medium">Tổng bài nộp</p>
-                                <p className="text-4xl font-bold mt-2">{userScores.length}</p>
-                                <p className="text-orange-100 text-xs mt-3 opacity-90">Trong toàn bộ lịch sử</p>
+                                <p className="text-orange-100 text-sm font-medium">Điểm cao nhất</p>
+                                <p className="text-4xl font-bold mt-2">{highestScoreUser?.overall ?? 0}</p>
+                                <p className="text-orange-100 text-xs mt-3 opacity-90 truncate max-w-[150px]" title={highestScoreUser?.name}>
+                                    {highestScoreUser ? highestScoreUser.name : "Chưa có dữ liệu"}
+                                </p>
                             </div>
                             <div className="p-4 bg-white/20 rounded-2xl backdrop-blur">
-                                <FileText className="h-9 w-9" />
+                                <Trophy className="h-9 w-9" />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Histogram Chart */}
+                {/* Histogram Chart - Line Chart */}
                 <div className="bg-white/70 backdrop-blur-lg border border-zinc-200/80 rounded-2xl shadow-xl p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
@@ -153,48 +175,50 @@ export default function OverviewTab({
 
                     <div className="overflow-x-auto pb-4">
                         <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="mx-auto">
-                            {bars.map((b, i) => {
-                                const h = ((b.count || 0) / maxCount) * (height - pad * 2);
-                                const x = pad + i * bw;
-                                const y = height - pad - h;
-
-                                return (
-                                    <g key={i}>
-                                        {/* Bar */}
-                                        <rect
-                                            x={x}
-                                            y={y}
-                                            width={bw - 10}
-                                            height={h || 2}
-                                            rx="6"
-                                            className="fill-teal-500 hover:fill-teal-600 cursor-pointer transition-all duration-200"
-                                        />
-                                        {/* Label on top */}
-                                        {b.count > 0 && (
-                                            <text
-                                                x={x + (bw - 10) / 2}
-                                                y={y - 8}
-                                                textAnchor="middle"
-                                                className="text-xs font-bold fill-teal-700"
-                                            >
-                                                {b.count}
-                                            </text>
-                                        )}
-                                        {/* X-axis label */}
-                                        <text
-                                            x={x + (bw - 10) / 2}
-                                            y={height - 8}
-                                            textAnchor="middle"
-                                            className="text-xs fill-zinc-600 font-medium"
-                                        >
-                                            {b.min === b.max ? b.min : `${b.min}-${b.max === 1000 ? 990 : b.max}`}
-                                        </text>
-                                    </g>
-                                );
-                            })}
-                            {/* Y-axis guide line */}
+                            {/* Grid lines */}
                             <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
                             <line x1={pad} y1={height - pad} x2={width - pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
+
+                            {/* Area fill */}
+                            <path d={areaD} className="fill-teal-100/50" />
+
+                            {/* Line */}
+                            <path d={pathD} fill="none" stroke="#0d9488" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+
+                            {points.map((p, i) => (
+                                <g key={i}>
+                                    {/* Point */}
+                                    <circle
+                                        cx={p.x}
+                                        cy={p.y}
+                                        r="4"
+                                        className="fill-white stroke-teal-600 stroke-2 hover:r-6 transition-all cursor-pointer"
+                                    >
+                                        <title>{`${p.label}: ${p.count} người`}</title>
+                                    </circle>
+
+                                    {/* Count Label */}
+                                    {p.count > 0 && (
+                                        <text
+                                            x={p.x}
+                                            y={p.y - 12}
+                                            textAnchor="middle"
+                                            className="text-xs font-bold fill-teal-700"
+                                        >
+                                            {p.count}
+                                        </text>
+                                    )}
+                                    {/* X-axis label */}
+                                    <text
+                                        x={p.x}
+                                        y={height - 8}
+                                        textAnchor="middle"
+                                        className="text-[10px] fill-zinc-600 font-medium"
+                                    >
+                                        {p.label}
+                                    </text>
+                                </g>
+                            ))}
                         </svg>
                     </div>
                 </div>

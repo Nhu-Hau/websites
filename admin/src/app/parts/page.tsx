@@ -377,13 +377,6 @@ export default function PartsPage() {
               className="hidden"
               accept=".xlsx, .xls"
             />
-
-            <Link
-              href="/"
-              className="px-4 py-2.5 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors flex items-center gap-2 text-sm font-medium"
-            >
-              <Home className="h-4 w-4" /> Trang chủ
-            </Link>
           </div>
         </div>
       </header>

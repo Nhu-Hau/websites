@@ -10,6 +10,7 @@ import AuthLayout from "@/components/features/auth/AuthLayout";
 import PasswordField from "@/components/features/auth/PasswordField";
 import { usePasswordToggle } from "@/hooks/auth/usePasswordToggle";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { announceUserChanged } from "@/context/AuthContext";
 
 export default function CompleteGoogleForm() {
   const basePrefix = useBasePrefix();
@@ -52,6 +53,7 @@ export default function CompleteGoogleForm() {
 
       if (res.ok) {
         toast.success(data.message || t("success"));
+        announceUserChanged();
         router.push(`${basePrefix}/`);
       } else {
         toast.error(data.message || t("errorGeneric"));
@@ -145,6 +147,6 @@ export default function CompleteGoogleForm() {
           )}
         </button>
       </form>
-    </AuthLayout>
+    </AuthLayout >
   );
 }

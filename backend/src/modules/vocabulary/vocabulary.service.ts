@@ -304,5 +304,109 @@ export class VocabularyService {
 
     return updated;
   }
+
+  async shareVocabularySet(setId: string, userId: string, isPublic: boolean): Promise<VocabularySet> {
+    if (!setId || typeof setId !== 'string' || !ObjectId.isValid(setId)) {
+      throw new Error("Invalid vocabulary set ID");
+    }
+
+    let setObjectId: ObjectId;
+    try {
+      setObjectId = new ObjectId(setId);
+    } catch (error) {
+      throw new Error("Invalid vocabulary set ID");
+    }
+
+    const ownerId = resolveOwnerId(userId);
+    const set = await VocabularyModel.findById(setObjectId);
+    
+    if (!set) {
+      throw new Error("Vocabulary set not found");
+    }
+
+    if (!ownerIdMatches(set.ownerId, ownerId)) {
+      throw new Error("Unauthorized: Only the owner can share/unshare this set");
+    }
+
+    const updated = await VocabularyModel.update(
+      setObjectId,
+      ownerId,
+      { isPublic }
+    );
+
+    if (!updated) {
+      throw new Error("Failed to update vocabulary set");
+    }
+
+    return updated;
+  }
+
+  async getPublicVocabularySets(page: number = 1, limit: number = 20, sortBy: 'newest' | 'popular' = 'newest'): Promise<{ sets: VocabularySet[]; total: number; page: number; limit: number }> {
+    const collection = await VocabularyModel.getCollection();
+    
+    const skip = (page - 1) * limit;
+    const sortField = sortBy === 'newest' ? { createdAt: -1 } : { createdAt: -1 }; // TODO: Add popularity field later
+    
+    const [sets, total] = await Promise.all([
+      collection
+        .find({ isPublic: true })
+        .sort(sortField)
+        .skip(skip)
+        .limit(limit)
+        .toArray(),
+      collection.countDocuments({ isPublic: true })
+    ]);
+
+    return {
+      sets,
+      total,
+      page,
+      limit,
+    };
+  }
+
+  async cloneVocabularySet(setId: string, userId: string): Promise<VocabularySet> {
+    if (!setId || typeof setId !== 'string' || !ObjectId.isValid(setId)) {
+      throw new Error("Invalid vocabulary set ID");
+    }
+
+    let setObjectId: ObjectId;
+    try {
+      setObjectId = new ObjectId(setId);
+    } catch (error) {
+      throw new Error("Invalid vocabulary set ID");
+    }
+
+    const originalSet = await VocabularyModel.findById(setObjectId);
+    
+    if (!originalSet) {
+      throw new Error("Vocabulary set not found");
+    }
+
+    if (!originalSet.isPublic) {
+      throw new Error("This vocabulary set is not public and cannot be cloned");
+    }
+
+    const ownerId = resolveOwnerId(userId);
+    
+    // Check if user is trying to clone their own set
+    if (ownerIdMatches(originalSet.ownerId, ownerId)) {
+      throw new Error("You cannot clone your own vocabulary set");
+    }
+
+    // Create new set with cloned data
+    const clonedSet: Omit<VocabularySet, "_id"> = {
+      title: originalSet.title,
+      description: originalSet.description,
+      topic: originalSet.topic,
+      ownerId,
+      terms: originalSet.terms.map(({ _id, ...term }) => term), // Remove _id from terms
+      isPublic: false,
+      forkedFrom: setObjectId,
+      createdAt: new Date(),
+    };
+
+    return VocabularyModel.create(clonedSet);
+  }
 }
 

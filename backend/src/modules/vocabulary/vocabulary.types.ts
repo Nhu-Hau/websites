@@ -22,6 +22,8 @@ export interface VocabularySet {
   topic?: string;
   ownerId: ObjectId | string;
   terms: VocabularyTerm[];
+  isPublic?: boolean;
+  forkedFrom?: ObjectId | string;
   createdAt: Date;
   updatedAt?: Date;
 }

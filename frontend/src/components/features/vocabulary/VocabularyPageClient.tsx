@@ -7,6 +7,8 @@ import { useTranslations } from "next-intl";
 import { BookOpenCheck, Filter, Layers, Plus, Search, Tag } from "lucide-react";
 import { useVocabulary } from "@/hooks/vocabulary/useVocabulary";
 import { useVocabularyProgress } from "@/hooks/vocabulary/useVocabularyProgress";
+import { useAuth } from "@/context/AuthContext";
+import { vocabularyService } from "@/utils/vocabulary.service";
 import {
   VocabularySet,
   VocabularyTerm,
@@ -188,6 +190,14 @@ export function VocabularyPageClient() {
 
   const { getProgressForSet, markRemembered, markDifficult } =
     useVocabularyProgress();
+  const { user } = useAuth();
+  
+  // Public library state
+  const [activeTab, setActiveTab] = React.useState<"my-sets" | "community">("my-sets");
+  const [publicSets, setPublicSets] = React.useState<VocabularySet[]>([]);
+  const [publicLoading, setPublicLoading] = React.useState(false);
+  const [publicPage, setPublicPage] = React.useState(1);
+  const [publicTotal, setPublicTotal] = React.useState(0);
 
   // Track previous pathname to detect navigation back from detail page
   const prevPathnameRef = React.useRef<string | null>(null);
@@ -307,9 +317,62 @@ export function VocabularyPageClient() {
     [router, basePrefix]
   );
 
+  const handleShare = React.useCallback(
+    async (set: VocabularySet, isPublic: boolean) => {
+      try {
+        const updated = await vocabularyService.shareVocabularySet(set._id, isPublic);
+        await refreshSet(set._id);
+        toast.success(
+          isPublic ? tToast("shareSuccess") : tToast("unshareSuccess")
+        );
+      } catch (err: any) {
+        const message = err instanceof Error ? err.message : tError("shareFailed");
+        toast.error(message);
+      }
+    },
+    [refreshSet, tToast, tError]
+  );
+
+  const handleClone = React.useCallback(
+    async (set: VocabularySet) => {
+      try {
+        await vocabularyService.cloneVocabularySet(set._id);
+        // Refresh my sets to show the cloned set
+        await fetchSets();
+        toast.success(tToast("cloneSuccess"));
+        // Switch to my-sets tab to show the cloned set
+        setActiveTab("my-sets");
+      } catch (err: any) {
+        const message = err instanceof Error ? err.message : tError("cloneFailed");
+        toast.error(message);
+      }
+    },
+    [fetchSets, tToast, tError]
+  );
+
+  const fetchPublicSets = React.useCallback(async () => {
+    try {
+      setPublicLoading(true);
+      const result = await vocabularyService.getPublicVocabularySets(publicPage, 20, "newest");
+      setPublicSets(result.sets);
+      setPublicTotal(result.total);
+    } catch (err: any) {
+      console.error("Failed to fetch public sets:", err);
+      toast.error(tError("fetchPublicFailed"));
+    } finally {
+      setPublicLoading(false);
+    }
+  }, [publicPage, tError]);
+
+  React.useEffect(() => {
+    if (activeTab === "community") {
+      fetchPublicSets();
+    }
+  }, [activeTab, fetchPublicSets]);
+
   /* ------------------------------ RENDER UI ------------------------------ */
 
-  const renderContent = () => {
+  const renderMySets = () => {
     if (loading) {
       return (
         <div className="py-6 xs:py-8 sm:py-10">
@@ -359,6 +422,60 @@ export function VocabularyPageClient() {
               toast.success(tToast("duplicateSuccess"));
             }}
             onDelete={() => setDeleteTarget(set)}
+            onShare={handleShare}
+            onClone={handleClone}
+            isOwner={user?.id === set.ownerId}
+            currentUserId={user?.id}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  const renderCommunityLibrary = () => {
+    if (publicLoading) {
+      return (
+        <div className="py-6 xs:py-8 sm:py-10">
+          <VocabularySetSkeleton />
+        </div>
+      );
+    }
+
+    if (!publicSets.length) {
+      return (
+        <div className="py-6 xs:py-8 sm:py-10">
+          <EmptyState
+            title={t("community.empty.title")}
+            description={t("community.empty.description")}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className="
+        grid grid-cols-2
+        md:grid-cols-3
+        lg:grid-cols-4
+        gap-3 xs:gap-4
+        items-stretch
+        auto-rows-[minmax(240px,1fr)]
+      "
+      >
+        {publicSets.map((set) => (
+          <VocabularySetCard
+            key={set._id}
+            set={set}
+            progress={{ masteredCount: 0, difficultCount: 0, percent: 0, lastStudied: null, sessions: 0 }}
+            onOpen={() => handleOpenSet(set)}
+            onStudy={() => handleOpenPractice(set, "flashcard")}
+            onQuickQuiz={() => handleOpenPractice(set, "quiz")}
+            onEdit={() => {}}
+            onDuplicate={() => {}}
+            onClone={handleClone}
+            isOwner={false}
+            currentUserId={user?.id}
           />
         ))}
       </div>
@@ -392,64 +509,80 @@ export function VocabularyPageClient() {
           </div>
         )}
 
-        {/* Filter Bar – mobile friendly */}
-        <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl xs:p-5 dark:border-zinc-800/60 dark:bg-zinc-900/90">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            {/* Search */}
-            <div className="w-full md:max-w-md">
-              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-                {t("filters.searchLabel")}
-              </label>
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
-                <input
-                  value={filters.query}
-                  onChange={(e) =>
-                    setFilters((prev) => ({ ...prev, query: e.target.value }))
-                  }
-                  placeholder={t("filters.searchPlaceholder")}
-                  className="w-full rounded-2xl border border-slate-200/80 bg-white 
+        {/* Tabs */}
+        <div className="flex gap-2 rounded-3xl border border-white/80 bg-white/90 p-2 shadow-lg shadow-slate-900/5 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-900/90">
+          <FilterChip
+            label={t("tabs.mySets")}
+            active={activeTab === "my-sets"}
+            onClick={() => setActiveTab("my-sets")}
+          />
+          <FilterChip
+            label={t("tabs.community")}
+            active={activeTab === "community"}
+            onClick={() => setActiveTab("community")}
+          />
+        </div>
+
+        {/* Filter Bar – mobile friendly - only show for my-sets */}
+        {activeTab === "my-sets" && (
+          <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl xs:p-5 dark:border-zinc-800/60 dark:bg-zinc-900/90">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              {/* Search */}
+              <div className="w-full md:max-w-md">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
+                  {t("filters.searchLabel")}
+                </label>
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
+                  <input
+                    value={filters.query}
+                    onChange={(e) =>
+                      setFilters((prev) => ({ ...prev, query: e.target.value }))
+                    }
+                    placeholder={t("filters.searchPlaceholder")}
+                    className="w-full rounded-2xl border border-slate-200/80 bg-white 
              py-2 pl-9 pr-3 text-[13px] placeholder:text-[12px]
              xs:py-2.5 xs:pl-10 xs:text-sm xs:placeholder:text-sm
              text-slate-900 outline-none transition
              focus:border-[#4063bb] focus:ring-2 focus:ring-[#4063bb1f]
              dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 
              dark:placeholder:text-zinc-500"
-                />
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Chips */}
-            <div className="w-full md:w-auto">
-              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-                {t("filters.sortLabel")}
-              </label>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                <FilterChip
-                  icon={<Filter className="h-3.5 w-3.5" />}
-                  label={t("filters.sortOptions.recent")}
-                  active={filters.sort === "recent"}
-                  onClick={() => setFilters((p) => ({ ...p, sort: "recent" }))}
-                />
-                <FilterChip
-                  label={t("filters.sortOptions.alphabetical")}
-                  active={filters.sort === "alphabetical"}
-                  onClick={() =>
-                    setFilters((p) => ({ ...p, sort: "alphabetical" }))
-                  }
-                />
-                <FilterChip
-                  label={t("filters.sortOptions.terms")}
-                  active={filters.sort === "terms"}
-                  onClick={() => setFilters((p) => ({ ...p, sort: "terms" }))}
-                />
+              {/* Chips */}
+              <div className="w-full md:w-auto">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
+                  {t("filters.sortLabel")}
+                </label>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  <FilterChip
+                    icon={<Filter className="h-3.5 w-3.5" />}
+                    label={t("filters.sortOptions.recent")}
+                    active={filters.sort === "recent"}
+                    onClick={() => setFilters((p) => ({ ...p, sort: "recent" }))}
+                  />
+                  <FilterChip
+                    label={t("filters.sortOptions.alphabetical")}
+                    active={filters.sort === "alphabetical"}
+                    onClick={() =>
+                      setFilters((p) => ({ ...p, sort: "alphabetical" }))
+                    }
+                  />
+                  <FilterChip
+                    label={t("filters.sortOptions.terms")}
+                    active={filters.sort === "terms"}
+                    onClick={() => setFilters((p) => ({ ...p, sort: "terms" }))}
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Content */}
-        {renderContent()}
+        {activeTab === "my-sets" ? renderMySets() : renderCommunityLibrary()}
       </div>
 
       {/* Modals */}

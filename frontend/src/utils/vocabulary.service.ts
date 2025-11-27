@@ -71,4 +71,26 @@ export const vocabularyService = {
     );
     return response.data;
   },
+
+  async shareVocabularySet(setId: string, isPublic: boolean): Promise<VocabularySet> {
+    const response = await apiClient.patch<VocabularySet>(
+      `${BASE_URL}/${setId}/share`,
+      { isPublic }
+    );
+    return response.data;
+  },
+
+  async getPublicVocabularySets(page: number = 1, limit: number = 20, sortBy: 'newest' | 'popular' = 'newest'): Promise<{ sets: VocabularySet[]; total: number; page: number; limit: number }> {
+    const response = await apiClient.get<{ sets: VocabularySet[]; total: number; page: number; limit: number }>(
+      `${BASE_URL}/public-sets?page=${page}&limit=${limit}&sortBy=${sortBy}`
+    );
+    return response.data;
+  },
+
+  async cloneVocabularySet(setId: string): Promise<VocabularySet> {
+    const response = await apiClient.post<VocabularySet>(
+      `${BASE_URL}/${setId}/clone`
+    );
+    return response.data;
+  },
 };

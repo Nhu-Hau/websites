@@ -1200,7 +1200,17 @@
         "title": "Chưa có bộ từ nào",
         "description": "Tạo bộ từ đầu tiên hoặc import danh sách từ để bắt đầu học giống Quizlet nhưng tối ưu cho TOEIC."
       },
-      "duplicateSuffix": "(bản sao)"
+      "duplicateSuffix": "(bản sao)",
+      "tabs": {
+        "mySets": "Bộ của tôi",
+        "community": "Thư viện cộng đồng"
+      },
+      "community": {
+        "empty": {
+          "title": "Chưa có bộ từ công khai",
+          "description": "Chưa có bộ từ vựng nào được chia sẻ công khai. Hãy chia sẻ bộ từ của bạn để mọi người cùng học!"
+        }
+      }
     },
     "toast": {
       "duplicateSuccess": "Đã nhân bản bộ từ",
@@ -1209,13 +1219,19 @@
       "setDeleteSuccess": "Đã xóa bộ từ",
       "termCreateSuccess": "Đã thêm từ",
       "termUpdateSuccess": "Đã cập nhật từ",
-      "termDeleteSuccess": "Đã xóa từ"
+      "termDeleteSuccess": "Đã xóa từ",
+      "shareSuccess": "Đã chia sẻ bộ từ công khai",
+      "unshareSuccess": "Đã tắt chia sẻ công khai",
+      "cloneSuccess": "Đã lưu bộ từ về bộ của tôi"
     },
     "errors": {
       "saveSet": "Không thể lưu bộ từ",
       "saveTerm": "Không thể lưu từ vựng",
       "deleteSet": "Không thể xóa bộ từ",
-      "deleteTerm": "Không thể xóa từ"
+      "deleteTerm": "Không thể xóa từ",
+      "shareFailed": "Không thể chia sẻ bộ từ",
+      "cloneFailed": "Không thể sao chép bộ từ",
+      "fetchPublicFailed": "Không thể tải danh sách bộ từ công khai"
     },
     "confirm": {
       "deleteSet": {
@@ -1891,11 +1907,18 @@
         "duplicate": "Nhân bản",
         "edit": "Chỉnh sửa",
         "delete": "Xóa bộ từ",
-        "moreActions": "Xem thêm hành động"
+        "moreActions": "Xem thêm hành động",
+        "share": "Chia sẻ công khai",
+        "unshare": "Tắt chia sẻ",
+        "clone": "Lưu về bộ của tôi"
       },
       "buttons": {
         "flashcard": "Flashcard",
-        "quiz": "Quiz"
+        "quiz": "Quiz",
+        "clone": "Lưu về bộ của tôi"
+      },
+      "badges": {
+        "public": "Công khai"
       },
       "empty": {
         "noTerms": "Chưa có từ nào trong bộ này",

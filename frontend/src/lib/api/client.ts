@@ -213,6 +213,24 @@ export async function postJson<T = any>(pathOrUrl: string, data?: any, init?: Re
   return json;
 }
 
+export async function patchJson<T = any>(pathOrUrl: string, data?: any, init?: RequestInit) {
+  const res = await fetch(resolveUrl(pathOrUrl), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
+    credentials: 'include',
+    body: data != null ? JSON.stringify(data) : undefined,
+    ...init,
+  });
+  const json = (await parseMaybeJson(res)) as T & { message?: string; code?: string };
+  if (!res.ok) {
+    const error = new Error(json?.message || `PATCH ${res.status} ${res.statusText}`);
+    (error as any).code = json?.code;
+    (error as any).status = res.status;
+    throw error;
+  }
+  return json;
+}
+
 export async function delJson<T = any>(pathOrUrl: string, init?: RequestInit) {
   const res = await fetch(resolveUrl(pathOrUrl), {
     method: 'DELETE',
@@ -243,6 +261,31 @@ export async function getJsonWithAuth<T = any>(
     const error = new Error(
       json?.message || `GET ${res.status} ${res.statusText}`
     );
+    (error as any).status = res.status;
+    throw error;
+  }
+  return json;
+}
+
+/**
+ * patchJson với auto-refresh
+ */
+export async function patchJsonWithAuth<T = any>(
+  pathOrUrl: string,
+  data?: any,
+  init?: RequestInit
+): Promise<T> {
+  const res = await fetchWithAuth(resolveUrl(pathOrUrl), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+    body: data != null ? JSON.stringify(data) : undefined,
+    ...init,
+  });
+
+  const json = (await parseMaybeJson(res)) as T & { message?: string; code?: string };
+  if (!res.ok) {
+    const error = new Error(json?.message || `PATCH ${res.status} ${res.statusText}`);
+    (error as any).code = json?.code;
     (error as any).status = res.status;
     throw error;
   }
@@ -548,6 +591,10 @@ export const apiClient = {
   async get<T = any>(pathOrUrl: string, init?: RequestInit): Promise<{ data: T }> {
     const data = await getJsonWithAuth<T>(pathOrUrl, init);
     return { data };
+  },
+  async patch<T = any>(pathOrUrl: string, data?: any, init?: RequestInit): Promise<{ data: T }> {
+    const result = await patchJsonWithAuth<T>(pathOrUrl, data, init);
+    return { data: result };
   },
 
   async post<T = any>(pathOrUrl: string, data?: any, init?: RequestInit): Promise<{ data: T }> {

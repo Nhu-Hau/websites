@@ -17,6 +17,8 @@ export interface IVocabularySet extends Document {
   name: string;
   description?: string;
   terms: IVocabularyTerm[];
+  isPublic?: boolean;
+  forkedFrom?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -70,6 +72,15 @@ const VocabularySetSchema = new Schema<IVocabularySet>(
       type: [VocabularyTermSchema],
       default: [],
     },
+    isPublic: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    forkedFrom: {
+      type: Schema.Types.ObjectId,
+      ref: "VocabularySet",
+    },
   },
   {
     timestamps: true,
@@ -81,6 +92,7 @@ const VocabularySetSchema = new Schema<IVocabularySet>(
 // Indexes
 VocabularySetSchema.index({ userId: 1, createdAt: -1 });
 VocabularySetSchema.index({ userId: 1, name: 1 });
+VocabularySetSchema.index({ isPublic: 1, createdAt: -1 });
 
 export const VocabularySet =
   mongoose.models.VocabularySet ||

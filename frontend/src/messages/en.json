@@ -933,7 +933,17 @@
         "title": "No sets yet",
         "description": "Create your first set or import a list to start studying—Quizlet-style, but optimized for TOEIC."
       },
-      "duplicateSuffix": "(copy)"
+      "duplicateSuffix": "(copy)",
+      "tabs": {
+        "mySets": "My sets",
+        "community": "Community library"
+      },
+      "community": {
+        "empty": {
+          "title": "No public sets yet",
+          "description": "No vocabulary sets have been shared publicly yet. Share your sets to help others learn!"
+        }
+      }
     },
     "toast": {
       "duplicateSuccess": "Set duplicated",
@@ -942,10 +952,16 @@
       "setDeleteSuccess": "Set deleted",
       "termCreateSuccess": "Term added",
       "termUpdateSuccess": "Term updated",
-      "termDeleteSuccess": "Term removed"
+      "termDeleteSuccess": "Term removed",
+      "shareSuccess": "Set shared publicly",
+      "unshareSuccess": "Public sharing disabled",
+      "cloneSuccess": "Set saved to my collection"
     },
     "errors": {
       "saveSet": "Couldn't save the set",
+      "shareFailed": "Couldn't share the set",
+      "cloneFailed": "Couldn't clone the set",
+      "fetchPublicFailed": "Couldn't fetch public sets",
       "saveTerm": "Couldn't save the term",
       "deleteSet": "Couldn't delete the set",
       "deleteTerm": "Couldn't delete the term"
@@ -1631,11 +1647,18 @@
         "duplicate": "Duplicate",
         "edit": "Edit",
         "delete": "Delete Set",
-        "moreActions": "More actions"
+        "moreActions": "More actions",
+        "share": "Share publicly",
+        "unshare": "Unshare",
+        "clone": "Save to my sets"
       },
       "buttons": {
         "flashcard": "Flashcard",
-        "quiz": "Quiz"
+        "quiz": "Quiz",
+        "clone": "Save to my sets"
+      },
+      "badges": {
+        "public": "Public"
       },
       "empty": {
         "noTerms": "No terms in this set yet",

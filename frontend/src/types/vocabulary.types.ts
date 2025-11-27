@@ -20,8 +20,11 @@ export interface VocabularySet {
   topic?: string;
   ownerId: string;
   terms: VocabularyTerm[];
+  isPublic?: boolean;
+  forkedFrom?: string;
   createdAt: string;
   updatedAt?: string;
+  ownerName?: string; // For public sets display
 }
 
 export interface CreateVocabularySetDTO {

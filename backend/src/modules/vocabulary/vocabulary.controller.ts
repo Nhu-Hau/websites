@@ -145,4 +145,54 @@ export class VocabularyController {
       res.status(status).json({ message: error.message });
     }
   }
+
+  async shareVocabularySet(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const userId = req.auth!.userId;
+      const { isPublic } = req.body;
+
+      if (typeof isPublic !== 'boolean') {
+        res.status(400).json({ message: "isPublic must be a boolean" });
+        return;
+      }
+
+      const set = await vocabularyService.shareVocabularySet(id, userId, isPublic);
+      res.json(set);
+    } catch (error: any) {
+      const status = error.message.includes("Invalid") ? 400 :
+                     error.message.includes("not found") ? 404 : 
+                     error.message.includes("Unauthorized") ? 403 : 500;
+      res.status(status).json({ message: error.message });
+    }
+  }
+
+  async getPublicVocabularySets(req: Request, res: Response): Promise<void> {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+      const sortBy = (req.query.sortBy as 'newest' | 'popular') || 'newest';
+
+      const result = await vocabularyService.getPublicVocabularySets(page, limit, sortBy);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch public vocabulary sets" });
+    }
+  }
+
+  async cloneVocabularySet(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const userId = req.auth!.userId;
+
+      const clonedSet = await vocabularyService.cloneVocabularySet(id, userId);
+      res.status(201).json(clonedSet);
+    } catch (error: any) {
+      const status = error.message.includes("Invalid") ? 400 :
+                     error.message.includes("not found") ? 404 : 
+                     error.message.includes("not public") ? 403 :
+                     error.message.includes("cannot clone") ? 400 : 500;
+      res.status(status).json({ message: error.message });
+    }
+  }
 }

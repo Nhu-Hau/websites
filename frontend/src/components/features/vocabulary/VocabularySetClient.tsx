@@ -3,14 +3,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import {
-  Search,
-  Plus,
-  Tag,
-  Layers,
-  ArrowLeft,
-  Filter,
-} from "lucide-react";
+import { Search, Plus, Tag, Layers, ArrowLeft, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   VocabularySet,
@@ -117,10 +110,10 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         if (response.ok) {
           // Clear localStorage
           localStorage.removeItem("pendingVocabularyWord");
-          
+
           // Show success message
           toast.success(tExtra("toast.termSaved"));
-          
+
           // Navigate back to news page if returnUrl exists
           if (wordData.returnUrl) {
             setTimeout(() => {
@@ -129,7 +122,9 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
           }
         } else {
           const error = await response.json();
-          throw new Error(error.error || error.message || "Failed to save word");
+          throw new Error(
+            error.error || error.message || "Failed to save word"
+          );
         }
       } catch (error: any) {
         console.error("Error auto-saving word:", error);
@@ -225,7 +220,9 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
       }
       setSetData(updated);
       toast.success(
-        context.mode === "edit" ? tExtra("toast.termUpdated") : tExtra("toast.termAdded")
+        context.mode === "edit"
+          ? tExtra("toast.termUpdated")
+          : tExtra("toast.termAdded")
       );
     } catch (err: any) {
       // Better error logging - extract all possible error information
@@ -268,8 +265,9 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         "Failed to add term: Database operation returned no result. This may indicate a permission issue or database error.":
           tExtra("errorMap.permissionDenied"),
         "Vocabulary set not found": tExtra("errorMap.setNotFound"),
-        "Unauthorized access to vocabulary set":
-          tExtra("errorMap.accessDenied"),
+        "Unauthorized access to vocabulary set": tExtra(
+          "errorMap.accessDenied"
+        ),
         "Invalid vocabulary set ID": tExtra("errorMap.invalidSetId"),
       };
 
@@ -317,7 +315,8 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
         await fetchSet();
       }
 
-      const message = err instanceof Error ? err.message : tExtra("errors.deleteFailed");
+      const message =
+        err instanceof Error ? err.message : tExtra("errors.deleteFailed");
       // Only show error if it's a real error (not network timeout that might have succeeded)
       if (err?.status && err.status >= 400) {
         toast.error(message);
@@ -457,7 +456,9 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
               >
                 <ArrowLeft className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                 {/* Mobile: chỉ icon, từ xs trở lên mới hiện text */}
-                <span className="hidden xs:inline">{tExtra("actions.backToList")}</span>
+                <span className="hidden xs:inline">
+                  {tExtra("actions.backToList")}
+                </span>
               </button>
 
               {/* Action buttons bên phải */}
@@ -503,7 +504,7 @@ export function VocabularySetClient({ setId }: VocabularySetClientProps) {
                   </span>
                 </div>
                 {setData.topic && (
-                  <div className="inline-flex min-w-[140px] flex-1 items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-[11px] font-medium text-slate-600 shadow-sm whitespace-nowrap dark:border-zinc-800/60 dark:bg-zinc-900/80 dark:text-zinc-200">
+                  <div className="inline-flex min-w-[140px] flex-1 items-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-[11px] font-medium text-slate-600 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-900/80 dark:text-zinc-200">
                     <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#4063bb]/10 text-[#4063bb] dark:bg-[#4063bb]/20 dark:text-sky-200">
                       <Layers className="h-3.5 w-3.5" />
                     </span>

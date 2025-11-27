@@ -13,6 +13,10 @@ import {
   RefreshCcw,
   Sparkles,
   Trash2,
+  Share2,
+  Download,
+  Globe,
+  GlobeLock,
 } from "lucide-react";
 import React from "react";
 import { cn } from "@/lib/utils";
@@ -40,6 +44,10 @@ interface VocabularySetCardProps {
   onEdit: (set: VocabularySet) => void;
   onDuplicate: (set: VocabularySet) => void;
   onDelete?: (set: VocabularySet) => void;
+  onShare?: (set: VocabularySet, isPublic: boolean) => void;
+  onClone?: (set: VocabularySet) => void;
+  isOwner?: boolean;
+  currentUserId?: string;
 }
 
 /* =============== CARD MOTION =============== */
@@ -68,12 +76,21 @@ export function VocabularySetCard({
   onEdit,
   onDuplicate,
   onDelete,
+  onShare,
+  onClone,
+  isOwner = false,
+  currentUserId,
 }: VocabularySetCardProps) {
   const t = useTranslations("vocabularyComponents.card");
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const [menuOpen, setMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
+
+  // Determine if this is the owner's set
+  const isMySet = isOwner || (currentUserId && set.ownerId === currentUserId);
+  const isPublicSet = set.isPublic === true;
+  const isOtherPublicSet = isPublicSet && !isMySet;
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -178,32 +195,60 @@ export function VocabularySetCard({
                     handleAction(() => onOpen(set));
                   }}
                 />
-                <ActionItem
-                  icon={Copy}
-                  label={t("actions.duplicate")}
-                  onClick={(event) => {
-                    stopPropagation(event as any);
-                    handleAction(() => onDuplicate(set));
-                  }}
-                />
-                <ActionItem
-                  icon={RefreshCcw}
-                  label={t("actions.edit")}
-                  onClick={(event) => {
-                    stopPropagation(event as any);
-                    handleAction(() => onEdit(set));
-                  }}
-                />
-                <div className="my-1 border-t border-slate-100 dark:border-zinc-800" />
-                <ActionItem
-                  icon={Trash2}
-                  label={t("actions.delete")}
-                  tone="danger"
-                  onClick={(event) => {
-                    stopPropagation(event as any);
-                    handleAction(() => onDelete?.(set));
-                  }}
-                />
+                {isMySet && (
+                  <>
+                    <ActionItem
+                      icon={Copy}
+                      label={t("actions.duplicate")}
+                      onClick={(event) => {
+                        stopPropagation(event as any);
+                        handleAction(() => onDuplicate(set));
+                      }}
+                    />
+                    {onShare && (
+                      <ActionItem
+                        icon={isPublicSet ? GlobeLock : Globe}
+                        label={
+                          isPublicSet
+                            ? t("actions.unshare")
+                            : t("actions.share")
+                        }
+                        onClick={(event) => {
+                          stopPropagation(event as any);
+                          handleAction(() => onShare(set, !isPublicSet));
+                        }}
+                      />
+                    )}
+                    <ActionItem
+                      icon={RefreshCcw}
+                      label={t("actions.edit")}
+                      onClick={(event) => {
+                        stopPropagation(event as any);
+                        handleAction(() => onEdit(set));
+                      }}
+                    />
+                    <div className="my-1 border-t border-slate-100 dark:border-zinc-800" />
+                    <ActionItem
+                      icon={Trash2}
+                      label={t("actions.delete")}
+                      tone="danger"
+                      onClick={(event) => {
+                        stopPropagation(event as any);
+                        handleAction(() => onDelete?.(set));
+                      }}
+                    />
+                  </>
+                )}
+                {isOtherPublicSet && onClone && (
+                  <ActionItem
+                    icon={Download}
+                    label={t("actions.clone")}
+                    onClick={(event) => {
+                      stopPropagation(event as any);
+                      handleAction(() => onClone(set));
+                    }}
+                  />
+                )}
               </div>
             )}
           </div>
@@ -269,11 +314,32 @@ export function VocabularySetCard({
 
           {/* Terms info */}
           <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-500 dark:text-zinc-400 xs:text-[11px]">
-            <span className="font-medium">{set.terms.length} {t("terms")}</span>
+            <span className="font-medium">
+              {set.terms.length} {t("terms")}
+            </span>
+            {/* Public badge (new) */}
+            {isPublicSet && (
+              <span
+                className="
+      inline-flex items-center gap-1 
+      rounded-full bg-emerald-500/90 
+      px-1.5 py-0.5 
+      text-[9px] font-semibold text-white 
+      shadow-sm 
+      dark:bg-emerald-600/80
+    "
+              >
+                <Globe className="h-2.5 w-2.5" />
+                <span>{t("badges.public")}</span>
+              </span>
+            )}
+
             {progress.sessions > 0 && (
               <>
                 <span className="h-0.5 w-0.5 rounded-full bg-slate-300" />
-                <span>{progress.sessions} {t("sessions")}</span>
+                <span>
+                  {progress.sessions} {t("sessions")}
+                </span>
               </>
             )}
             {progress.lastStudied && (
@@ -302,7 +368,9 @@ export function VocabularySetCard({
               <div className="mt-1 flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/80 px-2.5 py-1.5 text-[10px] text-slate-700 dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-200 xs:hidden">
                 <div className="inline-flex items-center gap-1">
                   <Sparkles className="h-2.5 w-2.5 text-[#4063bb]" />
-                  <span>{t("progress.labelShort")}: {percent}%</span>
+                  <span>
+                    {t("progress.labelShort")}: {percent}%
+                  </span>
                 </div>
                 <span className="text-[9px] font-semibold uppercase tracking-wide">
                   {statusLabel}
@@ -366,43 +434,55 @@ export function VocabularySetCard({
 
         {/* Footer actions – mobile-first */}
         <div className="mt-2 flex flex-col gap-1 xs:mt-2.5 xs:flex-row xs:items-center xs:gap-1.5">
-          <button
-            type="button"
-            onClick={(event) => {
-              stopPropagation(event);
-              if (!hasTerms) {
-                toast.info(
-                  t("toast.noTermsInfo")
-                );
-                router.push(`${basePrefix}/vocabulary/${set._id}`);
-              } else {
-                onStudy(set);
-              }
-            }}
-            className="inline-flex h-7 w-full items-center justify-center gap-1 rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-2.5 text-[11px] font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 xs:h-8 xs:flex-1 xs:px-3 xs:text-[12px]"
-          >
-            <PlayCircle className="h-3 w-3 xs:h-3.5 xs:w-3.5" />
-            <span>{t("buttons.flashcard")}</span>
-          </button>
+          {isOtherPublicSet && onClone ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                stopPropagation(event);
+                onClone(set);
+              }}
+              className="inline-flex h-7 w-full items-center justify-center gap-1 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-2.5 text-[11px] font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:brightness-110 xs:h-8 xs:px-3 xs:text-[12px]"
+            >
+              <Download className="h-3 w-3 xs:h-3.5 xs:w-3.5" />
+              <span>{t("buttons.clone")}</span>
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={(event) => {
+                  stopPropagation(event);
+                  if (!hasTerms) {
+                    toast.info(t("toast.noTermsInfo"));
+                    router.push(`${basePrefix}/vocabulary/${set._id}`);
+                  } else {
+                    onStudy(set);
+                  }
+                }}
+                className="inline-flex h-7 w-full items-center justify-center gap-1 rounded-2xl bg-gradient-to-r from-[#4063bb] to-[#2d4c9b] px-2.5 text-[11px] font-semibold text-white shadow-lg shadow-[#2d4c9b33] transition hover:brightness-110 xs:h-8 xs:flex-1 xs:px-3 xs:text-[12px]"
+              >
+                <PlayCircle className="h-3 w-3 xs:h-3.5 xs:w-3.5" />
+                <span>{t("buttons.flashcard")}</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={(event) => {
-              stopPropagation(event);
-              if (!hasTerms) {
-                toast.info(
-                  t("toast.noTermsInfo")
-                );
-                router.push(`${basePrefix}/vocabulary/${set._id}`);
-              } else {
-                onQuickQuiz(set);
-              }
-            }}
-            className="inline-flex h-7 w-full items-center justify-center gap-1 rounded-2xl border border-slate-200/80 bg-white/80 px-2.5 text-[11px] font-semibold text-slate-700 shadow-sm transition hover:border-[#4063bb66] hover:text-[#4063bb] dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100 xs:h-8 xs:w-auto xs:flex-none xs:px-3 xs:text-[12px]"
-          >
-            <ArrowRight className="h-3 w-3 xs:h-3.5 xs:w-3.5" />
-            <span>{t("buttons.quiz")}</span>
-          </button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  stopPropagation(event);
+                  if (!hasTerms) {
+                    toast.info(t("toast.noTermsInfo"));
+                    router.push(`${basePrefix}/vocabulary/${set._id}`);
+                  } else {
+                    onQuickQuiz(set);
+                  }
+                }}
+                className="inline-flex h-7 w-full items-center justify-center gap-1 rounded-2xl border border-slate-200/80 bg-white/80 px-2.5 text-[11px] font-semibold text-slate-700 shadow-sm transition hover:border-[#4063bb66] hover:text-[#4063bb] dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-100 xs:h-8 xs:w-auto xs:flex-none xs:px-3 xs:text-[12px]"
+              >
+                <ArrowRight className="h-3 w-3 xs:h-3.5 xs:w-3.5" />
+                <span>{t("buttons.quiz")}</span>
+              </button>
+            </>
+          )}
         </div>
       </motion.article>
     </div>

@@ -31,6 +31,7 @@ export default function LoginForm() {
     onSuccess: async () => {
       const res = await fetch("/api/auth/me", {
         credentials: "include",
+        cache: "no-store",
       });
       const profile = res.ok ? await res.json() : null;
       if (profile) login(profile);

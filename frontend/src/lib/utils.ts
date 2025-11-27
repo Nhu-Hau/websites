@@ -40,6 +40,10 @@ export function clearUserData() {
       else if (key === "community-forum-state-v1") {
         keysToRemove.push(key);
       }
+      // Remove user levels changed timestamp
+      else if (key === "user:levels:changed") {
+        keysToRemove.push(key);
+      }
     }
 
     // Remove all identified keys

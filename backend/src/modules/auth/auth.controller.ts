@@ -103,6 +103,7 @@ export async function uploadAvatar(req: Request, res: Response) {
       mime: finalMime,
       originalName: finalName,
       folder: "avatar", // ⟵ lưu vào s3://project.toeic/avatar/
+      userId, // ⟵ truyền userId để tạo key riêng: avatar/{userId}/avatar-{timestamp}.jpg
     });
 
     // 2) Xoá avatar cũ (nếu có)

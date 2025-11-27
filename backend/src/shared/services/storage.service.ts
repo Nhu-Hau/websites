@@ -97,6 +97,7 @@ export async function uploadBufferToS3(opts: {
   mime: string;
   originalName: string;
   folder?: string; // ⟵ thêm
+  userId?: string; // ⟵ thêm user ID để tạo key riêng biệt
 }) {
   const ext = path.extname(opts.originalName).toLowerCase();
   const base = path
@@ -109,8 +110,16 @@ export async function uploadBufferToS3(opts: {
     ? opts.folder.replace(/^\/|\/$/g, "") + "/"
     : PREFIX;
 
-  // Giữ nguyên tên file gốc (không thêm timestamp/random)
-  const key = `${folder}${base}${ext}`;
+  // Tạo key với userId và timestamp để tránh trùng lặp
+  let key: string;
+  if (opts.userId) {
+    // Thêm timestamp để tránh cache CDN và cho phép upload nhiều lần
+    const timestamp = Date.now();
+    key = `${folder}${opts.userId}/${base}-${timestamp}${ext}`;
+  } else {
+    // Fallback: giữ nguyên tên file gốc (cho backward compatibility)
+    key = `${folder}${base}${ext}`;
+  }
 
   await s3.send(
     new PutObjectCommand({

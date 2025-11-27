@@ -383,6 +383,7 @@ export async function register(req: Request, res: Response) {
       access: "free",
       level: level ?? 1,
       emailVerified: true,
+      last_login: new Date(),
     });
 
     const { access, refresh } = await issueAndStoreTokens(user);
@@ -466,6 +467,7 @@ export async function login(req: Request, res: Response) {
     user.loginAttempts = 0;
     user.isLocked = false;
     user.lockedUntil = null;
+    user.last_login = new Date();
     await user.save();
 
     // Cấp token và lưu cookies
@@ -511,6 +513,8 @@ export function googleCallback(
 
         const user = await User.findOne({ email });
         if (user) {
+          user.last_login = new Date();
+          await user.save();
           const { access, refresh } = await issueAndStoreTokens(user);
           setAuthCookies(res, access, refresh);
           return res.redirect(`${CLIENT_URL}?auth=login_success`);
@@ -563,6 +567,7 @@ export async function completeGoogle(req: Request, res: Response) {
       level: 1,
       googleId,
       provider: "google",
+      last_login: new Date(),
     });
 
     const { access, refresh } = await issueAndStoreTokens(user);

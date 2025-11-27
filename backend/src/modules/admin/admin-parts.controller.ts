@@ -636,6 +636,17 @@ export async function importExcel(req: Request, res: Response) {
     for (const [index, row] of itemsRaw.entries()) {
       const line = index + 2; // Excel line number (header is 1)
 
+      // Helper to check if a value is effectively empty (null, undefined, or whitespace string)
+      const isEmpty = (val: any) => {
+        if (val === null || val === undefined) return true;
+        if (typeof val === 'string') return val.trim() === '';
+        return false;
+      };
+
+      if (isEmpty(row.id) && isEmpty(row.part) && isEmpty(row.level) && isEmpty(row.test) && isEmpty(row.answer)) {
+        continue;
+      }
+
       if (!row.id || !row.part || row.level === undefined || row.test === undefined || !row.answer) {
         errors.push(`Dòng ${line}: Thiếu trường bắt buộc (id, part, level, test, answer)`);
         continue;
@@ -679,6 +690,17 @@ export async function importExcel(req: Request, res: Response) {
     const stimuliToInsert: any[] = [];
     for (const [index, row] of stimuliRaw.entries()) {
       const line = index + 2;
+      // Helper to check if a value is effectively empty
+      const isEmpty = (val: any) => {
+        if (val === null || val === undefined) return true;
+        if (typeof val === 'string') return val.trim() === '';
+        return false;
+      };
+
+      if (isEmpty(row.id) && isEmpty(row.part) && isEmpty(row.level) && isEmpty(row.test)) {
+        continue;
+      }
+
       if (!row.id || !row.part || row.level === undefined || row.test === undefined) {
         errors.push(`Sheet Stimuli Dòng ${line}: Thiếu trường bắt buộc (id, part, level, test)`);
         continue;
@@ -1116,8 +1138,22 @@ export async function exportBulkExcel(req: Request, res: Response) {
     const allStimuliData: any[] = [];
 
     // Process each test
+    let lastPart = "";
+
     for (const testGroup of testsAgg) {
       const { part: testPart, level: testLevel, test: testTest } = testGroup._id;
+
+      // Add empty rows only if part changes (and it's not the first part)
+      if (lastPart && lastPart !== testPart) {
+        allItemsData.push({});
+        allItemsData.push({});
+
+        if (allStimuliData.length > 0) {
+          allStimuliData.push({});
+          allStimuliData.push({});
+        }
+      }
+      lastPart = testPart;
 
       // Fetch items for this test
       const items = await itemsCol
@@ -1131,25 +1167,7 @@ export async function exportBulkExcel(req: Request, res: Response) {
         .sort({ id: 1 })
         .toArray();
 
-      // Add separator row for items (comment row to identify test)
-      allItemsData.push({
-        id: `=== ${testPart} - Level ${testLevel} - Test ${testTest} ===`,
-        part: '',
-        level: '',
-        test: '',
-        stimulusId: '',
-        stem: '',
-        answer: '',
-        explain: '',
-        order: '',
-        choiceA: '',
-        choiceB: '',
-        choiceC: '',
-        choiceD: '',
-        tags: '',
-        question: '',
-        options: ''
-      });
+
 
       // Transform and add items
       for (const item of items) {
@@ -1189,41 +1207,7 @@ export async function exportBulkExcel(req: Request, res: Response) {
         allItemsData.push(row);
       }
 
-      // Add empty rows after items
-      allItemsData.push({});
-      allItemsData.push({});
 
-      // Add stimuli if present
-      if (stimuli.length > 0) {
-        // Add separator for stimuli
-        allStimuliData.push({
-          id: `=== ${testPart} - Level ${testLevel} - Test ${testTest} ===`,
-          part: '',
-          level: '',
-          test: '',
-          image: '',
-          audio: '',
-          script: '',
-          explain: ''
-        });
-
-        for (const stim of stimuli) {
-          allStimuliData.push({
-            id: stim.id,
-            part: stim.part,
-            level: stim.level,
-            test: stim.test,
-            image: stim.media?.image || '',
-            audio: stim.media?.audio || '',
-            script: stim.media?.script || '',
-            explain: stim.media?.explain || '',
-          });
-        }
-
-        // Add empty rows after stimuli
-        allStimuliData.push({});
-        allStimuliData.push({});
-      }
     }
 
     // Create workbook

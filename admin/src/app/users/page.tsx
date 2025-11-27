@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { adminListUsers, adminUpdateUser, adminDeleteUser, AdminUser } from "@/lib/apiClient";
-import { Users, Search, Filter, Trash2, Shield, Crown, Home, AlertTriangle } from "lucide-react";
+import { Users, Search, Filter, Trash2, Shield, Crown, Home, AlertTriangle, Eye } from "lucide-react";
 import { useToast } from "@/components/common/ToastProvider";
 
 type ConfirmDialogState = {
@@ -29,6 +29,9 @@ export default function UsersPage() {
   const [busy, setBusy] = React.useState(false);
   const [confirmDialog, setConfirmDialog] = React.useState<ConfirmDialogState | null>(null);
   const [confirmLoading, setConfirmLoading] = React.useState(false);
+  const [selectedUser, setSelectedUser] = React.useState<AdminUser | null>(null);
+  const [editedUser, setEditedUser] = React.useState<Partial<AdminUser>>({});
+  const [saveLoading, setSaveLoading] = React.useState(false);
   const toast = useToast();
 
   const pages = Math.max(1, Math.ceil(total / limit));
@@ -123,6 +126,31 @@ export default function UsersPage() {
     });
   };
 
+  const openUserDetails = (u: AdminUser) => {
+    setSelectedUser(u);
+    setEditedUser({
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      access: u.access,
+    });
+  };
+
+  const handleSaveUser = async () => {
+    if (!selectedUser) return;
+    setSaveLoading(true);
+    try {
+      await adminUpdateUser(selectedUser._id, editedUser);
+      toast.success("Cập nhật thành công");
+      setSelectedUser(null);
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Lỗi khi cập nhật");
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
   if (loadingMe) return <div className="p-6">Đang kiểm tra quyền…</div>;
   if (!me || me.role !== 'admin') return <div className="p-6 text-red-600">Chỉ dành cho Admin</div>;
 
@@ -140,14 +168,14 @@ export default function UsersPage() {
             </div>
           </div>
           <nav className="flex items-center gap-2">
-            <Link 
-              className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors flex items-center gap-2 text-sm font-medium" 
+            <Link
+              className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors flex items-center gap-2 text-sm font-medium"
               href="/users"
             >
               <Users className="h-4 w-4" /> Users
             </Link>
-            <Link 
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-2 text-sm font-medium" 
+            <Link
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-2 text-sm font-medium"
               href="/"
             >
               <Home className="h-4 w-4" /> Trang chủ
@@ -162,20 +190,20 @@ export default function UsersPage() {
             <label className="text-sm font-medium text-zinc-700 mb-2 flex items-center gap-2">
               <Search className="h-4 w-4" /> Tìm kiếm
             </label>
-            <input 
-              value={q} 
-              onChange={(e)=>setQ(e.target.value)} 
-              placeholder="Tên hoặc email" 
-              className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all" 
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Tên hoặc email"
+              className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
             />
           </div>
           <div className="flex flex-col min-w-[150px]">
             <label className="text-sm font-medium text-zinc-700 mb-2 flex items-center gap-2">
               <Shield className="h-4 w-4" /> Role
             </label>
-            <select 
-              value={role} 
-              onChange={(e)=>setRole(e.target.value)} 
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
               className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
             >
               <option value="">Tất cả</option>
@@ -188,9 +216,9 @@ export default function UsersPage() {
             <label className="text-sm font-medium text-zinc-700 mb-2 flex items-center gap-2">
               <Crown className="h-4 w-4" /> Gói
             </label>
-            <select 
-              value={access} 
-              onChange={(e)=>setAccess(e.target.value)} 
+            <select
+              value={access}
+              onChange={(e) => setAccess(e.target.value)}
               className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
             >
               <option value="">Tất cả</option>
@@ -198,9 +226,9 @@ export default function UsersPage() {
               <option value="premium">Premium</option>
             </select>
           </div>
-          <button 
-            onClick={()=>{ setPage(1); void load(); }} 
-            disabled={busy} 
+          <button
+            onClick={() => { setPage(1); void load(); }}
+            disabled={busy}
             className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-2 font-medium"
           >
             <Filter className="h-4 w-4" /> Lọc
@@ -231,30 +259,23 @@ export default function UsersPage() {
                     </span>
                   </td>
                   <td className="p-4">
-                    <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                      u.access === 'premium' 
-                        ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' 
-                        : 'bg-gray-100 text-gray-700 border border-gray-200'
-                    }`}>
+                    <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${u.access === 'premium'
+                      ? 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+                      : 'bg-gray-100 text-gray-700 border border-gray-200'
+                      }`}>
                       {u.access}
                     </span>
                   </td>
                   <td className="p-4">
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={()=>onToggleRole(u)} 
-                        className="px-3 py-1.5 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-100 transition-colors font-medium flex items-center gap-1"
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={() => openUserDetails(u)}
+                        className="px-3 py-1.5 text-xs rounded-lg border border-teal-300 text-teal-600 hover:bg-teal-50 transition-colors font-medium flex items-center gap-1"
                       >
-                        <Shield className="h-3 w-3" /> Quyền
+                        <Eye className="h-3 w-3" /> Chi tiết
                       </button>
-                      <button 
-                        onClick={()=>onToggleAccess(u)} 
-                        className="px-3 py-1.5 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-100 transition-colors font-medium flex items-center gap-1"
-                      >
-                        <Crown className="h-3 w-3" /> Gói
-                      </button>
-                      <button 
-                        onClick={()=>onDelete(u)} 
+                      <button
+                        onClick={() => onDelete(u)}
                         className="px-3 py-1.5 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1"
                       >
                         <Trash2 className="h-3 w-3" /> Xóa
@@ -283,9 +304,9 @@ export default function UsersPage() {
           Tổng: <span className="font-bold text-teal-600">{total}</span> người dùng
         </div>
         <div className="flex items-center gap-3">
-          <button 
-            disabled={page<=1 || busy} 
-            onClick={()=>setPage(p=>Math.max(1,p-1))} 
+          <button
+            disabled={page <= 1 || busy}
+            onClick={() => setPage(p => Math.max(1, p - 1))}
             className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
           >
             Trước
@@ -293,15 +314,192 @@ export default function UsersPage() {
           <span className="text-sm font-medium text-zinc-700 px-4 py-2 bg-zinc-100 rounded-lg">
             {page} / {pages}
           </span>
-          <button 
-            disabled={page>=pages || busy} 
-            onClick={()=>setPage(p=>Math.min(pages,p+1))} 
+          <button
+            disabled={page >= pages || busy}
+            onClick={() => setPage(p => Math.min(pages, p + 1))}
             className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
           >
             Sau
           </button>
         </div>
       </div>
+      {selectedUser && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+          style={{ animation: "fadeIn 0.2s ease-out" }}
+          onClick={() => {
+            if (!saveLoading) {
+              setSelectedUser(null);
+            }
+          }}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            style={{ animation: "slideUp 0.3s ease-out" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-gradient-to-r from-teal-500 to-blue-600 p-6 text-white rounded-t-2xl">
+              <h2 className="text-2xl font-bold flex items-center gap-3">
+                <Eye className="h-6 w-6" />
+                Chi tiết người dùng
+              </h2>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* User ID */}
+              <div className="bg-zinc-50 rounded-lg p-4 border border-zinc-200">
+                <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">
+                  User ID
+                </label>
+                <p className="text-sm font-mono text-zinc-700 break-all">{selectedUser._id}</p>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-semibold text-zinc-700 mb-2">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={editedUser.email || ""}
+                  onChange={(e) => setEditedUser({ ...editedUser, email: e.target.value })}
+                  className="w-full border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                  placeholder="email@example.com"
+                />
+              </div>
+
+              {/* Tên */}
+              <div>
+                <label className="block text-sm font-semibold text-zinc-700 mb-2">
+                  Tên người dùng <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={editedUser.name || ""}
+                  onChange={(e) => setEditedUser({ ...editedUser, name: e.target.value })}
+                  className="w-full border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                  placeholder="Nhập tên"
+                />
+              </div>
+
+              {/* Quyền */}
+              <div>
+                <label className="block text-sm font-semibold text-zinc-700 mb-2">
+                  Quyền <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={editedUser.role || "user"}
+                  onChange={(e) => setEditedUser({ ...editedUser, role: e.target.value as AdminUser["role"] })}
+                  className="w-full border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                >
+                  <option value="user">User</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              {/* Gói đăng ký */}
+              <div>
+                <label className="block text-sm font-semibold text-zinc-700 mb-2">
+                  Gói đăng ký <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={editedUser.access || "free"}
+                  onChange={(e) => setEditedUser({ ...editedUser, access: e.target.value as "free" | "premium" })}
+                  className="w-full border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                >
+                  <option value="free">Free</option>
+                  <option value="premium">Premium</option>
+                </select>
+              </div>
+
+              {/* Phần ảnh đại diện */}
+              <div className="border-t border-zinc-200 pt-4">
+                <h3 className="text-sm font-semibold text-zinc-700 mb-3">Ảnh đại diện</h3>
+                <div className="flex items-center gap-4">
+                  {selectedUser.picture ? (
+                    <img
+                      src={selectedUser.picture}
+                      alt={selectedUser.name}
+                      className="w-20 h-20 rounded-full object-cover border-2 border-zinc-200"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+                      {selectedUser.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Đường dẫn</p>
+                    <p className="text-sm text-zinc-700 break-all">
+                      {selectedUser.picture || 'Chưa có ảnh đại diện'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Phần thông tin bổ sung */}
+              <div className="border-t border-zinc-200 pt-4">
+                <h3 className="text-sm font-semibold text-zinc-700 mb-3">Thông tin bổ sung</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-zinc-50 rounded-lg p-3 border border-zinc-200">
+                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Ngày tạo</p>
+                    <p className="text-sm text-zinc-700">
+                      {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString('vi-VN') : 'N/A'}
+                    </p>
+                  </div>
+                  <div className="bg-zinc-50 rounded-lg p-3 border border-zinc-200">
+                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Cập nhật</p>
+                    <p className="text-sm text-zinc-700">
+                      {selectedUser.updatedAt ? new Date(selectedUser.updatedAt).toLocaleString('vi-VN') : 'N/A'}
+                    </p>
+                  </div>
+                  <div className="bg-zinc-50 rounded-lg p-3 border border-zinc-200">
+                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Đăng nhập cuối</p>
+                    <p className="text-sm text-zinc-700">
+                      {selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleString('vi-VN') : 'Chưa có'}
+                    </p>
+                  </div>
+                  <div className="bg-zinc-50 rounded-lg p-3 border border-zinc-200">
+                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Điểm TOEIC</p>
+                    <p className="text-sm font-bold text-teal-600">
+                      {selectedUser.toeicScore !== undefined ? selectedUser.toeicScore : 'Chưa có'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Các nút hành động */}
+              <div className="flex gap-3 pt-4 border-t border-zinc-200">
+                <button
+                  onClick={() => {
+                    if (!saveLoading) {
+                      setSelectedUser(null);
+                    }
+                  }}
+                  disabled={saveLoading}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Đóng
+                </button>
+                <button
+                  onClick={handleSaveUser}
+                  disabled={saveLoading}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md font-medium flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {saveLoading ? (
+                    <>
+                      <span className="h-4 w-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+                      Đang lưu...
+                    </>
+                  ) : (
+                    "Lưu thay đổi"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {confirmDialog && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"

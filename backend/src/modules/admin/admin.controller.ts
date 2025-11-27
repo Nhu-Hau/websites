@@ -34,11 +34,20 @@ export async function listUsers(req: Request, res: Response) {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select("_id name email role access level createdAt updatedAt"),
+        .select("_id name email role access level picture last_login toeicPred createdAt updatedAt"),
       User.countDocuments(filter),
     ]);
 
-    return res.json({ items, total, page, limit, pages: Math.ceil(total / limit) });
+    // Transform toeicPred.overall to toeicScore for frontend
+    const transformedItems = items.map((user) => {
+      const userObj = user.toObject();
+      return {
+        ...userObj,
+        toeicScore: userObj.toeicPred?.overall || null,
+      };
+    });
+
+    return res.json({ items: transformedItems, total, page, limit, pages: Math.ceil(total / limit) });
   } catch (e) {
     return res.status(500).json({ message: "Lỗi khi lấy danh sách người dùng" });
   }

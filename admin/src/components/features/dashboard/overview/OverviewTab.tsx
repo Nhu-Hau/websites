@@ -13,6 +13,7 @@ interface OverviewTabProps {
         histogram: { min: number; max: number; count: number }[];
     } | null;
     onlineUsers: number;
+    totalSystemUsers: number;
     userScores: Array<{
         _id: string;
         name: string;
@@ -31,6 +32,7 @@ interface OverviewTabProps {
 export default function OverviewTab({
     data,
     onlineUsers,
+    totalSystemUsers,
     userScores,
     setUserScores,
     setData,
@@ -101,8 +103,8 @@ export default function OverviewTab({
                         <div className="relative flex items-center justify-between">
                             <div>
                                 <p className="text-blue-100 text-sm font-medium">Tổng người dùng</p>
-                                <p className="text-4xl font-bold mt-2">{data?.totalUsers ?? 0}</p>
-                                <p className="text-blue-100 text-xs mt-3 opacity-90">Có kết quả Placement</p>
+                                <p className="text-4xl font-bold mt-2">{data?.totalUsers ?? 0} / {totalSystemUsers}</p>
+                                <p className="text-blue-100 text-xs mt-3 opacity-90">Có điểm / Tổng user</p>
                             </div>
                             <div className="p-4 bg-white/20 rounded-2xl backdrop-blur">
                                 <Users className="h-9 w-9" />

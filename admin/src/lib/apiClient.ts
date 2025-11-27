@@ -9,6 +9,9 @@ export type AdminUser = {
   role: 'user' | 'teacher' | 'admin';
   access: 'free' | 'premium';
   level: 1 | 2 | 3;
+  picture?: string;
+  last_login?: string;
+  toeicScore?: number;
   createdAt?: string;
   updatedAt?: string;
 };

@@ -75,7 +75,7 @@ export default function AdminChatPage() {
     })();
   }, []);
 
-  // Load conversations
+  // Tải danh sách cuộc trò chuyện
   const loadConversations = React.useCallback(async () => {
     if (me?.role !== 'admin') return;
     try {
@@ -84,9 +84,9 @@ export default function AdminChatPage() {
       });
       const data = await response.json();
       setConversations(data.data || []);
-      
+
       // Tính tổng unread count từ tất cả conversations
-      const totalUnread = (data.data || []).reduce((sum: number, conv: any) => 
+      const totalUnread = (data.data || []).reduce((sum: number, conv: any) =>
         sum + (conv.unreadCount || 0), 0
       );
       setUnreadCount(totalUnread);
@@ -95,7 +95,7 @@ export default function AdminChatPage() {
     }
   }, [me]);
 
-  // Load messages for selected conversation
+  // Tải tin nhắn cho cuộc trò chuyện được chọn
   const loadMessages = React.useCallback(async (sessionId: string) => {
     if (!sessionId) return;
     console.log("Loading messages for sessionId:", sessionId);
@@ -107,32 +107,32 @@ export default function AdminChatPage() {
       console.log("Response status:", response.status);
       const data = await response.json();
       console.log("Messages data:", data);
-      
+
       // Loại bỏ tin nhắn trùng lặp dựa trên _id
-      const uniqueMessages = (data.data || []).filter((msg: Message, index: number, self: Message[]) => 
+      const uniqueMessages = (data.data || []).filter((msg: Message, index: number, self: Message[]) =>
         index === self.findIndex(m => m._id === msg._id)
       );
-      
+
       console.log("Unique messages:", uniqueMessages);
       setMessages(uniqueMessages);
-      
+
       // Reset unread count khi admin xem tin nhắn
       setUnreadCount(0);
-      
+
       // Cập nhật conversations để reset unread count cho conversation này
-      setConversations(prev => prev.map(conv => 
-        conv._id === sessionId 
+      setConversations(prev => prev.map(conv =>
+        conv._id === sessionId
           ? { ...conv, unreadCount: 0 }
           : conv
       ));
-      
+
       // Reload conversations để cập nhật unread count
       loadConversations();
-      
+
       // Thông báo cho AdminChatLink component
       console.log("AdminChatPage: Dispatching admin-viewed-messages event for sessionId:", sessionId);
-      window.dispatchEvent(new CustomEvent('admin-viewed-messages', { 
-        detail: { sessionId } 
+      window.dispatchEvent(new CustomEvent('admin-viewed-messages', {
+        detail: { sessionId }
       }));
     } catch (err) {
       console.error("Failed to load messages:", err);
@@ -167,7 +167,7 @@ export default function AdminChatPage() {
     };
   }, [socket, selectedConversation]);
 
-  // Real-time listeners
+  // Lắng nghe sự kiện thời gian thực
   React.useEffect(() => {
     if (!socket) {
       console.log("Admin chat page: No socket available");
@@ -175,8 +175,8 @@ export default function AdminChatPage() {
     }
 
     console.log("Admin chat page: Setting up socket listeners");
-    
-    // Join admin room để nhận tin nhắn
+
+    // Tham gia phòng admin để nhận tin nhắn
     socket.emit("admin:join-conversation", "admin");
 
     const handleNewMessage = (data: any) => {
@@ -204,21 +204,21 @@ export default function AdminChatPage() {
             return [...prev, newMessage];
           });
         }
-        
+
         // Tăng unread count nếu tin nhắn từ user
         if (data.message.role === 'user') {
           if (!isActiveConversation) {
             console.log("Admin chat page: Incrementing unread count");
             setUnreadCount(prev => prev + 1);
-            
+
             // Cập nhật conversations để tăng unread count cho conversation này
-            setConversations(prev => prev.map(conv => 
-              conv._id === data.message.sessionId 
+            setConversations(prev => prev.map(conv =>
+              conv._id === data.message.sessionId
                 ? { ...conv, unreadCount: (conv.unreadCount || 0) + 1 }
                 : conv
             ));
           }
-          
+
           // Reload conversations để cập nhật unread count
           loadConversations();
         }
@@ -255,11 +255,11 @@ export default function AdminChatPage() {
     };
 
     const handleConversationUpdate = (data: any) => {
-      // Reload conversations when there's an update
+      // Tải lại danh sách cuộc trò chuyện khi có cập nhật
       loadConversations();
     };
 
-    // Join admin room để nhận tin nhắn từ tất cả conversations
+    // Tham gia phòng admin để nhận tin nhắn từ tất cả cuộc trò chuyện
     socket.emit("admin:join-conversation", "admin");
 
     socket.on("admin-chat:new-message", handleNewMessage);
@@ -277,7 +277,7 @@ export default function AdminChatPage() {
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || sending) return;
-    
+
     setSending(true);
     try {
       const response = await fetch("/api/admin-chat/admin/reply", {
@@ -289,12 +289,12 @@ export default function AdminChatPage() {
           sessionId: selectedConversation,
         }),
       });
-      
+
       if (response.ok) {
         setNewMessage("");
-        // Reload messages to show the new message
+        // Tải lại tin nhắn để hiển thị tin nhắn mới
         loadMessages(selectedConversation);
-        // Reload conversations to update last message
+        // Tải lại danh sách cuộc trò chuyện để cập nhật tin nhắn cuối cùng
         loadConversations();
       }
     } catch (err) {
@@ -401,7 +401,7 @@ export default function AdminChatPage() {
           </header>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-            {/* Conversations List */}
+            {/* Danh sách cuộc trò chuyện */}
             <div className="bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden flex flex-col h-full">
               <div className="p-5 border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-white flex-shrink-0">
                 <h2 className="font-bold text-lg text-zinc-900">Cuộc trò chuyện</h2>
@@ -417,11 +417,10 @@ export default function AdminChatPage() {
                     <div
                       key={conv._id}
                       onClick={() => setSelectedConversation(conv._id)}
-                      className={`p-4 border-b border-zinc-100 cursor-pointer transition-all ${
-                        selectedConversation === conv._id 
-                          ? "bg-gradient-to-r from-teal-50 to-blue-50 border-l-4 border-l-teal-500" 
+                      className={`p-4 border-b border-zinc-100 cursor-pointer transition-all ${selectedConversation === conv._id
+                          ? "bg-gradient-to-r from-teal-50 to-blue-50 border-l-4 border-l-teal-500"
                           : "hover:bg-zinc-50"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
@@ -450,7 +449,7 @@ export default function AdminChatPage() {
               </div>
             </div>
 
-            {/* Messages */}
+            {/* Tin nhắn */}
             <div className="lg:col-span-2 bg-white rounded-xl shadow-lg border border-zinc-200 flex flex-col overflow-hidden h-full">
               {selectedConversation ? (
                 <>
@@ -471,7 +470,7 @@ export default function AdminChatPage() {
                       Xóa cuộc trò chuyện
                     </button>
                   </div>
-                  
+
                   <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-zinc-50 to-white min-h-0">
                     {loading ? (
                       <div className="text-center text-zinc-500 py-12">
@@ -492,11 +491,10 @@ export default function AdminChatPage() {
                             className={`flex ${isAdminMessage ? "justify-end" : "justify-start"}`}
                           >
                             <div
-                              className={`max-w-[70%] rounded-xl px-4 py-3 shadow-md ${
-                                isAdminMessage
+                              className={`max-w-[70%] rounded-xl px-4 py-3 shadow-md ${isAdminMessage
                                   ? "bg-gradient-to-r from-teal-500 to-blue-600 text-white"
                                   : "bg-white border border-zinc-200 text-zinc-900"
-                              }`}
+                                }`}
                             >
                               <div className="flex items-start justify-between gap-3 mb-2">
                                 <div className="flex items-center gap-2">
@@ -515,11 +513,10 @@ export default function AdminChatPage() {
                                     handleDeleteMessage(msg);
                                   }}
                                   aria-label="Xóa tin nhắn"
-                                  className={`p-1.5 rounded-md transition-colors ${
-                                    isAdminMessage
+                                  className={`p-1.5 rounded-md transition-colors ${isAdminMessage
                                       ? "text-white/80 hover:bg-white/20"
                                       : "text-zinc-500 hover:bg-zinc-100"
-                                  }`}
+                                    }`}
                                 >
                                   <FiTrash2 className="h-3.5 w-3.5" />
                                 </button>
@@ -535,7 +532,7 @@ export default function AdminChatPage() {
                     )}
                   </div>
 
-                  {/* Message Input */}
+                  {/* Ô nhập tin nhắn */}
                   <div className="p-5 border-t border-zinc-200 bg-white flex-shrink-0">
                     <div className="flex gap-3">
                       <textarea

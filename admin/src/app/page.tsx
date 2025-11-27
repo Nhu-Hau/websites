@@ -14,6 +14,7 @@ import {
   AdminPracticeAttempt,
   adminVisitorCount,
   adminOnlineUsersCount,
+  adminListUsers,
 } from "@/lib/apiClient";
 import { X } from "lucide-react";
 import { useSocket } from "@/hooks/useSocket";
@@ -84,6 +85,7 @@ export default function Home() {
     uniqueVisitorsLast30Days: number;
   } | null>(null);
   const [onlineUsers, setOnlineUsers] = React.useState<number>(0);
+  const [totalSystemUsers, setTotalSystemUsers] = React.useState<number>(0);
   const { socket, connected } = useSocket();
 
   React.useEffect(() => {
@@ -109,12 +111,13 @@ export default function Home() {
     (async () => {
       if (me?.role !== "admin") return;
       try {
-        const [overview, scores, toeicPred, visitorData, onlineData] = await Promise.all([
+        const [overview, scores, toeicPred, visitorData, onlineData, usersData] = await Promise.all([
           adminOverview(),
           adminUserScores(),
           adminUserToeicPred(),
           adminVisitorCount(),
           adminOnlineUsersCount(),
+          adminListUsers({ limit: 1 }), // Chỉ cần lấy tổng số lượng
         ]);
         const byLevel = overview.byLevel as any;
         setData({
@@ -127,22 +130,23 @@ export default function Home() {
         setUserToeicPred(toeicPred.users);
         setVisitorCount(visitorData);
         setOnlineUsers(onlineData.onlineUsers);
+        setTotalSystemUsers(usersData.total);
       } catch (e: any) {
         setError(e?.message || "Lỗi tải dữ liệu");
       }
     })();
   }, [me]);
 
-  // Realtime online users via socket
+  // Người dùng online thời gian thực qua socket
   React.useEffect(() => {
     if (me?.role !== "admin" || !socket) return;
 
-    // Join admin room khi socket connected
+    // Tham gia phòng admin khi socket đã kết nối
     if (connected) {
       socket.emit("admin:join");
     }
 
-    // Listen for realtime updates
+    // Lắng nghe cập nhật thời gian thực
     const handleOnlineUsersUpdate = (data: { onlineUsers: number }) => {
       setOnlineUsers(data.onlineUsers);
     };
@@ -180,7 +184,7 @@ export default function Home() {
     })();
   }, [me, activeTab, progressPage]);
 
-  // Fetch progress attempts của user được chọn
+  // Lấy danh sách progress attempts của user được chọn
   React.useEffect(() => {
     (async () => {
       if (!selectedProgressUserId) {
@@ -215,7 +219,7 @@ export default function Home() {
     })();
   }, [me, activeTab, practicePage]);
 
-  // Fetch practice attempts của user được chọn
+  // Lấy danh sách practice attempts của user được chọn
   React.useEffect(() => {
     (async () => {
       if (!selectedUserId) {
@@ -270,6 +274,7 @@ export default function Home() {
         <OverviewTab
           data={data}
           onlineUsers={onlineUsers}
+          totalSystemUsers={totalSystemUsers}
           userScores={userScores}
           setUserScores={setUserScores}
           setData={setData}

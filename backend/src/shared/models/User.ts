@@ -71,6 +71,7 @@ export interface IUser extends Document {
   currentToeicScore?: number | null;
   currentToeicExamDate?: string | null;
   premiumExpiryDate?: Date | null; // Ngày hết hạn premium
+  last_login?: Date | null; // Thời gian đăng nhập cuối
 
   comparePassword(candidate: string): Promise<boolean>;
 }
@@ -191,6 +192,7 @@ const userSchema = new Schema<IUser>(
     currentToeicScore: { type: Number, default: null },
     currentToeicExamDate: { type: String, default: null },
     premiumExpiryDate: { type: Date, default: null },
+    last_login: { type: Date, default: null },
   },
   { timestamps: true, versionKey: false }
 );

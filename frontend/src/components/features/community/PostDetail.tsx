@@ -233,7 +233,27 @@ export default function PostDetail({ postId }: { postId: string }) {
   };
 
   const handleFileUpload = async (files: FileList) => {
+    const ALLOWED_IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"];
+    const ALLOWED_VIDEO_EXTS = [".mp4", ".webm", ".mov"];
+    const ALLOWED_DOC_EXTS = [".pdf", ".doc", ".docx"];
+    const ALLOWED_MIMES = [
+      "image/", "video/",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
     for (const file of Array.from(files)) {
+      const ext = file.name.toLowerCase().substring(file.name.lastIndexOf("."));
+      const mime = file.type.toLowerCase();
+      const isValidExt = [...ALLOWED_IMAGE_EXTS, ...ALLOWED_VIDEO_EXTS, ...ALLOWED_DOC_EXTS].includes(ext);
+      const isValidMime = ALLOWED_MIMES.some((m) => mime.startsWith(m) || mime === m);
+
+      if (!isValidExt && !isValidMime) {
+        toast.error(detailT("commentInput.invalidFileType") || `File không hợp lệ: ${file.name}`);
+        continue;
+      }
+
       const formData = new FormData();
       formData.append("file", file, file.name);
 
@@ -732,7 +752,7 @@ export default function PostDetail({ postId }: { postId: string }) {
               <input
                 type="file"
                 multiple
-                accept="image/*,video/*,image/heic,image/heif,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov"
+                accept="image/*,video/*,image/heic,image/heif,.heic,.heif,.jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 ref={fileInputRef}
                 onChange={(e) => {
                   if (e.target.files) handleFileUpload(e.target.files);

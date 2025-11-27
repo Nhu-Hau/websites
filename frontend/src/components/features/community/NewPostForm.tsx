@@ -3,7 +3,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { X, Image as ImageIcon, Video, Upload, Send, FolderUp, Images } from "lucide-react";
+import { X, Image as ImageIcon, Video, Upload, Send, FolderUp, Images, FileText } from "lucide-react";
 import { toast } from "@/lib/toast";
 import type { Attachment } from "@/types/community.types";
 import { useTranslations } from "next-intl";
@@ -25,10 +25,16 @@ const ACCEPTED_IMAGE_TYPES = [
   "image/heif",
 ];
 const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+const ACCEPTED_DOC_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
 
 // Safari iOS fix: Also accept file extensions
 const ACCEPTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"];
 const ACCEPTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
+const ACCEPTED_DOC_EXTENSIONS = [".pdf", ".doc", ".docx"];
 
 // Compress image for iPhone (HEIC/large images)
 async function compressImage(file: File, maxSizeMB = 10): Promise<File> {
@@ -82,13 +88,14 @@ async function compressImage(file: File, maxSizeMB = 10): Promise<File> {
 }
 
 // Helper function to check if file is valid (handles Safari iOS mime type issues)
-function isValidFileType(file: File): { isImage: boolean; isVideo: boolean } {
+function isValidFileType(file: File): { isImage: boolean; isVideo: boolean; isDoc: boolean } {
   const fileName = file.name.toLowerCase();
   const fileExtension = fileName.substring(fileName.lastIndexOf("."));
 
   // Check by extension first (more reliable on Safari iOS)
   const isImageByExt = ACCEPTED_IMAGE_EXTENSIONS.includes(fileExtension);
   const isVideoByExt = ACCEPTED_VIDEO_EXTENSIONS.includes(fileExtension);
+  const isDocByExt = ACCEPTED_DOC_EXTENSIONS.includes(fileExtension);
 
   // Normalize MIME type for Safari iOS (handles image/jpeg vs image/jpg)
   const normalizedMime = file.type.toLowerCase().trim();
@@ -102,11 +109,15 @@ function isValidFileType(file: File): { isImage: boolean; isVideo: boolean } {
       normalizedMime === mime.toLowerCase() ||
       normalizedMime.startsWith("video/")
   );
+  const isDocByMime = ACCEPTED_DOC_TYPES.some(
+    (mime) => normalizedMime === mime.toLowerCase()
+  );
 
   // Accept if either extension or mime type matches
   return {
     isImage: isImageByExt || isImageByMime,
     isVideo: isVideoByExt || isVideoByMime,
+    isDoc: isDocByExt || isDocByMime,
   };
 }
 
@@ -121,7 +132,7 @@ type NewPostFormProps = {
 type PreviewItem = {
   file: File;
   preview: string;
-  type: "image" | "video";
+  type: "image" | "video" | "file";
   uploading?: boolean;
   uploaded?: boolean;
   attachment?: Attachment;
@@ -149,7 +160,7 @@ export default function NewPostForm({
       const existing: PreviewItem[] = initialAttachments.map((att) => ({
         file: new File([], att.name || ""),
         preview: att.url.startsWith("http") ? att.url : `${API_BASE}${att.url}`,
-        type: att.type === "video" ? "video" : "image",
+        type: att.type === "video" ? "video" : att.type === "file" ? "file" : "image",
         uploaded: true,
         attachment: att,
       }));
@@ -179,9 +190,9 @@ export default function NewPostForm({
         lastModified: file.lastModified,
       });
 
-      const { isImage, isVideo } = isValidFileType(file);
+      const { isImage, isVideo, isDoc } = isValidFileType(file);
 
-      if (!isImage && !isVideo) {
+      if (!isImage && !isVideo && !isDoc) {
         console.warn(
           "[handleFileSelect] Invalid file type:",
           file.name,
@@ -201,7 +212,7 @@ export default function NewPostForm({
         continue;
       }
 
-      const type = isVideo ? "video" : "image";
+      const type = isVideo ? "video" : isDoc ? "file" : "image";
       let preview = "";
       try {
         preview = type === "image" ? URL.createObjectURL(file) : "";
@@ -493,9 +504,16 @@ export default function NewPostForm({
                   className="object-cover"
                   unoptimized
                 />
-              ) : (
+              ) : item.type === "video" ? (
                 <div className="flex h-full w-full items-center justify-center bg-zinc-900/90">
                   <Video className="h-10 w-10 text-white/80" />
+                </div>
+              ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800 p-2">
+                  <FileText className="h-8 w-8 text-blue-500 dark:text-blue-400 mb-1" />
+                  <span className="text-xs text-zinc-600 dark:text-zinc-400 text-center truncate w-full px-1">
+                    {item.file.name}
+                  </span>
                 </div>
               )}
 
@@ -529,8 +547,10 @@ export default function NewPostForm({
             accept={[
               ...ACCEPTED_IMAGE_TYPES,
               ...ACCEPTED_VIDEO_TYPES,
+              ...ACCEPTED_DOC_TYPES,
               ...ACCEPTED_IMAGE_EXTENSIONS,
               ...ACCEPTED_VIDEO_EXTENSIONS,
+              ...ACCEPTED_DOC_EXTENSIONS,
             ].join(",")}
             ref={fileInputRef}
             onChange={(e) => {

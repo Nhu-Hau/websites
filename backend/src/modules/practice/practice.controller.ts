@@ -197,7 +197,7 @@ export async function submitPracticePart(req: Request, res: Response) {
           level: Number(level),
           ...(Number.isInteger(Number(test)) ? { test: Number(test) } : {}),
         },
-        { projection: { _id: 0, id: 1, part: 1, answer: 1 } }
+        { projection: { _id: 0, id: 1, part: 1, answer: 1, tags: 1, explain: 1, order: 1 } }
       )
       .sort({ order: 1, id: 1 })
       .toArray();
@@ -227,9 +227,15 @@ export async function submitPracticePart(req: Request, res: Response) {
     // Chấm bài
     const total = items.length;
     let correct = 0;
-    const answersMap: Record<string, { correctAnswer: string }> = {};
-    for (const it of items) {
-      answersMap[it.id] = { correctAnswer: it.answer };
+    const answersMap: Record<string, { correctAnswer: string; tags?: string[]; explain?: string }> = {};
+    for (let idx = 0; idx < items.length; idx++) {
+      const it = items[idx];
+      const tags = Array.isArray(it.tags) ? it.tags : [];
+      answersMap[it.id] = { 
+        correctAnswer: it.answer,
+        ...(tags.length > 0 ? { tags } : {}),
+        ...(it.explain ? { explain: String(it.explain) } : {})
+      };
       const picked = answers[it.id] ?? null;
       if (picked && picked === it.answer) correct++;
     }
@@ -346,6 +352,7 @@ export async function submitPracticePart(req: Request, res: Response) {
     });
 
     return res.json({
+      _id: String(attempt._id),
       total,
       correct,
       acc,
@@ -357,7 +364,7 @@ export async function submitPracticePart(req: Request, res: Response) {
         predicted, // điểm hiện tại trong DB (không bị luyện part làm thay đổi)
         reason: decision.reason,
       },
-      savedAttemptId: attempt._id,
+      savedAttemptId: String(attempt._id), // Giữ lại để tương thích
     });
   } catch (e) {
     console.error("[submitPracticePart] ERROR", e);

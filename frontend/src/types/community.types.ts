@@ -2,6 +2,7 @@ export type UserLite = {
   _id: string;
   name?: string;
   avatarUrl?: string;
+  picture?: string; // Backend trả về picture từ User model
 };
 
 export type Attachment = {

@@ -108,13 +108,13 @@ export default function PlacementPage() {
   // Jump to question
   const jumpTo = useCallback(
     (i: number) => {
-      if (!started || resp) return;
+      if (!started) return;
       setCurrentIndex(i);
       document
         .getElementById(`q-${i + 1}`)
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     },
-    [started, resp]
+    [started]
   );
 
   // Handle submit

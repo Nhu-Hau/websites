@@ -138,13 +138,13 @@ export default function ProgressPage() {
 
   const jumpTo = useCallback(
     (i: number) => {
-      if (!started || resp) return;
+      if (!started) return;
       setCurrentIndex(i);
       document
         .getElementById(`q-${i + 1}`)
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     },
-    [started, resp]
+    [started]
   );
 
   const handleSubmit = useCallback(async () => {

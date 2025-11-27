@@ -3088,6 +3088,10 @@
       "steadyProgress": "Nhịp độ học rất ổn định! Bạn có thể tiếp tục luyện đều và nâng level ở những Part mạnh."
     },
     "aiInsight": {
+      "premiumFeature": "Tính năng Premium",
+      "premiumDescription": "Nhận xét AI Insight chi tiết chỉ dành cho tài khoản Premium. Nâng cấp ngay để nhận phân tích chuyên sâu về bài làm của bạn!",
+      "upgradeToUnlock": "Nâng cấp Premium",
+      "upgradeNow": "Nâng cấp ngay",
       "title": "Nhận xét từ AI",
       "subtitle": "Phân tích điểm mạnh/yếu và lộ trình khuyến nghị",
       "view": "Xem nhận xét",

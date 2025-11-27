@@ -1183,15 +1183,42 @@ private isEnglishRelated(messages: Partial<IChatMessage>[]) {
       }
       if (currentAttempt.partStats) {
         parts.push(`\n**Chi tiết theo Part:**`);
-        Object.entries(currentAttempt.partStats).forEach(
-          ([part, stats]: [string, any]) => {
-            parts.push(
-              `- ${part}: ${stats.correct || 0}/${stats.total || 0} (${(
-                (stats.acc || 0) * 100
-              ).toFixed(1)}%)`
-            );
+        const partStatsArray = Object.entries(currentAttempt.partStats)
+          .map(([part, stats]: [string, any]) => ({
+            part,
+            ...stats,
+            accuracy: (stats.acc || 0) * 100
+          }))
+          .sort((a, b) => a.accuracy - b.accuracy); // Sắp xếp từ yếu đến mạnh
+        
+        partStatsArray.forEach(({ part, correct, total, accuracy }) => {
+          parts.push(
+            `- ${part}: ${correct || 0}/${total || 0} (${accuracy.toFixed(1)}%)`
+          );
+        });
+        
+        // Phân tích pattern lỗi lặp lại
+        if (currentAttempt.items && Array.isArray(currentAttempt.items)) {
+          const incorrectItems = currentAttempt.items.filter((item: any) => !item.isCorrect);
+          if (incorrectItems.length > 0) {
+            const partErrorCount = new Map<string, number>();
+            incorrectItems.forEach((item: any) => {
+              const part = item.part || "unknown";
+              partErrorCount.set(part, (partErrorCount.get(part) || 0) + 1);
+            });
+            
+            const topErrorParts = Array.from(partErrorCount.entries())
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 3);
+            
+            if (topErrorParts.length > 0) {
+              parts.push(`\n**Các Part có nhiều lỗi nhất:**`);
+              topErrorParts.forEach(([part, count]) => {
+                parts.push(`- ${part}: ${count} câu sai`);
+              });
+            }
           }
-        );
+        }
       }
     } else if (testType === "practice") {
       parts.push(`\n## Kết quả Practice Test vừa nộp`);
@@ -1201,6 +1228,208 @@ private isEnglishRelated(messages: Partial<IChatMessage>[]) {
         `- Số câu đúng: ${currentAttempt.correct}/${currentAttempt.total}`
       );
       parts.push(`- Độ chính xác: ${(currentAttempt.acc * 100).toFixed(1)}%`);
+      
+      // Gom nhóm các câu hỏi theo tag và trạng thái để phân tích tổng quát
+      if (currentAttempt.answersMap && currentAttempt.userAnswers) {
+        const questionList: Array<{
+          questionNumber: number;
+          isCorrect: boolean;
+          userAnswer: string | null;
+          correctAnswer: string;
+          tags: string[];
+          explain?: string;
+        }> = [];
+        
+        // Sắp xếp theo thứ tự
+        const sortedEntries = Object.entries(currentAttempt.answersMap).sort(([a], [b]) => {
+          const numA = a.match(/\d+/)?.[0];
+          const numB = b.match(/\d+/)?.[0];
+          if (numA && numB) {
+            return parseInt(numA, 10) - parseInt(numB, 10);
+          }
+          return a.localeCompare(b);
+        });
+        
+        for (let idx = 0; idx < sortedEntries.length; idx++) {
+          const [itemId, answerData] = sortedEntries[idx];
+          const answerDataTyped = answerData as { correctAnswer: string; tags?: string[]; explain?: string };
+          const userAnswer = currentAttempt.userAnswers[itemId] || null;
+          const isCorrect = userAnswer === answerDataTyped.correctAnswer;
+          const tags = answerDataTyped.tags || [];
+          
+          questionList.push({
+            questionNumber: idx + 1,
+            isCorrect,
+            userAnswer,
+            correctAnswer: answerDataTyped.correctAnswer,
+            tags,
+            explain: answerDataTyped.explain,
+          });
+        }
+        
+        // Gom nhóm câu sai theo tag
+        const incorrectByTag = new Map<string, Array<typeof questionList[0]>>();
+        const incorrectNoTag: Array<typeof questionList[0]> = [];
+        
+        // Gom nhóm câu đúng theo tag
+        const correctByTag = new Map<string, Array<typeof questionList[0]>>();
+        const correctNoTag: Array<typeof questionList[0]> = [];
+        
+        for (const q of questionList) {
+          if (q.isCorrect) {
+            if (q.tags.length > 0) {
+              for (const tag of q.tags) {
+                if (!correctByTag.has(tag)) {
+                  correctByTag.set(tag, []);
+                }
+                correctByTag.get(tag)!.push(q);
+              }
+            } else {
+              correctNoTag.push(q);
+            }
+          } else {
+            if (q.tags.length > 0) {
+              for (const tag of q.tags) {
+                if (!incorrectByTag.has(tag)) {
+                  incorrectByTag.set(tag, []);
+                }
+                incorrectByTag.get(tag)!.push(q);
+              }
+            } else {
+              incorrectNoTag.push(q);
+            }
+          }
+        }
+        
+        // Thêm thông tin nhóm vào prompt - liệt kê TOÀN BỘ các câu trong mỗi nhóm
+        parts.push(`\n**Dữ liệu chi tiết các nhóm câu hỏi:**`);
+        
+        // Tính phần trăm theo từng tag để phân tích ưu tiên
+        const tagStats = new Map<string, { total: number; correct: number; incorrect: number; accuracy: number }>();
+        
+        // Nhóm câu sai - liệt kê TOÀN BỘ
+        if (incorrectByTag.size > 0 || incorrectNoTag.length > 0) {
+          parts.push(`\n**Các nhóm câu sai:**`);
+          
+          // Sắp xếp theo số lượng câu sai giảm dần
+          const incorrectTagArray = Array.from(incorrectByTag.entries())
+            .map(([tag, questions]) => ({ tag, count: questions.length, questions }))
+            .sort((a, b) => b.count - a.count);
+          
+          for (const { tag, count, questions } of incorrectTagArray) {
+            // Liệt kê TẤT CẢ các câu trong nhóm
+            const allQuestionNumbers = questions.map(q => q.questionNumber).sort((a, b) => a - b);
+            const questionNumbersText = allQuestionNumbers.join(", ");
+            
+            // Thu thập thông tin đáp án và giải thích
+            const answerPatterns: string[] = [];
+            const explains: string[] = [];
+            questions.forEach(q => {
+              const answerInfo = q.userAnswer 
+                ? `chọn ${q.userAnswer} (đúng: ${q.correctAnswer})`
+                : `không chọn (đúng: ${q.correctAnswer})`;
+              answerPatterns.push(`Câu ${q.questionNumber}: ${answerInfo}`);
+              if (q.explain) explains.push(q.explain);
+            });
+            
+            parts.push(`- **${tag}**: ${count} câu sai - các câu: ${questionNumbersText}`);
+            parts.push(`  Chi tiết: ${answerPatterns.join(" | ")}`);
+            if (explains.length > 0) {
+              parts.push(`  Giải thích chuẩn (tham khảo): ${explains.slice(0, 3).join(" | ")}`);
+            }
+            
+            // Cập nhật thống kê tag (nếu chưa có)
+            if (!tagStats.has(tag)) {
+              const totalForTag = questionList.filter(q => q.tags.includes(tag)).length;
+              const correctForTag = questionList.filter(q => q.tags.includes(tag) && q.isCorrect).length;
+              tagStats.set(tag, {
+                total: totalForTag,
+                correct: correctForTag,
+                incorrect: totalForTag - correctForTag,
+                accuracy: totalForTag > 0 ? (correctForTag / totalForTag) * 100 : 0
+              });
+            }
+          }
+          
+          if (incorrectNoTag.length > 0) {
+            const allQuestionNumbers = incorrectNoTag.map(q => q.questionNumber).sort((a, b) => a - b);
+            const questionNumbersText = allQuestionNumbers.join(", ");
+            const answerPatterns = incorrectNoTag.map(q => {
+              const answerInfo = q.userAnswer 
+                ? `chọn ${q.userAnswer} (đúng: ${q.correctAnswer})`
+                : `không chọn (đúng: ${q.correctAnswer})`;
+              return `Câu ${q.questionNumber}: ${answerInfo}`;
+            });
+            parts.push(`- **Không có tag**: ${incorrectNoTag.length} câu sai - các câu: ${questionNumbersText}`);
+            parts.push(`  Chi tiết: ${answerPatterns.join(" | ")}`);
+          }
+        }
+        
+        // Nhóm câu đúng - liệt kê TOÀN BỘ
+        if (correctByTag.size > 0 || correctNoTag.length > 0) {
+          parts.push(`\n**Các nhóm câu đúng:**`);
+          
+          // Sắp xếp theo số lượng câu đúng giảm dần
+          const correctTagArray = Array.from(correctByTag.entries())
+            .map(([tag, questions]) => ({ tag, count: questions.length, questions }))
+            .sort((a, b) => b.count - a.count);
+          
+          for (const { tag, count, questions } of correctTagArray) {
+            // Liệt kê TẤT CẢ các câu trong nhóm
+            const allQuestionNumbers = questions.map(q => q.questionNumber).sort((a, b) => a - b);
+            const questionNumbersText = allQuestionNumbers.join(", ");
+            
+            const explains = questions.filter(q => q.explain).map(q => q.explain).slice(0, 3);
+            
+            parts.push(`- **${tag}**: ${count} câu đúng - các câu: ${questionNumbersText}`);
+            if (explains.length > 0) {
+              parts.push(`  Giải thích chuẩn (tham khảo): ${explains.join(" | ")}`);
+            }
+            
+            // Cập nhật thống kê tag (nếu chưa có)
+            if (!tagStats.has(tag)) {
+              const totalForTag = questionList.filter(q => q.tags.includes(tag)).length;
+              const correctForTag = count;
+              tagStats.set(tag, {
+                total: totalForTag,
+                correct: correctForTag,
+                incorrect: totalForTag - correctForTag,
+                accuracy: totalForTag > 0 ? (correctForTag / totalForTag) * 100 : 0
+              });
+            }
+          }
+          
+          if (correctNoTag.length > 0) {
+            const allQuestionNumbers = correctNoTag.map(q => q.questionNumber).sort((a, b) => a - b);
+            const questionNumbersText = allQuestionNumbers.join(", ");
+            parts.push(`- **Không có tag**: ${correctNoTag.length} câu đúng - các câu: ${questionNumbersText}`);
+          }
+        }
+        
+        // Phân tích ưu tiên - tìm dạng yếu nhất và mạnh nhất
+        if (tagStats.size > 0) {
+          parts.push(`\n**Phân tích phần trăm theo từng dạng (để chỉ ra dạng yếu nhất/mạnh nhất):**`);
+          const tagArray = Array.from(tagStats.entries())
+            .map(([tag, stats]) => ({ tag, ...stats }))
+            .sort((a, b) => a.accuracy - b.accuracy); // Sắp xếp từ yếu đến mạnh
+          
+          tagArray.forEach(({ tag, total, correct, incorrect, accuracy }) => {
+            parts.push(`- **${tag}**: ${correct}/${total} đúng (${accuracy.toFixed(1)}%)`);
+          });
+          
+          // Chỉ ra dạng yếu nhất (1-2 dạng)
+          const weakest = tagArray.slice(0, Math.min(2, tagArray.length));
+          if (weakest.length > 0) {
+            parts.push(`\n**Dạng yếu nhất:** ${weakest.map(w => w.tag).join(", ")}`);
+          }
+          
+          // Chỉ ra dạng mạnh nhất (1 dạng)
+          const strongest = tagArray.slice(-1);
+          if (strongest.length > 0 && strongest[0].accuracy > 0) {
+            parts.push(`**Dạng mạnh nhất:** ${strongest[0].tag}`);
+          }
+        }
+      }
     } else if (testType === "placement") {
       parts.push(`\n## Kết quả Placement Test vừa nộp`);
       parts.push(`- Tổng số câu: ${currentAttempt.total}`);
@@ -1230,6 +1459,58 @@ private isEnglishRelated(messages: Partial<IChatMessage>[]) {
         parts.push(
           `- Phần cần cải thiện: ${currentAttempt.weakParts.join(", ")}`
         );
+      }
+      
+      // Phân tích chi tiết theo Part cho Placement
+      if (currentAttempt.partStats) {
+        parts.push(`\n**Chi tiết theo Part:**`);
+        const partStatsArray = Object.entries(currentAttempt.partStats)
+          .map(([part, stats]: [string, any]) => ({
+            part,
+            ...stats,
+            accuracy: (stats.acc || 0) * 100
+          }))
+          .sort((a, b) => a.accuracy - b.accuracy); // Sắp xếp từ yếu đến mạnh
+        
+        partStatsArray.forEach(({ part, correct, total, accuracy }) => {
+          parts.push(
+            `- ${part}: ${correct || 0}/${total || 0} (${accuracy.toFixed(1)}%)`
+          );
+        });
+        
+        // Phân tích pattern lỗi lặp lại
+        if (currentAttempt.items && Array.isArray(currentAttempt.items)) {
+          const incorrectItems = currentAttempt.items.filter((item: any) => !item.isCorrect);
+          if (incorrectItems.length > 0) {
+            const partErrorCount = new Map<string, number>();
+            incorrectItems.forEach((item: any) => {
+              const part = item.part || "unknown";
+              partErrorCount.set(part, (partErrorCount.get(part) || 0) + 1);
+            });
+            
+            const topErrorParts = Array.from(partErrorCount.entries())
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 3);
+            
+            if (topErrorParts.length > 0) {
+              parts.push(`\n**Các Part có nhiều lỗi nhất:**`);
+              topErrorParts.forEach(([part, count]) => {
+                parts.push(`- ${part}: ${count} câu sai`);
+              });
+            }
+          }
+        }
+      }
+      
+      // Phân tích theo mức độ khó (level)
+      parts.push(`\n**Phân tích theo mức độ khó:**`);
+      parts.push(`- Level được xác định: ${currentAttempt.level}`);
+      if (currentAttempt.level === 1) {
+        parts.push(`- Đây là level cơ bản. Nếu độ chính xác thấp, cần củng cố nền tảng.`);
+      } else if (currentAttempt.level === 2) {
+        parts.push(`- Đây là level trung bình. Cần cân bằng giữa củng cố và nâng cao.`);
+      } else {
+        parts.push(`- Đây là level nâng cao. Cần tập trung vào các điểm khó và tinh chỉnh kỹ năng.`);
       }
     }
 
@@ -1290,34 +1571,122 @@ private isEnglishRelated(messages: Partial<IChatMessage>[]) {
       parts.push(`- Tổng số bài đã làm: ${totalActivityAttempts} bài`);
     }
 
-    // Yêu cầu AI
+    // Yêu cầu AI - Phân tích theo từng loại test
     parts.push(`\n## Yêu cầu phân tích`);
-    parts.push(`Đưa ra nhận xét cá nhân hóa bao gồm:`);
-    parts.push(`1. Phân tích điểm mạnh: Những phần làm tốt và lý do.`);
-    parts.push(`2. Phân tích điểm yếu: Những phần cần cải thiện và lý do.`);
-    parts.push(
-      `3. So sánh tiến bộ: ${
-        previousAttempt
-          ? "So sánh với bài trước, đánh giá tiến bộ."
-          : "Đây là bài test đầu tiên, đánh giá tổng quan."
-      }`
-    );
-    parts.push(
-      `4. Gợi ý cải thiện: Đưa ra 3-5 gợi ý cụ thể như luyện ngữ pháp (Part 5, 6), từ loại (Part 5), cấu trúc câu (Part 6), kỹ năng nghe (Listening), đọc hiểu (Reading).`
-    );
-    parts.push(`5. Động viên: Lời động viên phù hợp với kết quả.`);
-    if (progressPercent !== null) {
-      parts.push(
-        `6. Tiến độ mục tiêu: Nhận xét về tiến độ đạt mục tiêu TOEIC và lời khuyên.`
-      );
+    
+    if (testType === "practice") {
+      // Practice test - Phân tích theo cấu trúc mới: tóm tắt → nhóm lỗi → nhóm mạnh → gợi ý cải thiện
+      parts.push(`Bạn là AI Insight trong hệ thống luyện TOEIC. Hãy tạo bài nhận xét theo cấu trúc sau, văn phong thân thiện – dễ hiểu – không khô khan – không giáo điều:`);
+      
+      parts.push(`\n### (1) Tóm tắt:`);
+      parts.push(`- Một đoạn ngắn 3–4 câu.`);
+      parts.push(`- Ghi tổng số câu, số câu đúng, % chính xác.`);
+      parts.push(`- Nếu có dữ liệu lần trước, hãy so sánh mức độ tiến bộ/giảm sút (± bao nhiêu %).`);
+      parts.push(`- KHÔNG phân tích nguyên nhân chi tiết ở phần này.`);
+      
+      parts.push(`\n### (2) Nhóm lỗi điển hình:`);
+      parts.push(`- Gom các câu sai thành 2–4 nhóm theo điểm chung (ví dụ: đọc hiểu đoạn đơn, suy luận, tìm thông tin chi tiết, mục đích tác giả, email/letter, instructions…).`);
+      parts.push(`- KHÔNG dùng ID như "p7_001", chỉ dùng số câu: "câu 5", "câu 18", "câu 27".`);
+      parts.push(`- THAY ĐỔI: KHÔNG chỉ chọn 2–4 câu tiêu biểu nữa. Hãy liệt kê TOÀN BỘ các câu thuộc nhóm lỗi đó, nhưng gom lại để giải thích lỗi theo pattern chung, KHÔNG phân tích từng câu một.`);
+      parts.push(`- Với từng nhóm, hãy mô tả:`);
+      parts.push(`  * Học viên đã hiểu sai chỗ nào?`);
+      parts.push(`  * Sai vì chọn từ khóa trùng? Bỏ sót ý? Không suy luận?`);
+      parts.push(`  * Nếu tag tồn tại, hãy diễn giải bằng ngôn ngữ tự nhiên (quảng cáo, thông báo, email công việc…).`);
+      parts.push(`- Khi có pattern lặp lại, hãy gom lại dạng: "Ở các câu 6, 12, 20, 22 và 31, bạn đều chọn đáp án chứa từ khóa giống đoạn văn nhưng không đúng ngữ cảnh."`);
+      parts.push(`- KHÔNG phân tích dài từng câu, chỉ giải thích theo pattern chung của nhóm.`);
+      
+      parts.push(`\n### (3) Nhóm điểm mạnh:`);
+      parts.push(`- Chọn 2–3 kỹ năng hoặc dạng bài mà học viên làm tốt nhất.`);
+      parts.push(`- Liệt kê TẤT CẢ các câu đúng thuộc nhóm mạnh đó, nhưng chỉ phân tích theo nhóm – KHÔNG giải thích từng câu.`);
+      parts.push(`- Giải thích học viên làm tốt điều gì:`);
+      parts.push(`  * bắt được main idea`);
+      parts.push(`  * suy luận tốt`);
+      parts.push(`  * chọn đúng key info`);
+      parts.push(`  * hiểu được tone/purpose`);
+      parts.push(`- Văn phong tích cực – KHÔNG tâng bốc quá mức.`);
+      
+      parts.push(`\n### (4) Gợi ý cải thiện có thể hành động ngay:`);
+      parts.push(`- KHÔNG chung chung kiểu "bạn cần cố gắng hơn".`);
+      parts.push(`- Gợi ý theo dạng hướng dẫn cụ thể:`);
+      parts.push(`  * số câu nên luyện/ngày`);
+      parts.push(`  * dạng bài nên ưu tiên`);
+      parts.push(`  * kỹ năng nên tập trung (suy luận, scanning, tìm keyword, đọc mở đầu–kết thúc…)`);
+      parts.push(`  * phương pháp học: ghi chú keyword, luyện paraphrase, luyện inference…`);
+      parts.push(`- Ngắn gọn nhưng thực tế và làm được liền.`);
+      
+      parts.push(`\n**YÊU CẦU CHUNG:**`);
+      parts.push(`- KHÔNG giải thích dài dòng từng câu.`);
+      parts.push(`- KHÔNG nhắc lại tag kỹ thuật như "tag: p7_advertisement".`);
+      parts.push(`- KHÔNG lặp ý giữa các phần.`);
+      parts.push(`- KHÔNG phán xét tiêu cực.`);
+      parts.push(`- Output dài khoảng 6–10 đoạn, mạch lạc, rõ ràng.`);
+      
+      parts.push(`\n**(Optional) PHÂN TÍCH ƯU TIÊN:**`);
+      parts.push(`- Nếu dữ liệu có phần trăm theo từng dạng, hãy tự động chỉ ra:`);
+      parts.push(`  * 1–2 dạng yếu nhất`);
+      parts.push(`  * 1 dạng mạnh nhất`);
+      parts.push(`- Vẫn diễn giải bằng ngôn ngữ tự nhiên, KHÔNG dùng tag kỹ thuật.`);
+      
+    } else if (testType === "placement" || testType === "progress") {
+      // Placement và Progress test - Phân tích theo kỹ năng, part, level
+      parts.push(`Đưa ra phân tích chuyên sâu bao gồm:`);
+      
+      parts.push(`\n### 1. Phân tích theo Kỹ năng (Listening vs Reading):`);
+      parts.push(`- So sánh chi tiết độ chính xác giữa Listening và Reading.`);
+      parts.push(`- Xác định kỹ năng nào mạnh hơn và kỹ năng nào cần cải thiện.`);
+      parts.push(`- Phân tích nguyên nhân: Tại sao một kỹ năng tốt hơn kỹ năng kia? (ví dụ: vốn từ vựng tốt nhưng kỹ năng nghe chưa đủ, hoặc ngược lại).`);
+      
+      parts.push(`\n### 2. Phân tích theo Part:`);
+      parts.push(`- Dựa trên thống kê chi tiết theo Part ở trên, phân tích:`);
+      parts.push(`  * Part nào làm tốt nhất và tại sao.`);
+      parts.push(`  * Part nào yếu nhất và nguyên nhân cụ thể.`);
+      parts.push(`  * Pattern lỗi lặp lại: Có Part nào người dùng thường xuyên sai không?`);
+      parts.push(`  * Mối liên hệ giữa các Part (ví dụ: Part 5 yếu có thể ảnh hưởng đến Part 6).`);
+      
+      parts.push(`\n### 3. Phân tích theo Mức độ khó (Level):`);
+      parts.push(`- Đánh giá khả năng của người dùng ở level hiện tại.`);
+      parts.push(`- Nếu level thấp (1): Cần củng cố nền tảng nào?`);
+      parts.push(`- Nếu level trung bình (2): Cần cân bằng giữa củng cố và nâng cao như thế nào?`);
+      parts.push(`- Nếu level cao (3): Cần tập trung vào điểm nào để đạt điểm tối đa?`);
+      
+      parts.push(`\n### 4. Phân tích Pattern lỗi lặp lại:`);
+      parts.push(`- Xác định các lỗi thường xuyên xuất hiện (dựa trên danh sách các Part có nhiều lỗi nhất).`);
+      parts.push(`- Phân tích nguyên nhân: Tại sao người dùng lại sai ở những Part đó?`);
+      parts.push(`- Chỉ ra mối liên hệ giữa các lỗi (ví dụ: yếu ngữ pháp sẽ ảnh hưởng đến nhiều Part).`);
+      
+      parts.push(`\n### 5. Gợi ý cải thiện cụ thể:`);
+      parts.push(`- Đưa ra 3-5 gợi ý cải thiện cụ thể, ưu tiên:`);
+      parts.push(`  * Các Part yếu nhất (độ chính xác thấp nhất).`);
+      parts.push(`  * Kỹ năng yếu hơn (Listening hoặc Reading).`);
+      parts.push(`  * Các lỗi lặp lại nhiều nhất.`);
+      parts.push(`- Mỗi gợi ý phải có hành động cụ thể (ví dụ: "Luyện Part 5 mỗi ngày 30 phút", "Học 20 từ vựng mới mỗi ngày", v.v.).`);
+      
+      parts.push(`\n### 6. So sánh tiến bộ:`);
+      parts.push(previousAttempt
+        ? `- So sánh với bài ${testType === "placement" ? "placement" : "progress"} trước: Có cải thiện về Part nào, kỹ năng nào không?`
+        : `- Đây là bài ${testType === "placement" ? "placement" : "progress"} đầu tiên. Đánh giá tổng quan điểm mạnh và điểm yếu.`);
+      
+      parts.push(`\n### 7. Động viên:`);
+      parts.push(`- Lời động viên phù hợp với kết quả, nhấn mạnh vào những Part/kỹ năng đã làm tốt.`);
+      
+      if (progressPercent !== null) {
+        parts.push(`\n### 8. Tiến độ mục tiêu TOEIC:`);
+        parts.push(`- Nhận xét về tiến độ đạt mục tiêu TOEIC dựa trên điểm dự đoán hiện tại.`);
+        parts.push(`- Lời khuyên để đạt mục tiêu dựa trên phân tích điểm mạnh và điểm yếu.`);
+      }
     }
 
     parts.push(`\n**Lưu ý:**`);
-    parts.push(`- Ngôn ngữ thân thiện, động viên`);
-    parts.push(`- Gợi ý cụ thể, có thể thực hiện`);
-    parts.push(`- Dùng Markdown hợp lý`);
+    parts.push(`- Ngôn ngữ thân thiện, động viên, chuyên nghiệp`);
+    parts.push(`- Phân tích sâu, chi tiết, có căn cứ từ dữ liệu`);
+    parts.push(`- Gợi ý cụ thể, có thể thực hiện ngay`);
+    parts.push(`- Dùng Markdown hợp lý (headings, lists, bold, v.v.)`);
     parts.push(`- Không dùng emoji`);
-    parts.push(`- Độ dài 300-500 từ`);
+    if (testType === "practice") {
+      parts.push(`- Độ dài 500-800 từ (phân tích sâu hơn vì có tag)`);
+    } else {
+      parts.push(`- Độ dài 400-600 từ`);
+    }
 
     return parts.join("\n");
   }

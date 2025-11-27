@@ -27,7 +27,8 @@ export default function SocketBridge() {
         });
         if (!r.ok) return;
         const j = await r.json();
-        const uid: string | undefined = j?.user?._id;
+        // API /api/auth/me trả về { id, name, ... } không có wrapper user
+        const uid: string | undefined = j?.id || j?.user?._id;
         if (!uid) return;
 
         // Tránh spam cùng một uid

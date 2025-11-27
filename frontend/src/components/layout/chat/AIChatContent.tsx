@@ -534,7 +534,7 @@ export default function AIChatContent({
     if (!text || sending || !user) return;
 
     if (user.access !== "premium") {
-    setError(t("premiumRequired"));
+      setError(t("premiumRequired"));
       return;
     }
 
@@ -832,8 +832,12 @@ export default function AIChatContent({
                 }
                 disabled={!user || sending || user?.access !== "premium"}
                 rows={1}
-                className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 px-4 py-3 pr-12 text-sm text-gray-900 placeholder:text-gray-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 outline-none dark:border-zinc-600 dark:bg-zinc-800/70 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-sky-400"
-                style={{ minHeight: "52px", maxHeight: "120px" }}
+                className="w-full resize-none rounded-2xl border border-gray-300/70 bg-white/80 px-4 py-3 pr-12 text-sm text-gray-900 
+             placeholder:text-gray-400 placeholder:text-sm 
+             focus:border-sky-500 focus:ring-4 focus:ring-sky-500/20 
+             disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 outline-none
+             dark:border-zinc-600 dark:bg-zinc-800/70 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-sky-400"
+                style={{ minHeight: "52px", maxHeight: "100px" }}
               />
               <div className="absolute right-3 bottom-3 text-xs text-gray-400">
                 {input.length}/2000

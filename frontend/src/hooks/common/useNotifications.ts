@@ -234,6 +234,13 @@ export function useNotifications() {
       bus?.dispatchEvent(new CustomEvent("notif:add", { detail: n }));
     };
 
+    // Listen cho corner-toast từ socket (server emit trực tiếp)
+    const onCornerToast = (data: { id: string; title?: string; message?: string; link?: string }) => {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("corner-toast", { detail: data }));
+      }
+    };
+
     const onBusAdd = (e: Event) => {
       const n = (e as CustomEvent).detail as RealtimeNotification;
       if (!n?.id) return;
@@ -288,12 +295,14 @@ export function useNotifications() {
       if (s.connected) joinMyRoom();
       s.on("connect", joinMyRoom);
       s.on("notify:user", onNotify);
+      s.on("corner-toast", onCornerToast);
       bus?.addEventListener("notif:add", onBusAdd as EventListener);
     })();
 
     return () => {
       s.off("connect", joinMyRoom);
       s.off("notify:user", onNotify);
+      s.off("corner-toast", onCornerToast);
       bus?.removeEventListener("notif:add", onBusAdd as EventListener);
     };
   }, [mergeIn]);

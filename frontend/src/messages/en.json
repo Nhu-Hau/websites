@@ -1306,7 +1306,7 @@
       "header": {
         "badge": "Train TOEIC",
         "title": "Practice every TOEIC Part on the go",
-        "description": "Start with <level1>Level 1 sets</level1> to reset your rhythm, then raise the difficulty whenever you feel ready."
+        "description": "Start practicing each TOEIC Part and <level1>progress through the levels</level1>."
       },
       "listening": "Listening",
       "reading": "Reading",
@@ -1846,7 +1846,7 @@
       },
       "ai": {
         "welcome": "Hello! I'm your TOEIC AI assistant. I can help you practice, explain grammar, vocabulary, and test strategies. What would you like to know?",
-        "placeholder": "Hi! Send a message to start chatting with the TOEIC AI assistant.",
+        "placeholder": "Hi! Send a message to start chatting.",
         "premiumOnly": "AI chat is available for Premium accounts only.",
         "premiumRequired": "AI chat is available for Premium accounts only. Please upgrade your account to use this feature.",
         "loginRequired": "Please log in to start chatting",
@@ -1878,7 +1878,7 @@
       },
       "admin": {
         "welcome": "Admin will reply as soon as possible. Thank you for contacting us!",
-        "placeholder": "Hello! Send a message to start chatting with admin.",
+        "placeholder": "Hello! Send a message to start chatting.",
         "premiumOnly": "Admin chat is available for Premium accounts only.",
         "premiumRequired": "Admin chat is available for Premium accounts only. Please upgrade your account to use this feature.",
         "loginRequired": "Please log in to use admin chat",

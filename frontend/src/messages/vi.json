@@ -1566,7 +1566,7 @@
       "header": {
         "badge": "Luyện TOEIC",
         "title": "Luyện từng Part TOEIC mọi lúc mọi nơi",
-        "description": "Bắt đầu với <level1>các bộ Level 1</level1> để lấy lại nhịp, rồi tăng độ khó khi đã sẵn sàng."
+        "description": "Bắt đầu luyện từng Part TOEIC và <level1>tiến dần qua các mức độ</level1>."
       },
       "listening": "Listening",
       "reading": "Reading",
@@ -2165,7 +2165,7 @@
       },
       "ai": {
         "welcome": "Xin chào! Tôi là trợ lý AI chuyên về TOEIC. Tôi có thể giúp bạn luyện thi, giải thích ngữ pháp, từ vựng và chiến lược làm bài. Bạn muốn hỏi gì?",
-        "placeholder": "Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với trợ lý AI TOEIC.",
+        "placeholder": "Hãy gửi tin nhắn để bắt đầu trò chuyện.",
         "premiumOnly": "Chức năng chat với AI chỉ dành cho tài khoản Premium.",
         "premiumRequired": "Chức năng chat với AI chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.",
         "loginRequired": "Vui lòng đăng nhập để bắt đầu trò chuyện",
@@ -2197,7 +2197,7 @@
       },
       "admin": {
         "welcome": "Admin sẽ trả lời sớm nhất có thể. Cảm ơn bạn đã liên hệ!",
-        "placeholder": "Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với admin.",
+        "placeholder": "Hãy gửi tin nhắn để bắt đầu trò chuyện.",
         "premiumOnly": "Chức năng chat với Admin chỉ dành cho tài khoản Premium.",
         "premiumRequired": "Chức năng chat với Admin chỉ dành cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng.",
         "loginRequired": "Vui lòng đăng nhập để sử dụng chat admin",

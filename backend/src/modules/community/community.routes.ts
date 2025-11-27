@@ -47,7 +47,11 @@ import {
 } from "./groups.controller";
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
+// Tăng limit lên 50MB để hỗ trợ ảnh HEIC/HEIF từ iPhone
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+});
 
 router.post("/upload", requireAuth, upload.single("file"), uploadAttachment);
 

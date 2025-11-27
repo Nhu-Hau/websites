@@ -27,8 +27,59 @@ const ACCEPTED_IMAGE_TYPES = [
 const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
 // Safari iOS fix: Also accept file extensions
-const ACCEPTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
+const ACCEPTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"];
 const ACCEPTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
+
+// Compress image for iPhone (HEIC/large images)
+async function compressImage(file: File, maxSizeMB = 10): Promise<File> {
+  // Skip if already small enough or not an image
+  if (file.size <= maxSizeMB * 1024 * 1024) return file;
+  if (!file.type.startsWith("image/")) return file;
+  
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    
+    img.onload = () => {
+      // Calculate new dimensions (max 2000px)
+      let { width, height } = img;
+      const maxDim = 2000;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = (height / width) * maxDim;
+          width = maxDim;
+        } else {
+          width = (width / height) * maxDim;
+          height = maxDim;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      ctx?.drawImage(img, 0, 0, width, height);
+      
+      canvas.toBlob(
+        (blob) => {
+          if (blob && blob.size < file.size) {
+            const newFile = new File([blob], file.name.replace(/\.(heic|heif)$/i, ".jpg"), {
+              type: "image/jpeg",
+              lastModified: file.lastModified,
+            });
+            resolve(newFile);
+          } else {
+            resolve(file);
+          }
+        },
+        "image/jpeg",
+        0.85
+      );
+    };
+    
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
 
 // Helper function to check if file is valid (handles Safari iOS mime type issues)
 function isValidFileType(file: File): { isImage: boolean; isVideo: boolean } {
@@ -186,10 +237,21 @@ export default function NewPostForm({
     file: File,
     index: number
   ): Promise<Attachment | null> => {
+    // Compress large images (especially for iPhone HEIC)
+    let fileToUpload = file;
+    if (file.type.startsWith("image/") && file.size > 10 * 1024 * 1024) {
+      try {
+        fileToUpload = await compressImage(file);
+        console.log("[uploadFile] Compressed:", file.size, "->", fileToUpload.size);
+      } catch (e) {
+        console.warn("[uploadFile] Compression failed, using original:", e);
+      }
+    }
+    
     const formData = new FormData();
     // Safari iOS fix: Ensure file is properly appended
     // Some Safari versions need the filename explicitly
-    formData.append("file", file, file.name);
+    formData.append("file", fileToUpload, fileToUpload.name);
 
     try {
       const res = await fetch(`${API_BASE}/api/community/upload`, {

@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
@@ -23,7 +22,6 @@ const RESEND_STORAGE_KEY = "auth:resend:expiresAt";
 export default function RegisterForm() {
   const t = useTranslations("auth.register");
   const basePrefix = useBasePrefix();
-  const router = useRouter();
   const [gLoading, setGLoading] = useState(false);
   const { login } = useAuth();
 
@@ -37,7 +35,8 @@ export default function RegisterForm() {
     onSuccess: (data) => {
       toast.success(t("success"));
       if (data.user) login(data.user);
-      router.push(basePrefix);
+      // Dùng window.location để đảm bảo full reload với auth state mới
+      window.location.href = basePrefix || "/";
     },
   });
 

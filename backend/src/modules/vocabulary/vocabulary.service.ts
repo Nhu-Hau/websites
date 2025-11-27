@@ -1,5 +1,5 @@
 // backend/src/modules/vocabulary/vocabulary.service.ts
-import { ObjectId } from "mongodb";
+import { ObjectId, Sort } from "mongodb";
 import { VocabularyModel } from "./vocabulary.model";
 import {
   VocabularySet,
@@ -44,7 +44,7 @@ export class VocabularyService {
     }
 
     const set = await VocabularyModel.findById(setObjectId);
-    
+
     if (!set) {
       throw new Error("Vocabulary set not found");
     }
@@ -63,7 +63,7 @@ export class VocabularyService {
     data: CreateVocabularySetDTO
   ): Promise<VocabularySet> {
     const ownerId = resolveOwnerId(userId);
-    
+
     const vocabularySet: Omit<VocabularySet, "_id"> = {
       title: data.title,
       description: data.description,
@@ -167,38 +167,38 @@ export class VocabularyService {
       originalUserId: userId,
       resolvedOwnerId: ownerId instanceof ObjectId ? ownerId.toHexString() : String(ownerId),
     });
-    
+
     // First check if the set exists and belongs to the user
     const existingSet = await VocabularyModel.findById(setObjectId);
     if (!existingSet) {
       console.log("[VocabularyService.addTerm] Set not found:", setObjectId.toHexString());
       throw new Error("Vocabulary set not found");
     }
-    
-    const existingOwnerId = existingSet.ownerId instanceof ObjectId 
-      ? existingSet.ownerId.toHexString() 
+
+    const existingOwnerId = existingSet.ownerId instanceof ObjectId
+      ? existingSet.ownerId.toHexString()
       : String(existingSet.ownerId);
-    const incomingOwnerId = ownerId instanceof ObjectId 
-      ? ownerId.toHexString() 
+    const incomingOwnerId = ownerId instanceof ObjectId
+      ? ownerId.toHexString()
       : String(ownerId);
-    
+
     console.log("[VocabularyService.addTerm] OwnerId comparison:", {
       existingOwnerId,
       incomingOwnerId,
       match: existingOwnerId === incomingOwnerId,
     });
-    
+
     if (!ownerIdMatches(existingSet.ownerId, ownerId)) {
       console.log("[VocabularyService.addTerm] OwnerId mismatch - unauthorized");
       throw new Error("Unauthorized access to vocabulary set");
     }
-    
+
     // Prepare term data: remove undefined values and add addedAt
     const termDataClean: any = {
       word: termData.word,
       meaning: termData.meaning,
     };
-    
+
     if (termData.phonetic) termDataClean.phonetic = termData.phonetic;
     if (termData.englishMeaning) termDataClean.englishMeaning = termData.englishMeaning;
     if (termData.partOfSpeech) termDataClean.partOfSpeech = termData.partOfSpeech;
@@ -206,16 +206,16 @@ export class VocabularyService {
     if (termData.translatedExample) termDataClean.translatedExample = termData.translatedExample;
     if (termData.image) termDataClean.image = termData.image;
     if (termData.audio) termDataClean.audio = termData.audio;
-    
+
     termDataClean.addedAt = new Date();
-    
+
     console.log("[VocabularyService.addTerm] Calling VocabularyModel.addTerm with:", {
       setId: setObjectId.toHexString(),
       ownerId: ownerId instanceof ObjectId ? ownerId.toHexString() : String(ownerId),
       termWord: termDataClean.word,
       termKeys: Object.keys(termDataClean),
     });
-    
+
     const updated = await VocabularyModel.addTerm(
       setObjectId,
       ownerId,
@@ -319,7 +319,7 @@ export class VocabularyService {
 
     const ownerId = resolveOwnerId(userId);
     const set = await VocabularyModel.findById(setObjectId);
-    
+
     if (!set) {
       throw new Error("Vocabulary set not found");
     }
@@ -343,10 +343,10 @@ export class VocabularyService {
 
   async getPublicVocabularySets(page: number = 1, limit: number = 20, sortBy: 'newest' | 'popular' = 'newest'): Promise<{ sets: VocabularySet[]; total: number; page: number; limit: number }> {
     const collection = await VocabularyModel.getCollection();
-    
+
     const skip = (page - 1) * limit;
-    const sortField = sortBy === 'newest' ? { createdAt: -1 } : { createdAt: -1 }; // TODO: Add popularity field later
-    
+    const sortField: Sort = sortBy === 'newest' ? { createdAt: -1 } : { createdAt: -1 }; // TODO: Add popularity field later
+
     const [sets, total] = await Promise.all([
       collection
         .find({ isPublic: true })
@@ -378,7 +378,7 @@ export class VocabularyService {
     }
 
     const originalSet = await VocabularyModel.findById(setObjectId);
-    
+
     if (!originalSet) {
       throw new Error("Vocabulary set not found");
     }
@@ -388,7 +388,7 @@ export class VocabularyService {
     }
 
     const ownerId = resolveOwnerId(userId);
-    
+
     // Check if user is trying to clone their own set
     if (ownerIdMatches(originalSet.ownerId, ownerId)) {
       throw new Error("You cannot clone your own vocabulary set");

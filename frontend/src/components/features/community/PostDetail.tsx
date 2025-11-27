@@ -569,7 +569,7 @@ export default function PostDetail({ postId }: { postId: string }) {
         <div className="px-5 py-4 border-b border-zinc-100/80 dark:border-zinc-800/80">
           <div className="flex items-start gap-3">
             <Avatar
-              url={post.user?.picture}
+              url={post.user?.picture || post.user?.avatarUrl}
               name={post.user?.name}
               altText={postT("avatarAlt")}
               priority={true}
@@ -645,7 +645,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                     className="flex-shrink-0"
                   >
                     <Avatar
-                      url={originalPost.user?.picture}
+                      url={originalPost.user?.picture || originalPost.user?.avatarUrl}
                       name={originalPost.user?.name}
                       altText={postT("avatarAlt")}
                     />
@@ -850,7 +850,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                 {currentUser && (
                   <div className="flex-shrink-0">
                     <Avatar
-                      url={currentUser.picture}
+                      url={currentUser.picture || currentUser.avatarUrl || undefined}
                       name={currentUser.name}
                       altText={postT("avatarAlt")}
                       size="sm"
@@ -916,7 +916,7 @@ export default function PostDetail({ postId }: { postId: string }) {
             {currentUser && (
               <div className="flex-shrink-0">
                 <Avatar
-                  url={currentUser.picture}
+                  url={currentUser.picture || currentUser.avatarUrl || undefined}
                   name={currentUser.name}
                   altText={postT("avatarAlt")}
                   size="sm"
@@ -1028,7 +1028,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                     <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
                   <button
-                    onClick={submitComment}
+                    onClick={() => submitComment()}
                     disabled={!cmtInput.trim() && cmtAttaches.length === 0}
                     className="px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-sky-600 dark:bg-sky-500 text-white font-medium hover:bg-sky-700 dark:hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
                     aria-label={detailT("commentInput.submitAria")}

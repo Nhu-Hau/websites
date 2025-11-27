@@ -11,7 +11,7 @@ export interface IPracticeAttempt extends Document {
   correct: number;
   acc: number;
   timeSec: number;
-  answersMap: Record<string, { correctAnswer: string }>;
+  answersMap: Record<string, { correctAnswer: string; tags?: string[] }>;
   userAnswers: Record<string, string | null>;
   submittedAt: Date;
   isRetake: boolean;

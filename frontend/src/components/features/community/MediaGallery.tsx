@@ -8,6 +8,7 @@ import {
   Play,
   FileText,
   Download,
+  Image as ImageIcon,
 } from "lucide-react";
 import type { Attachment } from "@/types/community.types";
 import { useTranslations } from "next-intl";

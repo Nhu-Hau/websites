@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { MessageSquare, Loader2, Lock, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { toast } from "@/lib/toast";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 
 export type AIInsightSectionProps = {
   attemptId: string;
@@ -150,6 +152,9 @@ export function AIInsightSection({
   };
 
   const handleLoadInsight = async () => {
+    // Nếu không phải premium, không làm gì (sẽ hiển thị UI khóa)
+    if (userAccess !== "premium") return;
+    
     // Đánh dấu đã click
     setHasUserClicked(true);
     if (typeof window !== "undefined") {
@@ -169,7 +174,8 @@ export function AIInsightSection({
     await fetchInsight(true);
   };
 
-  if (userAccess !== "premium") return null;
+  const basePrefix = useBasePrefix("vi");
+  const isPremium = userAccess === "premium";
 
   return (
     <section className="rounded-2xl border border-zinc-200/80 bg-white/95 p-4 xs:p-5 shadow-sm backdrop-blur-sm dark:border-zinc-700/80 dark:bg-zinc-900/95">
@@ -180,7 +186,16 @@ export function AIInsightSection({
           icon={<MessageSquare className="h-4 w-4" />}
         />
 
-        {!showInsight && (
+        {!isPremium ? (
+          // UI khóa cho free user
+          <Link
+            href={`${basePrefix}/pricing`}
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs xs:text-sm font-semibold text-white shadow-sm transition-all hover:from-amber-400 hover:to-orange-400 hover:shadow-md"
+          >
+            <Lock className="h-3.5 w-3.5" />
+            {t("upgradeToUnlock") || "Nâng cấp Premium"}
+          </Link>
+        ) : !showInsight ? (
           <AIInsightButton
             onClick={handleLoadInsight}
             loading={insightLoading}
@@ -189,8 +204,34 @@ export function AIInsightSection({
             createLabel={t("create")}
             loadingLabel={t("loading")}
           />
-        )}
+        ) : null}
       </div>
+
+      {!isPremium && (
+        // Hiển thị thông báo khóa
+        <div className="mt-4 rounded-xl border border-amber-200/80 bg-amber-50/90 dark:border-amber-800/70 dark:bg-amber-950/60 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/40 flex-shrink-0">
+              <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div className="flex-1 space-y-2">
+              <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                {t("premiumFeature") || "Tính năng Premium"}
+              </h4>
+              <p className="text-xs xs:text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
+                {t("premiumDescription") || "Nhận xét AI Insight chi tiết chỉ dành cho tài khoản Premium. Nâng cấp ngay để nhận phân tích chuyên sâu về bài làm của bạn!"}
+              </p>
+              <Link
+                href={`${basePrefix}/pricing`}
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-600 to-orange-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:from-amber-500 hover:to-orange-500 hover:shadow-md mt-2"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                {t("upgradeNow") || "Nâng cấp ngay"}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showInsight && insight && (
         <div className="border-t border-zinc-200 pt-4 text-sm leading-relaxed text-zinc-700 dark:border-zinc-700 dark:text-zinc-200 xs:text-base">

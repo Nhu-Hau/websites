@@ -19,6 +19,7 @@ import { TestStartScreen } from "../test/TestStartScreen";
 import { MobileQuickNavSheet } from "../test/MobileQuickNavSheet";
 import { CheckCircle2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { AIInsightSection } from "../test/AIInsightSection";
 
 /* ====== META ====== */
 const PART_META: Record<
@@ -170,13 +171,13 @@ export default function PracticePage() {
   // Jump to question
   const jumpTo = useCallback(
     (i: number) => {
-      if (!started || resp) return;
+      if (!started) return;
       setCurrentIndex(i);
       document
         .getElementById(`q-${i + 1}`)
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     },
-    [started, resp]
+    [started]
   );
 
   // Handle submit
@@ -443,13 +444,24 @@ export default function PracticePage() {
         <div className="space-y-8 sm:space-y-10">
           {/* Nếu có kết quả thì show panel giống placement (trên cùng) */}
           {resp && (
-            <ResultsPanel
-              resp={resp as any}
-              timeLabel={fmtTime(resp.timeSec)}
-              onToggleDetails={() => setShowDetails((s: any) => !s)}
-              showDetails={showDetails}
-              variant="practice"
-            />
+            <>
+              <ResultsPanel
+                resp={resp as any}
+                timeLabel={fmtTime(resp.timeSec)}
+                onToggleDetails={() => setShowDetails((s: any) => !s)}
+                showDetails={showDetails}
+                variant="practice"
+              />
+              
+              {/* AI Insight Section - chỉ hiện cho premium users */}
+              {resp._id && user?.access === "premium" && (
+                <AIInsightSection
+                  attemptId={resp._id}
+                  userAccess={user.access}
+                  apiEndpoint={`/api/chat/insight/practice/${resp._id}`}
+                />
+              )}
+            </>
           )}
 
           {/* Câu hỏi */}

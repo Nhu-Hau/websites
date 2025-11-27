@@ -228,18 +228,29 @@ function ChoiceRow({
               );
             }
           } else {
-            if (isCorrect)
+            // Khi đã nộp bài (locked = true)
+            if (isCorrect && picked === correct) {
+              // Câu đúng: đáp án đúng được chọn
               cls = cn(
                 base,
                 "border-lime-600 bg-lime-600 text-white shadow-xs"
               );
-            else if (isPicked && !isCorrect)
+            } else if (isPicked && !isCorrect) {
+              // Câu sai: đáp án sai được chọn
               cls = cn(base, "border-red-600 bg-red-600 text-white shadow-xs");
-            else
+            } else if (isCorrect && !picked) {
+              // Đáp án đúng của câu không chọn - hiển thị màu đỏ
+              cls = cn(
+                base,
+                "border-red-500 bg-red-500 text-white shadow-xs"
+              );
+            } else {
+              // Các đáp án khác bình thường
               cls = cn(
                 base,
                 "border-zinc-200 bg-zinc-100 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               );
+            }
           }
 
           return (

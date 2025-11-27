@@ -14,22 +14,22 @@ type SectionLink = {
 const SOCIAL_LINKS = [
   {
     key: "twitter",
-    href: "https://twitter.com/toeicprep",
+    href: "https://web.facebook.com/hnhuwhaauu.2002/",
     Icon: Twitter,
   },
   {
     key: "youtube",
-    href: "https://www.youtube.com/@toeicprep",
+    href: "https://web.facebook.com/hnhuwhaauu.2002/",
     Icon: Youtube,
   },
   {
     key: "instagram",
-    href: "https://www.instagram.com/toeicprep",
+    href: "https://web.facebook.com/hnhuwhaauu.2002/",
     Icon: Instagram,
   },
   {
     key: "github",
-    href: "https://github.com/toeicprep",
+    href: "https://web.facebook.com/hnhuwhaauu.2002/",
     Icon: Github,
   },
 ] as const;

@@ -17,6 +17,8 @@ export type User = {
   createdAt?: string;
   updatedAt?: string;
   partLevels?: any;
+  picture?: string | null;
+  avatarUrl?: string | null;
 } | null;
 
 type AuthContextType = {

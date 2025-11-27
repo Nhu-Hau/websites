@@ -2687,6 +2687,10 @@
       "steadyProgress": "Your study pace is very steady! Keep practicing evenly and level up in your strong Parts."
     },
     "aiInsight": {
+      "premiumFeature": "Premium Feature",
+      "premiumDescription": "Detailed AI Insight analysis is only available for Premium accounts. Upgrade now to get in-depth analysis of your test results!",
+      "upgradeToUnlock": "Upgrade to Premium",
+      "upgradeNow": "Upgrade Now",
       "title": "AI Insights",
       "subtitle": "Strengths/Weaknesses Analysis & Recommended Roadmap",
       "view": "View Insights",

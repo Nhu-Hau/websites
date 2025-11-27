@@ -21,6 +21,7 @@ import rehypeHighlight from "rehype-highlight";
 import { useChat } from "@/context/ChatContext";
 import { useTranslations } from "next-intl";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { logger } from "@/lib/utils/logger";
 
 type Msg = {
   _id?: string;
@@ -177,7 +178,7 @@ function LearningInsightCard({ insightText }: { insightText: string }) {
         setGoalData(goalJson);
         setActivityData(activityJson);
       } catch (err) {
-        console.error("Failed to fetch Learning Insight data:", err);
+        logger.error("Failed to fetch Learning Insight data:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -444,7 +445,7 @@ export default function AIChatContent({
         setUnreadCount((prev) => ({ ...prev, ai: 0 }));
       }
     } catch (err) {
-      console.error("Failed to load chat history:", err);
+      logger.error("Failed to load chat history:", err);
     }
   }, [sessionId, user, open, setUnreadCount]);
 
@@ -566,7 +567,7 @@ export default function AIChatContent({
       });
 
       if (!json?.data) {
-        console.error("[ChatBox] Response không có data field:", json);
+        logger.error("[ChatBox] Response không có data field:", json);
         throw new Error(
           json?.message || "Failed to send message: No data in response"
         );
@@ -575,7 +576,7 @@ export default function AIChatContent({
       const { userMessage, assistantMessage } = json.data;
 
       if (!userMessage || !assistantMessage) {
-        console.error(
+        logger.error(
           "[ChatBox] Response thiếu userMessage hoặc assistantMessage:",
           { userMessage, assistantMessage }
         );
@@ -604,7 +605,7 @@ export default function AIChatContent({
         })
       );
     } catch (err: unknown) {
-      console.error("Failed to send message:", err);
+      logger.error("Failed to send message:", err);
       let errorMessage = t("error");
       let errorCode = "";
 
@@ -654,7 +655,7 @@ export default function AIChatContent({
         credentials: "include",
       });
     } catch (err) {
-      console.error("Failed to clear chat on server:", err);
+      logger.error("Failed to clear chat on server:", err);
     } finally {
       setMessages([]);
       setError(null);

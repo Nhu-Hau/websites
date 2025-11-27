@@ -51,7 +51,7 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
       const data = await response.json();
       setNews(data.data);
     } catch (error) {
-      console.error("Error fetching news:", error);
+      // Error handled silently - will show loading/error state
     } finally {
       setLoading(false);
     }

@@ -1335,6 +1335,11 @@
     }
   },
   "auth": {
+    "placementEncourage": {
+      "title": "Bắt đầu hành trình TOEIC của bạn!",
+      "message": "Làm Placement Test ngay để xác định trình độ và nhận lộ trình học cá nhân hóa nhé!",
+      "action": "Làm Placement Test"
+    },
     "login": {
       "title": "Đăng nhập",
       "noAccount": "Chưa có tài khoản?",

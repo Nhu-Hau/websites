@@ -1,7 +1,24 @@
 import { Suspense } from "react";
 import SavedPostsClient from "@/components/features/community/SavedPostsClient";
 import { PageMotion } from "@/components/layout/PageMotion";
+import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
+import { getTranslations } from "next-intl/server";
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const path = locale === "vi" ? "/community/saved" : `/${locale}/community/saved`;
+  
+  return genMeta({
+    title: locale === "vi" ? "Bài viết đã lưu - TOEIC PREP" : "Saved Posts - TOEIC PREP",
+    description: locale === "vi"
+      ? "Xem lại các bài viết bạn đã lưu trong cộng đồng TOEIC PREP."
+      : "View your saved posts in TOEIC PREP community.",
+    keywords: ["TOEIC", "saved posts", "bookmarks", "TOEIC PREP"],
+    canonical: generateCanonical(path, locale),
+    ogType: "website",
+    noindex: true, // User-specific pages should not be indexed
+  }, locale);
+}
 
 export default async function SavedPostsPage({
   params,

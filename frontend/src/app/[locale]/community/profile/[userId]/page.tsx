@@ -1,6 +1,29 @@
 import { cookies } from "next/headers";
 import ProfileClient from "@/components/features/community/ProfileClient";
 import { PageMotion } from "@/components/layout/PageMotion";
+import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
+import { getTranslations } from "next-intl/server";
+import { logger } from "@/lib/utils/logger";
+
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ userId: string; locale: string }> 
+}) {
+  const { userId, locale } = await params;
+  const path = locale === "vi" ? `/community/profile/${userId}` : `/${locale}/community/profile/${userId}`;
+  
+  return genMeta({
+    title: locale === "vi" ? "Hồ sơ người dùng - TOEIC PREP" : "User Profile - TOEIC PREP",
+    description: locale === "vi"
+      ? "Xem hồ sơ và bài viết của người dùng trong cộng đồng TOEIC PREP."
+      : "View user profile and posts in TOEIC PREP community.",
+    keywords: ["TOEIC", "profile", "user", "community", "TOEIC PREP"],
+    canonical: generateCanonical(path, locale),
+    ogType: "profile",
+    noindex: true, // User profile pages should not be indexed
+  }, locale);
+}
 
 export default async function ProfilePage({
   params,
@@ -39,7 +62,7 @@ export default async function ProfilePage({
       postsData = await postsRes.json();
     }
   } catch (error) {
-    console.error("[ProfilePage] Error fetching data:", error);
+    logger.error("[ProfilePage] Error fetching data:", error);
   }
 
   return (

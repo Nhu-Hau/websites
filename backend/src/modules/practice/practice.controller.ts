@@ -518,19 +518,17 @@ export async function getPracticeInactivity(req: Request, res: Response) {
       lastNudgeAt != null && now - lastNudgeAt.getTime() < COOLDOWN_MS;
 
     if (!lastPractice?.createdAt) {
-      // Chưa từng làm ⇒ coi như inactive & có thể nudge nếu không vướng cooldown
-      const shouldNudge = !nudgedRecently;
+      // Chưa từng làm practice ⇒ không hiển thị thông báo inactivity
+      // Chỉ hiển thị khi đã làm practice và quá 3 ngày không làm
       return res.json({
-        inactive: true,
-        shouldNudge,
+        inactive: false,
+        shouldNudge: false,
         reason: "no_practice_yet",
         lastPracticeAt: null,
         thresholdMs: THRESH_MS,
         cooldownMs: COOLDOWN_MS,
         lastNudgedAt: lastNudgeAt ? lastNudgeAt.toISOString() : null,
-        nextNudgeAt: nudgedRecently
-          ? new Date(lastNudgeAt!.getTime() + COOLDOWN_MS).toISOString()
-          : new Date(now).toISOString(),
+        nextNudgeAt: new Date(now + THRESH_MS).toISOString(),
         remainingMs: null,
       });
     }

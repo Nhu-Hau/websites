@@ -1,6 +1,28 @@
 import { cookies } from "next/headers";
 import FollowingListClient from "@/components/features/community/FollowingListClient";
 import { PageMotion } from "@/components/layout/PageMotion";
+import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
+import { logger } from "@/lib/utils/logger";
+
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ userId: string; locale: string }> 
+}) {
+  const { userId, locale } = await params;
+  const path = locale === "vi" ? `/community/profile/${userId}/following` : `/${locale}/community/profile/${userId}/following`;
+  
+  return genMeta({
+    title: locale === "vi" ? "Đang theo dõi - TOEIC PREP" : "Following - TOEIC PREP",
+    description: locale === "vi"
+      ? "Xem danh sách những người đang theo dõi trong cộng đồng TOEIC PREP."
+      : "View list of people being followed in TOEIC PREP community.",
+    keywords: ["TOEIC", "following", "profile", "community", "TOEIC PREP"],
+    canonical: generateCanonical(path, locale),
+    ogType: "profile",
+    noindex: true, // User-specific pages should not be indexed
+  }, locale);
+}
 
 export default async function ProfileFollowingPage({
   params,
@@ -23,7 +45,7 @@ export default async function ProfileFollowingPage({
       initialFollowing = await res.json();
     }
   } catch (error) {
-    console.error("[ProfileFollowingPage] Error:", error);
+    logger.error("[ProfileFollowingPage] Error:", error);
   }
 
   return (

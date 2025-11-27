@@ -29,6 +29,7 @@ import { toast } from "@/lib/toast";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { useTranslations, useLocale } from "next-intl";
+import { logger } from "@/lib/utils/logger";
 
 type Role = "user" | "teacher" | "admin";
 
@@ -421,13 +422,13 @@ export default function CreateStudyRoomPage() {
                 toast.info(createT("toast.autoDelete", { room: room.roomName }));
                 setTimeout(() => reload(), 1000);
               } catch (e: any) {
-                console.error("Auto-delete failed:", e);
+                logger.error("Auto-delete failed:", e);
               }
             }
           }
         }
       } catch (e) {
-        console.error("Auto-delete check failed:", e);
+        logger.error("Auto-delete check failed:", e);
       }
     }, 60000);
 
@@ -462,7 +463,7 @@ export default function CreateStudyRoomPage() {
             e?.response?.data?.message ||
             createT("toast.deleteError");
           toast.error(errorMsg);
-          console.error("Delete room error:", e);
+          logger.error("Delete room error:", e);
         } finally {
           setDeleting(null);
         }

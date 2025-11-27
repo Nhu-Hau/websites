@@ -1,5 +1,22 @@
 import ExploreClient from "@/components/features/community/ExploreClient";
 import { PageMotion } from "@/components/layout/PageMotion";
+import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
+import { getTranslations } from "next-intl/server";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const path = locale === "vi" ? "/community/explore" : `/${locale}/community/explore`;
+  
+  return genMeta({
+    title: locale === "vi" ? "Khám phá cộng đồng - TOEIC PREP" : "Explore Community - TOEIC PREP",
+    description: locale === "vi"
+      ? "Khám phá các chủ đề, hashtag và bài viết nổi bật trong cộng đồng TOEIC PREP."
+      : "Explore topics, hashtags and trending posts in TOEIC PREP community.",
+    keywords: ["TOEIC", "community", "explore", "hashtags", "topics", "TOEIC PREP"],
+    canonical: generateCanonical(path, locale),
+    ogType: "website",
+  }, locale);
+}
 
 export default function ExplorePage() {
   return (

@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import PracticeHistoryClient from "@/components/features/practice/PracticeHistory";
 import { getPracticeHistory } from "@/lib/server/api";
+import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
+import { getTranslations } from "next-intl/server";
 
 async function PracticeHistoryData({
   searchParams,
@@ -37,10 +39,28 @@ async function PracticeHistoryData({
   );
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const path = locale === "vi" ? "/practice/history" : `/${locale}/practice/history`;
+  
+  return genMeta({
+    title: locale === "vi" ? "Lịch sử luyện tập - TOEIC PREP" : "Practice History - TOEIC PREP",
+    description: locale === "vi"
+      ? "Xem lại lịch sử các bài luyện tập TOEIC bạn đã làm và theo dõi tiến độ học tập."
+      : "View your TOEIC practice history and track your learning progress.",
+    keywords: ["TOEIC", "practice history", "test results", "progress", "TOEIC PREP"],
+    canonical: generateCanonical(path, locale),
+    ogType: "website",
+    noindex: true, // User-specific pages should not be indexed
+  }, locale);
+}
+
 export default function Page({
   searchParams,
+  params,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  params: Promise<{ locale: string }>;
 }) {
   return (
     <div className="relative min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-hidden">

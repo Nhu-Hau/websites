@@ -1,8 +1,31 @@
 import { cookies } from "next/headers";
 import FollowingClient from "@/components/features/community/FollowingClient";
 import { PageMotion } from "@/components/layout/PageMotion";
+import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
+import { getTranslations } from "next-intl/server";
+import { logger } from "@/lib/utils/logger";
 
-export default async function FollowingPage() {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const path = locale === "vi" ? "/community/following" : `/${locale}/community/following`;
+  
+  return genMeta({
+    title: locale === "vi" ? "Bài viết đang theo dõi - TOEIC PREP" : "Following Posts - TOEIC PREP",
+    description: locale === "vi"
+      ? "Xem các bài viết từ những người bạn đang theo dõi trong cộng đồng TOEIC PREP."
+      : "View posts from people you follow in TOEIC PREP community.",
+    keywords: ["TOEIC", "following", "community", "feed", "TOEIC PREP"],
+    canonical: generateCanonical(path, locale),
+    ogType: "website",
+    noindex: true, // User-specific pages should not be indexed
+  }, locale);
+}
+
+export default async function FollowingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
@@ -18,7 +41,7 @@ export default async function FollowingPage() {
       initialPosts = await res.json();
     }
   } catch (error) {
-    console.error("[FollowingPage] Error:", error);
+    logger.error("[FollowingPage] Error:", error);
   }
 
   return (

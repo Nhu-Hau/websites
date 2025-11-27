@@ -421,9 +421,7 @@ function CardSticky(props: BaseProps) {
                       className="w-full h-auto object-contain"
                       priority={false}
                       onError={() => {
-                        if (process.env.NODE_ENV === "development") {
-                          console.error("Image load error:", url);
-                        }
+                        // Image load error - silently fail, fallback will show
                       }}
                     />
                   </div>

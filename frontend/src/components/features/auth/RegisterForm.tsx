@@ -15,15 +15,19 @@ import { usePasswordToggle } from "@/hooks/auth/usePasswordToggle";
 import { useAuthSubmit } from "@/hooks/auth/useAuthSubmit";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
 import { useTranslations } from "next-intl";
+import { logger } from "@/lib/utils/logger";
+import { useNotifications } from "@/hooks/common/useNotifications";
 
 const RESEND_COOLDOWN = 30; // giây
 const RESEND_STORAGE_KEY = "auth:resend:expiresAt";
 
 export default function RegisterForm() {
   const t = useTranslations("auth.register");
+  const placementT = useTranslations("auth.placementEncourage");
   const basePrefix = useBasePrefix();
   const [gLoading, setGLoading] = useState(false);
   const { login } = useAuth();
+  const { pushLocal } = useNotifications();
 
   const pw = usePasswordToggle(false);
   const cpw = usePasswordToggle(false);
@@ -32,9 +36,40 @@ export default function RegisterForm() {
     kind: "register",
     url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/register`,
     t: (key) => t(key),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(t("success"));
       if (data.user) login(data.user);
+      
+      // Chỉ hiển thị cho người dùng mới đăng ký (user vừa được tạo)
+      // Kiểm tra xem user có createdAt gần đây không (trong vòng 1 phút)
+      const isNewUser = data.user?.createdAt 
+        ? (Date.now() - new Date(data.user.createdAt).getTime()) < 60000
+        : false;
+      
+      if (isNewUser) {
+        // Kiểm tra xem user đã có placement attempt chưa
+        try {
+          const res = await fetch("/api/placement/attempts?limit=1", {
+            credentials: "include",
+            cache: "no-store",
+          });
+          if (res.ok) {
+            const json = await res.json().catch(() => ({}));
+            const hasPlacement = Array.isArray(json?.items) && json.items.length > 0;
+            if (!hasPlacement) {
+              // Lưu vào sessionStorage để hiển thị sau khi redirect
+              try {
+                sessionStorage.setItem("showPlacementEncourage", "true");
+              } catch {
+                // Ignore if sessionStorage not available
+              }
+            }
+          }
+        } catch {
+          // Ignore errors
+        }
+      }
+      
       // Dùng window.location để đảm bảo full reload với auth state mới
       window.location.href = basePrefix || "/";
     },
@@ -130,7 +165,7 @@ export default function RegisterForm() {
       }
     } catch (e) {
       toast.error(t("verification.sendError"));
-      console.error("[send-verification-code]", e);
+      logger.error("[send-verification-code]", e);
     } finally {
       setSendingCode(false);
     }

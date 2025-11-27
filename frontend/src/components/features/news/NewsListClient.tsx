@@ -304,7 +304,7 @@ export function NewsListClient() {
       setNews(data.data || []);
       setTotalPages(data.pagination?.totalPages || 1);
     } catch (error) {
-      console.error("Error fetching news:", error);
+      // Error handled silently - will show loading/error state
     } finally {
       setLoading(false);
     }

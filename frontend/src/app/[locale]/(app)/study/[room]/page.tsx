@@ -6,7 +6,9 @@ import { PageMotion } from "@/components/layout/PageMotion";
 export const dynamic = 'force-dynamic';
 
 // Dynamic import client component nặng để tối ưu bundle size
-const StudyRoomPage = dynamicImport(() => import("@/components/features/study/StudyRoomPage"));
+const StudyRoomPage = dynamicImport(() => import("@/components/features/study/StudyRoomPage"), {
+  loading: () => <div className="flex items-center justify-center min-h-screen">Đang tải...</div>,
+});
 
 export default function StudyRoomWrapper() {
   return (

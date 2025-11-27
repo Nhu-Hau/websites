@@ -142,7 +142,7 @@ export function AIInsightSection({
         }
       }
     } catch (e) {
-      console.error(e);
+      // Error already handled via toast
       if (showErrors) {
         toast.error(t("loadError"));
       }

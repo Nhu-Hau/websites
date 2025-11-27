@@ -32,6 +32,7 @@ import { toast } from "@/lib/toast";
 import { useConfirmModal } from "@/components/common/ConfirmModal";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { logger } from "@/lib/utils/logger";
 
 type Role = "student" | "teacher" | "admin";
 type Me = { id: string; name: string; role: Role };
@@ -345,7 +346,7 @@ export default function ChatPanel({
         return next;
       });
     } catch (e) {
-      console.error("LiveKit send error:", e);
+      logger.error("LiveKit send error:", e);
     }
 
     try {
@@ -467,11 +468,11 @@ export default function ChatPanel({
           });
           toast.success(t("sentDoc"));
         } catch (err) {
-          console.error("Send doc message failed:", err);
+          logger.error("Send doc message failed:", err);
           toast.error(t("sendError"));
         }
       } catch (err) {
-        console.error("Upload error:", err);
+        logger.error("Upload error:", err);
         toast.error(t("uploadError"));
       } finally {
         uploadingRef.current = false;
@@ -571,7 +572,7 @@ export default function ChatPanel({
         setEditingId(null);
         setEditText("");
       } catch (e) {
-        console.error("Edit comment error:", e);
+        logger.error("Edit comment error:", e);
         toast.error(t("editError"));
       }
     },
@@ -633,7 +634,7 @@ export default function ChatPanel({
             toast.success(t("deleted"));
             setMenuOpenId(null);
           } catch (e) {
-            console.error("Delete comment error:", e);
+            logger.error("Delete comment error:", e);
             toast.error(t("deleteError"));
         }
       }

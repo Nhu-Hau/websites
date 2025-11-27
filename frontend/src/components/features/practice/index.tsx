@@ -237,7 +237,7 @@ export default function PracticePage() {
           setIsRetake(false);
         }
       } catch (e) {
-        console.error("Failed to check retake status", e);
+        // Silently fail - not critical for UX
         if (mounted) setIsRetake(false);
       }
     })();

@@ -1075,6 +1075,11 @@
     }
   },
   "auth": {
+    "placementEncourage": {
+      "title": "Start your TOEIC journey!",
+      "message": "Take the Placement Test now to assess your level and get a personalized learning roadmap!",
+      "action": "Take Placement Test"
+    },
     "login": {
       "title": "Login",
       "noAccount": "No account?",

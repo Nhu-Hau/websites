@@ -32,6 +32,7 @@ import ActionBar from "./ActionBar";
 import CommentItem from "./CommentItem";
 import NewPostForm from "./NewPostForm";
 import { useLocale, useTranslations } from "next-intl";
+import { logger } from "@/lib/utils/logger";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -309,7 +310,7 @@ export default function PostDetail({ postId }: { postId: string }) {
       formData.append("file", file, file.name);
 
       try {
-        console.log("[handleFileUpload] Uploading file:", {
+        logger.log("[handleFileUpload] Uploading file:", {
           name: file.name,
           type: file.type,
           size: file.size,
@@ -323,13 +324,13 @@ export default function PostDetail({ postId }: { postId: string }) {
 
         if (!res.ok) {
           const errorText = await res.text();
-          console.error("[handleFileUpload] Upload failed:", res.status, errorText);
+          logger.error("[handleFileUpload] Upload failed:", res.status, errorText);
           toast.error(detailT("commentInput.uploadError") || "Upload failed");
           continue;
         }
 
         const data = await res.json();
-        console.log("[handleFileUpload] Upload success:", data);
+        logger.log("[handleFileUpload] Upload success:", data);
 
         const attachment = {
           type: data.type,
@@ -344,7 +345,7 @@ export default function PostDetail({ postId }: { postId: string }) {
           setCmtAttaches((prev) => [...prev, attachment]);
         }
       } catch (error) {
-        console.error("[handleFileUpload] ERROR:", error);
+        logger.error("[handleFileUpload] ERROR:", error);
         toast.error(detailT("commentInput.uploadError") || "Upload failed");
       }
     }

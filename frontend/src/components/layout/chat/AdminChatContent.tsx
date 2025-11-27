@@ -17,6 +17,7 @@ import { postJson } from "@/lib/api/client";
 import { useSocket } from "@/hooks/common/useSocket";
 import { useChat } from "@/context/ChatContext";
 import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { logger } from "@/lib/utils/logger";
 
 type Msg = {
   _id?: string;
@@ -151,7 +152,7 @@ export default function AdminChatContent({
       );
       setMessages(unique);
     } catch (err) {
-      console.error("Failed to load admin chat history:", err);
+      logger.error("Failed to load admin chat history:", err);
     }
   }, [sessionId, user]);
 
@@ -177,7 +178,7 @@ export default function AdminChatContent({
         : 0;
       setUnreadCount((prev) => ({ ...prev, admin: total }));
     } catch (err) {
-      console.error("Failed to load unread count:", err);
+      logger.error("Failed to load unread count:", err);
     }
   }, [user, setUnreadCount]);
 
@@ -227,7 +228,7 @@ export default function AdminChatContent({
     };
 
     const onError = (data: any) => {
-      console.error("Socket error:", data?.message);
+      logger.error("Socket error:", data?.message);
       setError(data?.message || "Socket error");
     };
 
@@ -288,7 +289,7 @@ export default function AdminChatContent({
         sessionId,
       });
       if (!json?.data?.message) {
-        console.error("[AdminChatBox] Response không có data.message:", json);
+        logger.error("[AdminChatBox] Response không có data.message:", json);
         throw new Error(
           json?.message || "Failed to send message: No data in response"
         );
@@ -318,7 +319,7 @@ export default function AdminChatContent({
           .filter((msg, i, arr) => i === arr.findIndex((x) => x.id === msg.id))
       );
     } catch (err: any) {
-      console.error("Failed to send message:", err);
+      logger.error("Failed to send message:", err);
       const errorMessage = err?.message || "Có lỗi xảy ra khi gửi tin nhắn";
       const errorCode = err?.code || "";
       const errorStatus = err?.status || 0;
@@ -373,7 +374,7 @@ export default function AdminChatContent({
         credentials: "include",
       });
     } catch (err) {
-      console.error("Failed to clear admin chat on server:", err);
+      logger.error("Failed to clear admin chat on server:", err);
     } finally {
       setMessages([]);
       setError(null);

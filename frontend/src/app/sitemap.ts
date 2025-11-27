@@ -12,8 +12,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/vocabulary",
     "/news",
     "/community",
+    "/community/explore",
+    "/community/trending",
+    "/community/groups",
     "/progress",
-    "/account",
+    "/placement",
+    "/pricing",
+    "/study",
+    "/study/create",
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = [];

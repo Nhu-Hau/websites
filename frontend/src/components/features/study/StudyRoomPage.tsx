@@ -19,6 +19,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/lib/toast";
+import { logger } from "@/lib/utils/logger";
 import {
   Users,
   Video,
@@ -231,7 +232,7 @@ function HostControls() {
         }
       }
     } catch (e: any) {
-      console.error("Screen share error:", e);
+      logger.error("Screen share error:", e);
       toast.error(t("shareScreenError"), { description: e?.message });
     }
   }, [room, localParticipant, isSharing, screenTrack]);
@@ -313,7 +314,7 @@ function ParticipantsList({ roomName }: { roomName: string }) {
             toast.success(t("kickSuccess", { name: userName }));
           } catch (e: any) {
             toast.error(t("kickFailed"));
-            console.error("Failed to kick:", e);
+            logger.error("Failed to kick:", e);
           }
         }
       );
@@ -474,7 +475,7 @@ function HeartReaction() {
       // Hiển thị icon toàn màn hình
       setShowFullscreen(true);
     } catch (e) {
-      console.error("Failed to send heart:", e);
+      logger.error("Failed to send heart:", e);
     }
   }, [room]);
 
@@ -649,7 +650,7 @@ function LikeReaction() {
       // Hiển thị icon toàn màn hình
       setShowFullscreen(true);
     } catch (e) {
-      console.error("Failed to send like:", e);
+      logger.error("Failed to send like:", e);
     }
   }, [room]);
 

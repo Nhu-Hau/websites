@@ -143,7 +143,7 @@ export default function Footer() {
                   key={key}
                   href={href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   aria-label={t("socials.aria", {
                     network: t(`socials.${key}`),
                   })}

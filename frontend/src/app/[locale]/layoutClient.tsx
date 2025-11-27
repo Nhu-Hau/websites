@@ -16,6 +16,62 @@ import { useMobileAvatarSheet } from "@/context/MobileAvatarSheetContext";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { useIsMobile } from "@/hooks/common/useIsMobile";
+import { useNotifications } from "@/hooks/common/useNotifications";
+import { useBasePrefix } from "@/hooks/routing/useBasePrefix";
+import { useEffect } from "react";
+
+// Component để check và hiển thị placement encourage notification cho user mới
+function PlacementEncourageWatcher() {
+  const { pushLocal } = useNotifications();
+  const basePrefix = useBasePrefix();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    // Chỉ check khi đã có user
+    if (!user) return;
+
+    // Check sessionStorage
+    try {
+      const shouldShow = sessionStorage.getItem("showPlacementEncourage");
+      if (shouldShow === "true") {
+        // Xóa flag ngay để không hiển thị lại
+        sessionStorage.removeItem("showPlacementEncourage");
+
+        // Kiểm tra xem user đã có placement attempt chưa
+        fetch("/api/placement/attempts?limit=1", {
+          credentials: "include",
+          cache: "no-store",
+        })
+          .then((res) => {
+            if (res.ok) {
+              return res.json().catch(() => ({}));
+            }
+            return null;
+          })
+          .then((json) => {
+            if (json) {
+              const hasPlacement = Array.isArray(json?.items) && json.items.length > 0;
+              if (!hasPlacement) {
+                // Hiển thị corner toast và notification
+                pushLocal({
+                  key: "auth.placementEncourage.message",
+                  titleKey: "auth.placementEncourage.title",
+                  link: `${basePrefix}/placement`,
+                });
+              }
+            }
+          })
+          .catch(() => {
+            // Ignore errors
+          });
+      }
+    } catch {
+      // Ignore if sessionStorage not available
+    }
+  }, [user, pushLocal, basePrefix]);
+
+  return null;
+}
 
 export default function LayoutClient({
   children,
@@ -139,6 +195,9 @@ export default function LayoutClient({
         !hideFooterOnly &&
         !hideFooterOnCommunity &&
         !isStudyRoom && <Footer />}
+
+      {/* Watcher để hiển thị placement encourage cho user mới */}
+      <PlacementEncourageWatcher />
     </SnackbarProvider>
   );
 }

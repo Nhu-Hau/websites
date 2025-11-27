@@ -1,6 +1,31 @@
 import { cookies } from "next/headers";
 import HashtagClient from "@/components/features/community/HashtagClient";
 import { PageMotion } from "@/components/layout/PageMotion";
+import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
+import { getTranslations } from "next-intl/server";
+import { logger } from "@/lib/utils/logger";
+
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ tag: string; locale: string }> 
+}) {
+  const { tag, locale } = await params;
+  const decodedTag = decodeURIComponent(tag);
+  const path = locale === "vi" ? `/community/hashtag/${tag}` : `/${locale}/community/hashtag/${tag}`;
+  
+  return genMeta({
+    title: locale === "vi" 
+      ? `#${decodedTag} - TOEIC PREP` 
+      : `#${decodedTag} - TOEIC PREP`,
+    description: locale === "vi"
+      ? `Xem các bài viết về #${decodedTag} trong cộng đồng TOEIC PREP.`
+      : `View posts about #${decodedTag} in TOEIC PREP community.`,
+    keywords: ["TOEIC", "hashtag", decodedTag, "community", "TOEIC PREP"],
+    canonical: generateCanonical(path, locale),
+    ogType: "website",
+  }, locale);
+}
 
 export default async function HashtagPage({
   params,
@@ -23,7 +48,7 @@ export default async function HashtagPage({
       initialData = await res.json();
     }
   } catch (error) {
-    console.error("[HashtagPage] Error:", error);
+    logger.error("[HashtagPage] Error:", error);
   }
 
   return (

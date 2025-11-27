@@ -343,10 +343,17 @@ export default function Account() {
               </div>
             )}
             <button
-              onClick={() => fileRef.current?.click()}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (fileRef.current && !uploading) {
+                  fileRef.current.click();
+                }
+              }}
               disabled={uploading}
-              className="absolute bottom-0 right-0 p-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-500 shadow"
+              className="absolute bottom-0 right-0 p-2 rounded-full bg-sky-600 text-white hover:bg-sky-500 shadow disabled:opacity-50 disabled:cursor-not-allowed"
               title={t("profile.changeAvatar")}
+              type="button"
             >
               <Camera className="w-4 h-4" />
             </button>
@@ -354,12 +361,18 @@ export default function Account() {
               ref={fileRef}
               type="file"
               accept="image/*,image/heic,image/heif,.heic,.heif"
-              hidden
+              className="hidden"
               onChange={(e) => {
                 const files = e.currentTarget.files;
-                // iOS fix: Reset value to allow selecting same file again
+                if (files && files[0]) {
+                  onPickAvatar(files);
+                }
+                // Reset value to allow selecting same file again
                 e.currentTarget.value = "";
-                onPickAvatar(files);
+              }}
+              onClick={(e) => {
+                // Allow click to propagate
+                e.stopPropagation();
               }}
             />
           </div>

@@ -514,7 +514,7 @@ export default function Pricing() {
                   value={code79}
                   onChange={(e) => setCode79(e.target.value.toUpperCase())}
                   placeholder={t("promo.placeholder")}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#4063bb] focus:outline-none focus:ring-2 focus:ring-[#4063bb]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#4063bb] focus:outline-none focus:ring-2 focus:ring-[#4063bb]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 placeholder:text-xs"
                   disabled={isPremium}
                 />
                 {code79 && !checkingPlan && (
@@ -665,7 +665,7 @@ export default function Pricing() {
                   value={code159}
                   onChange={(e) => setCode159(e.target.value.toUpperCase())}
                   placeholder={t("promo.placeholder")}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#4063bb] focus:outline-none focus:ring-2 focus:ring-[#4063bb]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:border-[#4063bb] focus:outline-none focus:ring-2 focus:ring-[#4063bb]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 placeholder:text-xs"
                   disabled={isPremium}
                 />
                 {code159 && !checkingPlan && (

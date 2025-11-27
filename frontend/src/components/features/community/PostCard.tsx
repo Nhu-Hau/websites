@@ -24,36 +24,49 @@ type Props = {
   currentUserId?: string;
 };
 
+// Blur placeholder for images
+const BLUR_DATA_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAGgwJ/lzvYswAAAABJRU5ErkJggg==";
+
 function Avatar({
   name,
   url,
   alt,
   fallback,
+  priority = false,
 }: {
   name?: string;
   url?: string;
   alt: string;
   fallback: string;
+  priority?: boolean;
 }) {
   const displayName = name || fallback;
-  if (url) {
+  const [imageError, setImageError] = React.useState(false);
+  
+  if (url && !imageError) {
     const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
     return (
-      <div className="relative h-12 w-12 overflow-hidden rounded-full ring-2 ring-zinc-200 dark:ring-zinc-700">
+      <div className="relative h-12 w-12 overflow-hidden rounded-full ring-2 ring-zinc-200 dark:ring-zinc-700 flex-shrink-0">
         <Image
           src={fullUrl}
           alt={name || alt}
-          fill
+          width={48}
+          height={48}
           className="object-cover"
           sizes="48px"
-          unoptimized
-          priority={false}
+          priority={priority}
+          loading={priority ? undefined : "lazy"}
+          decoding="async"
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
+          onError={() => setImageError(true)}
         />
       </div>
     );
   }
+  // Fallback to initial letter
   return (
-    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-400 text-white text-sm font-semibold ring-2 ring-zinc-200 dark:ring-zinc-700">
+    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-sky-600 text-white text-sm font-semibold ring-2 ring-zinc-200 dark:ring-zinc-700 flex-shrink-0">
       {(displayName?.[0] ?? "?").toUpperCase()}
     </div>
   );
@@ -93,12 +106,8 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
   );
 
   const getInitialLiked = () => {
-    if (typeof post.liked === "boolean") return post.liked;
-    if (typeof window !== "undefined") {
-      const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "[]");
-      return likedPosts.includes(post._id);
-    }
-    return false;
+    // Always use server-side liked status, ignore localStorage
+    return typeof post.liked === "boolean" ? post.liked : false;
   };
 
   const getInitialSaved = () => {
@@ -115,49 +124,16 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
   );
 
   React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "[]");
-      const isLikedInStorage = likedPosts.includes(post._id);
-
-      if (isLikedInStorage) {
-        setLikedState(true);
-        if (typeof post.liked === "boolean" && post.liked) {
-          if (!likedPosts.includes(post._id)) {
-            likedPosts.push(post._id);
-            localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
-          }
-        }
-      } else {
-        if (typeof post.liked === "boolean") {
-          setLikedState(post.liked);
-          if (post.liked && !likedPosts.includes(post._id)) {
-            likedPosts.push(post._id);
-            localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
-          } else if (!post.liked && likedPosts.includes(post._id)) {
-            const filtered = likedPosts.filter((id: string) => id !== post._id);
-            localStorage.setItem("likedPosts", JSON.stringify(filtered));
-          }
-        } else {
-          setLikedState(false);
-        }
-      }
-
-      if (typeof post.saved === "boolean") {
-        setSavedState(post.saved);
-      } else {
-        setSavedState(false);
-      }
+    // Always use server-side data, ignore localStorage for liked state
+    if (typeof post.liked === "boolean") {
+      setLikedState(post.liked);
     } else {
-      if (typeof post.liked === "boolean") {
-        setLikedState(post.liked);
-      } else {
-        setLikedState(false);
-      }
-      if (typeof post.saved === "boolean") {
-        setSavedState(post.saved);
-      } else {
-        setSavedState(false);
-      }
+      setLikedState(false);
+    }
+    if (typeof post.saved === "boolean") {
+      setSavedState(post.saved);
+    } else {
+      setSavedState(false);
     }
     if (typeof post.likesCount === "number") {
       setLikesCountState(post.likesCount);
@@ -387,6 +363,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
                 url={post.user?.picture}
                 alt={t("avatarAlt")}
                 fallback={t("fallbackUser")}
+                priority={true}
               />
             </button>
             <div className="flex-1 min-w-0">
@@ -492,7 +469,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
               )}
               {originalPost.attachments &&
                 originalPost.attachments.length > 0 && (
-                  <MediaGallery attachments={originalPost.attachments} />
+                  <MediaGallery attachments={originalPost.attachments} priorityFirstImage={false} />
                 )}
             </div>
           </div>
@@ -520,13 +497,13 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
         )}
 
         {/* Media Gallery (only show if not a repost) */}
-        {!post.repostedFrom &&
+          {!post.repostedFrom &&
           post.attachments &&
           Array.isArray(post.attachments) &&
           post.attachments.length > 0 &&
           post.attachments.some((att) => att && att.url) && (
             <div className="px-5 pb-4">
-              <MediaGallery attachments={post.attachments.filter((att) => att && att.url)} />
+              <MediaGallery attachments={post.attachments.filter((att) => att && att.url)} priorityFirstImage={true} />
             </div>
           )}
 
@@ -545,23 +522,7 @@ function PostCardComponent({ post, apiBase, onChanged, currentUserId }: Props) {
             onLikeChange={(liked, count) => {
               setLikedState(liked);
               setLikesCountState(count);
-              if (typeof window !== "undefined") {
-                const likedPosts = JSON.parse(
-                  localStorage.getItem("likedPosts") || "[]"
-                );
-                if (liked && !likedPosts.includes(post._id)) {
-                  likedPosts.push(post._id);
-                  localStorage.setItem(
-                    "likedPosts",
-                    JSON.stringify(likedPosts)
-                  );
-                } else if (!liked && likedPosts.includes(post._id)) {
-                  const filtered = likedPosts.filter(
-                    (id: string) => id !== post._id
-                  );
-                  localStorage.setItem("likedPosts", JSON.stringify(filtered));
-                }
-              }
+              // Don't use localStorage - rely on server state only
               if (typeof post === "object") {
                 (post as any).liked = liked;
                 (post as any).likesCount = count;

@@ -45,10 +45,6 @@ export function MenuNav(): NavItemType[] {
       label: t("learn.label"),
       children: [
         {
-          label: t("learn.community"),
-          href: `${basePrefix}/community`,
-        },
-        {
           label: t("learn.vocabulary"),
           href: `${basePrefix}/vocabulary`,
         },
@@ -58,6 +54,7 @@ export function MenuNav(): NavItemType[] {
         },
       ],
     },
+    { label: t("community.label"), href: `${basePrefix}/community` },
     { label: t("dashboard.label"), href: `${basePrefix}/dashboard` },
   ];
 

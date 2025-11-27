@@ -161,7 +161,7 @@
       },
       "promo": {
         "applied": "Code applied: {code}",
-        "placeholder": "Enter a promo code (optional)",
+        "placeholder": "Enter a promo code",
         "apply": "Apply",
         "priceAfter": "Price after discount: {price}"
       },
@@ -365,6 +365,9 @@
       "community": "Community",
       "vocabulary": "Vocabulary",
       "news": "Study with news"
+    },
+    "community": {
+      "label": "Community"
     },
     "dashboard": {
       "label": "Dashboard"
@@ -589,7 +592,8 @@
       },
       "aria": {
         "edit": "Edit comment",
-        "delete": "Delete comment"
+        "delete": "Delete comment",
+        "reply": "Reply to comment"
       }
     },
     "postDetail": {
@@ -607,7 +611,10 @@
         "removeAttachmentAria": "Remove attachment",
         "placeholder": "Write a comment...",
         "attachAria": "Attach file",
-        "submitAria": "Post comment"
+        "submitAria": "Post comment",
+        "replyingTo": "Replying to comment",
+        "cancel": "Cancel",
+        "reply": "Reply"
       },
       "loading": "Loading post...",
       "edit": {

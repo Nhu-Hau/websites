@@ -20,7 +20,7 @@ type InactResp = {
 };
 
 const KEY_PREFIX = "practice:inactivity:nudged:";
-const POLL_MS = 15_000; // poll nhẹ, chỉ đổi env là test được
+const POLL_MS = 5 * 60 * 1000; // Poll mỗi 5 phút thay vì 15 giây để giảm spam
 const CREATE_DB_NOTIFICATION = true; // muốn tắt lưu DB thì set false
 const INACTIVITY_TITLE_KEY = "Practice.inactivity.title";
 const INACTIVITY_MESSAGE_KEY = "Practice.inactivity.message";
@@ -126,16 +126,31 @@ export default function PracticeInactivityWatcher() {
     if (startedRef.current) return;
     startedRef.current = true;
 
-    // check ngay khi mount
+    // check ngay khi mount (chỉ một lần)
     check();
 
-    // poll định kỳ
+    // poll định kỳ (mỗi 5 phút)
     timerRef.current = window.setInterval(check, POLL_MS) as unknown as number;
 
-    // re-check khi tab quay lại
-    const onFocus = () => check();
+    // re-check khi tab quay lại (nhưng chỉ nếu đã qua một khoảng thời gian)
+    let lastCheckTime = Date.now();
+    const onFocus = () => {
+      const now = Date.now();
+      // Chỉ check lại nếu đã qua ít nhất 1 phút từ lần check cuối
+      if (now - lastCheckTime > 60 * 1000) {
+        lastCheckTime = now;
+        check();
+      }
+    };
     const onVis = () => {
-      if (document.visibilityState === "visible") check();
+      if (document.visibilityState === "visible") {
+        const now = Date.now();
+        // Chỉ check lại nếu đã qua ít nhất 1 phút từ lần check cuối
+        if (now - lastCheckTime > 60 * 1000) {
+          lastCheckTime = now;
+          check();
+        }
+      }
     };
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onVis);

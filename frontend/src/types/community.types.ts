@@ -60,6 +60,7 @@ export type CommunityComment = {
   _id: string;
   postId: string;
   userId: string;
+  parentCommentId?: string; // For nested replies
   user?: UserLite;
   content: string;
   mentions?: string[];
@@ -72,6 +73,7 @@ export type CommunityComment = {
     count: number;
     userReacted?: boolean;
   }[];
+  replies?: CommunityComment[]; // Nested replies
   createdAt: string;
   updatedAt: string;
 };

@@ -356,9 +356,10 @@ export async function getPost(req: Request, res: Response) {
     );
     const skip = (page - 1) * limit;
 
-    const [comments, totalCmt] = await Promise.all([
+    // Get top-level comments (no parent) and their replies
+    const [topLevelComments, totalCmt] = await Promise.all([
       CommunityComment.aggregate([
-        { $match: { postId: oid(postId) } },
+        { $match: { postId: oid(postId), parentCommentId: null } },
         { $sort: { createdAt: 1 } },
         { $skip: skip },
         { $limit: limit },
@@ -379,8 +380,47 @@ export async function getPost(req: Request, res: Response) {
           },
         },
       ]),
-      CommunityComment.countDocuments({ postId: oid(postId) }),
+      CommunityComment.countDocuments({ postId: oid(postId), parentCommentId: null }),
     ]);
+
+    // Get replies for each top-level comment
+    const commentIds = topLevelComments.map((c: any) => c._id);
+    const replies = await CommunityComment.aggregate([
+      { $match: { postId: oid(postId), parentCommentId: { $in: commentIds } } },
+      { $sort: { createdAt: 1 } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $addFields: { user: { $first: "$user" } } },
+      {
+        $project: {
+          "user.password": 0,
+          "user.email": 0,
+          "user.partLevels": 0,
+        },
+      },
+    ]);
+
+    // Group replies by parent comment
+    const repliesByParent = new Map();
+    replies.forEach((reply: any) => {
+      const parentId = String(reply.parentCommentId);
+      if (!repliesByParent.has(parentId)) {
+        repliesByParent.set(parentId, []);
+      }
+      repliesByParent.get(parentId).push(reply);
+    });
+
+    // Attach replies to their parent comments
+    const comments = topLevelComments.map((comment: any) => ({
+      ...comment,
+      replies: repliesByParent.get(String(comment._id)) || [],
+    }));
 
     const liked =
       userId && Array.isArray(postAgg.likedBy)
@@ -749,9 +789,10 @@ export async function addComment(req: Request, res: Response) {
     const post = await CommunityPost.findById(postId);
     if (!post) return res.status(404).json({ message: "Post không tồn tại" });
 
-    let { content, attachments } = (req.body || {}) as {
+    let { content, attachments, parentCommentId } = (req.body || {}) as {
       content?: string;
       attachments?: any[];
+      parentCommentId?: string;
     };
 
     const text = (content ?? "").trim();
@@ -762,6 +803,23 @@ export async function addComment(req: Request, res: Response) {
       return res
         .status(400)
         .json({ message: "Vui lòng nhập nội dung hoặc đính kèm tệp" });
+    }
+
+    // Validate parentCommentId if provided
+    let validParentId = null;
+    if (parentCommentId) {
+      if (!mongoose.isValidObjectId(parentCommentId)) {
+        return res.status(400).json({ message: "parentCommentId không hợp lệ" });
+      }
+      const parentComment = await CommunityComment.findById(parentCommentId);
+      if (!parentComment) {
+        return res.status(404).json({ message: "Comment cha không tồn tại" });
+      }
+      // Ensure parent comment belongs to the same post
+      if (String(parentComment.postId) !== postId) {
+        return res.status(400).json({ message: "Comment cha không thuộc bài viết này" });
+      }
+      validParentId = oid(parentCommentId);
     }
 
     const norm = (a: any): any => ({
@@ -784,6 +842,7 @@ export async function addComment(req: Request, res: Response) {
     const comment = await CommunityComment.create({
       postId: oid(postId),
       userId: oid(userId),
+      parentCommentId: validParentId,
       content: text,
       attachments: safeFiles.slice(0, 8),
     });

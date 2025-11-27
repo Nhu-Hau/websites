@@ -13,6 +13,7 @@ export interface IAttachment {
 export interface ICommunityComment extends Document {
   postId: Types.ObjectId;
   userId: Types.ObjectId;
+  parentCommentId?: Types.ObjectId; // For nested replies (like Facebook)
   content: string;           // <-- KHÔNG required
   mentions: Types.ObjectId[]; // User IDs mentioned in content
   attachments: IAttachment[];
@@ -39,6 +40,7 @@ const CommunityCommentSchema = new Schema<ICommunityComment>(
   {
     postId: { type: Schema.Types.ObjectId, ref: "CommunityPost", required: true, index: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    parentCommentId: { type: Schema.Types.ObjectId, ref: "CommunityComment", default: null, index: true }, // For nested replies
     content: { type: String, trim: true, default: "" },  // <-- KHÔNG required
     mentions: { type: [Schema.Types.ObjectId], ref: "User", default: [], index: true },
     attachments: { type: [AttachmentSchema], default: [] },
@@ -49,6 +51,7 @@ const CommunityCommentSchema = new Schema<ICommunityComment>(
 );
 
 CommunityCommentSchema.index({ postId: 1, createdAt: -1 });
+CommunityCommentSchema.index({ parentCommentId: 1, createdAt: 1 }); // For efficient reply queries
 
 export const CommunityComment =
   mongoose.models.CommunityComment ||

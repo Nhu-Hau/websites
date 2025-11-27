@@ -44,6 +44,10 @@ export function clearUserData() {
       else if (key === "user:levels:changed") {
         keysToRemove.push(key);
       }
+      // Remove liked posts (user-specific)
+      else if (key === "likedPosts") {
+        keysToRemove.push(key);
+      }
     }
 
     // Remove all identified keys

@@ -161,7 +161,7 @@
       },
       "promo": {
         "applied": "Đã áp dụng mã: {code}",
-        "placeholder": "Nhập mã khuyến mãi (nếu có)",
+        "placeholder": "Nhập mã khuyến mãi",
         "apply": "Áp dụng",
         "priceAfter": "Giá sau giảm: {price}"
       },
@@ -365,6 +365,9 @@
       "community": "Cộng đồng",
       "vocabulary": "Học từ vựng",
       "news": "Học qua tin tức"
+    },
+    "community": {
+      "label": "Cộng đồng"
     },
     "dashboard": {
       "label": "Tổng quan",
@@ -856,7 +859,8 @@
       },
       "aria": {
         "edit": "Chỉnh sửa bình luận",
-        "delete": "Xóa bình luận"
+        "delete": "Xóa bình luận",
+        "reply": "Trả lời bình luận"
       }
     },
     "postDetail": {
@@ -874,7 +878,10 @@
         "removeAttachmentAria": "Xóa đính kèm",
         "placeholder": "Viết bình luận...",
         "attachAria": "Đính kèm tệp",
-        "submitAria": "Đăng bình luận"
+        "submitAria": "Đăng bình luận",
+        "replyingTo": "Đang trả lời bình luận",
+        "cancel": "Hủy",
+        "reply": "Trả lời"
       },
       "loading": "Đang tải bài viết...",
       "edit": {

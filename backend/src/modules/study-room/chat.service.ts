@@ -936,6 +936,14 @@ private isEnglishRelated(messages: Partial<IChatMessage>[]) {
         return;
       }
 
+      // CHỈ gửi Learning Insight cho user premium
+      if (user.access !== "premium") {
+        console.log(
+          `[ChatService] Skipping Learning Insight for free user: ${userId}`
+        );
+        return;
+      }
+
       // Lấy attempt vừa nộp
       let currentAttempt: any = null;
       const attemptObjectId = new Types.ObjectId(attemptId);

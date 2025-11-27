@@ -247,6 +247,14 @@ export function useNotifications() {
       mergeIn(n);
     };
 
+    const onBusMarkAllRead = () => {
+      setItems((prev) => {
+        const next = prev.map((x) => ({ ...x, read: true }));
+        saveBox(uidRef.current, next);
+        return next;
+      });
+    };
+
     (async () => {
       // lấy uid trước
       const newUid = await fetchMe();
@@ -297,6 +305,7 @@ export function useNotifications() {
       s.on("notify:user", onNotify);
       s.on("corner-toast", onCornerToast);
       bus?.addEventListener("notif:add", onBusAdd as EventListener);
+      bus?.addEventListener("notif:markAllRead", onBusMarkAllRead as EventListener);
     })();
 
     return () => {
@@ -304,8 +313,9 @@ export function useNotifications() {
       s.off("notify:user", onNotify);
       s.off("corner-toast", onCornerToast);
       bus?.removeEventListener("notif:add", onBusAdd as EventListener);
+      bus?.removeEventListener("notif:markAllRead", onBusMarkAllRead as EventListener);
     };
-  }, [mergeIn]);
+  }, [mergeIn, saveBox]);
 
   const markAllRead = React.useCallback(() => {
     setItems((prev) => {
@@ -317,6 +327,9 @@ export function useNotifications() {
       method: "POST",
       credentials: "include",
     }).catch(() => { });
+    // Phát bus để các instance khác cập nhật ngay
+    const bus = getBus();
+    bus?.dispatchEvent(new CustomEvent("notif:markAllRead"));
   }, [saveBox]);
 
   const clearAll = React.useCallback(async () => {

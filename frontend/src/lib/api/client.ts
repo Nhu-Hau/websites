@@ -6,8 +6,14 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:4000';
 
 function resolveUrl(pathOrUrl: string) {
-  // Nếu là absolute URL, trả về nguyên vẹn
-  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+  // Nếu là absolute URL, đảm bảo HTTPS trong production
+  if (/^https?:\/\//i.test(pathOrUrl)) {
+    // Force HTTPS in production (browser environment)
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && pathOrUrl.startsWith('http://')) {
+      return pathOrUrl.replace(/^http:/i, 'https:');
+    }
+    return pathOrUrl;
+  }
   
   // Nếu path bắt đầu với /api/ và đang chạy trong browser, 
   // giữ nguyên để đi qua Next.js rewrite proxy (giống admin login)
@@ -17,7 +23,14 @@ function resolveUrl(pathOrUrl: string) {
   
   // Các trường hợp khác: prepend API_BASE
   if (!pathOrUrl.startsWith('/')) pathOrUrl = '/' + pathOrUrl;
-  return API_BASE + pathOrUrl;
+  const fullUrl = API_BASE + pathOrUrl;
+  
+  // Force HTTPS in production (browser environment)
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && fullUrl.startsWith('http://')) {
+    return fullUrl.replace(/^http:/i, 'https:');
+  }
+  
+  return fullUrl;
 }
 
 async function parseMaybeJson(res: Response) {

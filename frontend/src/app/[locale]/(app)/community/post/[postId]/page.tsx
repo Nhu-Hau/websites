@@ -1,6 +1,7 @@
 // frontend/src/app/[locale]/community/post/[postId]/page.tsx
 import dynamic from "next/dynamic";
 import { PageMotion } from "@/components/layout/PageMotion";
+import { generateMetadata as genMeta, generateCanonical } from "@/lib/seo";
 
 // Dynamic import client components để tối ưu bundle size
 const PostDetail = dynamic(
@@ -8,6 +9,22 @@ const PostDetail = dynamic(
 );
 
 type Params = { locale: string; postId: string };
+
+export async function generateMetadata({ params }: { params: Promise<Params> }) {
+  const { locale, postId } = await params;
+  const path = locale === "vi" ? `/community/post/${postId}` : `/${locale}/community/post/${postId}`;
+  
+  return genMeta({
+    title: locale === "vi" ? "Bài viết cộng đồng - TOEIC PREP" : "Community Post - TOEIC PREP",
+    description: locale === "vi"
+      ? "Xem bài viết và thảo luận trong cộng đồng TOEIC PREP. Chia sẻ kinh nghiệm học tập và kết nối với cộng đồng."
+      : "View post and discussion in TOEIC PREP community. Share learning experiences and connect with the community.",
+    keywords: ["TOEIC", "community", "forum", "discussion", "TOEIC PREP"],
+    canonical: generateCanonical(path, locale),
+    ogType: "article",
+    noindex: true, // User-generated content pages should not be indexed
+  }, locale);
+}
 
 export default async function PostDetailPage({
   params,

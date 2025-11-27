@@ -115,7 +115,14 @@ export function AIInsightSection({
         credentials: "include",
       });
       if (!res.ok) {
-        if (showErrors) throw new Error("Failed to load insight");
+        if (showErrors) {
+          try {
+            const errorData = await res.json();
+            throw new Error(errorData.message || "Failed to load insight");
+          } catch {
+            throw new Error("Failed to load insight");
+          }
+        }
         return;
       }
       const json = await res.json();

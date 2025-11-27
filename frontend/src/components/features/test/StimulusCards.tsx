@@ -419,7 +419,8 @@ function CardSticky(props: BaseProps) {
                       height={0}
                       sizes="100vw"
                       className="w-full h-auto object-contain"
-                      priority={false}
+                      priority={true}
+                      loading="eager"
                       onError={() => {
                         // Image load error - silently fail, fallback will show
                       }}

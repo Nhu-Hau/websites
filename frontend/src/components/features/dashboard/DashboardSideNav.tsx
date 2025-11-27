@@ -16,14 +16,14 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    id: "progress",
-    labelKey: "progress",
-    icon: TrendingUp,
-  },
-  {
     id: "results",
     labelKey: "results",
     icon: BarChart3,
+  },
+  {
+    id: "progress",
+    labelKey: "progress",
+    icon: TrendingUp,
   },
   {
     id: "activity",
@@ -42,7 +42,7 @@ function DashboardSideNavInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const basePrefix = useBasePrefix();
-  const activeTab = (searchParams.get("tab") as TabId) || "progress";
+  const activeTab = (searchParams.get("tab") as TabId) || "results";
 
   const handleTabChange = (tabId: TabId) => {
     const params = new URLSearchParams(searchParams.toString());

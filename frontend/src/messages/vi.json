@@ -1586,32 +1586,33 @@
         "startFromLevel1": "Bắt đầu từ Level 1",
         "autoSuggest": "Lộ trình tự điều chỉnh"
       },
-      "tip": "Kết hợp <listening>các Part Listening</listening> khi bạn chỉ có vài phút và <reading>các Part Reading</reading> khi có nhiều thời gian tập trung."
+      "tip": "Gợi ý: xen kẽ luyện <listening>Part 1–4</listening> (Nghe) và <reading>Part 5–7</reading> (Đọc) để cân bằng hai kỹ năng."
     },
+    "question": "Câu",
     "study": {
+      "header": {
+        "badge": "Chế độ học",
+        "title": "Học linh hoạt mọi lúc",
+        "description": "Luân phiên <vocabulary>Học từ vựng</vocabulary> để ôn nhanh và <news>Học qua tin tức</news> khi muốn luyện đọc sâu hơn."
+      },
       "vocabulary": {
-        "title": "Vocabulary Lab",
-        "description": "Ôn bộ từ, lật flashcard và làm quiz ngắn để giữ streak.",
+        "title": "Học từ vựng",
+        "description": "Ôn bộ từ của bạn bằng flashcard và quiz ngắn, giữ streak học mỗi ngày.",
         "tag": "Flashcard + Quiz",
-        "estimated": "≈10 phút",
+        "estimated": "≈ 10 phút",
         "suggested": "Đề xuất"
       },
       "news": {
         "title": "Học qua tin tức",
-        "description": "Đọc bài viết chọn lọc, chạm để dịch tức thời và lưu từ mới.",
-        "tag": "Reading lab",
-        "estimated": "≈12 phút"
-      },
-      "header": {
-        "badge": "Study modes",
-        "title": "Học linh hoạt mọi lúc",
-        "description": "Luân phiên <vocabulary>Vocabulary Lab</vocabulary> cho các lượt ôn nhanh và <news>Reading Lab</news> khi muốn đắm mình trong bài đọc."
+        "description": "Đọc bài viết chọn lọc, tra cứu và lưu lại từ mới ngay trong lúc đọc.",
+        "tag": "Luyện đọc + Từ vựng",
+        "estimated": "≈ 12 phút"
       },
       "cta": {
         "start": "Mở chế độ",
         "tap": "Chạm để khám phá"
       },
-      "tip": "Dùng <vocabulary>Vocabulary</vocabulary> khi có thể tương tác, chuyển sang <news>News</news> lúc di chuyển hoặc thư giãn."
+      "tip": "Dùng <vocabulary>Học từ vựng</vocabulary> cho các phiên ôn nhanh, chuyển sang <news>Học qua tin tức</news> khi muốn luyện đọc lâu hơn."
     }
   },
   "Account": {
@@ -2093,66 +2094,6 @@
     "level": {
       "continueWith": "Tiếp tục với Level",
       "noTests": "Chưa có đề thi cho Level"
-    },
-    "mobile": {
-      "question": "Câu",
-      "study": {
-        "header": {
-          "badge": "Lộ trình kỹ năng bổ trợ",
-          "title": "Học tập",
-          "description": "Chọn cách học phù hợp: <vocabulary>từ vựng chủ động</vocabulary> hoặc <news>đọc hiểu qua tin tức</news>."
-        },
-        "vocabulary": {
-          "title": "Học từ vựng",
-          "description": "Luyện từ vựng theo bộ, giống Quizlet nhưng tối ưu cho TOEIC.",
-          "tag": "Tập trung từ vựng",
-          "estimated": "~10–15 phút/bộ",
-          "suggested": "Gợi ý cho bạn"
-        },
-        "news": {
-          "title": "Học qua tin tức",
-          "description": "Đọc tin tiếng Anh, tra từ và lưu lại từ vựng thực tế.",
-          "tag": "Đọc hiểu thực tế",
-          "estimated": "~15–20 phút/bài"
-        },
-        "cta": {
-          "start": "Bắt đầu ngay",
-          "tap": "Chạm để vào màn học"
-        },
-        "tip": "Tip: Bạn có thể xen kẽ <vocabulary>Học từ vựng</vocabulary> và <news>Học qua tin tức</news> để vừa nhớ từ vựng, vừa tăng khả năng đọc hiểu."
-      },
-      "practice": {
-        "header": {
-          "badge": "Luyện Listening & Reading theo từng Part",
-          "title": "Luyện L&R",
-          "description": "Chọn Part bạn muốn luyện. Hệ thống mặc định bắt đầu từ <level1>Level 1</level1> và tự điều chỉnh theo kết quả của bạn."
-        },
-        "parts": {
-          "part1": "Mô tả tranh",
-          "part2": "Hỏi - đáp",
-          "part3": "Đoạn hội thoại",
-          "part4": "Bài nói ngắn",
-          "part5": "Hoàn thành câu",
-          "part6": "Hoàn thành đoạn văn",
-          "part7": "Đọc hiểu",
-          "full": {
-            "1": "Part 1: Mô tả tranh",
-            "2": "Part 2: Hỏi - đáp",
-            "3": "Part 3: Đoạn hội thoại",
-            "4": "Part 4: Bài nói ngắn",
-            "5": "Part 5: Hoàn thành câu",
-            "6": "Part 6: Hoàn thành đoạn văn",
-            "7": "Part 7: Đọc hiểu"
-          }
-        },
-        "listening": "Listening",
-        "reading": "Reading",
-        "card": {
-          "startFromLevel1": "Bắt đầu từ Level 1",
-          "autoSuggest": "Tự động gợi ý lộ trình"
-        },
-        "tip": "Gợi ý: xen kẽ luyện <listening>Part 1–4</listening> (Listening) và <reading>Part 5–7</reading> (Reading) để cân bằng hai kỹ năng."
-      }
     }
   },
   "BottomTabBar": {

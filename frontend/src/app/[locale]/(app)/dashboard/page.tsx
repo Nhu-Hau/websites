@@ -22,6 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     keywords: t("keywords").split(", "),
     canonical: generateCanonical(path, locale),
     ogType: "website",
+    noindex: true, // User-specific dashboard pages should not be indexed
   }, locale);
 }
 

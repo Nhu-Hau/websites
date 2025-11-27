@@ -1328,30 +1328,31 @@
       },
       "tip": "Mix <listening>Listening parts</listening> when you only have a few minutes and <reading>Reading parts</reading> when you can focus longer."
     },
+    "question": "Question",
     "study": {
-      "vocabulary": {
-        "title": "Vocabulary Lab",
-        "description": "Flip flashcards, run quizzes, and keep your streak with short practice bursts.",
-        "tag": "Flashcards + Quiz",
-        "estimated": "≈10 mins",
-        "suggested": "Suggested"
-      },
-      "news": {
-        "title": "Study with News",
-        "description": "Read curated English articles, tap for instant translations, and save new words.",
-        "tag": "Reading lab",
-        "estimated": "≈12 mins"
-      },
       "header": {
         "badge": "Study modes",
-        "title": "Learn anywhere, anytime",
-        "description": "Switch between <vocabulary>Vocabulary Lab</vocabulary> for quick reps and <news>Reading Lab</news> when you want immersive input."
+        "title": "Learn flexibly anytime",
+        "description": "Switch between <vocabulary>Vocabulary mode</vocabulary> for quick reviews and <news>News reading</news> when you want to dive deeper into texts."
+      },
+      "vocabulary": {
+        "title": "Vocabulary mode",
+        "description": "Review your word sets with flashcards and short quizzes to keep your daily streak.",
+        "tag": "Flashcards + Quiz",
+        "estimated": "≈ 10 minutes",
+        "suggested": "Recommended"
+      },
+      "news": {
+        "title": "News reading",
+        "description": "Read curated articles, look up and save new words right while you read.",
+        "tag": "Reading + Vocabulary",
+        "estimated": "≈ 12 minutes"
       },
       "cta": {
-        "start": "Open mode",
+        "start": "Start now",
         "tap": "Tap to explore"
       },
-      "tip": "Use <vocabulary>Vocabulary sessions</vocabulary> when you can interact, then jump to <news>News reading</news> during commutes."
+      "tip": "Use <vocabulary>Vocabulary mode</vocabulary> for quick review sessions, and switch to <news>News reading</news> when you want a longer reading practice."
     }
   },
   "Account": {
@@ -1831,9 +1832,6 @@
     "level": {
       "continueWith": "Continue with Level",
       "noTests": "No tests available for Level"
-    },
-    "mobile": {
-      "question": "Question"
     }
   },
   "BottomTabBar": {

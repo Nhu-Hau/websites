@@ -28,7 +28,13 @@ import { useTranslations } from "next-intl";
 /* ====== META ====== */
 const PART_META: Record<
   string,
-  { defaultQuestions: number; defaultDuration: number } | { byLevel: Record<1 | 2 | 3, { defaultQuestions: number; defaultDuration: number }> }
+  | { defaultQuestions: number; defaultDuration: number }
+  | {
+      byLevel: Record<
+        1 | 2 | 3,
+        { defaultQuestions: number; defaultDuration: number }
+      >;
+    }
 > = {
   "part.1": {
     defaultQuestions: 12,
@@ -63,7 +69,10 @@ const PART_META: Record<
   },
 };
 
-function getPartMeta(partKey: string, level: 1 | 2 | 3): { defaultQuestions: number; defaultDuration: number } {
+function getPartMeta(
+  partKey: string,
+  level: 1 | 2 | 3
+): { defaultQuestions: number; defaultDuration: number } {
   const meta = PART_META[partKey];
   if (!meta) return { defaultQuestions: 10, defaultDuration: 10 };
   if ("byLevel" in meta) {
@@ -360,12 +369,10 @@ export default function PracticePart() {
               </div>
 
               {/* Title row */}
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-3xl sm:text-4xl font-black tracking-tight dark:text-zinc-100">
-                    {partTitle}
-                  </h1>
-                </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">
+                  {partTitle}
+                </h1>
 
                 <p className="text-sm sm:text-base text-zinc-700 dark:text-zinc-300 max-w-xl leading-relaxed">
                   {t.rich("header.desc", {

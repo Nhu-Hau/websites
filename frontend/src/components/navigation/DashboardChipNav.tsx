@@ -14,18 +14,18 @@ export default function DashboardChipNav() {
   const router = useRouter();
   const basePrefix = useBasePrefix();
   const t = useTranslations("dashboardComponents.sideNav.tabs");
-  const activeTab = (searchParams.get("tab") as TabId) || "progress";
+  const activeTab = (searchParams.get("tab") as TabId) || "results";
 
   const items: ChipItem[] = [
-    {
-      id: "progress",
-      label: t("progress"),
-      icon: TrendingUp,
-    },
     {
       id: "results",
       label: t("results"),
       icon: BarChart3,
+    },
+    {
+      id: "progress",
+      label: t("progress"),
+      icon: TrendingUp,
     },
     {
       id: "activity",

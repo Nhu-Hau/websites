@@ -180,39 +180,54 @@ export default function Account() {
           setUser(u);
         }
 
-        const r = await fetch("/api/placement/attempts?limit=1", {
-          credentials: "include",
-          cache: "no-store",
-        });
-        if (r.ok) {
-          const j = await r.json();
-          const id = j?.items?.[0]?._id as string | undefined;
-          if (id) {
-            const d = await fetch(`/api/placement/attempts/${id}`, {
-              credentials: "include",
-              cache: "no-store",
-            });
-            if (d.ok) {
-              const full = await d.json();
-              if (alive)
-                setLatest({
-                  _id: full._id,
-                  acc: full.acc,
-                  submittedAt: full.submittedAt,
-                  partStats: full.partStats,
-                  predicted: full.predicted,
+        try {
+          const r = await fetch("/api/placement/attempts?limit=1", {
+            credentials: "include",
+            cache: "no-store",
+          });
+          if (r.ok) {
+            const j = await r.json();
+            const id = j?.items?.[0]?._id as string | undefined;
+            if (id) {
+              try {
+                const d = await fetch(`/api/placement/attempts/${id}`, {
+                  credentials: "include",
+                  cache: "no-store",
                 });
+                if (d.ok) {
+                  const full = await d.json();
+                  if (alive)
+                    setLatest({
+                      _id: full._id,
+                      acc: full.acc,
+                      submittedAt: full.submittedAt,
+                      partStats: full.partStats,
+                      predicted: full.predicted,
+                    });
+                }
+              } catch (err) {
+                // Silently fail - placement data is optional
+                console.error("[Account] Failed to fetch placement details:", err);
+              }
             }
           }
+        } catch (err) {
+          // Silently fail - placement data is optional
+          console.error("[Account] Failed to fetch placement attempts:", err);
         }
 
-        const rh = await fetch("/api/practice/history?limit=10", {
-          credentials: "include",
-          cache: "no-store",
-        });
-        if (rh.ok) {
-          const jh = await rh.json();
-          if (alive) setRecent(jh.items || []);
+        try {
+          const rh = await fetch("/api/practice/history?limit=10", {
+            credentials: "include",
+            cache: "no-store",
+          });
+          if (rh.ok) {
+            const jh = await rh.json();
+            if (alive) setRecent(jh.items || []);
+          }
+        } catch (err) {
+          // Silently fail - practice history is optional
+          console.error("[Account] Failed to fetch practice history:", err);
         }
       } catch {
         if (alive) {

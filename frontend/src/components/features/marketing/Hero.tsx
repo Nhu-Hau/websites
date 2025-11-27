@@ -382,6 +382,7 @@ export default function Hero() {
               {/* CTA */}
               <div className="mt-7 flex flex-col items-center gap-3 xs:flex-row xs:justify-center xs:gap-4 lg:justify-start whitespace-nowrap">
                 <button
+                  type="button"
                   onClick={handleStart}
                   disabled={checking}
                   className="group inline-flex w-full max-w-[300px] items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-xs font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-400 hover:shadow-emerald-400/40 disabled:opacity-70 xs:w-auto sm:text-sm"
@@ -395,6 +396,7 @@ export default function Hero() {
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => router.push(`${base}/practice/part.1?level=1`)}
                   className="inline-flex w-full max-w-[260px] items-center justify-center gap-2 rounded-xl border border-slate-600 bg-slate-900/40 px-5 py-2.5 text-xs font-medium text-slate-100 transition-all hover:border-slate-400 hover:bg-slate-800/80 xs:w-auto sm:text-sm"
                 >

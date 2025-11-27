@@ -46,12 +46,20 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("Failed to fetch news");
+      if (!response.ok) {
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to fetch news");
+        } catch {
+          throw new Error(`Failed to fetch news: ${response.status}`);
+        }
+      }
 
       const data = await response.json();
       setNews(data.data);
     } catch (error) {
       // Error handled silently - will show loading/error state
+      console.error("[NewsDetail] Failed to fetch news:", error);
     } finally {
       setLoading(false);
     }
@@ -117,6 +125,7 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
               {t("notFoundDesc")}
             </p>
             <button
+              type="button"
               onClick={handleBack}
               className="inline-flex items-center gap-2 rounded-xl border border-[#4063bb]/20 bg-gradient-to-br from-[#4063bb] to-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#4063bb]/30 transition-all duration-200 hover:shadow-xl hover:shadow-[#4063bb]/40 hover:scale-105 active:scale-95 dark:border-[#4063bb]/30"
             >
@@ -137,6 +146,7 @@ export function NewsDetailClient({ newsId }: NewsDetailClientProps) {
       <div className="relative mx-auto max-w-6xl space-y-5 px-4 xs:px-5">
         {/* Back Button */}
         <button
+          type="button"
           onClick={handleBack}
           className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:text-[#4063bb] xs:px-4 xs:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-200"
         >

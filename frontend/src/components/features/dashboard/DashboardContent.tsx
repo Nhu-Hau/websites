@@ -20,12 +20,12 @@ function DashboardContentInner({
   badgesTab,
 }: DashboardContentProps) {
   const searchParams = useSearchParams();
-  const activeTab = (searchParams.get("tab") as TabId) || "progress";
+  const activeTab = (searchParams.get("tab") as TabId) || "results";
 
   return (
     <div className="w-full">
-      {activeTab === "progress" && progressTab}
       {activeTab === "results" && resultsTab}
+      {activeTab === "progress" && progressTab}
       {activeTab === "activity" && activityTab}
       {activeTab === "badges" && badgesTab}
     </div>

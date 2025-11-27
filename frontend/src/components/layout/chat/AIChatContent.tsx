@@ -386,10 +386,14 @@ export default function AIChatContent({
       });
       if (!response.ok) {
         if (response.status === 403) {
-          const errorData = await response.json();
-          if (errorData.code === "PREMIUM_REQUIRED") {
-            setError(t("premiumRequired"));
-            return;
+          try {
+            const errorData = await response.json();
+            if (errorData.code === "PREMIUM_REQUIRED") {
+              setError(t("premiumRequired"));
+              return;
+            }
+          } catch {
+            // Failed to parse error response
           }
         }
         throw new Error("Failed to load chat history");
@@ -650,12 +654,16 @@ export default function AIChatContent({
   const clearChat = async () => {
     if (!user) return;
     try {
-      await fetch(`/api/chat/clear/${sessionId}`, {
+      const response = await fetch(`/api/chat/clear/${sessionId}`, {
         method: "DELETE",
         credentials: "include",
       });
+      if (!response.ok) {
+        throw new Error(`Failed to clear chat: ${response.status}`);
+      }
     } catch (err) {
       logger.error("Failed to clear chat on server:", err);
+      // Continue to clear local state even if server request fails
     } finally {
       setMessages([]);
       setError(null);
@@ -670,6 +678,7 @@ export default function AIChatContent({
       {messages.length > 0 && user && user.access === "premium" && (
         <div className="flex-shrink-0 px-3 xs:px-4 pt-3 pb-2 flex justify-end">
           <button
+            type="button"
             onClick={clearChat}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
             aria-label={ariaT("deleteAll")}
@@ -776,6 +785,7 @@ export default function AIChatContent({
 
                   {m.role === "assistant" && !m.pending && (
                     <button
+                      type="button"
                       onClick={() => navigator.clipboard.writeText(m.content)}
                       className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 shadow-md transition hover:scale-110 focus:outline-none focus:ring-2 focus:ring-sky-400"
                       aria-label={ariaT("copy")}
@@ -847,6 +857,7 @@ export default function AIChatContent({
           </div>
 
           <button
+            type="button"
             onClick={send}
             disabled={
               sending || !input.trim() || !user || user?.access !== "premium"

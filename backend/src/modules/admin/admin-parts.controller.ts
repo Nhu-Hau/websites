@@ -654,15 +654,20 @@ export async function importExcel(req: Request, res: Response) {
 
 
       // Choices: expect columns choiceA, choiceB, choiceC, choiceD
-      // Only build choices if at least one choice column exists
       const choices = [];
-      const hasAnyChoice = row.choiceA || row.choiceB || row.choiceC || row.choiceD;
 
-      if (hasAnyChoice) {
-        if (row.choiceA) choices.push({ id: "A", text: String(row.choiceA) });
-        if (row.choiceB) choices.push({ id: "B", text: String(row.choiceB) });
-        if (row.choiceC) choices.push({ id: "C", text: String(row.choiceC) });
-        if (row.choiceD) choices.push({ id: "D", text: String(row.choiceD) });
+      // Normalize part string to check for part 2
+      const partStr = String(row.part).toLowerCase().replace(/\s/g, '');
+      const isPart2 = partStr === 'part.2' || partStr === '2' || partStr === 'part2';
+
+      // Always add choices A, B, C regardless of content
+      choices.push({ id: "A", text: row.choiceA ? String(row.choiceA) : "" });
+      choices.push({ id: "B", text: row.choiceB ? String(row.choiceB) : "" });
+      choices.push({ id: "C", text: row.choiceC ? String(row.choiceC) : "" });
+
+      // Add D if not Part 2
+      if (!isPart2) {
+        choices.push({ id: "D", text: row.choiceD ? String(row.choiceD) : "" });
       }
 
       itemsToInsert.push({

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import os from "os";
+import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { User } from "../../shared/models/User";
@@ -831,3 +832,72 @@ export async function vpsStats(_req: Request, res: Response) {
 
 
 
+// GET /api/admin/vps/network
+export async function getNetworkStats(req: Request, res: Response) {
+  try {
+    const platform = os.platform();
+    let rx = 0;
+    let tx = 0;
+    let sshSessions: any[] = [];
+
+    if (platform === "linux") {
+      // 1. Get Network Bytes (Total)
+      try {
+        const netDev = fs.readFileSync("/proc/net/dev", "utf-8");
+        const lines = netDev.split("\n");
+        // Skip header lines (first 2)
+        for (let i = 2; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          const parts = line.split(/\s+/);
+          // interface: rx_bytes ... tx_bytes ...
+          // parts[0] is interface name (e.g. eth0:)
+          // parts[1] is rx_bytes
+          // parts[9] is tx_bytes
+          if (parts.length >= 10) {
+            const r = parseInt(parts[1], 10);
+            const t = parseInt(parts[9], 10);
+            if (!isNaN(r)) rx += r;
+            if (!isNaN(t)) tx += t;
+          }
+        }
+      } catch (e) {
+        console.error("Error reading /proc/net/dev:", e);
+      }
+
+      // 2. Get SSH Sessions
+      try {
+        const { stdout } = await execAsync("who");
+        // Output format: user tty time (ip)
+        // e.g. root pts/0 2023-10-27 10:00 (192.168.1.1)
+        if (stdout) {
+          sshSessions = stdout.split("\n")
+            .filter(line => line.trim())
+            .map(line => {
+              const parts = line.split(/\s+/);
+              return {
+                user: parts[0],
+                tty: parts[1],
+                time: parts[2] + " " + parts[3],
+                ip: parts.length > 4 ? parts[4].replace(/[()]/g, "") : "local"
+              };
+            });
+        }
+      } catch (e) {
+        console.error("Error running who:", e);
+      }
+    } else {
+      // Windows/Dev Mock
+      rx = Math.floor(Math.random() * 1000000000);
+      tx = Math.floor(Math.random() * 500000000);
+      sshSessions = [
+        { user: "dev_user", tty: "console", time: new Date().toISOString(), ip: "127.0.0.1" }
+      ];
+    }
+
+    return res.json({ rx, tx, sshSessions });
+  } catch (e: any) {
+    console.error("Error getting network stats:", e);
+    return res.status(500).json({ message: "Lỗi khi lấy thông tin mạng" });
+  }
+}

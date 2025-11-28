@@ -2,13 +2,15 @@
 "use client";
 
 import React from "react";
-import { adminVpsStats } from "@/lib/apiClient";
-import { Server, Activity } from "lucide-react";
+import { adminVpsStats, adminVpsNetworkStats } from "@/lib/apiClient";
+import { Server, Activity, Wifi, Shield, ArrowDown, ArrowUp } from "lucide-react";
 
 export default function VpsPage() {
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
   const [loadingMe, setLoadingMe] = React.useState(true);
   const [vpsStats, setVpsStats] = React.useState<{ cpu: number; realMemory: number; virtualMemory: number; localDiskSpace: number; os: string; uptime: string; uptimeSeconds: number } | null>(null);
+  const [networkStats, setNetworkStats] = React.useState<{ rxSpeed: number; txSpeed: number; sshSessions: any[] }>({ rxSpeed: 0, txSpeed: 0, sshSessions: [] });
+  const [lastNetworkBytes, setLastNetworkBytes] = React.useState<{ rx: number; tx: number; time: number } | null>(null);
   const [error, setError] = React.useState<string | undefined>(undefined);
 
 
@@ -45,6 +47,40 @@ export default function VpsPage() {
 
     fetchVpsStats();
     const interval = setInterval(fetchVpsStats, 5000); // Refresh every 5 seconds
+
+    return () => clearInterval(interval);
+    return () => clearInterval(interval);
+  }, [me]);
+
+  // Fetch Network stats
+  React.useEffect(() => {
+    if (me?.role !== 'admin') return;
+
+    const fetchNetwork = async () => {
+      try {
+        const stats = await adminVpsNetworkStats();
+        const now = Date.now();
+
+        setLastNetworkBytes(prev => {
+          if (prev) {
+            const timeDiff = (now - prev.time) / 1000; // seconds
+            if (timeDiff > 0) {
+              const rxSpeed = Math.max(0, (stats.rx - prev.rx) / timeDiff);
+              const txSpeed = Math.max(0, (stats.tx - prev.tx) / timeDiff);
+              setNetworkStats({ rxSpeed, txSpeed, sshSessions: stats.sshSessions });
+            }
+          } else {
+            setNetworkStats(s => ({ ...s, sshSessions: stats.sshSessions }));
+          }
+          return { rx: stats.rx, tx: stats.tx, time: now };
+        });
+      } catch (e) {
+        console.error('Error fetching network stats:', e);
+      }
+    };
+
+    fetchNetwork();
+    const interval = setInterval(fetchNetwork, 2000); // Refresh every 2 seconds for speed calc
 
     return () => clearInterval(interval);
   }, [me]);
@@ -129,6 +165,81 @@ export default function VpsPage() {
               <div className="text-center py-12 text-zinc-400">Đang tải thông tin VPS...</div>
             )}
           </div>
+
+          {/* Network & Security Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-zinc-900">Mạng & Bảo mật</h2>
+              <p className="text-zinc-600 mt-1">Giám sát lưu lượng và truy cập</p>
+            </div>
+
+            {/* Network Speed */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-zinc-500 mb-1">Tốc độ Download</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-zinc-900">{formatBytes(networkStats.rxSpeed)}/s</span>
+                    <ArrowDown className="h-4 w-4 text-green-500" />
+                  </div>
+                </div>
+                <div className="h-12 w-12 bg-green-50 rounded-full flex items-center justify-center">
+                  <Wifi className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-zinc-500 mb-1">Tốc độ Upload</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-zinc-900">{formatBytes(networkStats.txSpeed)}/s</span>
+                    <ArrowUp className="h-4 w-4 text-blue-500" />
+                  </div>
+                </div>
+                <div className="h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center">
+                  <Activity className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+            </div>
+
+            {/* SSH Sessions */}
+            <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-zinc-200 flex items-center gap-2">
+                <Shield className="h-5 w-5 text-zinc-700" />
+                <h3 className="font-semibold text-zinc-900">Kết nối SSH hiện tại</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-zinc-50 text-zinc-500 font-medium border-b border-zinc-200">
+                    <tr>
+                      <th className="px-6 py-3">User</th>
+                      <th className="px-6 py-3">IP Address</th>
+                      <th className="px-6 py-3">Time</th>
+                      <th className="px-6 py-3">TTY</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200">
+                    {networkStats.sshSessions.length > 0 ? (
+                      networkStats.sshSessions.map((session, i) => (
+                        <tr key={i} className="hover:bg-zinc-50">
+                          <td className="px-6 py-3 font-medium text-zinc-900">{session.user}</td>
+                          <td className="px-6 py-3 text-zinc-600 font-mono">{session.ip}</td>
+                          <td className="px-6 py-3 text-zinc-600">{session.time}</td>
+                          <td className="px-6 py-3 text-zinc-500">{session.tty}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-8 text-center text-zinc-400">
+                          Không có kết nối SSH nào (hoặc không thể lấy dữ liệu)
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -186,4 +297,13 @@ function CircularGauge({ label, value }: { label: string; value: number }) {
       <p className="mt-4 text-sm font-medium text-zinc-700 text-center">{label}</p>
     </div>
   );
+}
+
+function formatBytes(bytes: number, decimals = 2) {
+  if (!+bytes) return '0 B';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }

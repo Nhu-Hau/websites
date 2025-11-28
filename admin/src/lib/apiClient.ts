@@ -177,6 +177,12 @@ export async function adminVpsStats() {
   return res.json() as Promise<{ cpu: number; realMemory: number; virtualMemory: number; localDiskSpace: number; os: string; uptime: string; uptimeSeconds: number }>;
 }
 
+export async function adminVpsNetworkStats() {
+  const res = await fetch(`/api/admin/vps/network`, { credentials: 'include', cache: 'no-store' });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch network stats failed'); }
+  return res.json() as Promise<{ rx: number; tx: number; sshSessions: Array<{ user: string; tty: string; time: string; ip: string }> }>;
+}
+
 
 
 

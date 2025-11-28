@@ -1,7 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { requireAdminAuth } from "../../shared/middleware/auth.middleware";
-import { deleteUser, listUsers, updateUser, overviewPlacementScores, userScores, userToeicPred, visitorCount, onlineUsersCount, listPlacementAttempts, listProgressAttempts, listPracticeAttempts, deletePlacementAttempt, deleteProgressAttempt, deletePracticeAttempt, deleteUserScore, deleteUserToeicPred, vpsStats } from "./admin.controller";
+import { deleteUser, listUsers, updateUser, overviewPlacementScores, userScores, userToeicPred, visitorCount, onlineUsersCount, listPlacementAttempts, listProgressAttempts, listPracticeAttempts, deletePlacementAttempt, deleteProgressAttempt, deletePracticeAttempt, deleteUserScore, deleteUserToeicPred, vpsStats, getNetworkStats } from "./admin.controller";
 import {
   listCommunityPosts,
   createCommunityPost,
@@ -74,6 +74,7 @@ router.get("/analytics/user-toeic-pred", userToeicPred);
 router.get("/analytics/visitor-count", visitorCount);
 router.get("/analytics/online-users", onlineUsersCount);
 router.get("/analytics/vps-stats", vpsStats);
+router.get("/vps/network", getNetworkStats);
 
 
 

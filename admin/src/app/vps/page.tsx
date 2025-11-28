@@ -2,16 +2,15 @@
 "use client";
 
 import React from "react";
-import { adminVpsStats, adminPm2Logs } from "@/lib/apiClient";
-import { Server, Activity, FileText, RefreshCw } from "lucide-react";
+import { adminVpsStats } from "@/lib/apiClient";
+import { Server, Activity } from "lucide-react";
 
 export default function VpsPage() {
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
   const [loadingMe, setLoadingMe] = React.useState(true);
   const [vpsStats, setVpsStats] = React.useState<{ cpu: number; realMemory: number; virtualMemory: number; localDiskSpace: number; os: string; uptime: string; uptimeSeconds: number } | null>(null);
   const [error, setError] = React.useState<string | undefined>(undefined);
-  const [pm2Logs, setPm2Logs] = React.useState<{ admin: string; frontend: string; api: string }>({ admin: '', frontend: '', api: '' });
-  const [loadingLogs, setLoadingLogs] = React.useState<{ admin: boolean; frontend: boolean; api: boolean }>({ admin: false, frontend: false, api: false });
+
 
   React.useEffect(() => {
     (async () => {
@@ -32,7 +31,7 @@ export default function VpsPage() {
   // Fetch VPS stats
   React.useEffect(() => {
     if (me?.role !== 'admin') return;
-    
+
     const fetchVpsStats = async () => {
       try {
         const stats = await adminVpsStats();
@@ -50,40 +49,7 @@ export default function VpsPage() {
     return () => clearInterval(interval);
   }, [me]);
 
-  // Fetch PM2 logs
-  const fetchPm2Logs = React.useCallback(async (app: 'admin' | 'frontend' | 'api') => {
-    if (me?.role !== 'admin') return;
-    
-    setLoadingLogs(prev => ({ ...prev, [app]: true }));
-    try {
-      const result = await adminPm2Logs(app, 100); // Lấy 100 dòng cuối
-      setPm2Logs(prev => ({ ...prev, [app]: result.logs }));
-    } catch (e: any) {
-      console.error(`Error fetching PM2 logs for ${app}:`, e);
-      setPm2Logs(prev => ({ ...prev, [app]: `Lỗi khi tải logs: ${e?.message || 'Unknown error'}` }));
-    } finally {
-      setLoadingLogs(prev => ({ ...prev, [app]: false }));
-    }
-  }, [me]);
 
-  // Fetch logs khi component mount
-  React.useEffect(() => {
-    if (me?.role !== 'admin') return;
-    
-    // Fetch logs lần đầu
-    fetchPm2Logs('admin');
-    fetchPm2Logs('frontend');
-    fetchPm2Logs('api');
-    
-    // Refresh logs mỗi 10 giây
-    const interval = setInterval(() => {
-      fetchPm2Logs('admin');
-      fetchPm2Logs('frontend');
-      fetchPm2Logs('api');
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [me, fetchPm2Logs]);
 
   if (loadingMe) {
     return (
@@ -163,103 +129,7 @@ export default function VpsPage() {
               <div className="text-center py-12 text-zinc-400">Đang tải thông tin VPS...</div>
             )}
           </div>
-
-          {/* PM2 Logs Section */}
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-2xl font-bold text-zinc-900">PM2 Logs</h2>
-              <p className="text-zinc-600 mt-1">Xem logs của các ứng dụng</p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Admin Logs */}
-              <LogViewer
-                title="Admin Logs"
-                app="admin"
-                logs={pm2Logs.admin}
-                loading={loadingLogs.admin}
-                onRefresh={() => fetchPm2Logs('admin')}
-              />
-
-              {/* Frontend Logs */}
-              <LogViewer
-                title="Frontend Logs"
-                app="frontend"
-                logs={pm2Logs.frontend}
-                loading={loadingLogs.frontend}
-                onRefresh={() => fetchPm2Logs('frontend')}
-              />
-
-              {/* API Logs */}
-              <LogViewer
-                title="API Logs"
-                app="api"
-                logs={pm2Logs.api}
-                loading={loadingLogs.api}
-                onRefresh={() => fetchPm2Logs('api')}
-              />
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-// Log Viewer Component
-function LogViewer({ 
-  title, 
-  app, 
-  logs, 
-  loading, 
-  onRefresh 
-}: { 
-  title: string; 
-  app: string; 
-  logs: string; 
-  loading: boolean; 
-  onRefresh: () => void;
-}) {
-  const logRef = React.useRef<HTMLDivElement>(null);
-
-  // Auto scroll to bottom when logs update
-  React.useEffect(() => {
-    if (logRef.current) {
-      logRef.current.scrollTop = logRef.current.scrollHeight;
-    }
-  }, [logs]);
-
-  return (
-    <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col" style={{ height: '500px' }}>
-      {/* Header */}
-      <div className="bg-gradient-to-r from-zinc-50 to-zinc-100 border-b border-zinc-200 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-zinc-700" />
-          <h3 className="font-semibold text-zinc-900">{title}</h3>
-        </div>
-        <button
-          onClick={onRefresh}
-          disabled={loading}
-          className="p-1.5 rounded-md hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Refresh logs"
-        >
-          <RefreshCw className={`h-4 w-4 text-zinc-700 ${loading ? 'animate-spin' : ''}`} />
-        </button>
-      </div>
-
-      {/* Logs Content */}
-      <div
-        ref={logRef}
-        className="flex-1 overflow-auto p-4 bg-zinc-900 text-zinc-100 font-mono text-xs"
-        style={{ fontFamily: 'monospace' }}
-      >
-        {loading && !logs ? (
-          <div className="text-zinc-400">Đang tải logs...</div>
-        ) : logs ? (
-          <pre className="whitespace-pre-wrap break-words">{logs}</pre>
-        ) : (
-          <div className="text-zinc-400">Không có logs</div>
-        )}
       </div>
     </div>
   );

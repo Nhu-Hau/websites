@@ -92,7 +92,7 @@ export async function getPracticeHistory(params?: {
     if (partKey) query.set("partKey", partKey);
     if (level) query.set("level", level);
     if (test) query.set("test", test);
-    
+
     const data = await serverFetch<{
       page: number;
       limit: number;
@@ -168,7 +168,8 @@ export async function getDashboardGoal() {
       cache: "no-store",
     });
     return data;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.includes("401")) return null;
     console.error("Failed to fetch dashboard goal:", error);
     return null;
   }
@@ -184,7 +185,8 @@ export async function getDashboardActivity() {
       cache: "no-store",
     });
     return data;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.includes("401")) return null;
     console.error("Failed to fetch dashboard activity:", error);
     return null;
   }
@@ -249,7 +251,8 @@ export async function getBadges() {
       cache: "no-store",
     });
     return data.badges || [];
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.includes("401")) return [];
     console.error("Failed to fetch badges:", error);
     return [];
   }
@@ -265,7 +268,8 @@ export async function getStudyScheduleUpcoming() {
       cache: "no-store",
     });
     return data.data || null;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.includes("401")) return null;
     console.error("Failed to fetch study schedule upcoming:", error);
     return null;
   }

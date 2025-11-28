@@ -183,6 +183,36 @@ export async function adminVpsNetworkStats() {
   return res.json() as Promise<{ rx: number; tx: number; sshSessions: Array<{ user: string; tty: string; time: string; ip: string }> }>;
 }
 
+export async function adminVpsDatabaseStats() {
+  const res = await fetch(`/api/admin/vps/database`, { credentials: 'include', cache: 'no-store' });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch database stats failed'); }
+  return res.json() as Promise<{
+    mongo: { dataSize: number; storageSize: number; objects: number; collections: number };
+    s3: { size: number; objects: number; bucket: string; prefix?: string; error?: string };
+  }>;
+}
+
+export async function adminGetProcesses() {
+  const res = await fetch(`/api/admin/vps/processes`, { credentials: 'include', cache: 'no-store' });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch processes failed'); }
+  return res.json() as Promise<Array<{
+    name: string;
+    pid: number;
+    pm_id: number;
+    monit: { memory: number; cpu: number };
+    pm2_env: { status: string; restart_time: number; pm_uptime: number; instances: number };
+  }>>;
+}
+
+export async function adminControlProcess(name: string, action: 'start' | 'stop' | 'restart') {
+  const res = await fetch(`/api/admin/vps/processes/${name}/${action}`, {
+    method: 'POST',
+    credentials: 'include'
+  });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || `${action} failed`); }
+  return res.json();
+}
+
 
 
 

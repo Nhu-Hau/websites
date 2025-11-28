@@ -2,14 +2,17 @@
 "use client";
 
 import React from "react";
-import { adminVpsStats, adminVpsNetworkStats } from "@/lib/apiClient";
-import { Server, Activity, Wifi, Shield, ArrowDown, ArrowUp } from "lucide-react";
+import { adminVpsStats, adminVpsNetworkStats, adminVpsDatabaseStats, adminGetProcesses, adminControlProcess } from "@/lib/apiClient";
+import { Server, Activity, Wifi, Shield, ArrowDown, ArrowUp, Database, HardDrive, Play, Square, RotateCw } from "lucide-react";
 
 export default function VpsPage() {
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
   const [loadingMe, setLoadingMe] = React.useState(true);
   const [vpsStats, setVpsStats] = React.useState<{ cpu: number; realMemory: number; virtualMemory: number; localDiskSpace: number; os: string; uptime: string; uptimeSeconds: number } | null>(null);
   const [networkStats, setNetworkStats] = React.useState<{ rxSpeed: number; txSpeed: number; sshSessions: any[] }>({ rxSpeed: 0, txSpeed: 0, sshSessions: [] });
+  const [dbStats, setDbStats] = React.useState<{ mongo: any; s3: any } | null>(null);
+  const [processes, setProcesses] = React.useState<any[]>([]);
+  const [processingAction, setProcessingAction] = React.useState<string | null>(null);
   const [lastNetworkBytes, setLastNetworkBytes] = React.useState<{ rx: number; tx: number; time: number } | null>(null);
   const [error, setError] = React.useState<string | undefined>(undefined);
 
@@ -49,7 +52,6 @@ export default function VpsPage() {
     const interval = setInterval(fetchVpsStats, 5000); // Refresh every 5 seconds
 
     return () => clearInterval(interval);
-    return () => clearInterval(interval);
   }, [me]);
 
   // Fetch Network stats
@@ -85,6 +87,73 @@ export default function VpsPage() {
     return () => clearInterval(interval);
   }, [me]);
 
+  // Fetch Database stats
+  React.useEffect(() => {
+    if (me?.role !== 'admin') return;
+    const fetchDb = async () => {
+      try {
+        const stats = await adminVpsDatabaseStats();
+        setDbStats(stats);
+      } catch (e) {
+        console.error('Error fetching DB stats:', e);
+      }
+    };
+    fetchDb();
+  }, [me]);
+
+  // Fetch Processes
+  React.useEffect(() => {
+    if (me?.role !== 'admin') return;
+    const fetchProcesses = async () => {
+      try {
+        const data = await adminGetProcesses();
+        setProcesses(data);
+      } catch (e) {
+        console.error('Error fetching processes:', e);
+      }
+    };
+    fetchProcesses();
+    const interval = setInterval(fetchProcesses, 5000);
+    return () => clearInterval(interval);
+  }, [me]);
+
+  const handleProcessAction = async (name: string, action: 'start' | 'stop' | 'restart') => {
+    if (processingAction) return;
+    if (!confirm(`Bạn có chắc muốn ${action} process "${name}"?`)) return;
+
+    setProcessingAction(`${name}-${action}`);
+    try {
+      await adminControlProcess(name, action);
+      // Refresh list immediately
+      const data = await adminGetProcesses();
+      setProcesses(data);
+    } catch (e: any) {
+      alert(e.message || 'Thao tác thất bại');
+    } finally {
+      setProcessingAction(null);
+    }
+  };
+
+  // Group processes by name
+  const groupedProcesses = React.useMemo(() => {
+    const groups: Record<string, any> = {};
+    processes.forEach(p => {
+      if (!groups[p.name]) {
+        groups[p.name] = {
+          name: p.name,
+          instances: [],
+          totalMemory: 0,
+          totalCpu: 0,
+          status: 'online' // default, will check if any is offline
+        };
+      }
+      groups[p.name].instances.push(p);
+      groups[p.name].totalMemory += p.monit.memory;
+      groups[p.name].totalCpu += p.monit.cpu;
+      if (p.pm2_env.status !== 'online') groups[p.name].status = p.pm2_env.status;
+    });
+    return Object.values(groups);
+  }, [processes]);
 
 
   if (loadingMe) {
@@ -232,6 +301,175 @@ export default function VpsPage() {
                       <tr>
                         <td colSpan={4} className="px-6 py-8 text-center text-zinc-400">
                           Không có kết nối SSH nào (hoặc không thể lấy dữ liệu)
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Database & Storage Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-zinc-900">Database & Storage</h2>
+              <p className="text-zinc-600 mt-1">Dung lượng lưu trữ</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* MongoDB */}
+              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Database className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-zinc-900">MongoDB</h3>
+                    <p className="text-xs text-zinc-500">Database chính</p>
+                  </div>
+                </div>
+
+                {dbStats ? (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-zinc-500">Storage Size</p>
+                      <p className="text-2xl font-bold text-zinc-900">{formatBytes(dbStats.mongo.storageSize)}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-zinc-500">Collections</p>
+                        <p className="font-medium text-zinc-900">{dbStats.mongo.collections}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-zinc-500">Objects</p>
+                        <p className="font-medium text-zinc-900">{dbStats.mongo.objects.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="animate-pulse space-y-3">
+                    <div className="h-8 bg-zinc-100 rounded w-1/2"></div>
+                    <div className="h-4 bg-zinc-100 rounded w-3/4"></div>
+                  </div>
+                )}
+              </div>
+
+              {/* S3 Storage */}
+              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <HardDrive className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-zinc-900">AWS S3</h3>
+                    <p className="text-xs text-zinc-500">{dbStats?.s3.bucket || 'Loading...'}</p>
+                  </div>
+                </div>
+
+                {dbStats ? (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-zinc-500">Total Size</p>
+                      <p className="text-2xl font-bold text-zinc-900">{formatBytes(dbStats.s3.size)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-500">Total Objects</p>
+                      <p className="font-medium text-zinc-900">{dbStats.s3.objects.toLocaleString()}</p>
+                    </div>
+                    {dbStats.s3.error && (
+                      <div className="mt-2 p-2 bg-red-50 text-red-600 text-xs rounded border border-red-100">
+                        Error: {dbStats.s3.error}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="animate-pulse space-y-3">
+                    <div className="h-8 bg-zinc-100 rounded w-1/2"></div>
+                    <div className="h-4 bg-zinc-100 rounded w-3/4"></div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Process Management Section */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-zinc-900">Quản lý Process (PM2)</h2>
+              <p className="text-zinc-600 mt-1">Giám sát và điều khiển các ứng dụng</p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-zinc-50 text-zinc-500 font-medium border-b border-zinc-200">
+                    <tr>
+                      <th className="px-6 py-3">Application</th>
+                      <th className="px-6 py-3">Status</th>
+                      <th className="px-6 py-3">Instances</th>
+                      <th className="px-6 py-3">Memory</th>
+                      <th className="px-6 py-3">CPU</th>
+                      <th className="px-6 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200">
+                    {groupedProcesses.length > 0 ? (
+                      groupedProcesses.map((group) => (
+                        <tr key={group.name} className="hover:bg-zinc-50">
+                          <td className="px-6 py-4">
+                            <div className="font-semibold text-zinc-900">{group.name}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${group.status === 'online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                              {group.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-zinc-600">
+                            {group.instances.length} instance(s)
+                          </td>
+                          <td className="px-6 py-4 text-zinc-600 font-mono">
+                            {formatBytes(group.totalMemory)}
+                          </td>
+                          <td className="px-6 py-4 text-zinc-600 font-mono">
+                            {group.totalCpu.toFixed(1)}%
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleProcessAction(group.name, 'start')}
+                                disabled={!!processingAction}
+                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                                title="Start"
+                              >
+                                <Play className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleProcessAction(group.name, 'stop')}
+                                disabled={!!processingAction}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                title="Stop"
+                              >
+                                <Square className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleProcessAction(group.name, 'restart')}
+                                disabled={!!processingAction}
+                                className={`p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50 ${processingAction === `${group.name}-restart` ? 'animate-spin' : ''
+                                  }`}
+                                title="Restart"
+                              >
+                                <RotateCw className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-zinc-400">
+                          Đang tải danh sách process...
                         </td>
                       </tr>
                     )}

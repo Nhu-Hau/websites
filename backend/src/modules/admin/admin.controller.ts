@@ -4,6 +4,8 @@ import os from "os";
 import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { s3, BUCKET, PREFIX } from "../../shared/services/storage.service";
 import { User } from "../../shared/models/User";
 import { PlacementAttempt } from "../../shared/models/PlacementAttempt";
 import { ProgressAttempt } from "../../shared/models/ProgressAttempt";
@@ -901,3 +903,125 @@ export async function getNetworkStats(req: Request, res: Response) {
     return res.status(500).json({ message: "Lỗi khi lấy thông tin mạng" });
   }
 }
+
+// GET /api/admin/vps/database
+export async function getDatabaseStats(req: Request, res: Response) {
+  try {
+    // 1. MongoDB Stats
+    const dbStats = await mongoose.connection.db?.stats();
+    const mongoStats = {
+      dataSize: dbStats?.dataSize || 0,
+      storageSize: dbStats?.storageSize || 0,
+      objects: dbStats?.objects || 0,
+      collections: dbStats?.collections || 0,
+    };
+
+    // 2. S3 Stats (Calculate total size)
+    let s3Size = 0;
+    let s3Objects = 0;
+    let s3ErrorMsg = "";
+    let continuationToken: string | undefined = undefined;
+
+    try {
+      do {
+        const command = new ListObjectsV2Command({
+          Bucket: BUCKET,
+          Prefix: PREFIX,
+          ContinuationToken: continuationToken,
+        });
+        const response = await s3.send(command);
+
+        if (response.Contents) {
+          for (const item of response.Contents) {
+            s3Size += item.Size || 0;
+            s3Objects++;
+          }
+        }
+        continuationToken = response.NextContinuationToken;
+      } while (continuationToken);
+    } catch (s3Error: any) {
+      console.error("Error calculating S3 stats:", s3Error);
+      s3ErrorMsg = s3Error.message || "Unknown S3 error";
+    }
+
+    return res.json({
+      mongo: mongoStats,
+      s3: {
+        size: s3Size,
+        objects: s3Objects,
+        bucket: BUCKET,
+        prefix: PREFIX,
+        error: s3ErrorMsg
+      }
+    });
+  } catch (e: any) {
+    console.error("Error getting database stats:", e);
+    return res.status(500).json({ message: "Lỗi khi lấy thông tin database" });
+  }
+}
+
+// GET /api/admin/vps/processes
+export async function getPm2Processes(req: Request, res: Response) {
+  try {
+    const platform = os.platform();
+    if (platform !== "linux") {
+      // Mock data for Windows/Dev
+      return res.json([
+        { name: "api", pid: 1001, pm_id: 1, monit: { memory: 1024 * 1024 * 50, cpu: 0.5 }, pm2_env: { status: "online", restart_time: 0, pm_uptime: Date.now() - 3600000, instances: 2 } },
+        { name: "api", pid: 1002, pm_id: 2, monit: { memory: 1024 * 1024 * 55, cpu: 0.6 }, pm2_env: { status: "online", restart_time: 0, pm_uptime: Date.now() - 3600000, instances: 2 } },
+        { name: "frontend", pid: 2001, pm_id: 3, monit: { memory: 1024 * 1024 * 100, cpu: 1.2 }, pm2_env: { status: "online", restart_time: 1, pm_uptime: Date.now() - 7200000, instances: 1 } },
+        { name: "admin", pid: 3001, pm_id: 4, monit: { memory: 1024 * 1024 * 80, cpu: 0.8 }, pm2_env: { status: "online", restart_time: 0, pm_uptime: Date.now() - 1800000, instances: 1 } },
+      ]);
+    }
+
+    const { stdout } = await execAsync("pm2 jlist");
+    const processes = JSON.parse(stdout);
+
+    // Filter relevant info to reduce payload
+    const simplified = processes.map((p: any) => ({
+      name: p.name,
+      pid: p.pid,
+      pm_id: p.pm_id,
+      monit: p.monit,
+      pm2_env: {
+        status: p.pm2_env.status,
+        restart_time: p.pm2_env.restart_time,
+        pm_uptime: p.pm2_env.pm_uptime,
+        instances: p.pm2_env.instances, // Cluster mode instances
+      }
+    }));
+
+    return res.json(simplified);
+  } catch (e: any) {
+    console.error("Error getting PM2 processes:", e);
+    return res.status(500).json({ message: "Lỗi khi lấy danh sách process" });
+  }
+}
+
+// POST /api/admin/vps/processes/:name/:action
+export async function controlPm2Process(req: Request, res: Response) {
+  try {
+    const { name, action } = req.params;
+    const validActions = ["start", "stop", "restart", "reload"];
+
+    if (!validActions.includes(action)) {
+      return res.status(400).json({ message: "Action không hợp lệ" });
+    }
+
+    const platform = os.platform();
+    if (platform !== "linux") {
+      // Mock success for Windows
+      await new Promise(r => setTimeout(r, 1000));
+      return res.json({ message: `Mock: ${action} ${name} thành công` });
+    }
+
+    // Execute PM2 command
+    // pm2 restart api
+    await execAsync(`pm2 ${action} ${name}`);
+
+    return res.json({ message: `${action} ${name} thành công` });
+  } catch (e: any) {
+    console.error(`Error ${req.params.action} process ${req.params.name}:`, e);
+    return res.status(500).json({ message: `Lỗi khi ${req.params.action} process` });
+  }
+} 

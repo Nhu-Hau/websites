@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { 
-  adminListCommunityPosts, 
+import {
+  adminListCommunityPosts,
   adminDeleteCommunityPost,
   adminCreateCommunityPost,
   adminListCommunityComments,
@@ -30,15 +30,13 @@ export default function CommunityPage() {
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
   const [loadingMe, setLoadingMe] = React.useState(true);
   const [posts, setPosts] = React.useState<AdminCommunityPost[]>([]);
-  const [comments, setComments] = React.useState<AdminCommunityComment[]>([]);
   const [users, setUsers] = React.useState<AdminUser[]>([]);
   const [page, setPage] = React.useState(1);
   const [limit] = React.useState(20);
   const [total, setTotal] = React.useState(0);
   const [q, setQ] = React.useState("");
   const [busy, setBusy] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState<"posts" | "comments">("posts");
-  
+
   // Modal states
   const [showCommentsModal, setShowCommentsModal] = React.useState(false);
   const [selectedPost, setSelectedPost] = React.useState<AdminCommunityPost | null>(null);
@@ -59,19 +57,13 @@ export default function CommunityPage() {
   const load = React.useCallback(async () => {
     setBusy(true);
     try {
-      if (activeTab === "posts") {
-        const data = await adminListCommunityPosts({ page, limit, q });
-        setPosts(data.items);
-        setTotal(data.total);
-      } else {
-        const data = await adminListCommunityComments({ page, limit, q });
-        setComments(data.items);
-        setTotal(data.total);
-      }
+      const data = await adminListCommunityPosts({ page, limit, q });
+      setPosts(data.items);
+      setTotal(data.total);
     } finally {
       setBusy(false);
     }
-  }, [page, limit, q, activeTab]);
+  }, [page, limit, q]);
 
   React.useEffect(() => {
     (async () => {
@@ -97,11 +89,6 @@ export default function CommunityPage() {
   }, [me]);
 
   React.useEffect(() => { if (me?.role === 'admin') void load(); }, [me, load]);
-
-  // Reset page when switching tabs
-  React.useEffect(() => {
-    setPage(1);
-  }, [activeTab]);
 
   const loadPostComments = async (postId: string) => {
     const data = await adminListCommunityComments({ postId });
@@ -176,10 +163,10 @@ export default function CommunityPage() {
       toast.error("Vui lòng nhập nội dung hoặc đính kèm tệp và chọn người dùng");
       return;
     }
-    await adminCreateCommunityPost({ 
-      content: newPostContent, 
+    await adminCreateCommunityPost({
+      content: newPostContent,
       userId: newPostUserId,
-      attachments: newPostAttachments 
+      attachments: newPostAttachments
     });
     toast.success("Đã tạo bài viết thành công");
     setShowCreatePostModal(false);
@@ -220,23 +207,6 @@ export default function CommunityPage() {
     });
   };
 
-  const onDeleteComment = (item: AdminCommunityComment) => {
-    setConfirmDialog({
-      title: "Xóa bình luận",
-      description: `Bạn có chắc muốn xóa bình luận của ${item.user?.name || "người dùng"}? Hành động này không thể hoàn tác.`,
-      confirmText: "Xóa bình luận",
-      cancelText: "Hủy",
-      successMessage: "Đã xóa bình luận thành công",
-      errorMessage: "Lỗi khi xóa bình luận",
-      onConfirm: async () => {
-        await adminDeleteCommunityComment(item._id);
-        await load();
-      },
-    });
-  };
-
-  const currentItems = activeTab === "posts" ? posts : comments;
-
   if (loadingMe) return <div className="p-6">Đang kiểm tra quyền…</div>;
   if (!me || me.role !== 'admin') return <div className="p-6 text-red-600">Chỉ dành cho Admin</div>;
 
@@ -250,11 +220,11 @@ export default function CommunityPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-zinc-900">Quản lý cộng đồng</h1>
-              <p className="text-sm text-zinc-600 mt-1">Quản lý bài viết và bình luận</p>
+              <p className="text-sm text-zinc-600 mt-1">Quản lý bài viết</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={() => setShowCreatePostModal(true)}
               className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-2 font-medium"
             >
@@ -264,47 +234,22 @@ export default function CommunityPage() {
         </div>
       </header>
 
-      <div className="bg-white rounded-xl shadow-lg border border-zinc-200 p-2">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveTab("posts")}
-            className={`px-6 py-3 font-semibold rounded-lg transition-all flex items-center gap-2 ${
-              activeTab === "posts"
-                ? "bg-gradient-to-r from-teal-500 to-blue-600 text-white shadow-md"
-                : "text-zinc-600 hover:bg-zinc-50"
-            }`}
-          >
-            <MessageSquare className="h-4 w-4" /> Bài viết ({posts.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("comments")}
-            className={`px-6 py-3 font-semibold rounded-lg transition-all flex items-center gap-2 ${
-              activeTab === "comments"
-                ? "bg-gradient-to-r from-teal-500 to-blue-600 text-white shadow-md"
-                : "text-zinc-600 hover:bg-zinc-50"
-            }`}
-          >
-            <MessageSquare className="h-4 w-4" /> Bình luận ({comments.length})
-          </button>
-        </div>
-      </div>
-
       <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
         <div className="flex flex-wrap gap-4 items-end">
           <div className="flex flex-col flex-1 min-w-[200px]">
             <label className="text-sm font-medium text-zinc-700 mb-2 flex items-center gap-2">
               <Search className="h-4 w-4" /> Tìm kiếm
             </label>
-            <input 
-              value={q} 
-              onChange={(e)=>setQ(e.target.value)} 
-              placeholder="Tìm trong nội dung..." 
-              className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all" 
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Tìm trong nội dung..."
+              className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
             />
           </div>
-          <button 
-            onClick={()=>{ setPage(1); void load(); }} 
-            disabled={busy} 
+          <button
+            onClick={() => { setPage(1); void load(); }}
+            disabled={busy}
             className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-2 font-medium"
           >
             <Search className="h-4 w-4" /> Lọc
@@ -314,166 +259,105 @@ export default function CommunityPage() {
 
       <div className="bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden">
         <div className="overflow-auto">
-          {activeTab === "posts" ? (
-            <table className="min-w-[800px] w-full">
-              <thead className="bg-gradient-to-r from-zinc-100 to-zinc-50 border-b border-zinc-200">
-                <tr className="text-left">
-                  <th className="p-4 font-semibold text-zinc-700">Người đăng</th>
-                  <th className="p-4 font-semibold text-zinc-700">Nội dung</th>
-                  <th className="p-4 font-semibold text-zinc-700">Attachments</th>
-                  <th className="p-4 font-semibold text-zinc-700">Likes</th>
-                  <th className="p-4 font-semibold text-zinc-700">Comments</th>
-                  <th className="p-4 font-semibold text-zinc-700">Reports</th>
-                  <th className="p-4 font-semibold text-zinc-700">Trạng thái</th>
-                  <th className="p-4 font-semibold text-zinc-700">Ngày tạo</th>
-                  <th className="p-4 font-semibold text-zinc-700 w-40">Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {posts.map((post) => (
-                  <tr key={post._id} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
-                    <td className="p-4">
-                      <div className="font-medium text-zinc-900">{post.user?.name || 'Unknown'}</div>
-                      <div className="text-xs text-zinc-500">{post.user?.email || ''}</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="line-clamp-2 max-w-xs text-zinc-700">{post.content || '(không có nội dung)'}</div>
-                    </td>
-                    <td className="p-4">
-                      {post.attachments && post.attachments.length > 0 ? (
-                        <span className="px-3 py-1.5 rounded-full border border-zinc-300 bg-zinc-50 text-xs font-medium">
-                          {post.attachments.length} file
-                        </span>
-                      ) : (
-                        <span className="text-zinc-400 text-xs">-</span>
-                      )}
-                    </td>
-                    <td className="p-4 font-medium text-zinc-900">{post.likesCount || 0}</td>
-                    <td className="p-4 font-medium text-zinc-900">{post.commentsCount || 0}</td>
-                    <td className="p-4 font-medium text-zinc-900">{post.reportsCount ?? 0}</td>
-                    <td className="p-4">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                          post.isHidden
-                            ? "bg-red-50 text-red-600 border border-red-200"
-                            : "bg-green-50 text-green-600 border border-green-200"
-                        }`}
-                      >
-                        {post.isHidden ? "Đã ẩn" : "Hiển thị"}
+          <table className="min-w-[800px] w-full">
+            <thead className="bg-gradient-to-r from-zinc-100 to-zinc-50 border-b border-zinc-200">
+              <tr className="text-left">
+                <th className="p-4 font-semibold text-zinc-700">Người đăng</th>
+                <th className="p-4 font-semibold text-zinc-700">Nội dung</th>
+                <th className="p-4 font-semibold text-zinc-700">Attachments</th>
+                <th className="p-4 font-semibold text-zinc-700">Likes</th>
+                <th className="p-4 font-semibold text-zinc-700">Comments</th>
+                <th className="p-4 font-semibold text-zinc-700">Reports</th>
+                <th className="p-4 font-semibold text-zinc-700">Trạng thái</th>
+                <th className="p-4 font-semibold text-zinc-700">Ngày tạo</th>
+                <th className="p-4 font-semibold text-zinc-700 w-40">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {posts.map((post) => (
+                <tr key={post._id} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
+                  <td className="p-4">
+                    <div className="font-medium text-zinc-900">{post.user?.name || 'Unknown'}</div>
+                    <div className="text-xs text-zinc-500">{post.user?.email || ''}</div>
+                  </td>
+                  <td className="p-4">
+                    <div className="line-clamp-2 max-w-xs text-zinc-700">{post.content || '(không có nội dung)'}</div>
+                  </td>
+                  <td className="p-4">
+                    {post.attachments && post.attachments.length > 0 ? (
+                      <span className="px-3 py-1.5 rounded-full border border-zinc-300 bg-zinc-50 text-xs font-medium">
+                        {post.attachments.length} file
                       </span>
-                    </td>
-                    <td className="p-4 text-xs text-zinc-500">
-                      {new Date(post.createdAt).toLocaleString('vi-VN')}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex flex-wrap gap-2">
-                        <button 
-                          onClick={()=>handleViewComments(post)} 
-                          className="px-3 py-1.5 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-100 transition-colors font-medium flex items-center gap-1"
-                        >
-                          <Eye className="h-3 w-3" /> Xem
-                        </button>
-                        <button
-                          onClick={() => onToggleHidePost(post)}
-                          className={`px-3 py-1.5 text-xs rounded-lg border transition-colors font-medium flex items-center gap-1 ${
-                            post.isHidden
-                              ? "border-teal-300 text-teal-600 hover:bg-teal-50"
-                              : "border-amber-300 text-amber-600 hover:bg-amber-50"
+                    ) : (
+                      <span className="text-zinc-400 text-xs">-</span>
+                    )}
+                  </td>
+                  <td className="p-4 font-medium text-zinc-900">{post.likesCount || 0}</td>
+                  <td className="p-4 font-medium text-zinc-900">{post.commentsCount || 0}</td>
+                  <td className="p-4 font-medium text-zinc-900">{post.reportsCount ?? 0}</td>
+                  <td className="p-4">
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${post.isHidden
+                          ? "bg-red-50 text-red-600 border border-red-200"
+                          : "bg-green-50 text-green-600 border border-green-200"
+                        }`}
+                    >
+                      {post.isHidden ? "Đã ẩn" : "Hiển thị"}
+                    </span>
+                  </td>
+                  <td className="p-4 text-xs text-zinc-500">
+                    {new Date(post.createdAt).toLocaleString('vi-VN')}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleViewComments(post)}
+                        className="px-3 py-1.5 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-100 transition-colors font-medium flex items-center gap-1"
+                      >
+                        <Eye className="h-3 w-3" /> Xem
+                      </button>
+                      <button
+                        onClick={() => onToggleHidePost(post)}
+                        className={`px-3 py-1.5 text-xs rounded-lg border transition-colors font-medium flex items-center gap-1 ${post.isHidden
+                            ? "border-teal-300 text-teal-600 hover:bg-teal-50"
+                            : "border-amber-300 text-amber-600 hover:bg-amber-50"
                           }`}
-                        >
-                          {post.isHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />} {post.isHidden ? "Bỏ ẩn" : "Ẩn"}
-                        </button>
-                        <button 
-                          onClick={()=>onDeletePost(post)} 
-                          className="px-3 py-1.5 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1"
-                        >
-                          <Trash2 className="h-3 w-3" /> Xóa
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {posts.length === 0 && (
-                  <tr>
-                    <td className="p-12 text-center text-zinc-500" colSpan={9}>
-                      <div className="flex flex-col items-center gap-2">
-                        <MessageSquare className="h-12 w-12 text-zinc-300" />
-                        <p className="text-lg font-medium">Không có dữ liệu</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          ) : (
-            <table className="min-w-[800px] w-full">
-              <thead className="bg-gradient-to-r from-zinc-100 to-zinc-50 border-b border-zinc-200">
-                <tr className="text-left">
-                  <th className="p-4 font-semibold text-zinc-700">Người bình luận</th>
-                  <th className="p-4 font-semibold text-zinc-700">Nội dung</th>
-                  <th className="p-4 font-semibold text-zinc-700">Attachments</th>
-                  <th className="p-4 font-semibold text-zinc-700">Bài viết</th>
-                  <th className="p-4 font-semibold text-zinc-700">Ngày tạo</th>
-                  <th className="p-4 font-semibold text-zinc-700 w-32">Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {comments.map((comment) => (
-                  <tr key={comment._id} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
-                    <td className="p-4">
-                      <div className="font-medium text-zinc-900">{comment.user?.name || 'Unknown'}</div>
-                      <div className="text-xs text-zinc-500">{comment.user?.email || ''}</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="line-clamp-2 max-w-xs text-zinc-700">{comment.content || '(không có nội dung)'}</div>
-                    </td>
-                    <td className="p-4">
-                      {comment.attachments && comment.attachments.length > 0 ? (
-                        <span className="px-3 py-1.5 rounded-full border border-zinc-300 bg-zinc-50 text-xs font-medium">
-                          {comment.attachments.length} file
-                        </span>
-                      ) : (
-                        <span className="text-zinc-400 text-xs">-</span>
-                      )}
-                    </td>
-                    <td className="p-4 text-xs font-mono text-zinc-700">{String(comment.postId).slice(0, 8)}...</td>
-                    <td className="p-4 text-xs text-zinc-500">
-                      {new Date(comment.createdAt).toLocaleString('vi-VN')}
-                    </td>
-                    <td className="p-4">
-                      <button 
-                        onClick={()=>onDeleteComment(comment)} 
+                      >
+                        {post.isHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />} {post.isHidden ? "Bỏ ẩn" : "Ẩn"}
+                      </button>
+                      <button
+                        onClick={() => onDeletePost(post)}
                         className="px-3 py-1.5 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1"
                       >
                         <Trash2 className="h-3 w-3" /> Xóa
                       </button>
-                    </td>
-                  </tr>
-                ))}
-                {comments.length === 0 && (
-                  <tr>
-                    <td className="p-12 text-center text-zinc-500" colSpan={6}>
-                      <div className="flex flex-col items-center gap-2">
-                        <MessageSquare className="h-12 w-12 text-zinc-300" />
-                        <p className="text-lg font-medium">Không có dữ liệu</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {posts.length === 0 && (
+                <tr>
+                  <td className="p-12 text-center text-zinc-500" colSpan={9}>
+                    <div className="flex flex-col items-center gap-2">
+                      <MessageSquare className="h-12 w-12 text-zinc-300" />
+                      <p className="text-lg font-medium">Không có dữ liệu</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200 flex items-center justify-between">
         <div className="text-sm font-medium text-zinc-700">
-          Tổng: <span className="font-bold text-teal-600">{total}</span> {activeTab === "posts" ? "bài viết" : "bình luận"}
+          Tổng: <span className="font-bold text-teal-600">{total}</span> bài viết
         </div>
         <div className="flex items-center gap-3">
-          <button 
-            disabled={page<=1 || busy} 
-            onClick={()=>setPage(p=>Math.max(1,p-1))} 
+          <button
+            disabled={page <= 1 || busy}
+            onClick={() => setPage(p => Math.max(1, p - 1))}
             className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
           >
             Trước
@@ -481,9 +365,9 @@ export default function CommunityPage() {
           <span className="text-sm font-medium text-zinc-700 px-4 py-2 bg-zinc-100 rounded-lg">
             {page} / {pages}
           </span>
-          <button 
-            disabled={page>=pages || busy} 
-            onClick={()=>setPage(p=>Math.min(pages,p+1))} 
+          <button
+            disabled={page >= pages || busy}
+            onClick={() => setPage(p => Math.min(pages, p + 1))}
             className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
           >
             Sau
@@ -493,26 +377,26 @@ export default function CommunityPage() {
 
       {/* Modal xem bình luận */}
       {showCommentsModal && selectedPost && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           style={{ animation: 'fadeIn 0.2s ease-out' }}
           onClick={() => setShowCommentsModal(false)}
         >
-          <div 
+          <div
             className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col"
             style={{ animation: 'slideUp 0.3s ease-out' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-zinc-200 flex justify-between items-center bg-gradient-to-r from-teal-50 to-blue-50">
               <h2 className="text-xl font-bold text-zinc-900">Bình luận của bài viết</h2>
-              <button 
+              <button
                 onClick={() => setShowCommentsModal(false)}
                 className="text-zinc-500 hover:text-zinc-900 p-2 rounded-lg hover:bg-zinc-100 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               <div className="mb-4 p-4 border border-zinc-200 rounded-lg bg-gradient-to-r from-zinc-50 to-white">
                 <div className="font-semibold text-zinc-900 mb-2">{selectedPost.user?.name || 'Unknown'}</div>
@@ -530,7 +414,7 @@ export default function CommunityPage() {
                           {new Date(comment.createdAt).toLocaleString('vi-VN')}
                         </div>
                       </div>
-                      <button 
+                      <button
                         onClick={() => {
                           setConfirmDialog({
                             title: "Xóa bình luận",
@@ -568,26 +452,26 @@ export default function CommunityPage() {
 
       {/* Modal tạo bài viết mới */}
       {showCreatePostModal && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           style={{ animation: 'fadeIn 0.2s ease-out' }}
           onClick={() => setShowCreatePostModal(false)}
         >
-          <div 
+          <div
             className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden"
             style={{ animation: 'slideUp 0.3s ease-out' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-zinc-200 flex justify-between items-center bg-gradient-to-r from-teal-50 to-blue-50">
               <h2 className="text-xl font-bold text-zinc-900">Tạo bài viết mới</h2>
-              <button 
+              <button
                 onClick={() => setShowCreatePostModal(false)}
                 className="text-zinc-500 hover:text-zinc-900 p-2 rounded-lg hover:bg-zinc-100 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div>
                 <label className="text-sm font-medium text-zinc-700 mb-2 block">Chọn người dùng</label>
@@ -734,4 +618,3 @@ export default function CommunityPage() {
     </div>
   );
 }
-

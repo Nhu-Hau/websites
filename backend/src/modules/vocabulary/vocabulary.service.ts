@@ -49,9 +49,9 @@ export class VocabularyService {
       throw new Error("Vocabulary set not found");
     }
 
-    // Check ownership
+    // Check ownership OR public access
     const ownerId = resolveOwnerId(userId);
-    if (!ownerIdMatches(set.ownerId, ownerId)) {
+    if (!ownerIdMatches(set.ownerId, ownerId) && !set.isPublic) {
       throw new Error("Unauthorized access to vocabulary set");
     }
 

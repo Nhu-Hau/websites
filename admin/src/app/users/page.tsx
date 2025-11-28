@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { adminListUsers, adminUpdateUser, adminDeleteUser, AdminUser } from "@/lib/apiClient";
-import { Users, Search, Filter, Trash2, Shield, Crown, Home, AlertTriangle, Eye } from "lucide-react";
+import { Users, Search, Filter, Trash2, Shield, Crown, Home, AlertTriangle, Eye, Calendar } from "lucide-react";
 import { useToast } from "@/components/common/ToastProvider";
 
 type ConfirmDialogState = {
@@ -30,7 +30,7 @@ export default function UsersPage() {
   const [confirmDialog, setConfirmDialog] = React.useState<ConfirmDialogState | null>(null);
   const [confirmLoading, setConfirmLoading] = React.useState(false);
   const [selectedUser, setSelectedUser] = React.useState<AdminUser | null>(null);
-  const [editedUser, setEditedUser] = React.useState<Partial<AdminUser>>({});
+  const [editedUser, setEditedUser] = React.useState<Partial<AdminUser> & { premiumType?: 'free' | 'lifetime' | 'monthly' }>({});
   const [saveLoading, setSaveLoading] = React.useState(false);
   const toast = useToast();
 
@@ -128,11 +128,16 @@ export default function UsersPage() {
 
   const openUserDetails = (u: AdminUser) => {
     setSelectedUser(u);
+    const isPremium = u.access === 'premium';
+    const isLifetime = isPremium && !u.premiumExpiryDate;
+
     setEditedUser({
       name: u.name,
       email: u.email,
       role: u.role,
       access: u.access,
+      premiumExpiryDate: u.premiumExpiryDate,
+      premiumType: !isPremium ? 'free' : isLifetime ? 'lifetime' : 'monthly',
     });
   };
 
@@ -404,14 +409,58 @@ export default function UsersPage() {
                   Gói đăng ký <span className="text-red-500">*</span>
                 </label>
                 <select
-                  value={editedUser.access || "free"}
-                  onChange={(e) => setEditedUser({ ...editedUser, access: e.target.value as "free" | "premium" })}
+                  value={editedUser.premiumType || "free"}
+                  onChange={(e) => {
+                    const type = e.target.value as 'free' | 'lifetime' | 'monthly';
+                    let newAccess: "free" | "premium" = "free";
+                    let newExpiry: string | null = null;
+
+                    if (type === 'free') {
+                      newAccess = "free";
+                      newExpiry = null;
+                    } else if (type === 'lifetime') {
+                      newAccess = "premium";
+                      newExpiry = null;
+                    } else if (type === 'monthly') {
+                      newAccess = "premium";
+                      // Default to 1 month from now if not set
+                      const d = new Date();
+                      d.setMonth(d.getMonth() + 1);
+                      newExpiry = d.toISOString();
+                    }
+
+                    setEditedUser({
+                      ...editedUser,
+                      premiumType: type,
+                      access: newAccess,
+                      premiumExpiryDate: newExpiry
+                    });
+                  }}
                   className="w-full border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                 >
                   <option value="free">Free</option>
-                  <option value="premium">Premium</option>
+                  <option value="lifetime">Premium Vĩnh Viễn</option>
+                  <option value="monthly">Premium theo tháng</option>
                 </select>
               </div>
+
+              {/* Ngày hết hạn (chỉ hiện khi chọn Premium theo tháng) */}
+              {editedUser.premiumType === 'monthly' && (
+                <div style={{ animation: "fadeIn 0.2s ease-out" }}>
+                  <label className="block text-sm font-semibold text-zinc-700 mb-2">
+                    Ngày hết hạn <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
+                    <input
+                      type="datetime-local"
+                      value={editedUser.premiumExpiryDate ? new Date(editedUser.premiumExpiryDate).toISOString().slice(0, 16) : ""}
+                      onChange={(e) => setEditedUser({ ...editedUser, premiumExpiryDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                      className="w-full border border-zinc-300 pl-10 pr-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Phần ảnh đại diện */}
               <div className="border-t border-zinc-200 pt-4">
@@ -429,9 +478,11 @@ export default function UsersPage() {
                     </div>
                   )}
                   <div className="flex-1">
-                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Đường dẫn</p>
-                    <p className="text-sm text-zinc-700 break-all">
-                      {selectedUser.picture || 'Chưa có ảnh đại diện'}
+                    <p className="text-sm text-zinc-700 font-medium">
+                      {selectedUser.name}
+                    </p>
+                    <p className="text-xs text-zinc-500">
+                      {selectedUser.email}
                     </p>
                   </div>
                 </div>
@@ -447,12 +498,7 @@ export default function UsersPage() {
                       {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString('vi-VN') : 'N/A'}
                     </p>
                   </div>
-                  <div className="bg-zinc-50 rounded-lg p-3 border border-zinc-200">
-                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Cập nhật</p>
-                    <p className="text-sm text-zinc-700">
-                      {selectedUser.updatedAt ? new Date(selectedUser.updatedAt).toLocaleString('vi-VN') : 'N/A'}
-                    </p>
-                  </div>
+
                   <div className="bg-zinc-50 rounded-lg p-3 border border-zinc-200">
                     <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">Đăng nhập cuối</p>
                     <p className="text-sm text-zinc-700">
@@ -465,6 +511,14 @@ export default function UsersPage() {
                       {selectedUser.toeicScore !== undefined ? selectedUser.toeicScore : 'Chưa có'}
                     </p>
                   </div>
+                  {selectedUser.access === 'premium' && (
+                    <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                      <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide mb-1">Hết hạn Premium</p>
+                      <p className="text-sm font-medium text-yellow-900">
+                        {selectedUser.premiumExpiryDate ? new Date(selectedUser.premiumExpiryDate).toLocaleString('vi-VN') : 'Vĩnh viễn'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

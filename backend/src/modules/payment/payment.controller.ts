@@ -30,19 +30,19 @@ function computeDiscountedAmount(opts: {
   amountAfter?: number | null;
 }) {
   const { baseAmount, type, value, amountAfter } = opts;
-  if (typeof amountAfter === "number" && amountAfter > 0) {
-    return Math.max(1000, Math.round(amountAfter));
+  if (typeof amountAfter === "number" && amountAfter >= 0) {
+    return Math.round(amountAfter);
   }
   if (!type) return baseAmount;
 
   if (type === "fixed") {
     const final = baseAmount - (value || 0);
-    return Math.max(1000, Math.round(final));
+    return Math.max(0, Math.round(final));
   }
   if (type === "percent") {
     const pct = Math.max(0, Math.min(100, value || 0));
     const final = baseAmount * (1 - pct / 100);
-    return Math.max(1000, Math.round(final));
+    return Math.max(0, Math.round(final));
   }
   return baseAmount;
 }
@@ -138,8 +138,7 @@ async function validatePromoInternal(codeRaw: string, userId: string) {
   if (activeFromTime !== null && now < activeFromTime) {
     const startDate = new Date(activeFromTime);
     console.log(
-      `[Promo Validation] Code: ${code} not yet active. activeFrom: ${
-        promo.activeFrom
+      `[Promo Validation] Code: ${code} not yet active. activeFrom: ${promo.activeFrom
       }, startDate: ${startDate.toISOString()}, now: ${new Date(
         now
       ).toISOString()}`
@@ -241,7 +240,7 @@ export async function validatePromo(req: Request, res: Response) {
     const baseAmountFromPlan = planKey
       ? PLAN_PRICES[planKey]
       : PLAN_PRICES.monthly_159;
-    
+
     const codeStr = String(code || "").trim().toUpperCase();
     if (!codeStr) {
       return res.status(400).json({ message: "Thiếu mã khuyến mãi" });
@@ -373,7 +372,7 @@ async function syncPaymentFromPayOS(orderCode: number) {
   const payment = await Payment.findOne({ orderCode });
   if (!payment) return null;
 
-    if (info.status === "PAID" && payment.status !== PaymentStatus.PAID) {
+  if (info.status === "PAID" && payment.status !== PaymentStatus.PAID) {
     payment.status = PaymentStatus.PAID;
     payment.paidAt = new Date();
     payment.payOSTransactionId = info.transactions?.[0]?.reference || null;
@@ -396,6 +395,8 @@ async function syncPaymentFromPayOS(orderCode: number) {
           amountBefore: payment.amountBefore ?? payment.amount,
           amountAfter: payment.amountAfter ?? payment.amount,
         });
+        // Increment usage count
+        await PromoCode.updateOne({ code: payment.promoCode }, { $inc: { usedCount: 1 } });
       } catch (e) {
         console.warn("PromoRedemption save failed:", (e as any)?.message || e);
       }
@@ -429,23 +430,23 @@ export async function createPayment(
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-    
+
     // Kiểm tra nếu user đã có premium và chưa hết hạn
     if (user.access === "premium" && user.premiumExpiryDate) {
       const expiryDate = new Date(user.premiumExpiryDate);
       if (expiryDate > new Date()) {
-        return res.status(400).json({ 
-          message: `Bạn đã là thành viên Premium đến ${expiryDate.toLocaleDateString("vi-VN")}` 
+        return res.status(400).json({
+          message: `Bạn đã là thành viên Premium đến ${expiryDate.toLocaleDateString("vi-VN")}`
         });
       }
     }
 
     const { plan, promoCode } = req.body || {};
-    
+
     // Validate plan
     if (!plan || !["monthly_79", "monthly_159"].includes(plan)) {
-      return res.status(400).json({ 
-        message: "Vui lòng chọn gói: monthly_79 hoặc monthly_159" 
+      return res.status(400).json({
+        message: "Vui lòng chọn gói: monthly_79 hoặc monthly_159"
       });
     }
 
@@ -522,6 +523,66 @@ export async function createPayment(
       });
       appliedPromo = promo.code;
     }
+
+    // Nếu số tiền <= 0, kích hoạt luôn không cần qua cổng thanh toán
+    if (amountAfter <= 0) {
+      const durationMonths = PLAN_DURATIONS[selectedPlan];
+      const expiryDate = new Date();
+      expiryDate.setMonth(expiryDate.getMonth() + durationMonths);
+
+      const orderCode = Date.now();
+
+      const payment = new Payment({
+        userId,
+        orderCode,
+        amount: 0,
+        amountBefore,
+        amountAfter: 0,
+        description: `Free Upgrade: ${selectedPlan}`,
+        status: PaymentStatus.PAID, // Đã thanh toán (free)
+        payOSCheckoutUrl: null,
+        payOSQrCode: null,
+        returnUrl: "",
+        cancelUrl: "",
+        promoCode: appliedPromo,
+        plan: selectedPlan,
+        premiumExpiryDate: expiryDate,
+        paidAt: new Date(),
+      });
+      await payment.save();
+
+      // Nâng cấp user ngay lập tức
+      await upgradeUserToPremium(userId, selectedPlan, new Date());
+
+      // Lưu redemption
+      if (appliedPromo) {
+        try {
+          await PromoRedemption.create({
+            promoCode: appliedPromo,
+            userId,
+            paymentId: payment._id,
+            amountBefore,
+            amountAfter: 0,
+          });
+          // Increment usage count
+          await PromoCode.updateOne({ code: appliedPromo }, { $inc: { usedCount: 1 } });
+        } catch (e) {
+          console.warn("PromoRedemption save failed:", (e as any)?.message || e);
+        }
+      }
+
+      return res.json({
+        data: {
+          checkoutUrl: null, // Không có link thanh toán
+          qrCode: null,
+          orderCode,
+          isFree: true, // Flag để frontend biết
+        },
+      });
+    }
+
+    // Nếu số tiền > 0, đảm bảo tối thiểu 2000đ cho PayOS
+    if (amountAfter < 2000) amountAfter = 2000;
 
     const planLabels: Record<PaymentPlan, string> = {
       monthly_79: "Premium 79k/tháng",

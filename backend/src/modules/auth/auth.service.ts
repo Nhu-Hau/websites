@@ -28,12 +28,13 @@ export function toSafeUser(u: IUser) {
     picture: u.picture,
     createdAt: u.createdAt,
     updatedAt: u.updatedAt,
+    last_login: u.last_login,
 
     // NEW:
     partLevels: u.partLevels
       ? Object.fromEntries(
-          (u.partLevels as any)?.entries?.() || Object.entries(u.partLevels)
-        )
+        (u.partLevels as any)?.entries?.() || Object.entries(u.partLevels)
+      )
       : {},
     toeicPred: u.toeicPred || { overall: 0, listening: 0, reading: 0 },
   };

@@ -72,6 +72,9 @@ const paymentSchema = new Schema<IPayment>(
       required: false,
     },
     premiumExpiryDate: Date,
+    promoCode: String,
+    amountBefore: Number,
+    amountAfter: Number,
   },
   { timestamps: true, versionKey: false }
 );

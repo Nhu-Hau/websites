@@ -24,7 +24,7 @@ export const adminNavItems: AdminNavItem[] = [
     ],
   },
   { label: "Quản lý Users", href: "/users" },
-  { label: "Mã khuyến mãi", href: "/promos" },
+  { label: "Đơn hàng & Mã", href: "/promos" },
   { label: "VPS & Logs", href: "/vps" },
   { label: "Admin Chat", href: "/admin-chat" },
 ];

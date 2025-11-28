@@ -5,6 +5,8 @@ module.exports = {
       cwd: "/opt/websites/backend",
       script: "node",
       args: "dist/server.js",
+      instances: 2,              // 2 process API
+      exec_mode: "cluster",      // chạy cluster
       env: {
         PORT: 4000,
         NODE_ENV: "production",
@@ -20,7 +22,9 @@ module.exports = {
       name: "frontend",
       cwd: "/opt/websites/frontend",
       script: "npm",
-      args: "start",
+      args: "start",             // ví dụ: next start -p 3000
+      instances: 2,              // 2 process web
+      exec_mode: "cluster",
       env: {
         PORT: 3000,
         NODE_ENV: "production",
@@ -37,6 +41,8 @@ module.exports = {
       cwd: "/opt/websites/admin",
       script: "npm",
       args: "start",
+      instances: 1,              // admin ít user, 1 là đủ
+      exec_mode: "cluster",
       env: {
         PORT: 3001,
         NODE_ENV: "production",
@@ -46,7 +52,7 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm:ss Z",
       merge_logs: true,
       autorestart: true,
-      max_memory_restart: "1G",
+      max_memory_restart: "512M",
     },
   ],
 };

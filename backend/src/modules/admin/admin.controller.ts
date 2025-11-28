@@ -34,7 +34,7 @@ export async function listUsers(req: Request, res: Response) {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select("_id name email role access level picture last_login toeicPred createdAt updatedAt"),
+        .select("_id name email role access level picture last_login toeicPred createdAt updatedAt premiumExpiryDate"),
       User.countDocuments(filter),
     ]);
 
@@ -56,11 +56,12 @@ export async function listUsers(req: Request, res: Response) {
 export async function updateUser(req: Request, res: Response) {
   try {
     const { id } = req.params as { id: string };
-    const { name, role, access, level } = req.body as {
+    const { name, role, access, level, premiumExpiryDate } = req.body as {
       name?: string;
       role?: "user" | "admin" | "teacher";
       access?: "free" | "premium";
       level?: 1 | 2 | 3;
+      premiumExpiryDate?: string | null;
     };
 
     const allowed: any = {};
@@ -68,6 +69,7 @@ export async function updateUser(req: Request, res: Response) {
     if (role === "user" || role === "admin" || role === "teacher") allowed.role = role;
     if (access === "free" || access === "premium") allowed.access = access;
     if ([1, 2, 3].includes(Number(level))) allowed.level = Number(level);
+    if (premiumExpiryDate !== undefined) allowed.premiumExpiryDate = premiumExpiryDate ? new Date(premiumExpiryDate) : null;
 
     const user = await User.findByIdAndUpdate(id, { $set: allowed }, { new: true });
     if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
@@ -81,6 +83,7 @@ export async function updateUser(req: Request, res: Response) {
         level: user.level,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        premiumExpiryDate: user.premiumExpiryDate,
       }
     });
   } catch (e) {

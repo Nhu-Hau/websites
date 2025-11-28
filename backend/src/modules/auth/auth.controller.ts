@@ -222,6 +222,10 @@ export async function refresh(req: Request, res: Response) {
     let nextRefresh: string | undefined;
     const msLeft = (user.refreshTokenExp?.getTime() ?? 0) - Date.now();
     const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+
+    // Update last_login
+    user.last_login = new Date();
+
     if (msLeft > 0 && msLeft < SEVEN_DAYS) {
       const jti = newJti();
       nextRefresh = signRefreshToken({ id: user.id, role: user.role, jti });
@@ -230,8 +234,8 @@ export async function refresh(req: Request, res: Response) {
       user.refreshTokenExp = new Date(
         Date.now() + (refreshCookieOpts.maxAge || 0)
       );
-      await user.save();
     }
+    await user.save();
 
     // Set lại cookie access (và refresh nếu có xoay vòng) - for web
     setAuthCookies(res, access, nextRefresh);

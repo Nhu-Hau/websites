@@ -57,6 +57,7 @@ import {
   adminDeleteNews,
   uploadNewsImage,
 } from "./admin-news.controller";
+import { listPayments } from "./admin-payment.controller";
 
 const router = Router();
 
@@ -75,6 +76,9 @@ router.get("/analytics/online-users", onlineUsersCount);
 router.get("/analytics/vps-stats", vpsStats);
 router.post("/vps/restart", restartServer);
 router.get("/vps/pm2-logs/:app", getPm2Logs);
+
+// Payment admin routes
+router.get("/payments", listPayments);
 
 // Attempts admin routes
 router.get("/attempts/placement", listPlacementAttempts);

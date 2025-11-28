@@ -14,6 +14,7 @@ export type AdminUser = {
   toeicScore?: number;
   createdAt?: string;
   updatedAt?: string;
+  premiumExpiryDate?: string | null;
 };
 
 export type AdminPromoCode = {
@@ -33,6 +34,43 @@ export type AdminPromoCode = {
   updatedAt?: string;
 };
 
+export type AdminPayment = {
+  _id: string;
+  userId: { _id: string; name: string; email: string; picture?: string } | string;
+  orderCode: number;
+  amount: number;
+  description: string;
+  status: "pending" | "paid" | "cancelled" | "expired";
+  payOSTransactionId?: string;
+  payOSCheckoutUrl?: string;
+  payOSQrCode?: string;
+  cancelUrl?: string;
+  returnUrl?: string;
+  paidAt?: string;
+  promoCode?: string | null;
+  amountBefore?: number | null;
+  amountAfter?: number | null;
+  plan?: "monthly_79" | "monthly_159" | null;
+  premiumExpiryDate?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function adminListPayments(params?: { page?: number; limit?: number; q?: string; status?: string; plan?: string }) {
+  const usp = new URLSearchParams();
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  if (params?.q) usp.set("q", params.q);
+  if (params?.status) usp.set("status", params.status);
+  if (params?.plan) usp.set("plan", params.plan);
+  const res = await fetch(`/api/admin/payments?${usp.toString()}`, { credentials: "include", cache: "no-store" });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch payments failed");
+  }
+  return res.json() as Promise<{ items: AdminPayment[]; total: number; page: number; limit: number; pages: number }>;
+}
+
 export async function adminListUsers(params?: { page?: number; limit?: number; q?: string; role?: string; access?: string; }) {
   const usp = new URLSearchParams();
   if (params?.page) usp.set('page', String(params.page));
@@ -45,7 +83,7 @@ export async function adminListUsers(params?: { page?: number; limit?: number; q
   return res.json() as Promise<{ items: AdminUser[]; total: number; page: number; limit: number; pages: number }>;
 }
 
-export async function adminUpdateUser(id: string, body: Partial<Pick<AdminUser, 'name' | 'role' | 'access'>> & { level?: 1 | 2 | 3 }) {
+export async function adminUpdateUser(id: string, body: Partial<Pick<AdminUser, 'name' | 'role' | 'access'>> & { level?: 1 | 2 | 3; premiumExpiryDate?: string | null }) {
   const res = await fetch(`/api/admin/users/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

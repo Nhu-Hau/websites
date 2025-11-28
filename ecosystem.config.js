@@ -20,7 +20,7 @@ module.exports = {
     {
       name: "frontend",
       cwd: "/opt/websites/frontend",
-      script: "npm",
+      script: "node_modules/next/dist/bin/next",
       args: "start",             // ví dụ "next start -p 3000"
       instances: 2,              // 2 instance web để reload không sập
       exec_mode: "cluster",
@@ -38,7 +38,7 @@ module.exports = {
     {
       name: "admin",
       cwd: "/opt/websites/admin",
-      script: "npm",
+      script: "node_modules/next/dist/bin/next",
       args: "start",
       instances: 1,              // admin ít user, 1 instance là đủ
       exec_mode: "cluster",

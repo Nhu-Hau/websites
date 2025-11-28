@@ -969,8 +969,9 @@ export async function getPm2Processes(req: Request, res: Response) {
       return res.json([
         { name: "api", pid: 1001, pm_id: 1, monit: { memory: 1024 * 1024 * 50, cpu: 0.5 }, pm2_env: { status: "online", restart_time: 0, pm_uptime: Date.now() - 3600000, instances: 2 } },
         { name: "api", pid: 1002, pm_id: 2, monit: { memory: 1024 * 1024 * 55, cpu: 0.6 }, pm2_env: { status: "online", restart_time: 0, pm_uptime: Date.now() - 3600000, instances: 2 } },
-        { name: "frontend", pid: 2001, pm_id: 3, monit: { memory: 1024 * 1024 * 100, cpu: 1.2 }, pm2_env: { status: "online", restart_time: 1, pm_uptime: Date.now() - 7200000, instances: 1 } },
-        { name: "admin", pid: 3001, pm_id: 4, monit: { memory: 1024 * 1024 * 80, cpu: 0.8 }, pm2_env: { status: "online", restart_time: 0, pm_uptime: Date.now() - 1800000, instances: 1 } },
+        { name: "frontend", pid: 2001, pm_id: 3, monit: { memory: 1024 * 1024 * 100, cpu: 1.2 }, pm2_env: { status: "online", restart_time: 1, pm_uptime: Date.now() - 7200000, instances: 2 } },
+        { name: "frontend", pid: 2002, pm_id: 4, monit: { memory: 1024 * 1024 * 110, cpu: 1.1 }, pm2_env: { status: "online", restart_time: 0, pm_uptime: Date.now() - 7100000, instances: 2 } },
+        { name: "admin", pid: 3001, pm_id: 5, monit: { memory: 1024 * 1024 * 80, cpu: 0.8 }, pm2_env: { status: "online", restart_time: 0, pm_uptime: Date.now() - 1800000, instances: 1 } },
       ]);
     }
 

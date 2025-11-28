@@ -117,13 +117,13 @@ export default function VpsPage() {
     return () => clearInterval(interval);
   }, [me]);
 
-  const handleProcessAction = async (name: string, action: 'start' | 'stop' | 'restart') => {
+  const handleProcessAction = async (id: number, name: string, action: 'start' | 'stop' | 'restart') => {
     if (processingAction) return;
-    if (!confirm(`Bạn có chắc muốn ${action} process "${name}"?`)) return;
+    if (!confirm(`Bạn có chắc muốn ${action} process "${name}" (ID: ${id})?`)) return;
 
-    setProcessingAction(`${name}-${action}`);
+    setProcessingAction(`${id}-${action}`);
     try {
-      await adminControlProcess(name, action);
+      await adminControlProcess(id.toString(), action);
       // Refresh list immediately
       const data = await adminGetProcesses();
       setProcesses(data);
@@ -133,27 +133,6 @@ export default function VpsPage() {
       setProcessingAction(null);
     }
   };
-
-  // Group processes by name
-  const groupedProcesses = React.useMemo(() => {
-    const groups: Record<string, any> = {};
-    processes.forEach(p => {
-      if (!groups[p.name]) {
-        groups[p.name] = {
-          name: p.name,
-          instances: [],
-          totalMemory: 0,
-          totalCpu: 0,
-          status: 'online' // default, will check if any is offline
-        };
-      }
-      groups[p.name].instances.push(p);
-      groups[p.name].totalMemory += p.monit.memory;
-      groups[p.name].totalCpu += p.monit.cpu;
-      if (p.pm2_env.status !== 'online') groups[p.name].status = p.pm2_env.status;
-    });
-    return Object.values(groups);
-  }, [processes]);
 
 
   if (loadingMe) {
@@ -405,40 +384,45 @@ export default function VpsPage() {
                 <table className="w-full text-sm text-left">
                   <thead className="bg-zinc-50 text-zinc-500 font-medium border-b border-zinc-200">
                     <tr>
-                      <th className="px-6 py-3">Application</th>
+                      <th className="px-6 py-3">ID</th>
+                      <th className="px-6 py-3">Name</th>
                       <th className="px-6 py-3">Status</th>
-                      <th className="px-6 py-3">Instances</th>
                       <th className="px-6 py-3">Memory</th>
                       <th className="px-6 py-3">CPU</th>
+                      <th className="px-6 py-3">Uptime</th>
                       <th className="px-6 py-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-200">
-                    {groupedProcesses.length > 0 ? (
-                      groupedProcesses.map((group) => (
-                        <tr key={group.name} className="hover:bg-zinc-50">
-                          <td className="px-6 py-4">
-                            <div className="font-semibold text-zinc-900">{group.name}</div>
+                    {processes.length > 0 ? (
+                      processes.map((proc) => (
+                        <tr key={proc.pm_id} className="hover:bg-zinc-50">
+                          <td className="px-6 py-4 text-zinc-500 font-mono">
+                            {proc.pm_id}
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${group.status === 'online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            <div className="font-semibold text-zinc-900">{proc.name}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${proc.pm2_env.status === 'online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                               }`}>
-                              {group.status}
+                              {proc.pm2_env.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-zinc-600">
-                            {group.instances.length} instance(s)
+                          <td className="px-6 py-4 text-zinc-600 font-mono">
+                            {formatBytes(proc.monit.memory)}
                           </td>
                           <td className="px-6 py-4 text-zinc-600 font-mono">
-                            {formatBytes(group.totalMemory)}
+                            {proc.monit.cpu}%
                           </td>
-                          <td className="px-6 py-4 text-zinc-600 font-mono">
-                            {group.totalCpu.toFixed(1)}%
+                          <td className="px-6 py-4 text-zinc-600 text-xs">
+                            {/* Simple uptime calc, assumes pm_uptime is timestamp */}
+                            {proc.pm2_env.pm_uptime ? formatUptime(Date.now() - proc.pm2_env.pm_uptime) : '-'}
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
                               <button
-                                onClick={() => handleProcessAction(group.name, 'start')}
+                                onClick={() => handleProcessAction(proc.pm_id, proc.name, 'start')}
                                 disabled={!!processingAction}
                                 className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
                                 title="Start"
@@ -446,7 +430,7 @@ export default function VpsPage() {
                                 <Play className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={() => handleProcessAction(group.name, 'stop')}
+                                onClick={() => handleProcessAction(proc.pm_id, proc.name, 'stop')}
                                 disabled={!!processingAction}
                                 className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                                 title="Stop"
@@ -454,9 +438,9 @@ export default function VpsPage() {
                                 <Square className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={() => handleProcessAction(group.name, 'restart')}
+                                onClick={() => handleProcessAction(proc.pm_id, proc.name, 'restart')}
                                 disabled={!!processingAction}
-                                className={`p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50 ${processingAction === `${group.name}-restart` ? 'animate-spin' : ''
+                                className={`p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50 ${processingAction === `${proc.pm_id}-restart` ? 'animate-spin' : ''
                                   }`}
                                 title="Restart"
                               >
@@ -468,7 +452,7 @@ export default function VpsPage() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-zinc-400">
+                        <td colSpan={7} className="px-6 py-8 text-center text-zinc-400">
                           Đang tải danh sách process...
                         </td>
                       </tr>
@@ -535,6 +519,18 @@ function CircularGauge({ label, value }: { label: string; value: number }) {
       <p className="mt-4 text-sm font-medium text-zinc-700 text-center">{label}</p>
     </div>
   );
+}
+
+function formatUptime(ms: number) {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ${hours % 24}h`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+  return `${seconds}s`;
 }
 
 function formatBytes(bytes: number, decimals = 2) {

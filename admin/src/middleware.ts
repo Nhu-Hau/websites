@@ -3,6 +3,9 @@ import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  // Log request for debugging
+  console.log(`[Admin] ${req.method} ${pathname}`);
+
   // Protect admin routes -> require admin token cookie
   if (pathname.startsWith("/users") || pathname.startsWith("/admin-chat")) {
     const hasAdminAccess = req.cookies.has("adminToken");

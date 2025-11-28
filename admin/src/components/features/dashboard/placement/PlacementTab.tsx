@@ -62,7 +62,7 @@ export default function PlacementTab({
                                         <td className="p-4 font-medium text-zinc-900">{a.userName}</td>
                                         <td className="p-4 font-mono text-xs text-zinc-600">{a.userEmail}</td>
                                         <td className="p-4">
-                                            <span className="px-3 py-1 rounded-full border text-xs font-medium bg-blue-100 text-blue-800 border-blue-200">
+                                            <span className="px-3 py-1 rounded-full border text-xs font-medium bg-blue-100 text-blue-800 border-blue-200 whitespace-nowrap">
                                                 Level {a.level}
                                             </span>
                                         </td>
@@ -82,10 +82,10 @@ export default function PlacementTab({
                                         <td className="p-4">
                                             <span
                                                 className={`px-2 py-1 rounded text-xs font-medium ${a.acc >= 0.8
-                                                        ? "bg-green-100 text-green-700"
-                                                        : a.acc >= 0.6
-                                                            ? "bg-yellow-100 text-yellow-700"
-                                                            : "bg-red-100 text-red-700"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : a.acc >= 0.6
+                                                        ? "bg-yellow-100 text-yellow-700"
+                                                        : "bg-red-100 text-red-700"
                                                     }`}
                                             >
                                                 {(a.acc * 100).toFixed(1)}%

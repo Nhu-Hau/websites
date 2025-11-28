@@ -94,7 +94,7 @@ export default function PracticeTab({
                                                 {user.userEmail}
                                             </td>
                                             <td className="p-4">
-                                                <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                                <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium whitespace-nowrap">
                                                     {user.attempts.length} bài
                                                 </span>
                                             </td>

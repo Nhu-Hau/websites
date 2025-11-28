@@ -49,6 +49,7 @@ export default function PartsPage() {
   const [expandedTest, setExpandedTest] = React.useState<string | null>(null);
   const [testItems, setTestItems] = React.useState<Record<string, AdminPart[]>>({});
   const [testStimuli, setTestStimuli] = React.useState<Record<string, Record<string, AdminStimulus>>>({});
+  const [activeTab, setActiveTab] = React.useState<'items' | 'stimuli'>('items');
   const [stats, setStats] = React.useState<AdminPartsStats | null>(null);
   const [busy, setBusy] = React.useState(false);
   const toast = useToast();
@@ -162,6 +163,7 @@ export default function PartsPage() {
       setExpandedTest(null);
     } else {
       setExpandedTest(key);
+      setActiveTab('items');
       if (!testItems[key]) {
         try {
           const result = await adminGetTestItems({
@@ -554,140 +556,219 @@ export default function PartsPage() {
               </div>
 
               {isExpanded && (
-                <div className="bg-gradient-to-br from-zinc-50 to-white">
-                  <div className="p-6 space-y-5">
-                    {/* Action buttons */}
-                    <div className="flex gap-3">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const currentItemsCount = testItems[key]?.length || 0;
-                          setAddQuestionModal({ isOpen: true, part: test.part, level: test.level, test: test.test, itemsCount: currentItemsCount });
-                        }}
-                        className="px-4 py-2.5 text-sm rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 transition-colors font-medium flex items-center gap-2 shadow-sm"
-                      >
-                        <Plus className="h-4 w-4" /> Thêm câu hỏi
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const currentStimuliCount = testStimuli[key] ? Object.keys(testStimuli[key]).length : 0;
-                          setAddStimulusModal({ isOpen: true, part: test.part, level: test.level, test: test.test, stimuliCount: currentStimuliCount });
-                        }}
-                        className="px-4 py-2.5 text-sm rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 transition-colors font-medium flex items-center gap-2 shadow-sm"
-                      >
-                        <Plus className="h-4 w-4" /> Thêm stimulus
-                      </button>
-                    </div>
+                <div className="bg-gradient-to-br from-zinc-50 to-white border-t border-zinc-200">
+                  <div className="flex border-b border-zinc-200">
+                    <button
+                      onClick={() => setActiveTab('items')}
+                      className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'items'
+                        ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50'
+                        : 'text-zinc-600 hover:bg-zinc-50'
+                        }`}
+                    >
+                      Items ({items.length})
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('stimuli')}
+                      className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'stimuli'
+                        ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50/50'
+                        : 'text-zinc-600 hover:bg-zinc-50'
+                        }`}
+                    >
+                      Stimuli ({testStimuli[key] ? Object.keys(testStimuli[key]).length : 0})
+                    </button>
+                  </div>
 
-                    {/* Stimuli section */}
-                    {testStimuli[key] && Object.keys(testStimuli[key]).length > 0 && (
-                      <div className="bg-white rounded-lg p-4 border border-zinc-200">
-                        <div className="text-sm font-semibold text-zinc-900 mb-3">Các stimuli đang dùng trong test này:</div>
-                        <div className="flex flex-wrap gap-2">
-                          {Object.values(testStimuli[key]).sort((a, b) => a.id.localeCompare(b.id)).map((stimulus) => (
-                            <div key={stimulus.id} className="border border-zinc-300 rounded-lg px-3 py-2 bg-zinc-50 text-xs font-mono flex items-center gap-2 shadow-sm">
-                              <span className="font-semibold text-zinc-700">{stimulus.id}</span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditStimulus(stimulus);
-                                }}
-                                className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
-                              >
-                                <Edit className="h-3 w-3" /> Sửa
-                              </button>
-                              <button
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  if (confirm(`Xóa stimulus ${stimulus.id}?`)) {
-                                    try {
-                                      await adminDeleteStimulus(stimulus.id);
-                                      toast.success("Đã xóa stimulus thành công");
-                                      // Reload test data
-                                      const [part, level, test] = key.split('-');
-                                      const result = await adminGetTestItems({
-                                        part,
-                                        level: parseInt(level),
-                                        test: parseInt(test),
-                                      });
-                                      setTestItems({ ...testItems, [key]: result.items });
-                                      setTestStimuli({ ...testStimuli, [key]: result.stimulusMap });
-                                    } catch (err: any) {
-                                      toast.error(err?.message || "Lỗi xóa stimulus");
-                                    }
-                                  }
-                                }}
-                                className="text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
-                              >
-                                <Trash2 className="h-3 w-3" /> Xóa
-                              </button>
-                            </div>
-                          ))}
+                  <div className="p-6">
+                    {activeTab === 'items' ? (
+                      <div className="space-y-4">
+                        <div className="flex justify-end">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const currentItemsCount = testItems[key]?.length || 0;
+                              setAddQuestionModal({ isOpen: true, part: test.part, level: test.level, test: test.test, itemsCount: currentItemsCount });
+                            }}
+                            className="px-4 py-2 text-sm rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 transition-colors font-medium flex items-center gap-2 shadow-sm"
+                          >
+                            <Plus className="h-4 w-4" /> Thêm câu hỏi
+                          </button>
+                        </div>
+
+                        <div className="bg-white rounded-lg border border-zinc-200 overflow-hidden shadow-sm">
+                          <div className="overflow-auto max-h-[500px]">
+                            <table className="w-full text-sm">
+                              <thead className="bg-zinc-50 border-b border-zinc-200 sticky top-0 z-10">
+                                <tr className="text-left">
+                                  <th className="p-3 font-semibold text-zinc-700">ID</th>
+                                  <th className="p-3 font-semibold text-zinc-700">Stem</th>
+                                  <th className="p-3 font-semibold text-zinc-700">StimulusId</th>
+                                  <th className="p-3 font-semibold text-zinc-700">Answer</th>
+                                  <th className="p-3 font-semibold text-zinc-700">Explain</th>
+                                  <th className="p-3 font-semibold text-zinc-700 w-32">Hành động</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-zinc-100">
+                                {items.map((item) => (
+                                  <tr key={item._id || item.id} className="hover:bg-zinc-50 transition-colors">
+                                    <td className="p-3 font-mono text-xs text-zinc-700">{item.id}</td>
+                                    <td className="p-3 text-xs max-w-xs truncate text-zinc-600" title={item.stem}>
+                                      {item.stem || "—"}
+                                    </td>
+                                    <td className="p-3 font-mono text-xs text-zinc-700">
+                                      {item.stimulusId || "—"}
+                                    </td>
+                                    <td className="p-3 font-semibold text-zinc-900">{item.answer}</td>
+                                    <td className="p-3 text-xs max-w-xs truncate text-zinc-600" title={item.explain || ""}>
+                                      {item.explain || "—"}
+                                    </td>
+                                    <td className="p-3">
+                                      <div className="flex gap-2">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setEditQuestion(item);
+                                          }}
+                                          className="px-2 py-1 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-100 transition-colors font-medium flex items-center gap-1"
+                                        >
+                                          <Edit className="h-3 w-3" /> Sửa
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            void handleDelete(item);
+                                          }}
+                                          className="px-2 py-1 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1"
+                                        >
+                                          <Trash2 className="h-3 w-3" /> Xóa
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                                {items.length === 0 && (
+                                  <tr>
+                                    <td colSpan={6} className="p-8 text-center text-zinc-500">
+                                      Chưa có câu hỏi nào
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex justify-end">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const currentStimuliCount = testStimuli[key] ? Object.keys(testStimuli[key]).length : 0;
+                              setAddStimulusModal({ isOpen: true, part: test.part, level: test.level, test: test.test, stimuliCount: currentStimuliCount });
+                            }}
+                            className="px-4 py-2 text-sm rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 transition-colors font-medium flex items-center gap-2 shadow-sm"
+                          >
+                            <Plus className="h-4 w-4" /> Thêm stimulus
+                          </button>
+                        </div>
+
+                        <div className="bg-white rounded-lg border border-zinc-200 overflow-hidden shadow-sm">
+                          <div className="overflow-auto max-h-[500px]">
+                            <table className="w-full text-sm">
+                              <thead className="bg-zinc-50 border-b border-zinc-200 sticky top-0 z-10">
+                                <tr className="text-left">
+                                  <th className="p-3 font-semibold text-zinc-700">ID</th>
+                                  <th className="p-3 font-semibold text-zinc-700">Image</th>
+                                  <th className="p-3 font-semibold text-zinc-700">Audio</th>
+                                  <th className="p-3 font-semibold text-zinc-700">Script</th>
+                                  <th className="p-3 font-semibold text-zinc-700">Explain</th>
+                                  <th className="p-3 font-semibold text-zinc-700 w-32">Hành động</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-zinc-100">
+                                {testStimuli[key] && Object.values(testStimuli[key]).length > 0 ? (
+                                  Object.values(testStimuli[key])
+                                    .sort((a, b) => a.id.localeCompare(b.id))
+                                    .map((stimulus) => (
+                                      <tr key={stimulus.id} className="hover:bg-zinc-50 transition-colors">
+                                        <td className="p-3 font-mono text-xs text-zinc-700">{stimulus.id}</td>
+                                        <td className="p-3 text-xs text-zinc-600">
+                                          {stimulus.media.image ? (
+                                            <a href={stimulus.media.image} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate max-w-[150px] block">
+                                              {stimulus.media.image.split('/').pop()}
+                                            </a>
+                                          ) : (
+                                            <span className="text-zinc-400">—</span>
+                                          )}
+                                        </td>
+                                        <td className="p-3 text-xs text-zinc-600">
+                                          {stimulus.media.audio ? (
+                                            <a href={stimulus.media.audio} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate max-w-[150px] block">
+                                              {stimulus.media.audio.split('/').pop()}
+                                            </a>
+                                          ) : (
+                                            <span className="text-zinc-400">—</span>
+                                          )}
+                                        </td>
+                                        <td className="p-3 text-xs max-w-xs truncate text-zinc-600" title={stimulus.media.script}>
+                                          {stimulus.media.script || "—"}
+                                        </td>
+                                        <td className="p-3 text-xs max-w-xs truncate text-zinc-600" title={stimulus.media.explain}>
+                                          {stimulus.media.explain || "—"}
+                                        </td>
+                                        <td className="p-3">
+                                          <div className="flex gap-2">
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setEditStimulus(stimulus);
+                                              }}
+                                              className="px-2 py-1 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-100 transition-colors font-medium flex items-center gap-1"
+                                            >
+                                              <Edit className="h-3 w-3" /> Sửa
+                                            </button>
+                                            <button
+                                              onClick={async (e) => {
+                                                e.stopPropagation();
+                                                if (confirm(`Xóa stimulus ${stimulus.id}?`)) {
+                                                  try {
+                                                    await adminDeleteStimulus(stimulus.id);
+                                                    toast.success("Đã xóa stimulus thành công");
+                                                    // Reload test data
+                                                    const [part, level, test] = key.split('-');
+                                                    const result = await adminGetTestItems({
+                                                      part,
+                                                      level: parseInt(level),
+                                                      test: parseInt(test),
+                                                    });
+                                                    setTestItems({ ...testItems, [key]: result.items });
+                                                    setTestStimuli({ ...testStimuli, [key]: result.stimulusMap });
+                                                  } catch (err: any) {
+                                                    toast.error(err?.message || "Lỗi xóa stimulus");
+                                                  }
+                                                }
+                                              }}
+                                              className="px-2 py-1 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1"
+                                            >
+                                              <Trash2 className="h-3 w-3" /> Xóa
+                                            </button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={5} className="p-8 text-center text-zinc-500">
+                                      Chưa có stimulus nào
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
                       </div>
                     )}
-
-                    <div className="bg-white rounded-lg border border-zinc-200 overflow-hidden">
-                      <div className="p-4 border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-white">
-                        <div className="text-sm font-semibold text-zinc-900">Chi tiết câu hỏi:</div>
-                      </div>
-                      <div className="overflow-auto max-h-[400px]">
-                        <table className="w-full text-sm">
-                          <thead className="bg-zinc-50 border-b border-zinc-200">
-                            <tr className="text-left">
-                              <th className="p-3 font-semibold text-zinc-700">ID</th>
-                              <th className="p-3 font-semibold text-zinc-700">Stem</th>
-                              <th className="p-3 font-semibold text-zinc-700">StimulusId</th>
-                              <th className="p-3 font-semibold text-zinc-700">Answer</th>
-                              <th className="p-3 font-semibold text-zinc-700">Explain</th>
-                              <th className="p-3 font-semibold text-zinc-700 w-32">Hành động</th>
-
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {items.map((item) => (
-                              <tr key={item._id || item.id} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
-                                <td className="p-3 font-mono text-xs text-zinc-700">{item.id}</td>
-                                <td className="p-3 text-xs max-w-xs truncate text-zinc-600">
-                                  {item.stem || "—"}
-                                </td>
-                                <td className="p-3 font-mono text-xs text-zinc-700">
-                                  {item.stimulusId || "—"}
-                                </td>
-                                <td className="p-3 font-semibold text-zinc-900">{item.answer}</td>
-                                <td className="p-3 text-xs max-w-xs truncate text-zinc-600">
-                                  {item.explain || "—"}
-                                </td>
-                                <td className="p-3">
-
-                                  <div className="flex gap-2">
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setEditQuestion(item);
-                                      }}
-                                      className="px-2 py-1 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-100 transition-colors font-medium flex items-center gap-1"
-                                    >
-                                      <Edit className="h-3 w-3" /> Sửa
-                                    </button>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        void handleDelete(item);
-                                      }}
-                                      className="px-2 py-1 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1"
-                                    >
-                                      <Trash2 className="h-3 w-3" /> Xóa
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
                   </div>
                 </div>
               )}

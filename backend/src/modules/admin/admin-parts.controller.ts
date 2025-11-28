@@ -785,6 +785,7 @@ export async function importExcel(req: Request, res: Response) {
           question: item.question || item.stem,
           stimulusId: item.stimulusId,
           answer: item.answer,
+          explain: item.explain,
           choices: item.choices?.length || 0
         });
       });
@@ -808,7 +809,7 @@ export async function importExcel(req: Request, res: Response) {
         entry.stimuli.push({
           id: stim.id,
           status: existingStimuliKeys.has(stimKey) ? 'update' : 'new',
-          media: Object.keys(stim.media || {}).filter(k => stim.media[k]).join(', ')
+          media: stim.media
         });
       });
 

@@ -21,11 +21,17 @@ interface ImportPreviewModalProps {
                 stimulusId?: string;
                 answer: string;
                 choices: number;
+                explain?: string;
             }>;
             stimuli: Array<{
                 id: string;
                 status: 'new' | 'update';
-                media: string;
+                media: {
+                    image: string | null;
+                    audio: string | null;
+                    script: string | null;
+                    explain: string | null;
+                };
             }>;
         }>;
     } | null;
@@ -137,7 +143,8 @@ export default function ImportPreviewModal({ isOpen, onClose, onConfirm, data, b
                                                             <th className="px-4 py-3 rounded-tl-lg">Status</th>
                                                             <th className="px-4 py-3">ID</th>
                                                             <th className="px-4 py-3">Stimulus ID</th>
-                                                            <th className="px-4 py-3 rounded-tr-lg">Answer</th>
+                                                            <th className="px-4 py-3">Answer</th>
+                                                            <th className="px-4 py-3 rounded-tr-lg">Explain</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-zinc-100">
@@ -159,6 +166,9 @@ export default function ImportPreviewModal({ isOpen, onClose, onConfirm, data, b
                                                                     {item.stimulusId || <span className="italic text-zinc-400">-</span>}
                                                                 </td>
                                                                 <td className="px-4 py-3 font-bold text-zinc-700">{item.answer}</td>
+                                                                <td className="px-4 py-3 text-zinc-600 max-w-xs truncate" title={item.explain || ''}>
+                                                                    {item.explain || '-'}
+                                                                </td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -172,7 +182,10 @@ export default function ImportPreviewModal({ isOpen, onClose, onConfirm, data, b
                                                         <tr>
                                                             <th className="px-4 py-3 rounded-tl-lg">Status</th>
                                                             <th className="px-4 py-3">ID</th>
-                                                            <th className="px-4 py-3 rounded-tr-lg">Media</th>
+                                                            <th className="px-4 py-3">Image</th>
+                                                            <th className="px-4 py-3">Audio</th>
+                                                            <th className="px-4 py-3">Script</th>
+                                                            <th className="px-4 py-3 rounded-tr-lg">Explain</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-zinc-100">
@@ -190,7 +203,26 @@ export default function ImportPreviewModal({ isOpen, onClose, onConfirm, data, b
                                                                     )}
                                                                 </td>
                                                                 <td className="px-4 py-3 font-mono text-xs text-zinc-600">{stim.id}</td>
-                                                                <td className="px-4 py-3 text-zinc-600">{stim.media || '-'}</td>
+                                                                <td className="px-4 py-3 text-zinc-600">
+                                                                    {stim.media.image ? (
+                                                                        <span className="text-blue-600 truncate max-w-[150px] block" title={stim.media.image}>
+                                                                            {stim.media.image.split('/').pop()}
+                                                                        </span>
+                                                                    ) : '-'}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-zinc-600">
+                                                                    {stim.media.audio ? (
+                                                                        <span className="text-blue-600 truncate max-w-[150px] block" title={stim.media.audio}>
+                                                                            {stim.media.audio.split('/').pop()}
+                                                                        </span>
+                                                                    ) : '-'}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-zinc-600 max-w-xs truncate" title={stim.media.script || ''}>
+                                                                    {stim.media.script || '-'}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-zinc-600 max-w-xs truncate" title={stim.media.explain || ''}>
+                                                                    {stim.media.explain || '-'}
+                                                                </td>
                                                             </tr>
                                                         ))}
                                                     </tbody>

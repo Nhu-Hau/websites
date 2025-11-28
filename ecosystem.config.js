@@ -3,8 +3,7 @@ module.exports = {
     {
       name: "api",
       cwd: "/opt/websites/backend",
-      script: "node",
-      args: "dist/server.js",
+      script: "dist/server.js",
       instances: 2,              // 2 instance API
       exec_mode: "cluster",
       env: {

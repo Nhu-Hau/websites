@@ -64,6 +64,12 @@ export default function OverviewTab({
         ? userScores.reduce((prev, current) => (prev.overall > current.overall ? prev : current))
         : null;
 
+    // Calculate Average Deviation (Mean Absolute Deviation)
+    const validDeviationScores = userScores.filter(u => u.currentToeicScore !== null);
+    const avgDeviation = validDeviationScores.length > 0
+        ? Math.round(validDeviationScores.reduce((sum, u) => sum + Math.abs(u.overall - (u.currentToeicScore || 0)), 0) / validDeviationScores.length)
+        : 0;
+
     const handleDelete = async (userId: string, name: string) => {
         if (!confirm(`Xóa điểm của "${name}"?\nHành động này không thể hoàn tác.`)) return;
 
@@ -129,14 +135,14 @@ export default function OverviewTab({
                         </div>
                     </div>
 
-                    {/* Average Score */}
+                    {/* Average Deviation */}
                     <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
                         <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
                         <div className="relative flex items-center justify-between">
                             <div>
-                                <p className="text-emerald-100 text-sm font-medium">Điểm trung bình</p>
-                                <p className="text-4xl font-bold mt-2">{Math.round(data?.avgOverall ?? 0)}</p>
-                                <p className="text-emerald-100 text-xs mt-3 opacity-90">TOEIC Overall</p>
+                                <p className="text-emerald-100 text-sm font-medium">Độ lệch trung bình</p>
+                                <p className="text-4xl font-bold mt-2">{avgDeviation}</p>
+                                <p className="text-emerald-100 text-xs mt-3 opacity-90">Dự đoán vs Thực tế</p>
                             </div>
                             <div className="p-4 bg-white/20 rounded-2xl backdrop-blur">
                                 <TrendingUp className="h-9 w-9" />

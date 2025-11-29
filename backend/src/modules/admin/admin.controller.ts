@@ -4,7 +4,7 @@ import os from "os";
 import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { ListObjectsV2Command, ListObjectsV2CommandOutput } from "@aws-sdk/client-s3";
 import { s3, BUCKET, PREFIX } from "../../shared/services/storage.service";
 import { User } from "../../shared/models/User";
 import { PlacementAttempt } from "../../shared/models/PlacementAttempt";
@@ -929,7 +929,7 @@ export async function getDatabaseStats(req: Request, res: Response) {
           Prefix: PREFIX,
           ContinuationToken: continuationToken,
         });
-        const response = await s3.send(command);
+        const response: ListObjectsV2CommandOutput = await s3.send(command);
 
         if (response.Contents) {
           for (const item of response.Contents) {

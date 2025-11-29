@@ -59,8 +59,9 @@ export async function listUsers(req: Request, res: Response) {
 export async function updateUser(req: Request, res: Response) {
   try {
     const { id } = req.params as { id: string };
-    const { name, role, access, level, premiumExpiryDate } = req.body as {
+    const { name, email, role, access, level, premiumExpiryDate } = req.body as {
       name?: string;
+      email?: string;
       role?: "user" | "admin" | "teacher";
       access?: "free" | "premium";
       level?: 1 | 2 | 3;
@@ -69,6 +70,7 @@ export async function updateUser(req: Request, res: Response) {
 
     const allowed: any = {};
     if (typeof name === "string" && name.trim()) allowed.name = name.trim();
+    if (typeof email === "string" && email.trim()) allowed.email = email.trim();
     if (role === "user" || role === "admin" || role === "teacher") allowed.role = role;
     if (access === "free" || access === "premium") allowed.access = access;
     if ([1, 2, 3].includes(Number(level))) allowed.level = Number(level);
@@ -186,7 +188,7 @@ export async function overviewPlacementScores(_req: Request, res: Response) {
 export async function userScores(_req: Request, res: Response) {
   try {
     const users = await User.find({ lastPlacementAttemptId: { $ne: null } })
-      .select("_id name email level lastPlacementAttemptId")
+      .select("_id name email level lastPlacementAttemptId currentToeicScore")
       .lean();
 
     const attemptIds = users
@@ -222,6 +224,7 @@ export async function userScores(_req: Request, res: Response) {
           overall,
           listening,
           reading,
+          currentToeicScore: u.currentToeicScore || null,
           submittedAt: a.submittedAt,
         };
       })

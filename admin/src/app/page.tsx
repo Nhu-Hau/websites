@@ -44,6 +44,7 @@ export default function Home() {
       overall: number;
       listening: number;
       reading: number;
+      currentToeicScore: number | null;
       submittedAt: string;
     }>
   >([]);

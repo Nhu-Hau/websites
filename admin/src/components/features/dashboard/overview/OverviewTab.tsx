@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { Users, TrendingUp, BarChart3, FileText, Trash2, Wifi, AlertCircle, Trophy } from "lucide-react";
+import { Users, TrendingUp, BarChart3, FileText, Trash2, Wifi, Trophy } from "lucide-react";
 import { adminDeleteUserScore, adminOverview, adminUserScores } from "@/lib/apiClient";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -22,6 +22,7 @@ interface OverviewTabProps {
         overall: number;
         listening: number;
         reading: number;
+        currentToeicScore: number | null;
         submittedAt: string;
     }>;
     setUserScores: (scores: any[]) => void;
@@ -38,27 +39,25 @@ export default function OverviewTab({
     setData,
     setError,
 }: OverviewTabProps) {
-    const bars = data?.histogram || [];
-    const maxCount = Math.max(1, ...bars.map((b) => b.count));
-    const width = 700;
+    const [width, setWidth] = React.useState(0);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        if (!containerRef.current) return;
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.contentRect.width > 0) {
+                    setWidth(entry.contentRect.width);
+                }
+            }
+        });
+        resizeObserver.observe(containerRef.current);
+        return () => resizeObserver.disconnect();
+    }, []);
+
+    const chartWidth = width > 0 ? width : 1200; // Fallback width
     const height = 260;
-    const pad = 32;
-    const bw = (width - pad * 2) / (bars.length || 1);
-
-    const points = bars.map((b, i) => {
-        const h = ((b.count || 0) / maxCount) * (height - pad * 2);
-        const x = pad + i * bw + bw / 2;
-        const y = height - pad - h;
-        return { x, y, count: b.count, label: `${b.min}-${b.max}` };
-    });
-
-    const pathD = points.length > 0
-        ? points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(" ")
-        : "";
-
-    const areaD = points.length > 0
-        ? `${pathD} L ${points[points.length - 1].x} ${height - pad} L ${points[0].x} ${height - pad} Z`
-        : "";
+    const pad = 48;
 
     // Find user with highest score
     const highestScoreUser = userScores.length > 0
@@ -163,65 +162,178 @@ export default function OverviewTab({
                     </div>
                 </div>
 
-                {/* Histogram Chart - Line Chart */}
+                {/* Comparison Chart - Line Chart */}
                 <div className="bg-white/70 backdrop-blur-lg border border-zinc-200/80 rounded-2xl shadow-xl p-6">
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex flex-col items-center gap-2 mb-6">
                         <div className="flex items-center gap-3">
-                            <BarChart3 className="h-6 w-6 text-teal-600" />
-                            <h3 className="text-xl font-bold text-zinc-800">Phân phối điểm số TOEIC (0–990)</h3>
+                            <TrendingUp className="h-6 w-6 text-blue-600" />
+                            <h3 className="text-xl font-bold text-zinc-800">So sánh: Điểm dự đoán vs Tự báo cáo</h3>
                         </div>
                         <span className="text-xs text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full">
-                            Tổng: {data?.totalUsers ?? 0} người
+                            Dữ liệu: {userScores.filter(u => u.currentToeicScore !== null).length} người dùng
+                        </span>
+                    </div>
+
+                    <div className="overflow-x-auto pb-4" ref={containerRef}>
+                        <svg width={chartWidth} height={height} viewBox={`0 0 ${chartWidth} ${height}`} className="mx-auto">
+                            {/* Grid lines */}
+                            <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
+                            <line x1={pad} y1={height - pad} x2={chartWidth - pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
+
+                            {/* Y-axis Labels (Scores) */}
+                            {[0, 200, 400, 600, 800, 990].map((score) => {
+                                const y = height - pad - (score / 990) * (height - pad * 2);
+                                return (
+                                    <g key={score}>
+                                        <line x1={pad} y1={y} x2={chartWidth - pad} y2={y} stroke="#e4e4e7" strokeWidth="1" strokeDasharray="4,4" className="opacity-30" />
+                                        <text x={pad - 10} y={y + 3} textAnchor="end" className="text-[10px] fill-zinc-400">{score}</text>
+                                    </g>
+                                );
+                            })}
+
+                            {(() => {
+                                const validUsers = userScores.filter(u => u.currentToeicScore !== null);
+                                const count = validUsers.length;
+                                if (count === 0) return <text x={chartWidth / 2} y={height / 2} textAnchor="middle" className="fill-zinc-400">Chưa có dữ liệu so sánh</text>;
+
+                                const step = (chartWidth - pad * 2) / Math.max(1, count - 1);
+
+                                const getPoints = (getter: (u: any) => number) =>
+                                    validUsers.map((u, i) => {
+                                        const x = pad + i * step;
+                                        const y = height - pad - (getter(u) / 990) * (height - pad * 2);
+                                        return `${x},${y}`;
+                                    }).join(" ");
+
+                                const predictedPoints = getPoints(u => u.overall);
+                                const selfReportedPoints = getPoints(u => u.currentToeicScore || 0);
+
+                                return (
+                                    <>
+                                        {/* Predicted Line */}
+                                        <polyline points={predictedPoints} fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-sm" />
+
+                                        {/* Self Reported Line */}
+                                        <polyline points={selfReportedPoints} fill="none" stroke="#f43f5e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="4,4" className="drop-shadow-sm" />
+
+                                        {/* Points and Tooltips */}
+                                        {validUsers.map((u, i) => {
+                                            const x = pad + i * step;
+                                            const yPred = height - pad - (u.overall / 990) * (height - pad * 2);
+                                            const ySelf = height - pad - ((u.currentToeicScore || 0) / 990) * (height - pad * 2);
+
+                                            return (
+                                                <g key={u._id} className="group/point">
+                                                    {/* Vertical hover line */}
+                                                    <line x1={x} y1={pad} x2={x} y2={height - pad} stroke="#e4e4e7" strokeWidth="1" className="opacity-0 group-hover/point:opacity-100 transition-opacity" />
+
+                                                    {/* Predicted Point */}
+                                                    <circle cx={x} cy={yPred} r="4" className="fill-white stroke-indigo-500 stroke-2 hover:r-6 transition-all cursor-pointer" />
+
+                                                    {/* Self Point */}
+                                                    <circle cx={x} cy={ySelf} r="4" className="fill-white stroke-rose-500 stroke-2 hover:r-6 transition-all cursor-pointer" />
+
+                                                    <title>{`${u.name}\nEmail: ${u.email}\nDự đoán: ${u.overall}\nTự báo cáo: ${u.currentToeicScore}`}</title>
+                                                </g>
+                                            );
+                                        })}
+                                    </>
+                                );
+                            })()}
+                        </svg>
+                        <div className="flex justify-center gap-6 mt-4 text-xs text-zinc-600">
+                            <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-full bg-indigo-500"></span>
+                                <span className="font-medium">Dự đoán</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-full bg-rose-500"></span>
+                                <span className="font-medium">Tự báo cáo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Deviation Chart - Scatter Plot */}
+                <div className="bg-white/70 backdrop-blur-lg border border-zinc-200/80 rounded-2xl shadow-xl p-6">
+                    <div className="flex flex-col items-center gap-2 mb-6">
+                        <div className="flex items-center gap-3">
+                            <BarChart3 className="h-6 w-6 text-indigo-600" />
+                            <h3 className="text-xl font-bold text-zinc-800">Độ lệch: Tự báo cáo vs Dự đoán</h3>
+                        </div>
+                        <span className="text-xs text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full">
+                            Dữ liệu: {userScores.filter(u => u.currentToeicScore !== null).length} người dùng
                         </span>
                     </div>
 
                     <div className="overflow-x-auto pb-4">
-                        <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="mx-auto">
+                        <svg width={chartWidth} height={height} viewBox={`0 0 ${chartWidth} ${height}`} className="mx-auto">
                             {/* Grid lines */}
                             <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
-                            <line x1={pad} y1={height - pad} x2={width - pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
+                            <line x1={pad} y1={height - pad} x2={chartWidth - pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
 
-                            {/* Area fill */}
-                            <path d={areaD} className="fill-teal-100/50" />
+                            {/* Axis Labels */}
+                            <text x={chartWidth / 2} y={height - 2} textAnchor="middle" className="text-xs fill-zinc-500 font-medium">Điểm tự báo cáo</text>
+                            <text x={15} y={height / 2} textAnchor="middle" transform={`rotate(-90, 15, ${height / 2})`} className="text-xs fill-zinc-500 font-medium">Điểm dự đoán</text>
 
-                            {/* Line */}
-                            <path d={pathD} fill="none" stroke="#0d9488" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                            {/* Ticks for X and Y */}
+                            {[0, 200, 400, 600, 800, 990].map((score) => {
+                                const pos = (score / 990) * (chartWidth - pad * 2);
+                                const x = pad + pos;
+                                const y = height - pad - (score / 990) * (height - pad * 2);
+                                return (
+                                    <g key={score}>
+                                        {/* X-axis ticks (Self-reported) */}
+                                        <text x={x} y={height - pad + 15} textAnchor="middle" className="text-[10px] fill-zinc-400">{score}</text>
+                                        <line x1={x} y1={height - pad} x2={x} y2={height - pad + 5} stroke="#e4e4e7" strokeWidth="1" />
 
-                            {points.map((p, i) => (
-                                <g key={i}>
-                                    {/* Point */}
-                                    <circle
-                                        cx={p.x}
-                                        cy={p.y}
-                                        r="4"
-                                        className="fill-white stroke-teal-600 stroke-2 hover:r-6 transition-all cursor-pointer"
-                                    >
-                                        <title>{`${p.label}: ${p.count} người`}</title>
-                                    </circle>
+                                        {/* Y-axis ticks (Predicted) */}
+                                        <text x={pad - 8} y={y + 3} textAnchor="end" className="text-[10px] fill-zinc-400">{score}</text>
+                                        <line x1={pad - 5} y1={y} x2={pad} y2={y} stroke="#e4e4e7" strokeWidth="1" />
 
-                                    {/* Count Label */}
-                                    {p.count > 0 && (
-                                        <text
-                                            x={p.x}
-                                            y={p.y - 12}
-                                            textAnchor="middle"
-                                            className="text-xs font-bold fill-teal-700"
+                                        {/* Grid lines (optional, light) */}
+                                        <line x1={x} y1={pad} x2={x} y2={height - pad} stroke="#e4e4e7" strokeWidth="0.5" className="opacity-20" />
+                                        <line x1={pad} y1={y} x2={chartWidth - pad} y2={y} stroke="#e4e4e7" strokeWidth="0.5" className="opacity-20" />
+                                    </g>
+                                );
+                            })}
+
+                            {/* Diagonal Line (Perfect Match) */}
+                            <line x1={pad} y1={height - pad} x2={chartWidth - pad} y2={pad} stroke="#e4e4e7" strokeWidth="2" strokeDasharray="5,5" />
+                            {/* Points */}
+                            {userScores.filter(u => u.currentToeicScore !== null).map((u, i) => {
+                                const x = pad + ((u.currentToeicScore || 0) / 990) * (chartWidth - pad * 2);
+                                const y = height - pad - ((u.overall / 990) * (height - pad * 2));
+                                const diff = u.overall - (u.currentToeicScore || 0);
+                                const absDiff = Math.abs(diff);
+                                let color = "#ef4444"; // > 80 (Red)
+                                if (absDiff <= 20) color = "#10b981"; // <= 20 (Emerald)
+                                else if (absDiff <= 40) color = "#06b6d4"; // <= 40 (Cyan)
+                                else if (absDiff <= 60) color = "#3b82f6"; // <= 60 (Blue)
+                                else if (absDiff <= 80) color = "#f59e0b"; // <= 80 (Amber)
+
+                                return (
+                                    <g key={u._id}>
+                                        <circle
+                                            cx={x}
+                                            cy={y}
+                                            r="5"
+                                            fill={color}
+                                            className="opacity-80 hover:opacity-100 transition-opacity cursor-pointer stroke-white stroke-1"
                                         >
-                                            {p.count}
-                                        </text>
-                                    )}
-                                    {/* X-axis label */}
-                                    <text
-                                        x={p.x}
-                                        y={height - 8}
-                                        textAnchor="middle"
-                                        className="text-[10px] fill-zinc-600 font-medium"
-                                    >
-                                        {p.label}
-                                    </text>
-                                </g>
-                            ))}
+                                            <title>{`${u.name}\nEmail: ${u.email}\nTự báo cáo: ${u.currentToeicScore}\nDự đoán: ${u.overall}\nChênh lệch: ${diff > 0 ? '+' : ''}${diff}`}</title>
+                                        </circle>
+                                    </g>
+                                );
+                            })}
                         </svg>
+                        <div className="flex flex-wrap justify-center gap-4 mt-4 text-xs text-zinc-600">
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-emerald-500"></span>≤ 20</div>
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-cyan-500"></span>≤ 40</div>
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500"></span>≤ 60</div>
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-amber-500"></span>≤ 80</div>
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500"></span>&gt; 80</div>
+                        </div>
                     </div>
                 </div>
 
@@ -254,6 +366,7 @@ export default function OverviewTab({
                                         <th className="px-6 py-4 text-center font-semibold">Tổng điểm</th>
                                         <th className="px-6 py-4 text-center font-semibold">Listening</th>
                                         <th className="px-6 py-4 text-center font-semibold">Reading</th>
+                                        <th className="px-6 py-4 text-center font-semibold">Điểm tự báo cáo</th>
                                         <th className="px-6 py-4 text-left font-semibold">Ngày nộp</th>
                                         <th className="px-6 py-4 text-center font-semibold">Thao tác</th>
                                     </tr>
@@ -273,6 +386,15 @@ export default function OverviewTab({
                                             </td>
                                             <td className="px-6 py-5 text-center font-semibold text-zinc-700">{u.listening}</td>
                                             <td className="px-6 py-5 text-center font-semibold text-zinc-700">{u.reading}</td>
+                                            <td className="px-6 py-5 text-center">
+                                                {u.currentToeicScore ? (
+                                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                                        {u.currentToeicScore}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-zinc-400 text-sm italic">--</span>
+                                                )}
+                                            </td>
                                             <td className="px-6 py-5 text-sm text-zinc-500">
                                                 {format(new Date(u.submittedAt), "dd MMM yyyy", { locale: vi })}
                                             </td>

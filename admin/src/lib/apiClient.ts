@@ -220,7 +220,7 @@ export async function adminControlProcess(name: string, action: 'start' | 'stop'
 export async function adminUserScores() {
   const res = await fetch(`/api/admin/analytics/user-scores`, { credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch user scores failed'); }
-  return res.json() as Promise<{ users: Array<{ _id: string; name: string; email: string; level: number; overall: number; listening: number; reading: number; submittedAt: string }> }>;
+  return res.json() as Promise<{ users: Array<{ _id: string; name: string; email: string; level: number; overall: number; listening: number; reading: number; currentToeicScore: number | null; submittedAt: string }> }>;
 }
 
 export async function adminUserToeicPred() {

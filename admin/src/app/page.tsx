@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
   adminOverview,
   adminUserScores,
@@ -254,6 +255,12 @@ export default function Home() {
         <div className="text-center space-y-4">
           <div className="text-red-500 text-xl font-semibold">Chỉ dành cho Admin</div>
           <p className="text-zinc-600">Bạn không có quyền truy cập trang này</p>
+          <Link
+            href="/login"
+            className="inline-block px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+          >
+            Đăng nhập
+          </Link>
         </div>
       </div>
     );

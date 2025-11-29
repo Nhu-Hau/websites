@@ -259,7 +259,7 @@ export default function OverviewTab({
                     <div className="flex flex-col items-center gap-2 mb-6">
                         <div className="flex items-center gap-3">
                             <BarChart3 className="h-6 w-6 text-indigo-600" />
-                            <h3 className="text-xl font-bold text-zinc-800">Độ lệch: Tự báo cáo vs Dự đoán</h3>
+                            <h3 className="text-xl font-bold text-zinc-800">Độ lệch: Điểm dự đoán vs Tự báo cáo</h3>
                         </div>
                         <span className="text-xs text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full">
                             Dữ liệu: {userScores.filter(u => u.currentToeicScore !== null).length} người dùng

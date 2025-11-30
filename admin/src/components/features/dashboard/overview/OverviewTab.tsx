@@ -56,7 +56,7 @@ export default function OverviewTab({
     }, []);
 
     const chartWidth = width > 0 ? width : 1200; // Fallback width
-    const height = 260;
+    const height = 300; // Increased height for X-axis labels
     const pad = 48;
 
     // Find user with highest score
@@ -173,7 +173,7 @@ export default function OverviewTab({
                     <div className="flex flex-col items-center gap-2 mb-6">
                         <div className="flex items-center gap-3">
                             <TrendingUp className="h-6 w-6 text-blue-600" />
-                            <h3 className="text-xl font-bold text-zinc-800">So sánh: Điểm dự đoán vs Tự báo cáo</h3>
+                            <h3 className="text-xl font-bold text-zinc-800">So sánh điểm TOEIC dự đoán và tự báo cáo theo từng người dùng</h3>
                         </div>
                         <span className="text-xs text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full">
                             Dữ liệu: {userScores.filter(u => u.currentToeicScore !== null).length} người dùng
@@ -182,9 +182,13 @@ export default function OverviewTab({
 
                     <div className="overflow-x-auto pb-4" ref={containerRef}>
                         <svg width={chartWidth} height={height} viewBox={`0 0 ${chartWidth} ${height}`} className="mx-auto">
-                            {/* Grid lines */}
-                            <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
-                            <line x1={pad} y1={height - pad} x2={chartWidth - pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
+                            {/* Grid lines (Axes) - BOLD */}
+                            <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#a1a1aa" strokeWidth="3" />
+                            <line x1={pad} y1={height - pad} x2={chartWidth - pad} y2={height - pad} stroke="#a1a1aa" strokeWidth="3" />
+
+                            {/* Axis Labels */}
+                            <text x={chartWidth / 2} y={height - 2} textAnchor="middle" className="text-xs fill-zinc-500 font-medium">Người dùng</text>
+                            <text x={15} y={height / 2} textAnchor="middle" transform={`rotate(-90, 15, ${height / 2})`} className="text-xs fill-zinc-500 font-medium">Điểm TOEIC (0–990)</text>
 
                             {/* Y-axis Labels (Scores) */}
                             {[0, 200, 400, 600, 800, 990].map((score) => {
@@ -231,13 +235,24 @@ export default function OverviewTab({
                                             return (
                                                 <g key={u._id} className="group/point">
                                                     {/* Vertical hover line */}
-                                                    <line x1={x} y1={pad} x2={x} y2={height - pad} stroke="#e4e4e7" strokeWidth="1" className="opacity-0 group-hover/point:opacity-100 transition-opacity" />
+                                                    <line x1={x} y1={pad} x2={x} y2={height - pad} stroke="#e4e4e7" strokeWidth="1" strokeDasharray="4,4" className="opacity-50" />
+
+                                                    {/* User Name on X-axis */}
+                                                    <text
+                                                        x={x}
+                                                        y={height - pad + 20}
+                                                        textAnchor="end"
+                                                        transform={`rotate(-45, ${x}, ${height - pad + 20})`}
+                                                        className="text-[10px] fill-zinc-500 font-medium cursor-default"
+                                                    >
+                                                        {u.name.split(' ').pop()}
+                                                    </text>
 
                                                     {/* Predicted Point */}
-                                                    <circle cx={x} cy={yPred} r="4" className="fill-white stroke-indigo-500 stroke-2 hover:r-6 transition-all cursor-pointer" />
+                                                    <circle cx={x} cy={yPred} r="4" className="fill-white stroke-indigo-500 stroke-2 hover:r-6 transition-all cursor-pointer z-10 relative" />
 
                                                     {/* Self Point */}
-                                                    <circle cx={x} cy={ySelf} r="4" className="fill-white stroke-rose-500 stroke-2 hover:r-6 transition-all cursor-pointer" />
+                                                    <circle cx={x} cy={ySelf} r="4" className="fill-white stroke-rose-500 stroke-2 hover:r-6 transition-all cursor-pointer z-10 relative" />
 
                                                     <title>{`${u.name}\nEmail: ${u.email}\nDự đoán: ${u.overall}\nTự báo cáo: ${u.currentToeicScore}`}</title>
                                                 </g>
@@ -274,13 +289,13 @@ export default function OverviewTab({
 
                     <div className="overflow-x-auto pb-4">
                         <svg width={chartWidth} height={height} viewBox={`0 0 ${chartWidth} ${height}`} className="mx-auto">
-                            {/* Grid lines */}
-                            <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
-                            <line x1={pad} y1={height - pad} x2={chartWidth - pad} y2={height - pad} stroke="#e4e4e7" strokeWidth="1.5" />
+                            {/* Grid lines (Axes) - BOLD */}
+                            <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#a1a1aa" strokeWidth="3" />
+                            <line x1={pad} y1={height - pad} x2={chartWidth - pad} y2={height - pad} stroke="#a1a1aa" strokeWidth="3" />
 
                             {/* Axis Labels */}
-                            <text x={chartWidth / 2} y={height - 2} textAnchor="middle" className="text-xs fill-zinc-500 font-medium">Điểm tự báo cáo</text>
-                            <text x={15} y={height / 2} textAnchor="middle" transform={`rotate(-90, 15, ${height / 2})`} className="text-xs fill-zinc-500 font-medium">Điểm dự đoán</text>
+                            <text x={chartWidth / 2} y={height - 2} textAnchor="middle" className="text-xs fill-zinc-500 font-medium">Điểm TOEIC tự báo cáo (0–990)</text>
+                            <text x={15} y={height / 2} textAnchor="middle" transform={`rotate(-90, 15, ${height / 2})`} className="text-xs fill-zinc-500 font-medium">Điểm TOEIC dự đoán (0–990)</text>
 
                             {/* Ticks for X and Y */}
                             {[0, 200, 400, 600, 800, 990].map((score) => {
@@ -313,10 +328,10 @@ export default function OverviewTab({
                                 const diff = u.overall - (u.currentToeicScore || 0);
                                 const absDiff = Math.abs(diff);
                                 let color = "#ef4444"; // > 80 (Red)
-                                if (absDiff <= 20) color = "#10b981"; // <= 20 (Emerald)
-                                else if (absDiff <= 40) color = "#06b6d4"; // <= 40 (Cyan)
-                                else if (absDiff <= 60) color = "#3b82f6"; // <= 60 (Blue)
-                                else if (absDiff <= 80) color = "#f59e0b"; // <= 80 (Amber)
+                                if (absDiff <= 20) color = "#10b981"; // 0-20 (Emerald)
+                                else if (absDiff <= 40) color = "#06b6d4"; // 21-40 (Cyan)
+                                else if (absDiff <= 60) color = "#3b82f6"; // 41-60 (Blue)
+                                else if (absDiff <= 80) color = "#f59e0b"; // 61-80 (Amber)
 
                                 return (
                                     <g key={u._id}>
@@ -329,16 +344,36 @@ export default function OverviewTab({
                                         >
                                             <title>{`${u.name}\nEmail: ${u.email}\nTự báo cáo: ${u.currentToeicScore}\nDự đoán: ${u.overall}\nChênh lệch: ${diff > 0 ? '+' : ''}${diff}`}</title>
                                         </circle>
+                                        {/* User Name Label */}
+                                        <text
+                                            x={x + 8}
+                                            y={y + 3}
+                                            className="text-[9px] fill-zinc-500 font-medium opacity-70 pointer-events-none"
+                                        >
+                                            {u.name.split(' ').pop()}
+                                        </text>
                                     </g>
                                 );
                             })}
                         </svg>
-                        <div className="flex flex-wrap justify-center gap-4 mt-4 text-xs text-zinc-600">
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-emerald-500"></span>≤ 20</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-cyan-500"></span>≤ 40</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500"></span>≤ 60</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-amber-500"></span>≤ 80</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500"></span>&gt; 80</div>
+
+                        {/* Legend */}
+                        <div className="mt-6 bg-zinc-50/80 rounded-xl border border-zinc-100 p-4 flex flex-col items-center gap-3 max-w-2xl mx-auto">
+                            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs">
+                                <span className="font-semibold text-zinc-700">Độ lệch |Dự đoán − Tự báo cáo|</span>
+                                <div className="hidden sm:block w-px h-3 bg-zinc-300"></div>
+                                <div className="flex items-center gap-2 text-zinc-500 italic">
+                                    <span className="w-8 h-0.5 border-t-2 border-dashed border-zinc-400"></span>
+                                    <span>Đường chấm xám: Dự đoán = Tự báo cáo</span>
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-zinc-600">
+                                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></span>0–20 điểm</div>
+                                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-cyan-500 shadow-sm"></span>21–40 điểm</div>
+                                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500 shadow-sm"></span>41–60 điểm</div>
+                                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-amber-500 shadow-sm"></span>61–80 điểm</div>
+                                <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500 shadow-sm"></span>&gt; 80 điểm</div>
+                            </div>
                         </div>
                     </div>
                 </div>

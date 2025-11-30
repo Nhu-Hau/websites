@@ -10,6 +10,6 @@ export default middleware;
 
 export const config = {
   matcher: [
-    "/((?!api|trpc|_next/static|_next/image|_vercel|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:png|jpg|jpeg|gif|svg|webp)|images/).*)",
+    "/((?!api|health|trpc|_next/static|_next/image|_vercel|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:png|jpg|jpeg|gif|svg|webp)|images/).*)",
   ],
 };

@@ -251,16 +251,21 @@ export default function PracticeTab({
                                                                 <span className="text-zinc-500">/{a.total}</span>
                                                             </td>
                                                             <td className="p-4">
-                                                                <span
-                                                                    className={`px-2 py-1 rounded text-xs font-medium ${a.acc >= 0.8
-                                                                        ? "bg-green-100 text-green-700"
-                                                                        : a.acc >= 0.6
-                                                                            ? "bg-yellow-100 text-yellow-700"
-                                                                            : "bg-red-100 text-red-700"
-                                                                        }`}
-                                                                >
-                                                                    {(a.acc * 100).toFixed(1)}%
-                                                                </span>
+                                                                {(() => {
+                                                                    const accPercent = a.acc > 1 ? a.acc : a.acc * 100;
+                                                                    return (
+                                                                        <span
+                                                                            className={`px-2 py-1 rounded text-xs font-medium ${accPercent >= 80
+                                                                                ? "bg-green-100 text-green-700"
+                                                                                : accPercent >= 60
+                                                                                    ? "bg-yellow-100 text-yellow-700"
+                                                                                    : "bg-red-100 text-red-700"
+                                                                                }`}
+                                                                        >
+                                                                            {accPercent.toFixed(1)}%
+                                                                        </span>
+                                                                    );
+                                                                })()}
                                                             </td>
                                                             <td className="p-4 text-zinc-700 font-mono">
                                                                 {Math.floor(a.timeSec / 60)}:

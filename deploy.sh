@@ -100,3 +100,4 @@ DURATION=$((END_TIME - START_TIME))
 
 echo ">>> Deploy xong!"
 send_telegram "✅ *Deploy THÀNH CÔNG*%0AWebsite đã được cập nhật trên ${HOSTNAME_SHORT}!%0A*Thời gian:* ${DURATION}s"
+

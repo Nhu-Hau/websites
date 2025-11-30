@@ -1,12 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
-# ==============================================================================
-# CẤU HÌNH TELEGRAM
-# ==============================================================================
-# NÊN để BOT_TOKEN và CHAT_ID dưới dạng biến môi trường
-# export BOT_TOKEN="xxx"
-# export CHAT_ID="yyy"
+
+# Load .env file if exists
+if [ -f .env ]; then
+  echo ">>> Loading .env file..."
+  set -a
+  source .env
+  set +a
+fi
 
 : "${BOT_TOKEN:?Chua set BOT_TOKEN}"
 : "${CHAT_ID:?Chua set CHAT_ID}"

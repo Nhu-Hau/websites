@@ -387,6 +387,9 @@ export default function VpsPage() {
                       <th className="px-6 py-3">ID</th>
                       <th className="px-6 py-3">Name</th>
                       <th className="px-6 py-3">Status</th>
+                      <th className="px-6 py-3">
+                        <RotateCw className="h-4 w-4" />
+                      </th>
                       <th className="px-6 py-3">Memory</th>
                       <th className="px-6 py-3">CPU</th>
                       <th className="px-6 py-3">Uptime</th>
@@ -408,6 +411,9 @@ export default function VpsPage() {
                               }`}>
                               {proc.pm2_env.status}
                             </span>
+                          </td>
+                          <td className="px-6 py-4 text-zinc-600 font-mono">
+                            {proc.pm2_env.restart_time}
                           </td>
                           <td className="px-6 py-4 text-zinc-600 font-mono">
                             {formatBytes(proc.monit.memory)}
@@ -452,7 +458,7 @@ export default function VpsPage() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={7} className="px-6 py-8 text-center text-zinc-400">
+                        <td colSpan={8} className="px-6 py-8 text-center text-zinc-400">
                           Đang tải danh sách process...
                         </td>
                       </tr>

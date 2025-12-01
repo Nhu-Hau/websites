@@ -1,12 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-
-# Load .env file if exists
-if [ -f .env ]; then
-  echo ">>> Loading .env file..."
+# Load secrets from backend/.env
+if [ -f backend/.env ]; then
+  echo ">>> Loading secrets from backend/.env..."
   set -a
-  source .env
+  source backend/.env
   set +a
 fi
 

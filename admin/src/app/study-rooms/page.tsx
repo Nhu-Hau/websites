@@ -160,15 +160,15 @@ export default function StudyRoomsPage() {
 
   return (
     <div className="min-h-screen space-y-6">
-      <header className="bg-white rounded-2xl shadow-lg border border-zinc-200 p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md">
-              <GraduationCap className="h-6 w-6" />
+      <header className="bg-white rounded-2xl shadow-lg border border-zinc-200 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md">
+              <GraduationCap className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-zinc-900">Quản lý Phòng học</h1>
-              <p className="text-sm text-zinc-600">Theo dõi hoạt động và tài nguyên của phòng LiveKit</p>
+              <h1 className="text-2xl font-bold text-zinc-900">Quản lý Phòng học</h1>
+              <p className="text-xs text-zinc-600">Theo dõi hoạt động và tài nguyên của phòng LiveKit</p>
             </div>
           </div>
           <button
@@ -182,7 +182,7 @@ export default function StudyRoomsPage() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white border border-zinc-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-white border border-zinc-200 rounded-xl p-3 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-zinc-500">Tổng phòng</p>
@@ -215,7 +215,7 @@ export default function StudyRoomsPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm p-6 space-y-4">
+      <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm p-4 space-y-3">
         <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
           <div className="flex-1">
             <label className="text-sm font-medium text-zinc-600 block mb-2">Tìm theo tên phòng</label>
@@ -253,7 +253,7 @@ export default function StudyRoomsPage() {
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 text-zinc-600">
               <tr>
-                <th className="p-3 text-left font-medium">Phòng</th>
+                <th className="px-3 py-2 text-left font-medium text-xs">Phòng</th>
                 <th className="p-3 text-left font-medium">Host/Người tạo</th>
                 <th className="p-3 text-left font-medium">Online</th>
                 <th className="p-3 text-left font-medium">Tài liệu</th>
@@ -266,7 +266,7 @@ export default function StudyRoomsPage() {
             <tbody>
               {items.map((room) => (
                 <tr key={room.roomName} className="border-t border-zinc-100 hover:bg-zinc-50/60">
-                  <td className="p-3 font-semibold text-zinc-900">{room.roomName}</td>
+                  <td className="px-3 py-2 text-sm font-semibold text-zinc-900">{room.roomName}</td>
                   <td className="p-3 text-zinc-700">
                     <div className="flex flex-col gap-1">
                       <div>

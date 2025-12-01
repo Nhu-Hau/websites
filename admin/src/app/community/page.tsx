@@ -211,22 +211,22 @@ export default function CommunityPage() {
   if (!me || me.role !== 'admin') return <div className="p-6 text-red-600">Chỉ dành cho Admin</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 space-y-6">
-      <header className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 p-4 space-y-4">
+      <header className="bg-white rounded-xl shadow-lg p-4 border border-zinc-200">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl p-3 shadow-lg">
-              <MessageSquare className="h-6 w-6 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl p-2 shadow-lg">
+              <MessageSquare className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-zinc-900">Quản lý cộng đồng</h1>
-              <p className="text-sm text-zinc-600 mt-1">Quản lý bài viết</p>
+              <h1 className="text-2xl font-bold text-zinc-900">Quản lý cộng đồng</h1>
+              <p className="text-xs text-zinc-600 mt-0.5">Quản lý bài viết</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setShowCreatePostModal(true)}
-              className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-2 font-medium"
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-2 text-sm font-medium"
             >
               <Plus className="h-4 w-4" /> Tạo bài viết
             </button>
@@ -234,23 +234,23 @@ export default function CommunityPage() {
         </div>
       </header>
 
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
-        <div className="flex flex-wrap gap-4 items-end">
+      <div className="bg-white rounded-xl shadow-lg p-4 border border-zinc-200">
+        <div className="flex flex-wrap gap-3 items-end">
           <div className="flex flex-col flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-zinc-700 mb-2 flex items-center gap-2">
-              <Search className="h-4 w-4" /> Tìm kiếm
+            <label className="text-xs font-medium text-zinc-700 mb-1.5 flex items-center gap-2">
+              <Search className="h-3.5 w-3.5" /> Tìm kiếm
             </label>
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Tìm trong nội dung..."
-              className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+              className="border border-zinc-300 px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
             />
           </div>
           <button
             onClick={() => { setPage(1); void load(); }}
             disabled={busy}
-            className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-2 font-medium"
+            className="px-4 py-1.5 rounded-lg text-sm bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-2 font-medium"
           >
             <Search className="h-4 w-4" /> Lọc
           </button>
@@ -262,21 +262,21 @@ export default function CommunityPage() {
           <table className="min-w-[800px] w-full">
             <thead className="bg-gradient-to-r from-zinc-100 to-zinc-50 border-b border-zinc-200">
               <tr className="text-left">
-                <th className="p-4 font-semibold text-zinc-700">Người đăng</th>
-                <th className="p-4 font-semibold text-zinc-700">Nội dung</th>
-                <th className="p-4 font-semibold text-zinc-700">Attachments</th>
-                <th className="p-4 font-semibold text-zinc-700">Likes</th>
-                <th className="p-4 font-semibold text-zinc-700">Comments</th>
-                <th className="p-4 font-semibold text-zinc-700">Reports</th>
-                <th className="p-4 font-semibold text-zinc-700">Trạng thái</th>
-                <th className="p-4 font-semibold text-zinc-700">Ngày tạo</th>
-                <th className="p-4 font-semibold text-zinc-700 w-40">Hành động</th>
+                <th className="px-3 py-2 font-semibold text-zinc-700 text-xs">Người đăng</th>
+                <th className="px-3 py-2 font-semibold text-zinc-700 text-xs">Nội dung</th>
+                <th className="px-3 py-2 font-semibold text-zinc-700 text-xs">Attachments</th>
+                <th className="px-3 py-2 font-semibold text-zinc-700 text-xs">Likes</th>
+                <th className="px-3 py-2 font-semibold text-zinc-700 text-xs">Comments</th>
+                <th className="px-3 py-2 font-semibold text-zinc-700 text-xs">Reports</th>
+                <th className="px-3 py-2 font-semibold text-zinc-700 text-xs">Trạng thái</th>
+                <th className="px-3 py-2 font-semibold text-zinc-700 text-xs">Ngày tạo</th>
+                <th className="px-3 py-2 font-semibold text-zinc-700 text-xs w-32">Hành động</th>
               </tr>
             </thead>
             <tbody>
               {posts.map((post) => (
                 <tr key={post._id} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
-                  <td className="p-4">
+                  <td className="px-3 py-2 text-sm">
                     <div className="font-medium text-zinc-900">{post.user?.name || 'Unknown'}</div>
                     <div className="text-xs text-zinc-500">{post.user?.email || ''}</div>
                   </td>
@@ -298,8 +298,8 @@ export default function CommunityPage() {
                   <td className="p-4">
                     <span
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${post.isHidden
-                          ? "bg-red-50 text-red-600 border border-red-200"
-                          : "bg-green-50 text-green-600 border border-green-200"
+                        ? "bg-red-50 text-red-600 border border-red-200"
+                        : "bg-green-50 text-green-600 border border-green-200"
                         }`}
                     >
                       {post.isHidden ? "Đã ẩn" : "Hiển thị"}
@@ -319,8 +319,8 @@ export default function CommunityPage() {
                       <button
                         onClick={() => onToggleHidePost(post)}
                         className={`px-3 py-1.5 text-xs rounded-lg border transition-colors font-medium flex items-center gap-1 ${post.isHidden
-                            ? "border-teal-300 text-teal-600 hover:bg-teal-50"
-                            : "border-amber-300 text-amber-600 hover:bg-amber-50"
+                          ? "border-teal-300 text-teal-600 hover:bg-teal-50"
+                          : "border-amber-300 text-amber-600 hover:bg-amber-50"
                           }`}
                       >
                         {post.isHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />} {post.isHidden ? "Bỏ ẩn" : "Ẩn"}
@@ -350,25 +350,25 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200 flex items-center justify-between">
-        <div className="text-sm font-medium text-zinc-700">
+      <div className="bg-white rounded-xl shadow-lg p-4 border border-zinc-200 flex items-center justify-between">
+        <div className="text-xs font-medium text-zinc-700">
           Tổng: <span className="font-bold text-teal-600">{total}</span> bài viết
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             disabled={page <= 1 || busy}
             onClick={() => setPage(p => Math.max(1, p - 1))}
-            className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
+            className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
           >
             Trước
           </button>
-          <span className="text-sm font-medium text-zinc-700 px-4 py-2 bg-zinc-100 rounded-lg">
+          <span className="text-xs font-medium text-zinc-700 px-3 py-1.5 bg-zinc-100 rounded-lg">
             {page} / {pages}
           </span>
           <button
             disabled={page >= pages || busy}
             onClick={() => setPage(p => Math.min(pages, p + 1))}
-            className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
+            className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
           >
             Sau
           </button>

@@ -376,23 +376,23 @@ export default function AdminChatPage() {
   return (
     <>
       <div className="h-full flex flex-col bg-zinc-50 overflow-hidden">
-        <div className="w-full h-full flex flex-col px-6 py-6 gap-6">
-          <header className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200 flex-shrink-0">
+        <div className="w-full h-full flex flex-col px-4 py-4 gap-4">
+          <header className="bg-white rounded-lg shadow-md p-4 border border-zinc-200 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl p-3 shadow-lg">
-                  <FaUserTie className="h-6 w-6 text-white" />
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-lg p-2 shadow-md">
+                  <FaUserTie className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-zinc-900 flex items-center gap-3">
+                  <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
                     Quản lý Chat với Admin
                     {unreadCount > 0 && (
-                      <span className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full animate-pulse shadow-md">
+                      <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse shadow-md">
                         {unreadCount > 9 ? "9+" : unreadCount}
                       </span>
                     )}
                   </h1>
-                  <p className="text-sm text-zinc-600 mt-1">
+                  <p className="text-xs text-zinc-600 mt-0.5">
                     Trả lời tin nhắn từ người dùng
                   </p>
                 </div>
@@ -400,45 +400,45 @@ export default function AdminChatPage() {
             </div>
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
             {/* Danh sách cuộc trò chuyện */}
-            <div className="bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden flex flex-col h-full">
-              <div className="p-5 border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-white flex-shrink-0">
-                <h2 className="font-bold text-lg text-zinc-900">Cuộc trò chuyện</h2>
+            <div className="bg-white rounded-lg shadow-md border border-zinc-200 overflow-hidden flex flex-col h-full">
+              <div className="p-3 border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-white flex-shrink-0">
+                <h2 className="font-bold text-sm text-zinc-900">Cuộc trò chuyện</h2>
               </div>
               <div className="overflow-y-auto flex-1 min-h-0">
                 {conversations.length === 0 ? (
-                  <div className="p-8 text-center text-zinc-500">
-                    <FiMessageSquare className="h-12 w-12 text-zinc-300 mx-auto mb-3" />
-                    <p className="font-medium">Chưa có cuộc trò chuyện nào</p>
+                  <div className="p-6 text-center text-zinc-500">
+                    <FiMessageSquare className="h-10 w-10 text-zinc-300 mx-auto mb-2" />
+                    <p className="text-sm font-medium">Chưa có cuộc trò chuyện nào</p>
                   </div>
                 ) : (
                   conversations.map((conv) => (
                     <div
                       key={conv._id}
                       onClick={() => setSelectedConversation(conv._id)}
-                      className={`p-4 border-b border-zinc-100 cursor-pointer transition-all ${selectedConversation === conv._id
-                          ? "bg-gradient-to-r from-teal-50 to-blue-50 border-l-4 border-l-teal-500"
-                          : "hover:bg-zinc-50"
+                      className={`p-3 border-b border-zinc-100 cursor-pointer transition-all ${selectedConversation === conv._id
+                        ? "bg-gradient-to-r from-teal-50 to-blue-50 border-l-4 border-l-teal-500"
+                        : "hover:bg-zinc-50"
                         }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-zinc-900 truncate">
+                          <p className="text-xs font-semibold text-zinc-900 truncate">
                             {conv.user?.name || 'User'}
                           </p>
-                          <p className="text-xs text-zinc-500 truncate mt-1">
+                          <p className="text-xs text-zinc-500 truncate mt-0.5">
                             {conv.user?.email || conv.userId}
                           </p>
-                          <p className="text-xs text-zinc-600 truncate mt-2 line-clamp-1">
+                          <p className="text-xs text-zinc-600 truncate mt-1 line-clamp-1">
                             {conv.lastMessage}
                           </p>
-                          <p className="text-xs text-zinc-400 mt-1">
+                          <p className="text-xs text-zinc-400 mt-0.5">
                             {new Date(conv.lastMessageAt).toLocaleString('vi-VN')}
                           </p>
                         </div>
                         {conv.unreadCount > 0 && (
-                          <span className="ml-2 bg-red-500 text-white text-xs font-bold rounded-full px-2.5 py-1 shadow-md">
+                          <span className="ml-2 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-md">
                             {conv.unreadCount}
                           </span>
                         )}
@@ -450,23 +450,23 @@ export default function AdminChatPage() {
             </div>
 
             {/* Tin nhắn */}
-            <div className="lg:col-span-2 bg-white rounded-xl shadow-lg border border-zinc-200 flex flex-col overflow-hidden h-full">
+            <div className="lg:col-span-2 bg-white rounded-lg shadow-md border border-zinc-200 flex flex-col overflow-hidden h-full">
               {selectedConversation ? (
                 <>
-                  <div className="p-5 border-b border-zinc-200 bg-gradient-to-r from-teal-50 to-blue-50 flex-shrink-0 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div className="p-3 border-b border-zinc-200 bg-gradient-to-r from-teal-50 to-blue-50 flex-shrink-0 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <div>
-                      <h3 className="font-bold text-lg text-zinc-900">
+                      <h3 className="font-bold text-sm text-zinc-900">
                         Cuộc trò chuyện với {conversations.find(c => c._id === selectedConversation)?.user?.name || 'User'}
                       </h3>
-                      <p className="text-sm text-zinc-600 mt-1">
+                      <p className="text-xs text-zinc-600 mt-0.5">
                         {conversations.find(c => c._id === selectedConversation)?.user?.email}
                       </p>
                     </div>
                     <button
                       onClick={() => handleDeleteConversation(selectedConversation)}
-                      className="self-start md:self-auto px-4 py-2 text-sm rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-2"
+                      className="self-start md:self-auto px-3 py-1.5 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1.5"
                     >
-                      <FiTrash2 className="h-4 w-4" />
+                      <FiTrash2 className="h-3.5 w-3.5" />
                       Xóa cuộc trò chuyện
                     </button>
                   </div>
@@ -492,8 +492,8 @@ export default function AdminChatPage() {
                           >
                             <div
                               className={`max-w-[70%] rounded-xl px-4 py-3 shadow-md ${isAdminMessage
-                                  ? "bg-gradient-to-r from-teal-500 to-blue-600 text-white"
-                                  : "bg-white border border-zinc-200 text-zinc-900"
+                                ? "bg-gradient-to-r from-teal-500 to-blue-600 text-white"
+                                : "bg-white border border-zinc-200 text-zinc-900"
                                 }`}
                             >
                               <div className="flex items-start justify-between gap-3 mb-2">
@@ -514,8 +514,8 @@ export default function AdminChatPage() {
                                   }}
                                   aria-label="Xóa tin nhắn"
                                   className={`p-1.5 rounded-md transition-colors ${isAdminMessage
-                                      ? "text-white/80 hover:bg-white/20"
-                                      : "text-zinc-500 hover:bg-zinc-100"
+                                    ? "text-white/80 hover:bg-white/20"
+                                    : "text-zinc-500 hover:bg-zinc-100"
                                     }`}
                                 >
                                   <FiTrash2 className="h-3.5 w-3.5" />
@@ -533,25 +533,25 @@ export default function AdminChatPage() {
                   </div>
 
                   {/* Ô nhập tin nhắn */}
-                  <div className="p-5 border-t border-zinc-200 bg-white flex-shrink-0">
-                    <div className="flex gap-3">
+                  <div className="p-3 border-t border-zinc-200 bg-white flex-shrink-0">
+                    <div className="flex gap-2">
                       <textarea
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Nhập tin nhắn trả lời..."
                         rows={2}
-                        className="flex-1 resize-none rounded-lg border border-zinc-300 bg-white text-zinc-900 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                        className="flex-1 resize-none rounded-lg border border-zinc-300 bg-white text-zinc-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                       />
                       <button
                         onClick={sendMessage}
                         disabled={!newMessage.trim() || sending}
-                        className="px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-600 text-white rounded-lg hover:from-teal-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-2 font-medium"
+                        className="px-4 py-2 text-sm bg-gradient-to-r from-teal-500 to-blue-600 text-white rounded-lg hover:from-teal-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-1.5 font-medium"
                       >
                         {sending ? (
-                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
+                          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
                         ) : (
-                          <FiSend className="h-4 w-4" />
+                          <FiSend className="h-3.5 w-3.5" />
                         )}
                         Gửi
                       </button>

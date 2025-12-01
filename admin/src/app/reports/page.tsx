@@ -85,41 +85,41 @@ export default function ReportsPage() {
     };
 
     return (
-        <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 space-y-6">
+        <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 p-4 space-y-4">
             {/* Header */}
-            <header className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
+            <header className="bg-white rounded-lg shadow-md p-4 border border-zinc-200">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-3 shadow-lg">
-                            <Flag className="h-6 w-6 text-white" />
+                    <div className="flex items-center gap-3">
+                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg p-2 shadow-md">
+                            <Flag className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-zinc-900">Báo cáo lỗi</h1>
-                            <p className="text-sm text-zinc-600 mt-1">Quản lý phản hồi và báo cáo lỗi từ người dùng</p>
+                            <h1 className="text-2xl font-bold text-zinc-900">Báo cáo lỗi</h1>
+                            <p className="text-xs text-zinc-600 mt-0.5">Quản lý phản hồi và báo cáo lỗi từ người dùng</p>
                         </div>
                     </div>
                     <nav className="flex items-center gap-2">
                         <Link
-                            className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-2 text-sm font-medium"
+                            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-1.5 text-xs font-medium"
                             href="/"
                         >
-                            <Home className="h-4 w-4" /> Trang chủ
+                            <Home className="h-3.5 w-3.5" /> Trang chủ
                         </Link>
                     </nav>
                 </div>
             </header>
 
             {/* Filters */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
-                <div className="flex flex-wrap gap-4 items-end">
-                    <div className="flex flex-col min-w-[200px]">
-                        <label className="text-sm font-medium text-zinc-700 mb-2 flex items-center gap-2">
-                            <Filter className="h-4 w-4" /> Trạng thái
+            <div className="bg-white rounded-lg shadow-md p-4 border border-zinc-200">
+                <div className="flex flex-wrap gap-3 items-end">
+                    <div className="flex flex-col min-w-[180px]">
+                        <label className="text-xs font-medium text-zinc-700 mb-1.5 flex items-center gap-1.5">
+                            <Filter className="h-3.5 w-3.5" /> Trạng thái
                         </label>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                            className="border border-zinc-300 px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                         >
                             <option value="">Tất cả</option>
                             <option value="pending">Chờ xử lý</option>
@@ -129,9 +129,9 @@ export default function ReportsPage() {
                     </div>
                     <button
                         onClick={fetchReports}
-                        className="px-6 py-2.5 rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 transition-all shadow-md flex items-center gap-2 font-medium"
+                        className="px-4 py-1.5 text-sm rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 transition-all shadow-md flex items-center gap-1.5 font-medium"
                     >
-                        <RefreshCw className="h-4 w-4" /> Làm mới
+                        <RefreshCw className="h-3.5 w-3.5" /> Làm mới
                     </button>
                 </div>
             </div>
@@ -142,17 +142,17 @@ export default function ReportsPage() {
                     <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
                 </div>
             ) : (
-                <div className="bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden">
+                <div className="bg-white rounded-lg shadow-md border border-zinc-200 overflow-hidden">
                     <div className="overflow-auto">
                         <table className="w-full text-left text-sm text-zinc-600">
                             <thead className="bg-zinc-50 text-xs uppercase font-medium text-zinc-500 border-b border-zinc-200">
                                 <tr>
-                                    <th className="px-6 py-4">Trạng thái</th>
-                                    <th className="px-6 py-4">Người báo cáo</th>
-                                    <th className="px-6 py-4">Nội dung</th>
-                                    <th className="px-6 py-4">Ngữ cảnh</th>
-                                    <th className="px-6 py-4">Ngày tạo</th>
-                                    <th className="px-6 py-4 text-right">Hành động</th>
+                                    <th className="px-3 py-2 text-xs">Trạng thái</th>
+                                    <th className="px-3 py-2 text-xs">Người báo cáo</th>
+                                    <th className="px-3 py-2 text-xs">Nội dung</th>
+                                    <th className="px-3 py-2 text-xs">Ngữ cảnh</th>
+                                    <th className="px-3 py-2 text-xs">Ngày tạo</th>
+                                    <th className="px-3 py-2 text-xs text-right">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-100">
@@ -246,21 +246,21 @@ export default function ReportsPage() {
             )}
 
             {totalPages > 1 && (
-                <div className="bg-white rounded-xl shadow-lg p-4 border border-zinc-200 flex justify-center gap-2">
+                <div className="bg-white rounded-lg shadow-md p-3 border border-zinc-200 flex justify-center gap-2">
                     <button
                         disabled={page === 1}
                         onClick={() => setPage(p => p - 1)}
-                        className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+                        className="px-3 py-1.5 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
                     >
                         Trước
                     </button>
-                    <span className="px-4 py-2 text-sm font-medium text-zinc-700 bg-zinc-50 rounded-lg border border-zinc-200">
+                    <span className="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-50 rounded-lg border border-zinc-200">
                         Trang {page} / {totalPages}
                     </span>
                     <button
                         disabled={page === totalPages}
                         onClick={() => setPage(p => p + 1)}
-                        className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+                        className="px-3 py-1.5 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
                     >
                         Sau
                     </button>

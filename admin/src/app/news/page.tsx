@@ -219,15 +219,15 @@ export default function NewsPage() {
 
   return (
     <div className="min-h-screen space-y-6">
-      <header className="bg-white rounded-2xl shadow-lg border border-zinc-200 p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-500 text-white shadow-md">
-              <Newspaper className="h-6 w-6" />
+      <header className="bg-white rounded-2xl shadow-lg border border-zinc-200 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-500 text-white shadow-md">
+              <Newspaper className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-zinc-900">Học qua tin tức</h1>
-              <p className="text-sm text-zinc-600">Tạo nguồn bài đọc tiếng Anh cập nhật hàng ngày</p>
+              <h1 className="text-2xl font-bold text-zinc-900">Học qua tin tức</h1>
+              <p className="text-xs text-zinc-600">Tạo nguồn bài đọc tiếng Anh cập nhật hàng ngày</p>
             </div>
           </div>
           <div className="flex gap-3">
@@ -249,17 +249,17 @@ export default function NewsPage() {
         </div>
       </header>
 
-      <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm p-6 space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm p-4 space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
           <div className="col-span-1 lg:col-span-2">
-            <label className="text-sm font-medium text-zinc-600 mb-1 flex items-center gap-2">
+            <label className="text-xs font-medium text-zinc-600 mb-1 flex items-center gap-2">
               <Search className="h-4 w-4" /> Từ khóa
             </label>
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Tiêu đề tin tức..."
-              className="w-full border border-zinc-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              className="w-full border border-zinc-300 rounded-xl px-3 py-1.5 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
             />
           </div>
           <div>
@@ -298,7 +298,7 @@ export default function NewsPage() {
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 text-zinc-600">
               <tr>
-                <th className="p-3 text-left font-medium">Tiêu đề</th>
+                <th className="px-3 py-2 text-left font-medium text-xs">Tiêu đề</th>
                 <th className="p-3 text-left font-medium">Chuyên mục</th>
                 <th className="p-3 text-left font-medium">Trạng thái</th>
                 <th className="p-3 text-left font-medium">Ngày phát hành</th>
@@ -308,16 +308,15 @@ export default function NewsPage() {
             <tbody>
               {items.map((item) => (
                 <tr key={item._id} className="border-t border-zinc-100 hover:bg-zinc-50/60">
-                  <td className="p-3">
+                  <td className="px-3 py-2 text-sm">
                     <p className="font-semibold text-zinc-900">{item.title}</p>
                     <p className="text-xs text-zinc-500 line-clamp-2">{item.paragraphs[0]}</p>
                   </td>
                   <td className="p-3 text-zinc-700 capitalize">{item.category}</td>
                   <td className="p-3">
                     <span
-                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                        item.isPublished ? "bg-emerald-100 text-emerald-700" : "bg-zinc-200 text-zinc-600"
-                      }`}
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${item.isPublished ? "bg-emerald-100 text-emerald-700" : "bg-zinc-200 text-zinc-600"
+                        }`}
                     >
                       {item.isPublished ? (
                         <>

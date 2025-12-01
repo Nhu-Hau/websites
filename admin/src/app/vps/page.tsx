@@ -188,12 +188,12 @@ export default function VpsPage() {
 
   return (
     <div className="h-full flex flex-col bg-zinc-50 overflow-hidden">
-      <div className="flex-1 overflow-auto px-6 py-6">
-        <div className="space-y-6">
+      <div className="flex-1 overflow-auto px-4 py-4">
+        <div className="space-y-4">
           {/* Header */}
           <div>
-            <h1 className="text-3xl font-bold text-zinc-900">Thông số VPS</h1>
-            <p className="text-zinc-600 mt-1">Theo dõi hiệu suất hệ thống</p>
+            <h1 className="text-2xl font-bold text-zinc-900">Thông số VPS</h1>
+            <p className="text-zinc-600 mt-0.5 text-sm">Theo dõi hiệu suất hệ thống</p>
           </div>
 
           {error && (
@@ -203,7 +203,7 @@ export default function VpsPage() {
           )}
 
           {/* VPS Stats */}
-          <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-6">
+          <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-4">
             {vpsStats ? (
               <div className="space-y-6">
                 {/* OS và Uptime Info */}
@@ -252,13 +252,13 @@ export default function VpsPage() {
           {/* Network & Security Section */}
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-zinc-900">Mạng & Bảo mật</h2>
-              <p className="text-zinc-600 mt-1">Giám sát lưu lượng và truy cập</p>
+              <h2 className="text-xl font-bold text-zinc-900">Mạng & Bảo mật</h2>
+              <p className="text-zinc-600 mt-0.5 text-sm">Giám sát lưu lượng và truy cập</p>
             </div>
 
             {/* Network Speed */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-6 flex items-center justify-between">
+              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-4 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-zinc-500 mb-1">Tốc độ Download</p>
                   <div className="flex items-baseline gap-2">
@@ -295,7 +295,7 @@ export default function VpsPage() {
                 <table className="w-full text-sm text-left">
                   <thead className="bg-zinc-50 text-zinc-500 font-medium border-b border-zinc-200">
                     <tr>
-                      <th className="px-6 py-3">User</th>
+                      <th className="px-4 py-2 text-xs">User</th>
                       <th className="px-6 py-3">IP Address</th>
                       <th className="px-6 py-3">Time</th>
                       <th className="px-6 py-3">TTY</th>
@@ -327,13 +327,13 @@ export default function VpsPage() {
           {/* Database & Storage Section */}
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-zinc-900">Database & Storage</h2>
-              <p className="text-zinc-600 mt-1">Dung lượng lưu trữ</p>
+              <h2 className="text-xl font-bold text-zinc-900">Database & Storage</h2>
+              <p className="text-zinc-600 mt-0.5 text-sm">Dung lượng lưu trữ</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* MongoDB */}
-              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-6">
+              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-4">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-green-100 rounded-lg">
                     <Database className="h-6 w-6 text-green-600" />
@@ -410,8 +410,8 @@ export default function VpsPage() {
           {/* Process Management Section */}
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-zinc-900">Quản lý Process (PM2)</h2>
-              <p className="text-zinc-600 mt-1">Giám sát và điều khiển các ứng dụng</p>
+              <h2 className="text-xl font-bold text-zinc-900">Quản lý Process (PM2)</h2>
+              <p className="text-zinc-600 mt-0.5 text-sm">Giám sát và điều khiển các ứng dụng</p>
             </div>
 
             <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
@@ -524,8 +524,8 @@ export default function VpsPage() {
                 onClick={handleConfirmAction}
                 disabled={confirmLoading}
                 className={`px-4 py-2 rounded-lg text-white font-medium flex items-center gap-2 ${confirmDialog.confirmText === 'Stop' ? 'bg-red-600 hover:bg-red-700' :
-                    confirmDialog.confirmText === 'Restart' ? 'bg-blue-600 hover:bg-blue-700' :
-                      'bg-green-600 hover:bg-green-700'
+                  confirmDialog.confirmText === 'Restart' ? 'bg-blue-600 hover:bg-blue-700' :
+                    'bg-green-600 hover:bg-green-700'
                   }`}
               >
                 {confirmLoading && <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}

@@ -22,14 +22,27 @@ export const adminNavItems: AdminNavItem[] = [
     children: [
       { label: "Phòng học trực tuyến", href: "/study-rooms" },
       { label: "Học qua tin tức", href: "/news" },
-      { label: "Cộng đồng", href: "/community" },
       { label: "Ngân hàng Parts", href: "/parts" },
     ],
   },
-  { label: "Quản lý Users", href: "/users" },
-  { label: "Đơn hàng & Mã", href: "/promos" },
-  { label: "VPS & Logs", href: "/vps" },
-  { label: "Thông báo", href: "/notifications", icon: Bell },
-  { label: "Báo cáo lỗi", href: "/reports", icon: Flag },
-  { label: "Admin Chat", href: "/admin-chat" },
+  {
+    label: "Người dùng & Cộng đồng",
+    children: [
+      { label: "Quản lý Users", href: "/users" },
+      { label: "Cộng đồng", href: "/community" },
+      { label: "Admin Chat", href: "/admin-chat" },
+    ],
+  },
+  {
+    label: "Vận hành",
+    children: [
+      { label: "Đơn hàng & Mã", href: "/promos" },
+      { label: "Thông báo", href: "/notifications" },
+      { label: "Báo cáo lỗi", href: "/reports" },
+    ],
+  },
+  {
+    label: "Hệ thống",
+    href: "/vps",
+  },
 ];

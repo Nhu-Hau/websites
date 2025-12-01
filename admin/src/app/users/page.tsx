@@ -160,56 +160,56 @@ export default function UsersPage() {
   if (!me || me.role !== 'admin') return <div className="p-6 text-red-600">Chỉ dành cho Admin</div>;
 
   return (
-    <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 space-y-6">
-      <header className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
+    <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 p-4 space-y-4">
+      <header className="bg-white rounded-lg shadow-md p-4 border border-zinc-200">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl p-3 shadow-lg">
-              <Users className="h-6 w-6 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-lg p-2 shadow-md">
+              <Users className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-zinc-900">Quản lý người dùng</h1>
-              <p className="text-sm text-zinc-600 mt-1">Quản lý tất cả người dùng trong hệ thống</p>
+              <h1 className="text-2xl font-bold text-zinc-900">Quản lý người dùng</h1>
+              <p className="text-xs text-zinc-600 mt-0.5">Quản lý tất cả người dùng trong hệ thống</p>
             </div>
           </div>
           <nav className="flex items-center gap-2">
             <Link
-              className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors flex items-center gap-2 text-sm font-medium"
+              className="px-3 py-1.5 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition-colors flex items-center gap-1.5 text-xs font-medium"
               href="/users"
             >
-              <Users className="h-4 w-4" /> Users
+              <Users className="h-3.5 w-3.5" /> Users
             </Link>
             <Link
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-2 text-sm font-medium"
+              className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 transition-all shadow-md flex items-center gap-1.5 text-xs font-medium"
               href="/"
             >
-              <Home className="h-4 w-4" /> Trang chủ
+              <Home className="h-3.5 w-3.5" /> Trang chủ
             </Link>
           </nav>
         </div>
       </header>
 
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
-        <div className="flex flex-wrap gap-4 items-end">
-          <div className="flex flex-col flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-zinc-700 mb-2 flex items-center gap-2">
-              <Search className="h-4 w-4" /> Tìm kiếm
+      <div className="bg-white rounded-lg shadow-md p-4 border border-zinc-200">
+        <div className="flex flex-wrap gap-3 items-end">
+          <div className="flex flex-col flex-1 min-w-[180px]">
+            <label className="text-xs font-medium text-zinc-700 mb-1.5 flex items-center gap-1.5">
+              <Search className="h-3.5 w-3.5" /> Tìm kiếm
             </label>
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Tên hoặc email"
-              className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+              className="border border-zinc-300 px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
             />
           </div>
-          <div className="flex flex-col min-w-[150px]">
-            <label className="text-sm font-medium text-zinc-700 mb-2 flex items-center gap-2">
-              <Shield className="h-4 w-4" /> Role
+          <div className="flex flex-col min-w-[120px]">
+            <label className="text-xs font-medium text-zinc-700 mb-1.5 flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5" /> Role
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+              className="border border-zinc-300 px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
             >
               <option value="">Tất cả</option>
               <option value="user">User</option>
@@ -217,14 +217,14 @@ export default function UsersPage() {
               <option value="admin">Admin</option>
             </select>
           </div>
-          <div className="flex flex-col min-w-[150px]">
-            <label className="text-sm font-medium text-zinc-700 mb-2 flex items-center gap-2">
-              <Crown className="h-4 w-4" /> Gói
+          <div className="flex flex-col min-w-[120px]">
+            <label className="text-xs font-medium text-zinc-700 mb-1.5 flex items-center gap-1.5">
+              <Crown className="h-3.5 w-3.5" /> Gói
             </label>
             <select
               value={access}
               onChange={(e) => setAccess(e.target.value)}
-              className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+              className="border border-zinc-300 px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
             >
               <option value="">Tất cả</option>
               <option value="free">Free</option>
@@ -234,54 +234,54 @@ export default function UsersPage() {
           <button
             onClick={() => { setPage(1); void load(); }}
             disabled={busy}
-            className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-2 font-medium"
+            className="px-4 py-1.5 text-sm rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-1.5 font-medium"
           >
-            <Filter className="h-4 w-4" /> Lọc
+            <Filter className="h-3.5 w-3.5" /> Lọc
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-md border border-zinc-200 overflow-hidden">
         <div className="overflow-auto">
           <table className="min-w-[800px] w-full">
             <thead className="bg-gradient-to-r from-zinc-100 to-zinc-50 border-b border-zinc-200">
               <tr className="text-left">
-                <th className="p-4 font-semibold text-zinc-700">Email</th>
-                <th className="p-4 font-semibold text-zinc-700">Tên</th>
-                <th className="p-4 font-semibold text-zinc-700">Role</th>
-                <th className="p-4 font-semibold text-zinc-700">Gói</th>
-                <th className="p-4 font-semibold text-zinc-700 w-48">Hành động</th>
+                <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Email</th>
+                <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Tên</th>
+                <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Role</th>
+                <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Gói</th>
+                <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Hành động</th>
               </tr>
             </thead>
             <tbody>
               {items.map((u) => (
                 <tr key={u._id} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
-                  <td className="p-4 font-mono text-sm text-zinc-700">{u.email}</td>
-                  <td className="p-4 font-medium text-zinc-900">{u.name}</td>
-                  <td className="p-4">
-                    <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${roleClassByRole[u.role]}`}>
+                  <td className="px-3 py-2 font-mono text-xs text-zinc-700">{u.email}</td>
+                  <td className="px-3 py-2 text-sm font-medium text-zinc-900">{u.name}</td>
+                  <td className="px-3 py-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleClassByRole[u.role]}`}>
                       {roleLabelByRole[u.role]}
                     </span>
                   </td>
-                  <td className="p-4">
-                    <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${u.access === 'premium'
+                  <td className="px-3 py-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${u.access === 'premium'
                       ? 'bg-yellow-100 text-yellow-700 border border-yellow-200'
                       : 'bg-gray-100 text-gray-700 border border-gray-200'
                       }`}>
                       {u.access}
                     </span>
                   </td>
-                  <td className="p-4">
-                    <div className="flex gap-2 flex-wrap">
+                  <td className="px-3 py-2">
+                    <div className="flex gap-1.5 flex-wrap">
                       <button
                         onClick={() => openUserDetails(u)}
-                        className="px-3 py-1.5 text-xs rounded-lg border border-teal-300 text-teal-600 hover:bg-teal-50 transition-colors font-medium flex items-center gap-1"
+                        className="px-2 py-1 text-xs rounded border border-teal-300 text-teal-600 hover:bg-teal-50 transition-colors font-medium flex items-center gap-1"
                       >
                         <Eye className="h-3 w-3" /> Chi tiết
                       </button>
                       <button
                         onClick={() => onDelete(u)}
-                        className="px-3 py-1.5 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1"
+                        className="px-2 py-1 text-xs rounded border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1"
                       >
                         <Trash2 className="h-3 w-3" /> Xóa
                       </button>
@@ -291,10 +291,10 @@ export default function UsersPage() {
               ))}
               {items.length === 0 && (
                 <tr>
-                  <td className="p-12 text-center text-zinc-500" colSpan={5}>
+                  <td className="p-8 text-center text-zinc-500" colSpan={5}>
                     <div className="flex flex-col items-center gap-2">
-                      <Users className="h-12 w-12 text-zinc-300" />
-                      <p className="text-lg font-medium">Không có dữ liệu</p>
+                      <Users className="h-10 w-10 text-zinc-300" />
+                      <p className="text-sm font-medium">Không có dữ liệu</p>
                     </div>
                   </td>
                 </tr>
@@ -304,25 +304,25 @@ export default function UsersPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200 flex items-center justify-between">
-        <div className="text-sm font-medium text-zinc-700">
+      <div className="bg-white rounded-lg shadow-md p-3 border border-zinc-200 flex items-center justify-between">
+        <div className="text-xs font-medium text-zinc-700">
           Tổng: <span className="font-bold text-teal-600">{total}</span> người dùng
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             disabled={page <= 1 || busy}
             onClick={() => setPage(p => Math.max(1, p - 1))}
-            className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
+            className="px-3 py-1.5 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
           >
             Trước
           </button>
-          <span className="text-sm font-medium text-zinc-700 px-4 py-2 bg-zinc-100 rounded-lg">
+          <span className="text-xs font-medium text-zinc-700 px-3 py-1.5 bg-zinc-100 rounded-lg">
             {page} / {pages}
           </span>
           <button
             disabled={page >= pages || busy}
             onClick={() => setPage(p => Math.min(pages, p + 1))}
-            className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
+            className="px-3 py-1.5 text-xs rounded-lg border border-zinc-300 hover:bg-zinc-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-medium"
           >
             Sau
           </button>

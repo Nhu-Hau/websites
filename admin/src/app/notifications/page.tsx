@@ -74,34 +74,34 @@ export default function NotificationsPage() {
     };
 
     return (
-        <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 min-h-screen space-y-6">
-            <header className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
-                <div className="flex items-center gap-4">
-                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-3 shadow-lg">
-                        <Bell className="h-6 w-6 text-white" />
+        <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 p-4 min-h-screen space-y-4">
+            <header className="bg-white rounded-xl shadow-lg p-4 border border-zinc-200">
+                <div className="flex items-center gap-3">
+                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-2 shadow-lg">
+                        <Bell className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold text-zinc-900">Hệ thống Thông báo</h1>
-                        <p className="text-sm text-zinc-600 mt-1">Gửi thông báo đến người dùng ứng dụng</p>
+                        <h1 className="text-2xl font-bold text-zinc-900">Hệ thống Thông báo</h1>
+                        <p className="text-xs text-zinc-600 mt-0.5">Gửi thông báo đến người dùng ứng dụng</p>
                     </div>
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden">
-                        <div className="p-6 border-b border-zinc-100 bg-zinc-50/50">
-                            <h2 className="text-lg font-semibold text-zinc-800 flex items-center gap-2">
-                                <Send className="w-5 h-5 text-indigo-600" />
+                        <div className="p-4 border-b border-zinc-100 bg-zinc-50/50">
+                            <h2 className="text-base font-semibold text-zinc-800 flex items-center gap-2">
+                                <Send className="w-4 h-4 text-indigo-600" />
                                 Soạn thông báo mới
                             </h2>
                         </div>
 
-                        <div className="p-6 space-y-6">
+                        <div className="p-4 space-y-4">
                             {/* Target Selection */}
-                            <div className="space-y-3">
-                                <label className="text-sm font-medium text-zinc-700">Gửi đến</label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-medium text-zinc-700">Gửi đến</label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <button
                                         onClick={() => setTarget("all")}
                                         className={`relative p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${target === "all"

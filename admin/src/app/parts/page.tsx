@@ -361,19 +361,19 @@ function PartsPageContent() {
   if (!me || me.role !== "admin") return <div className="p-6 text-red-600">Chỉ dành cho Admin</div>;
 
   return (
-    <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 space-y-6">
-      <header className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
+    <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 p-4 space-y-4">
+      <header className="bg-white rounded-xl shadow-lg p-4 border border-zinc-200">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl p-3 shadow-lg">
-              <FileText className="h-6 w-6 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl p-2 shadow-lg">
+              <FileText className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-zinc-900">Quản lý Parts (Theo Test)</h1>
-              <p className="text-sm text-zinc-600 mt-1">Quản lý các bài test và câu hỏi</p>
+              <h1 className="text-2xl font-bold text-zinc-900">Quản lý Parts (Theo Test)</h1>
+              <p className="text-xs text-zinc-600 mt-0.5">Quản lý các bài test và câu hỏi</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setShowBulkUpload(true)}
               className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all shadow-md flex items-center gap-2 font-medium"
@@ -422,14 +422,14 @@ function PartsPageContent() {
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-teal-100 rounded-lg p-2">
-                <BarChart3 className="h-5 w-5 text-teal-600" />
+          <div className="bg-white rounded-xl shadow-lg p-4 border border-zinc-200">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="bg-teal-100 rounded-lg p-1.5">
+                <BarChart3 className="h-4 w-4 text-teal-600" />
               </div>
-              <div className="text-sm font-medium text-zinc-600">Tổng số items</div>
+              <div className="text-xs font-medium text-zinc-600">Tổng số items</div>
             </div>
-            <div className="text-3xl font-bold text-zinc-900">{stats.total}</div>
+            <div className="text-2xl font-bold text-zinc-900">{stats.total}</div>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
             <div className="flex items-center gap-3 mb-2">
@@ -454,7 +454,7 @@ function PartsPageContent() {
               </div>
               <div className="text-sm font-medium text-zinc-600">Theo Part</div>
             </div>
-            <div className="text-xs text-zinc-700 mt-1 space-y-1">
+            <div className="text-xs text-zinc-700 mt-1 grid grid-cols-2 gap-x-4 gap-y-1">
               {(() => {
                 // Tính số lượng test cho từng part
                 const testCountByPart = new Map<string, Set<string>>();
@@ -498,13 +498,13 @@ function PartsPageContent() {
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-zinc-200">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-zinc-900">Bộ lọc</h2>
+      <div className="bg-white rounded-xl shadow-lg p-4 border border-zinc-200">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-bold text-zinc-900">Bộ lọc</h2>
         </div>
-        <div className="flex flex-wrap gap-4 items-end">
+        <div className="flex flex-wrap gap-3 items-end">
           <div className="flex flex-col min-w-[150px]">
-            <label className="text-sm font-medium text-zinc-700 mb-2">Part</label>
+            <label className="text-xs font-medium text-zinc-700 mb-1.5">Part</label>
             <input
               type="number"
               value={part}
@@ -516,7 +516,7 @@ function PartsPageContent() {
                 }
               }}
               placeholder="1"
-              className="border border-zinc-300 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+              className="border border-zinc-300 px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
             />
           </div>
           <div className="flex flex-col min-w-[150px]">
@@ -554,39 +554,39 @@ function PartsPageContent() {
           return (
             <div key={key} className="bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden">
               <div
-                className="p-5 cursor-pointer hover:bg-zinc-50 transition-colors flex items-center justify-between border-b border-zinc-100"
+                className="p-3 cursor-pointer hover:bg-zinc-50 transition-colors flex items-center justify-between border-b border-zinc-100"
                 onClick={() => toggleTest(test)}
               >
-                <div className="flex items-center gap-4">
-                  <div className="bg-teal-100 rounded-lg p-2">
+                <div className="flex items-center gap-3">
+                  <div className="bg-teal-100 rounded-lg p-1.5">
                     {isExpanded ? (
-                      <ChevronDown className="w-5 h-5 text-teal-600" />
+                      <ChevronDown className="w-4 h-4 text-teal-600" />
                     ) : (
-                      <ChevronRight className="w-5 h-5 text-teal-600" />
+                      <ChevronRight className="w-4 h-4 text-teal-600" />
                     )}
                   </div>
                   <div>
-                    <div className="font-bold text-lg text-zinc-900">
-                      {test.part} - Level {test.level} - Test {test.test}
+                    <div className="font-bold text-base text-zinc-900">
+                      {test.part.replace('part.', 'Part ')} - Level {test.level} - Test {test.test}
                     </div>
-                    <div className="text-sm text-zinc-600 mt-1">
+                    <div className="text-xs text-zinc-600 mt-0.5">
                       {test.itemCount} câu hỏi
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={(e) => handleExportTest(test, e)}
                     disabled={busy}
-                    className="px-4 py-2 text-sm rounded-lg border border-teal-300 text-teal-600 hover:bg-teal-50 transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1.5 text-xs rounded-lg border border-teal-300 text-teal-600 hover:bg-teal-50 transition-colors font-medium flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Download className="h-4 w-4" /> Export Excel
+                    <Download className="h-3.5 w-3.5" /> Export Excel
                   </button>
                   <button
                     onClick={(e) => handleDeleteTest(test, e)}
-                    className="px-4 py-2 text-sm rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-2"
+                    className="px-3 py-1.5 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1.5"
                   >
-                    <Trash2 className="h-4 w-4" /> Xóa Test
+                    <Trash2 className="h-3.5 w-3.5" /> Xóa Test
                   </button>
                 </div>
               </div>
@@ -596,7 +596,7 @@ function PartsPageContent() {
                   <div className="flex border-b border-zinc-200">
                     <button
                       onClick={() => setActiveTab('items')}
-                      className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'items'
+                      className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === 'items'
                         ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/50'
                         : 'text-zinc-600 hover:bg-zinc-50'
                         }`}
@@ -614,7 +614,7 @@ function PartsPageContent() {
                     </button>
                   </div>
 
-                  <div className="p-6">
+                  <div className="p-4">
                     {activeTab === 'items' ? (
                       <div className="space-y-4">
                         <div className="flex justify-end">

@@ -22,11 +22,11 @@ import { AIInsightSection } from "@/components/features/test/AIInsightSection";
 type EligResp = {
   eligible: boolean;
   reason?:
-    | "ok"
-    | "waiting_window"
-    | "no_practice_after_progress"
-    | "no_practice_yet"
-    | "insufficient_practice_tests";
+  | "ok"
+  | "waiting_window"
+  | "no_practice_after_progress"
+  | "no_practice_yet"
+  | "insufficient_practice_tests";
   since?: string;
   nextEligibleAt?: string | null;
   remainingMs?: number | null;
@@ -376,6 +376,7 @@ export default function ProgressPage() {
                   }}
                   showStimulusDetails={!!resp && showDetails}
                   showPerItemExplain={!!resp && showDetails}
+                  testId="progress"
                 />
               ) : (
                 <StimulusColumnCard
@@ -393,6 +394,7 @@ export default function ProgressPage() {
                   }}
                   showStimulusDetails={!!resp && showDetails}
                   showPerItemExplain={!!resp && showDetails}
+                  testId="progress"
                 />
               )
             )}

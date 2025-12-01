@@ -43,7 +43,7 @@ type ConfirmDialogState = {
   errorMessage?: string;
 };
 
-export default function PartsPage() {
+function PartsPageContent() {
   const searchParams = useSearchParams();
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
   const [loadingMe, setLoadingMe] = React.useState(true);
@@ -992,5 +992,13 @@ export default function PartsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function PartsPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <PartsPageContent />
+    </React.Suspense>
   );
 }

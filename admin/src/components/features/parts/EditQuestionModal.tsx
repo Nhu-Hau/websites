@@ -58,7 +58,7 @@ export default function EditQuestionModal({ item, stimulus, isOpen, onClose, onU
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!item) return;
+    if (!item || !item._id) return;
 
     try {
       const updatedItem = await adminUpdatePart(item._id, {
@@ -66,7 +66,7 @@ export default function EditQuestionModal({ item, stimulus, isOpen, onClose, onU
         tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
       });
       toast.success("Cập nhật câu hỏi thành công!");
-      onUpdate(updatedItem);
+      onUpdate(updatedItem.item);
       onClose();
     } catch (error) {
       toast.error("Cập nhật thất bại");
@@ -234,8 +234,8 @@ export default function EditQuestionModal({ item, stimulus, isOpen, onClose, onU
                 {form.choices.map((choice) => (
                   <div key={choice.id} className="flex items-center gap-4 group">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border transition-colors ${form.answer === choice.id
-                        ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200'
-                        : 'bg-zinc-50 border-zinc-200 text-zinc-500 group-hover:border-zinc-300'
+                      ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200'
+                      : 'bg-zinc-50 border-zinc-200 text-zinc-500 group-hover:border-zinc-300'
                       }`}>
                       {choice.id}
                     </div>
@@ -243,8 +243,8 @@ export default function EditQuestionModal({ item, stimulus, isOpen, onClose, onU
                       value={choice.text || ""}
                       onChange={(e) => handleUpdateChoice(choice.id, e.target.value)}
                       className={`flex-1 px-4 py-2.5 rounded-lg border transition-all ${form.answer === choice.id
-                          ? 'border-blue-300 bg-blue-50/30 focus:ring-blue-500'
-                          : 'border-zinc-300 focus:ring-blue-500'
+                        ? 'border-blue-300 bg-blue-50/30 focus:ring-blue-500'
+                        : 'border-zinc-300 focus:ring-blue-500'
                         } focus:ring-2 focus:border-transparent`}
                       placeholder={`Nhập nội dung lựa chọn ${choice.id}...`}
                     />

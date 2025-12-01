@@ -48,18 +48,18 @@ type ItemsResp = { items: Item[]; stimulusMap: Record<string, Stimulus> };
 
 type PracticeAttemptDetail =
   | {
-      items?: Array<{
-        id: string;
-        picked?: ChoiceId | null;
-        correctAnswer?: ChoiceId;
-        stimulusId?: string;
-        part?: string;
-      }>;
-      answersMap?: Record<
-        string,
-        { picked?: ChoiceId | null; correctAnswer?: ChoiceId }
-      >;
-    }
+    items?: Array<{
+      id: string;
+      picked?: ChoiceId | null;
+      correctAnswer?: ChoiceId;
+      stimulusId?: string;
+      part?: string;
+    }>;
+    answersMap?: Record<
+      string,
+      { picked?: ChoiceId | null; correctAnswer?: ChoiceId }
+    >;
+  }
   | any;
 
 const LISTENING_PARTS = new Set(["part.1", "part.2", "part.3", "part.4"]);
@@ -270,125 +270,127 @@ export default function PracticeAttempt() {
       focusMode={focusMode}
       onToggleFocus={() => setFocusMode((v) => !v)}
     >
-        {/* Header */}
-        <ResultHeader
-          badge={{
-            label: t("result.badge"),
-            dotColor: "bg-blue-500",
-          }}
-          title={t("result.title")}
-          description={
-            <>
-              {atTime && (
-                t.rich("result.completedAt", {
-                  time: new Date(atTime).toLocaleString(),
-                  bold: (chunks) => <span className="font-medium">{chunks}</span>
-                })
-              )}
-              Level {att.level}
-              {typeof att.test === "number" && ` • Test ${att.test}`}
-            </>
-          }
-          stats={{
-            correct: att.correct,
-            total: att.total,
-            timeLabel: fmtTime(att.timeSec),
-          }}
-        />
-          {/* Tổng quan */}
-          <section className="mb-8 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-6 shadow-lg">
-            <h2 className="text-2xl font-extrabold text-center bg-gradient-to-r from-emerald-600 to-sky-600 bg-clip-text text-transparent mb-6">
-              {t("result.heading")}
-            </h2>
+      {/* Header */}
+      <ResultHeader
+        badge={{
+          label: t("result.badge"),
+          dotColor: "bg-blue-500",
+        }}
+        title={t("result.title")}
+        description={
+          <>
+            {atTime && (
+              t.rich("result.completedAt", {
+                time: new Date(atTime).toLocaleString(),
+                bold: (chunks) => <span className="font-medium">{chunks}</span>
+              })
+            )}
+            Level {att.level}
+            {typeof att.test === "number" && ` • Test ${att.test}`}
+          </>
+        }
+        stats={{
+          correct: att.correct,
+          total: att.total,
+          timeLabel: fmtTime(att.timeSec),
+        }}
+      />
+      {/* Tổng quan */}
+      <section className="mb-8 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm p-6 shadow-lg">
+        <h2 className="text-2xl font-extrabold text-center bg-gradient-to-r from-emerald-600 to-sky-600 bg-clip-text text-transparent mb-6">
+          {t("result.heading")}
+        </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="text-center p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700">
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {t("result.correct")}
-                </p>
-                <p className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">
-                  {respFake?.correct}
-                  <span className="text-lg text-zinc-600 dark:text-zinc-400">
-                    /{respFake?.total}
-                  </span>
-                </p>
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="text-center p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700">
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              {t("result.correct")}
+            </p>
+            <p className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">
+              {respFake?.correct}
+              <span className="text-lg text-zinc-600 dark:text-zinc-400">
+                /{respFake?.total}
+              </span>
+            </p>
+          </div>
 
-              <div className="text-center p-4 rounded-2xl bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-700">
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {t("result.accuracy")}
-                </p>
-                <p className="text-3xl font-extrabold text-sky-700 dark:text-sky-300">
-                  {respFake ? (respFake.acc * 100).toFixed(1) : "--"}%
-                </p>
-              </div>
+          <div className="text-center p-4 rounded-2xl bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-700">
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              {t("result.accuracy")}
+            </p>
+            <p className="text-3xl font-extrabold text-sky-700 dark:text-sky-300">
+              {respFake ? (respFake.acc * 100).toFixed(1) : "--"}%
+            </p>
+          </div>
 
-              <div className="text-center p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {t("result.time")}
-                </p>
-                <p className="text-3xl font-extrabold text-amber-700 dark:text-amber-300">
-                  {respFake ? fmtTime(respFake.timeSec) : "--:--"}
-                </p>
-              </div>
-            </div>
+          <div className="text-center p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              {t("result.time")}
+            </p>
+            <p className="text-3xl font-extrabold text-amber-700 dark:text-amber-300">
+              {respFake ? fmtTime(respFake.timeSec) : "--:--"}
+            </p>
+          </div>
+        </div>
 
-            <button
-              onClick={() => setShowDetails((s) => !s)}
-              className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 text-base font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all dark:text-white"
-            >
-              {showDetails ? (
-                <ChevronUp className="h-5 w-5" />
-              ) : (
-                <ChevronDown className="h-5 w-5" />
-              )}
-              {showDetails ? t("result.hideDetails") : t("result.showDetails")}
-            </button>
-          </section>
-
-          {/* AI Insight Section */}
-          {att._id && (
-            <div className="mb-8">
-              <AIInsightSection
-                attemptId={att._id}
-                userAccess={user?.access}
-                apiEndpoint={`/api/chat/insight/practice/${att._id}`}
-              />
-            </div>
+        <button
+          onClick={() => setShowDetails((s) => !s)}
+          className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 text-base font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all dark:text-white"
+        >
+          {showDetails ? (
+            <ChevronUp className="h-5 w-5" />
+          ) : (
+            <ChevronDown className="h-5 w-5" />
           )}
+          {showDetails ? t("result.hideDetails") : t("result.showDetails")}
+        </button>
+      </section>
 
-          {/* Chi tiết từng câu (locked, giống runner sau submit) */}
-          <section className="space-y-6">
-              {groups.map((g) =>
-                g.stimulus?.part === "part.1" ? (
-                  <StimulusRowCard
-                    key={g.key}
-                    stimulus={g.stimulus}
-                    items={g.items}
-                    itemIndexMap={itemIndexMap}
-                    answers={answersPicked}
-                    correctMap={correctMap}
-                    locked
-                    onPick={() => {}}
-                    showStimulusDetails={showDetails}
-                    showPerItemExplain={showDetails}
-                  />
-                ) : (
-                  <StimulusColumnCard
-                    key={g.key}
-                    stimulus={g.stimulus}
-                    items={g.items}
-                    itemIndexMap={itemIndexMap}
-                    answers={answersPicked}
-                    correctMap={correctMap}
-                    locked
-                    onPick={() => {}}
-                    showStimulusDetails={showDetails}
-                    showPerItemExplain={showDetails}
-                  />
-                )
-              )}
-          </section>
+      {/* AI Insight Section */}
+      {att._id && (
+        <div className="mb-8">
+          <AIInsightSection
+            attemptId={att._id}
+            userAccess={user?.access}
+            apiEndpoint={`/api/chat/insight/practice/${att._id}`}
+          />
+        </div>
+      )}
+
+      {/* Chi tiết từng câu (locked, giống runner sau submit) */}
+      <section className="space-y-6">
+        {groups.map((g) =>
+          g.stimulus?.part === "part.1" ? (
+            <StimulusRowCard
+              key={g.key}
+              stimulus={g.stimulus}
+              items={g.items}
+              itemIndexMap={itemIndexMap}
+              answers={answersPicked}
+              correctMap={correctMap}
+              locked
+              onPick={() => { }}
+              showStimulusDetails={showDetails}
+              showPerItemExplain={showDetails}
+              testId="practice"
+            />
+          ) : (
+            <StimulusColumnCard
+              key={g.key}
+              stimulus={g.stimulus}
+              items={g.items}
+              itemIndexMap={itemIndexMap}
+              answers={answersPicked}
+              correctMap={correctMap}
+              locked
+              onPick={() => { }}
+              showStimulusDetails={showDetails}
+              showPerItemExplain={showDetails}
+              testId="practice"
+            />
+          )
+        )}
+      </section>
     </ResultLayout>
   );
 }

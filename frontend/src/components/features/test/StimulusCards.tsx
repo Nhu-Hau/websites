@@ -160,11 +160,10 @@ function ChoiceRow({
 
           <button
             onClick={() => setShowReport(true)}
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-zinc-400 hover:text-amber-600 hover:bg-amber-50 transition-all"
+            className="p-1 text-red-500 hover:text-red-600 transition-colors"
             title="Báo lỗi câu hỏi"
           >
             <Flag className="h-3.5 w-3.5" />
-            <span className="text-[11px] font-medium">Báo lỗi</span>
           </button>
         </div>
 

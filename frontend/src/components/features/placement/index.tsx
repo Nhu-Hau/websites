@@ -266,6 +266,7 @@ export default function PlacementPage() {
                   }}
                   showStimulusDetails={!!resp && showDetails}
                   showPerItemExplain={!!resp && showDetails}
+                  testId="placement"
                 />
               ) : (
                 <StimulusColumnCard
@@ -283,6 +284,7 @@ export default function PlacementPage() {
                   }}
                   showStimulusDetails={!!resp && showDetails}
                   showPerItemExplain={!!resp && showDetails}
+                  testId="placement"
                 />
               )
             )}

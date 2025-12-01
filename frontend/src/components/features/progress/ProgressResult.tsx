@@ -425,9 +425,10 @@ export default function ProgressResult() {
                 answers={answers}
                 correctMap={correctMap}
                 locked
-                onPick={() => {}}
+                onPick={() => { }}
                 showStimulusDetails={showDetails}
                 showPerItemExplain={showDetails}
+                testId="progress"
               />
             ) : (
               <StimulusColumnCard
@@ -438,9 +439,10 @@ export default function ProgressResult() {
                 answers={answers}
                 correctMap={correctMap}
                 locked
-                onPick={() => {}}
+                onPick={() => { }}
                 showStimulusDetails={showDetails}
                 showPerItemExplain={showDetails}
+                testId="progress"
               />
             )
           )

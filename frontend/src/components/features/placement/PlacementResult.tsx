@@ -222,7 +222,7 @@ export default function PlacementResult() {
               const orderedItems = orderItemsForAttempt(
                 json.items || [],
                 idsToFetch
-                );
+              );
               if (!mounted) return;
               setItems(orderedItems);
               setStimulusMap(json.stimulusMap || {});
@@ -385,105 +385,107 @@ export default function PlacementResult() {
       focusMode={focusMode}
       onToggleFocus={() => setFocusMode((v) => !v)}
     >
-          {/* Header */}
-          <ResultHeader
-            badge={{
-              label: t("result.label"),
-              dotColor: "bg-emerald-500",
-            }}
-            title={t("result.title")}
-            description={t.rich("result.description", {
-              time: (chunks) => <span className="font-medium">{chunks}</span>,
-              datetime: new Date(attempt.submittedAt).toLocaleString(),
-            })}
-            stats={{
-              correct: attempt.correct,
-              total: attempt.total,
-              timeLabel: fmtTime(attempt.timeSec),
-              questionIconColor:
-                "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300",
-              timeIconColor:
-                "bg-amber-50 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300",
-            }}
-          />
+      {/* Header */}
+      <ResultHeader
+        badge={{
+          label: t("result.label"),
+          dotColor: "bg-emerald-500",
+        }}
+        title={t("result.title")}
+        description={t.rich("result.description", {
+          time: (chunks) => <span className="font-medium">{chunks}</span>,
+          datetime: new Date(attempt.submittedAt).toLocaleString(),
+        })}
+        stats={{
+          correct: attempt.correct,
+          total: attempt.total,
+          timeLabel: fmtTime(attempt.timeSec),
+          questionIconColor:
+            "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300",
+          timeIconColor:
+            "bg-amber-50 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300",
+        }}
+      />
 
-          {/* Tổng quan + phân tích (dùng ResultsPanel pro) */}
-          <ResultsPanel
-            resp={respLike as any}
-            timeLabel={fmtTime(attempt.timeSec)}
-            onToggleDetails={() => setShowDetails((s) => !s)}
-            showDetails={showDetails}
-          />
+      {/* Tổng quan + phân tích (dùng ResultsPanel pro) */}
+      <ResultsPanel
+        resp={respLike as any}
+        timeLabel={fmtTime(attempt.timeSec)}
+        onToggleDetails={() => setShowDetails((s) => !s)}
+        showDetails={showDetails}
+      />
 
-          {/* AI Insight Section */}
-          {attempt._id && (
-            <div className="mt-8">
-              <AIInsightSection
-                attemptId={attempt._id}
-                userAccess={user?.access}
-                apiEndpoint={`/api/chat/insight/placement/${attempt._id}`}
+      {/* AI Insight Section */}
+      {attempt._id && (
+        <div className="mt-8">
+          <AIInsightSection
+            attemptId={attempt._id}
+            userAccess={user?.access}
+            apiEndpoint={`/api/chat/insight/placement/${attempt._id}`}
+          />
+        </div>
+      )}
+
+      {/* Danh sách câu hỏi */}
+      <section className="mt-8 space-y-6 sm:space-y-8">
+        {items.length === 0 ? (
+          <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
+            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
+              {t("resultPage.empty.title")}
+            </p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {t("resultPage.empty.stats", {
+                items: items.length,
+                groups: groups.length,
+              })}
+            </p>
+          </div>
+        ) : groups.length === 0 ? (
+          <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
+            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
+              {t("resultPage.groupError.title")}
+            </p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {t("resultPage.groupError.stats", {
+                items: items.length,
+                keys: Object.keys(stimulusMap).length,
+              })}
+            </p>
+          </div>
+        ) : (
+          groups.map((g) =>
+            g.stimulus?.part === "part.1" ? (
+              <StimulusRowCard
+                key={g.key}
+                stimulus={g.stimulus}
+                items={g.items}
+                itemIndexMap={itemIndexMap}
+                answers={answers}
+                correctMap={correctMap}
+                locked
+                onPick={() => { }}
+                showStimulusDetails={showDetails}
+                showPerItemExplain={showDetails}
+                testId="placement"
               />
-            </div>
-          )}
-
-          {/* Danh sách câu hỏi */}
-          <section className="mt-8 space-y-6 sm:space-y-8">
-            {items.length === 0 ? (
-              <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
-                  {t("resultPage.empty.title")}
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {t("resultPage.empty.stats", {
-                    items: items.length,
-                    groups: groups.length,
-                  })}
-                </p>
-              </div>
-            ) : groups.length === 0 ? (
-              <div className="text-center py-10 sm:py-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95">
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
-                  {t("resultPage.groupError.title")}
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {t("resultPage.groupError.stats", {
-                    items: items.length,
-                    keys: Object.keys(stimulusMap).length,
-                  })}
-                </p>
-              </div>
             ) : (
-              groups.map((g) =>
-                g.stimulus?.part === "part.1" ? (
-                  <StimulusRowCard
-                    key={g.key}
-                    stimulus={g.stimulus}
-                    items={g.items}
-                    itemIndexMap={itemIndexMap}
-                    answers={answers}
-                    correctMap={correctMap}
-                    locked
-                    onPick={() => {}}
-                    showStimulusDetails={showDetails}
-                    showPerItemExplain={showDetails}
-                  />
-                ) : (
-                  <StimulusColumnCard
-                    key={g.key}
-                    stimulus={g.stimulus}
-                    items={g.items}
-                    itemIndexMap={itemIndexMap}
-                    answers={answers}
-                    correctMap={correctMap}
-                    locked
-                    onPick={() => {}}
-                    showStimulusDetails={showDetails}
-                    showPerItemExplain={showDetails}
-                  />
-                )
-              )
-            )}
-          </section>
+              <StimulusColumnCard
+                key={g.key}
+                stimulus={g.stimulus}
+                items={g.items}
+                itemIndexMap={itemIndexMap}
+                answers={answers}
+                correctMap={correctMap}
+                locked
+                onPick={() => { }}
+                showStimulusDetails={showDetails}
+                showPerItemExplain={showDetails}
+                testId="placement"
+              />
+            )
+          )
+        )}
+      </section>
     </ResultLayout>
   );
 }

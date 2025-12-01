@@ -1,4 +1,3 @@
-// backend/src/controllers/notification.controller.ts
 import { Request, Response } from "express";
 import { Notification } from "../../shared/models/Notification";
 import { Server as SocketIOServer } from "socket.io";
@@ -90,4 +89,53 @@ export async function createMyNotification(req: Request, res: Response) {
   if (io) io.to(`user:${userId}`).emit("notify:user", payload);
 
   res.json(payload);
+}
+
+export async function adminSendNotification(req: Request, res: Response) {
+  const { emails, sendToAll, message, link, type } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ message: "Message is required" });
+  }
+
+  const io = getIO();
+  let count = 0;
+
+  try {
+    if (sendToAll) {
+      // Gửi cho tất cả user
+      const users = await import("../../shared/models/User").then(m => m.User.find({}).select("_id"));
+
+      for (const user of users) {
+        await import("./notification.service").then(s => s.notifyUser(io, {
+          userId: String(user._id),
+          message,
+          link,
+          type: type || "system",
+        }));
+        count++;
+      }
+    } else if (Array.isArray(emails) && emails.length > 0) {
+      // Gửi cho danh sách email cụ thể
+      const User = await import("../../shared/models/User").then(m => m.User);
+      const users = await User.find({ email: { $in: emails } }).select("_id email");
+
+      for (const user of users) {
+        await import("./notification.service").then(s => s.notifyUser(io, {
+          userId: String(user._id),
+          message,
+          link,
+          type: type || "system",
+        }));
+        count++;
+      }
+    } else {
+      return res.status(400).json({ message: "Must specify emails or sendToAll" });
+    }
+
+    res.json({ ok: true, count, message: `Sent to ${count} users` });
+  } catch (error: any) {
+    console.error("adminSendNotification error:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
 }

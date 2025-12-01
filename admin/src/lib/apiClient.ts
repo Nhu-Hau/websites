@@ -204,17 +204,17 @@ export async function adminGetProcesses() {
   }>>;
 }
 
-export async function adminControlProcess(name: string, action: 'start' | 'stop' | 'restart') {
-  const res = await fetch(`/api/admin/vps/processes/${name}/${action}`, {
+export async function adminControlProcess(name: string, action: string) {
+  const res = await fetch(`/api/admin/vps/processes/${encodeURIComponent(name)}/${encodeURIComponent(action)}`, {
     method: 'POST',
-    credentials: 'include'
+    credentials: 'include',
   });
-  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || `${action} failed`); }
-  return res.json();
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || 'Control process failed');
+  }
+  return res.json() as Promise<{ message: string }>;
 }
-
-
-
 
 
 export async function adminUserScores() {
@@ -935,4 +935,24 @@ export async function adminExportBulkExcel(params?: { part?: string; level?: num
 
   // Return blob for download
   return res.blob();
+}
+
+export async function adminSendNotification(body: {
+  emails?: string[];
+  sendToAll?: boolean;
+  message: string;
+  link?: string;
+  type?: "system" | "like" | "comment";
+}) {
+  const res = await fetch(`/api/notifications/admin/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Send notification failed");
+  }
+  return res.json() as Promise<{ ok: boolean; count: number; message: string }>;
 }

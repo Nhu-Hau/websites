@@ -452,7 +452,7 @@ export default function PracticePage() {
                 showDetails={showDetails}
                 variant="practice"
               />
-              
+
               {/* AI Insight Section - chỉ hiện cho premium users */}
               {resp._id && user?.access === "premium" && (
                 <AIInsightSection
@@ -483,6 +483,7 @@ export default function PracticePage() {
                   }}
                   showStimulusDetails={!!resp && showDetails}
                   showPerItemExplain={!!resp && showDetails}
+                  testId={`${partKey}-${level}-${test}`}
                 />
               ) : (
                 <StimulusColumnCard
@@ -500,6 +501,7 @@ export default function PracticePage() {
                   }}
                   showStimulusDetails={!!resp && showDetails}
                   showPerItemExplain={!!resp && showDetails}
+                  testId={`${partKey}-${level}-${test}`}
                 />
               )
             )}

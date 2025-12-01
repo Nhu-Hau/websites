@@ -31,6 +31,7 @@ import ImportPreviewModal from "@/components/features/parts/ImportPreviewModal";
 import BulkUploadModal from "@/components/features/parts/BulkUploadModal";
 import BulkExportModal from "@/components/features/parts/BulkExportModal";
 import { useToast } from "@/components/common/ToastProvider";
+import { useSearchParams } from "next/navigation";
 
 type ConfirmDialogState = {
   title: string;
@@ -43,6 +44,7 @@ type ConfirmDialogState = {
 };
 
 export default function PartsPage() {
+  const searchParams = useSearchParams();
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
   const [loadingMe, setLoadingMe] = React.useState(true);
   const [tests, setTests] = React.useState<AdminTest[]>([]);
@@ -71,6 +73,40 @@ export default function PartsPage() {
   const [part, setPart] = React.useState("");
   const [level, setLevel] = React.useState("");
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Quick Fix: Handle editQuestionId from URL
+  React.useEffect(() => {
+    const qPart = searchParams.get("part");
+    const qLevel = searchParams.get("level");
+    const qTest = searchParams.get("test");
+    const qEditId = searchParams.get("editQuestionId");
+
+    if (qPart && qLevel && qTest && qEditId) {
+      setBusy(true);
+      adminGetTestItems({ part: qPart, level: parseInt(qLevel), test: parseInt(qTest) })
+        .then((res) => {
+          const item = res.items.find((it) => it.id === qEditId);
+          if (item) {
+            setEditQuestion(item);
+            // Find stimulus if exists
+            if (item.stimulusId && res.stimulusMap[item.stimulusId]) {
+              setEditStimulus(res.stimulusMap[item.stimulusId]);
+            }
+            // Optionally set filters to match
+            setPart(qPart);
+            setLevel(qLevel);
+          } else {
+            toast.error("Question not found in this test");
+          }
+        })
+        .catch(() => {
+          toast.error("Failed to load question for quick fix");
+        })
+        .finally(() => {
+          setBusy(false);
+        });
+    }
+  }, [searchParams]);
 
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -840,10 +876,15 @@ export default function PartsPage() {
       {editQuestion && (
         <EditQuestionModal
           isOpen={!!editQuestion}
-          onClose={() => setEditQuestion(null)}
+          onClose={() => {
+            setEditQuestion(null);
+            setEditStimulus(null); // Clear stimulus when closing
+          }}
           item={editQuestion}
+          stimulus={editQuestion.stimulusId ? (testStimuli[Object.keys(testItems).find(k => testItems[k].some(i => i._id === editQuestion._id)) || ""]?.[editQuestion.stimulusId] || editStimulus) : null}
           onUpdate={async (updatedItem) => {
             setEditQuestion(null);
+            setEditStimulus(null);
             const key = Object.entries(testItems).find(([_, items]) =>
               items.some(i => i._id === updatedItem._id)
             )?.[0];

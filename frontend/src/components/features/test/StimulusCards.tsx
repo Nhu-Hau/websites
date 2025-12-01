@@ -4,7 +4,8 @@
 import React from "react";
 import Image from "next/image";
 import type { Stimulus, Item, ChoiceId } from "@/types/tests.types";
-import { Volume2, FileText } from "lucide-react";
+import { Volume2, FileText, Flag } from "lucide-react";
+import ReportModal from "./ReportModal";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/common/AudioPlayer";
 import { useTranslations } from "next-intl";
@@ -128,6 +129,7 @@ function ChoiceRow({
   showPerItemExplain,
   isHalfWidth = false,
   anchorId,
+  testId,
 }: {
   item: Item;
   displayIndex: number;
@@ -138,20 +140,33 @@ function ChoiceRow({
   showPerItemExplain: boolean;
   isHalfWidth?: boolean;
   anchorId?: string;
+  testId: string;
 }) {
   const t = useTranslations("test.stimulus");
   const itemExplain =
     (item as any)?.explain ?? (item as any)?.media?.explain ?? null;
+  const [showReport, setShowReport] = React.useState(false);
 
   return (
     <div id={anchorId} className="space-y-3 scroll-mt-24">
       {/* Header status */}
       <div className="flex flex-wrap items-center justify-between gap-1.5 xs:gap-2">
-        <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-zinc-900 dark:text-zinc-50 xs:text-sm">
-          <span className="inline-flex h-6 min-w-[4.5rem] items-center justify-center rounded-full bg-sky-100 text-[12px] font-semibold text-zinc-900 dark:bg-sky-800 dark:text-zinc-200 xs:h-7 xs:min-w-[5.5rem] xs:text-[13px]">
-            {t("question", { n: displayIndex })}
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-zinc-900 dark:text-zinc-50 xs:text-sm">
+            <span className="inline-flex h-6 min-w-[4.5rem] items-center justify-center rounded-full bg-sky-100 text-[12px] font-semibold text-zinc-900 dark:bg-sky-800 dark:text-zinc-200 xs:h-7 xs:min-w-[5.5rem] xs:text-[13px]">
+              {t("question", { n: displayIndex })}
+            </span>
           </span>
-        </span>
+
+          <button
+            onClick={() => setShowReport(true)}
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-zinc-400 hover:text-amber-600 hover:bg-amber-50 transition-all"
+            title="Báo lỗi câu hỏi"
+          >
+            <Flag className="h-3.5 w-3.5" />
+            <span className="text-[11px] font-medium">Báo lỗi</span>
+          </button>
+        </div>
 
         {locked ? (
           picked === correct ? (
@@ -281,6 +296,13 @@ function ChoiceRow({
           content={String(itemExplain)}
         />
       )}
+
+      <ReportModal
+        isOpen={showReport}
+        onClose={() => setShowReport(false)}
+        questionId={item.id}
+        testId={testId}
+      />
     </div>
   );
 }
@@ -297,6 +319,7 @@ type BaseProps = {
   onPick: (itemId: string, choice: ChoiceId) => void;
   showStimulusDetails: boolean;
   showPerItemExplain?: boolean;
+  testId: string;
 };
 
 /* ========= Auto layout chooser ========= */
@@ -326,6 +349,7 @@ function CardFullWidth({
   locked,
   onPick,
   showPerItemExplain,
+  testId,
 }: BaseProps) {
   return (
     <section
@@ -350,6 +374,7 @@ function CardFullWidth({
               onPick={(c) => onPick(it.id, c)}
               showPerItemExplain={!!showPerItemExplain}
               isHalfWidth
+              testId={testId}
             />
           );
         })}
@@ -371,6 +396,7 @@ function CardSticky(props: BaseProps) {
     onPick,
     showStimulusDetails,
     showPerItemExplain,
+    testId,
   } = props;
   const imgs = toArray((stimulus as any)?.media?.image);
   const audios = toArray((stimulus as any)?.media?.audio);
@@ -455,6 +481,7 @@ function CardSticky(props: BaseProps) {
                 locked={locked}
                 onPick={(c) => onPick(it.id, c)}
                 showPerItemExplain={!!showPerItemExplain}
+                testId={testId}
               />
             );
           })}
@@ -477,6 +504,7 @@ function CardColumnNoSticky(props: BaseProps) {
     onPick,
     showStimulusDetails,
     showPerItemExplain,
+    testId,
   } = props;
   const audios = toArray((stimulus as any)?.media?.audio);
   const part = (stimulus as any)?.part as string | undefined;
@@ -519,6 +547,7 @@ function CardColumnNoSticky(props: BaseProps) {
               onPick={(c) => onPick(it.id, c)}
               showPerItemExplain={!!showPerItemExplain}
               isHalfWidth
+              testId={testId}
             />
           );
         })}

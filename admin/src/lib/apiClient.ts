@@ -956,3 +956,48 @@ export async function adminSendNotification(body: {
   }
   return res.json() as Promise<{ ok: boolean; count: number; message: string }>;
 }
+
+export async function adminGetReports(params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+}) {
+  const usp = new URLSearchParams();
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  if (params?.status) usp.set("status", params.status);
+  if (params?.search) usp.set("search", params.search);
+
+  const res = await fetch(`/api/reports/admin?${usp.toString()}`, {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Get reports failed");
+  }
+  return res.json() as Promise<{
+    items: any[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }>;
+}
+
+export async function adminUpdateReportStatus(
+  id: string,
+  status: "pending" | "resolved" | "ignored"
+) {
+  const res = await fetch(`/api/reports/admin/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Update report status failed");
+  }
+  return res.json();
+}

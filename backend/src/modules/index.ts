@@ -22,6 +22,7 @@ import { newsRoutes } from "./news/news.routes";
 import vocabularyRoutes from "./vocabulary/vocabulary.routes";
 import teacherLeadRoutes from "./teacher-lead/teacher-lead.routes";
 import profileRoutes from "./profile/profile.routes";
+import reportRoutes from "./report/report.routes";
 
 export {
   authRoutes,
@@ -45,5 +46,5 @@ export {
   vocabularyRoutes,
   teacherLeadRoutes,
   profileRoutes,
+  reportRoutes,
 };
-

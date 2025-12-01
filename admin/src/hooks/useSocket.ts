@@ -38,6 +38,7 @@ export function useSocket() {
           token: token,
         },
         autoConnect: true,
+        transports: ["websocket"], // Force websocket to avoid sticky session issues with PM2 cluster
       });
 
       newSocket.on("connect", () => {

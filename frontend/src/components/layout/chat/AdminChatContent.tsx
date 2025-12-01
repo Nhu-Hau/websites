@@ -80,41 +80,33 @@ export default function AdminChatContent({
     [user?.id]
   );
 
-  const [sessionId, setSessionId] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      const key = `adminChatSessionId_${
-        typeof window !== "undefined"
-          ? (window as any).__userId || "anonymous"
-          : "anonymous"
-      }`;
-      const stored = localStorage.getItem(key);
-      if (stored) return stored;
-    }
-    const sid = `admin_session_${
-      user?.id || "anonymous"
-    }_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    if (typeof window !== "undefined") {
-      const userKey = `adminChatSessionId_${user?.id || "anonymous"}`;
-      localStorage.setItem(userKey, sid);
-    }
-    return sid;
-  });
+  // Khởi tạo sessionId đơn giản với null, sẽ được set trong useEffect
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // Đồng bộ sessionId khi user thay đổi
+  // Khởi tạo và đồng bộ sessionId khi user đã load
   useEffect(() => {
+    // Chỉ chạy khi user đã được load (có id)
+    if (!user?.id) {
+      setSessionId(null);
+      return;
+    }
+
     const key = getSessionKey();
     const stored =
       typeof window !== "undefined" ? localStorage.getItem(key) : null;
+
     if (stored) {
+      // Dùng lại session cũ
       setSessionId(stored);
     } else {
-      const sid = `admin_session_${
-        user?.id || "anonymous"
-      }_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      if (typeof window !== "undefined") localStorage.setItem(key, sid);
+      // Tạo session mới nếu chưa có
+      const sid = `admin_session_${user.id}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      if (typeof window !== "undefined") {
+        localStorage.setItem(key, sid);
+      }
       setSessionId(sid);
     }
   }, [user?.id, getSessionKey]);
@@ -140,11 +132,11 @@ export default function AdminChatContent({
 
       const formatted: Msg[] = Array.isArray(data?.data)
         ? data.data.map((msg: any) => ({
-            id: msg._id,
-            role: (msg.role as "user" | "admin") || "user",
-            content: String(msg.content ?? ""),
-            at: msg.createdAt ? new Date(msg.createdAt).getTime() : undefined,
-          }))
+          id: msg._id,
+          role: (msg.role as "user" | "admin") || "user",
+          content: String(msg.content ?? ""),
+          at: msg.createdAt ? new Date(msg.createdAt).getTime() : undefined,
+        }))
         : [];
 
       const unique = formatted.filter(
@@ -172,9 +164,9 @@ export default function AdminChatContent({
       const data = await response.json();
       const total = Array.isArray(data?.data)
         ? data.data.reduce(
-            (sum: number, s: any) => sum + (s.unreadCount || 0),
-            0
-          )
+          (sum: number, s: any) => sum + (s.unreadCount || 0),
+          0
+        )
         : 0;
       setUnreadCount((prev) => ({ ...prev, admin: total }));
     } catch (err) {
@@ -261,10 +253,10 @@ export default function AdminChatContent({
   // Gửi tin nhắn
   const send = async () => {
     const text = input.trim();
-    if (!text || sending || !user) return;
+    if (!text || sending || !user || !sessionId) return;
 
     if (user.access !== "premium") {
-    setError(t("premiumRequired"));
+      setError(t("premiumRequired"));
       return;
     }
 
@@ -339,10 +331,10 @@ export default function AdminChatContent({
         prev.map((m) =>
           m.id === tempAdminId
             ? {
-                ...m,
-                pending: false,
-                content: t("welcome"),
-              }
+              ...m,
+              pending: false,
+              content: t("welcome"),
+            }
             : m
         )
       );
@@ -366,8 +358,9 @@ export default function AdminChatContent({
     }
   };
 
+
   const clearChat = async () => {
-    if (!user) return;
+    if (!user?.id || !sessionId) return;
     try {
       await fetch(`/api/admin-chat/clear/${sessionId}`, {
         method: "DELETE",
@@ -378,14 +371,13 @@ export default function AdminChatContent({
     } finally {
       setMessages([]);
       setError(null);
-      const newId = `admin_session_${
-        user?.id || "anonymous"
-      }_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const newId = `admin_session_${user.id}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       const key = getSessionKey();
       localStorage.setItem(key, newId);
       setSessionId(newId);
     }
   };
+
 
   const maxLen = 2000;
   const contentHeight = "flex-1 min-h-0";
@@ -437,8 +429,8 @@ export default function AdminChatContent({
               {!user
                 ? t("loginRequired")
                 : user.access !== "premium"
-                ? t("premiumRequired")
-                : t("empty")}
+                  ? t("premiumRequired")
+                  : t("empty")}
             </p>
           </div>
         ) : (
@@ -456,16 +448,14 @@ export default function AdminChatContent({
                   damping: 24,
                   mass: 0.8,
                 }}
-                className={`flex ${
-                  m.role === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex ${m.role === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 <div
-                  className={`group relative max-w-[82%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-md transition-all ${
-                    m.role === "user"
-                      ? "bg-gradient-to-tr from-orange-600 to-orange-500 text-white rounded-tr-sm"
-                      : "bg-white text-gray-800 dark:bg-zinc-800 dark:text-gray-100 rounded-tl-sm"
-                  }`}
+                  className={`group relative max-w-[82%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-md transition-all ${m.role === "user"
+                    ? "bg-gradient-to-tr from-orange-600 to-orange-500 text-white rounded-tr-sm"
+                    : "bg-white text-gray-800 dark:bg-zinc-800 dark:text-gray-100 rounded-tl-sm"
+                    }`}
                 >
                   {m.role === "admin" && (
                     <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-75">
@@ -481,18 +471,17 @@ export default function AdminChatContent({
                   />
 
                   <div
-                    className={`mt-2 text-[10px] font-medium flex items-center gap-1.5 ${
-                      m.role === "user"
-                        ? "text-white/70"
-                        : "text-gray-400 dark:text-gray-500"
-                    }`}
+                    className={`mt-2 text-[10px] font-medium flex items-center gap-1.5 ${m.role === "user"
+                      ? "text-white/70"
+                      : "text-gray-400 dark:text-gray-500"
+                      }`}
                   >
                     <FiClock className="h-3 w-3" />
                     {m.at
                       ? new Date(m.at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
                       : t("timestampPending")}
                   </div>
 
@@ -550,8 +539,8 @@ export default function AdminChatContent({
                   !user
                     ? t("loginPlaceholder")
                     : user.access !== "premium"
-                    ? t("premiumPlaceholder")
-                    : t("placeholder")
+                      ? t("premiumPlaceholder")
+                      : t("placeholder")
                 }
                 disabled={!user || sending || user?.access !== "premium"}
                 rows={1}

@@ -5,6 +5,16 @@ import React from "react";
 import { adminVpsStats, adminVpsNetworkStats, adminVpsDatabaseStats, adminGetProcesses, adminControlProcess } from "@/lib/apiClient";
 import { Server, Activity, Wifi, Shield, ArrowDown, ArrowUp, Database, HardDrive, Play, Square, RotateCw } from "lucide-react";
 
+type ConfirmDialogState = {
+  title: string;
+  description: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm: () => Promise<void>;
+  successMessage?: string;
+  errorMessage?: string;
+};
+
 export default function VpsPage() {
   const [me, setMe] = React.useState<{ id: string; role?: string } | null>(null);
   const [loadingMe, setLoadingMe] = React.useState(true);
@@ -15,6 +25,8 @@ export default function VpsPage() {
   const [processingAction, setProcessingAction] = React.useState<string | null>(null);
   const [lastNetworkBytes, setLastNetworkBytes] = React.useState<{ rx: number; tx: number; time: number } | null>(null);
   const [error, setError] = React.useState<string | undefined>(undefined);
+  const [confirmDialog, setConfirmDialog] = React.useState<ConfirmDialogState | null>(null);
+  const [confirmLoading, setConfirmLoading] = React.useState(false);
 
 
   React.useEffect(() => {
@@ -117,21 +129,44 @@ export default function VpsPage() {
     return () => clearInterval(interval);
   }, [me]);
 
+  const handleConfirmAction = async () => {
+    if (!confirmDialog) return;
+    setConfirmLoading(true);
+    try {
+      await confirmDialog.onConfirm();
+      // if (confirmDialog.successMessage) {
+      //   toast.success(confirmDialog.successMessage);
+      // }
+      setConfirmDialog(null);
+    } catch (error: any) {
+      alert(error.message || 'Thao tác thất bại');
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
   const handleProcessAction = async (id: number, name: string, action: 'start' | 'stop' | 'restart') => {
     if (processingAction) return;
-    if (!confirm(`Bạn có chắc muốn ${action} process "${name}" (ID: ${id})?`)) return;
 
-    setProcessingAction(`${id}-${action}`);
-    try {
-      await adminControlProcess(id.toString(), action);
-      // Refresh list immediately
-      const data = await adminGetProcesses();
-      setProcesses(data);
-    } catch (e: any) {
-      alert(e.message || 'Thao tác thất bại');
-    } finally {
-      setProcessingAction(null);
-    }
+    setConfirmDialog({
+      title: `Xác nhận ${action}`,
+      description: `Bạn có chắc muốn ${action} process "${name}" (ID: ${id})?`,
+      confirmText: action === 'restart' ? 'Restart' : action === 'stop' ? 'Stop' : 'Start',
+      cancelText: "Hủy",
+      onConfirm: async () => {
+        setProcessingAction(`${id}-${action}`);
+        try {
+          await adminControlProcess(id.toString(), action);
+          // Refresh list immediately
+          const data = await adminGetProcesses();
+          setProcesses(data);
+        } catch (e: any) {
+          throw e;
+        } finally {
+          setProcessingAction(null);
+        }
+      },
+    });
   };
 
 
@@ -470,6 +505,36 @@ export default function VpsPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirm Dialog */}
+      {confirmDialog && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <h3 className="text-xl font-bold text-zinc-900">{confirmDialog.title}</h3>
+            <p className="text-zinc-600">{confirmDialog.description}</p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                disabled={confirmLoading}
+                className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 text-zinc-700 font-medium"
+              >
+                {confirmDialog.cancelText || "Hủy"}
+              </button>
+              <button
+                onClick={handleConfirmAction}
+                disabled={confirmLoading}
+                className={`px-4 py-2 rounded-lg text-white font-medium flex items-center gap-2 ${confirmDialog.confirmText === 'Stop' ? 'bg-red-600 hover:bg-red-700' :
+                    confirmDialog.confirmText === 'Restart' ? 'bg-blue-600 hover:bg-blue-700' :
+                      'bg-green-600 hover:bg-green-700'
+                  }`}
+              >
+                {confirmLoading && <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                {confirmDialog.confirmText || "Xác nhận"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

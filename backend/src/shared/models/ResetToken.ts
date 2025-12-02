@@ -6,4 +6,4 @@ const ResetTokenSchema = new mongoose.Schema({
   used: { type: Boolean, default: false },
   expiresAt: { type: Date, required: true, index: { expires: 0 } }, // TTL index tự xoá
 });
-export const ResetTokenModel = mongoose.model("ResetToken", ResetTokenSchema);
+export const ResetTokenModel = mongoose.model("ResetToken", ResetTokenSchema, "resettokens");

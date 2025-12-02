@@ -18,5 +18,6 @@ export const EmailVerificationCodeModel =
   mongoose.models.EmailVerificationCode ||
   mongoose.model<IEmailVerificationCode>(
     "EmailVerificationCode",
-    EmailVerificationCodeSchema
+    EmailVerificationCodeSchema,
+    "emailverificationcodes"
   );

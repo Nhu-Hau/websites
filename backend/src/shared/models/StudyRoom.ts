@@ -29,6 +29,6 @@ const StudyRoomSchema = new Schema<IStudyRoom>(
 );
 
 export const StudyRoom =
-  mongoose.models.StudyRoom || mongoose.model<IStudyRoom>('StudyRoom', StudyRoomSchema);
+  mongoose.models.StudyRoom || mongoose.model<IStudyRoom>('StudyRoom', StudyRoomSchema, 'studyrooms');
 
 

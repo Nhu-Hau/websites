@@ -53,5 +53,6 @@ adminChatMessageSchema.index({ adminEmail: 1, isRead: 1, createdAt: -1 });
 
 export const AdminChatMessage = mongoose.model<IAdminChatMessage>(
   "AdminChatMessage",
-  adminChatMessageSchema
+  adminChatMessageSchema,
+  "adminchatmessages"
 );

@@ -42,5 +42,6 @@ chatMessageSchema.index({ userId: 1, sessionId: 1, createdAt: -1 });
 
 export const ChatMessage = mongoose.model<IChatMessage>(
   "ChatMessage",
-  chatMessageSchema
+  chatMessageSchema,
+  "chatmessages"
 );

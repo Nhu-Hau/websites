@@ -224,4 +224,4 @@ userSchema.set("toJSON", {
 
 // ====== Model export ======
 export const User =
-  mongoose.models.User || mongoose.model<IUser>("User", userSchema);
+  mongoose.models.User || mongoose.model<IUser>("User", userSchema, "users");

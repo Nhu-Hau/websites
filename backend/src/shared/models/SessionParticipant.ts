@@ -26,4 +26,4 @@ const SessionParticipantSchema = new Schema<ISessionParticipant>(
 
 export const SessionParticipant =
   mongoose.models.SessionParticipant ||
-  mongoose.model<ISessionParticipant>('SessionParticipant', SessionParticipantSchema);
+  mongoose.model<ISessionParticipant>('SessionParticipant', SessionParticipantSchema, 'sessionparticipants');

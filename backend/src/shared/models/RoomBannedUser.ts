@@ -28,6 +28,6 @@ const RoomBannedUserSchema = new Schema<IRoomBannedUser>(
 RoomBannedUserSchema.index({ roomName: 1, userId: 1 }, { unique: true });
 
 export const RoomBannedUser =
-  mongoose.models.RoomBannedUser || mongoose.model<IRoomBannedUser>('RoomBannedUser', RoomBannedUserSchema);
+  mongoose.models.RoomBannedUser || mongoose.model<IRoomBannedUser>('RoomBannedUser', RoomBannedUserSchema, 'roombannedusers');
 
 

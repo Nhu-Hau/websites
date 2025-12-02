@@ -17,4 +17,4 @@ const RoomSessionSchema = new Schema<IRoomSession>(
   { timestamps: true }
 );
 
-export const RoomSession = mongoose.models.RoomSession || mongoose.model<IRoomSession>('RoomSession', RoomSessionSchema);
+export const RoomSession = mongoose.models.RoomSession || mongoose.model<IRoomSession>('RoomSession', RoomSessionSchema, 'roomsessions');

@@ -22,5 +22,6 @@ const PromoRedemptionSchema = new Schema<PromoRedemptionDoc>(
 
 export const PromoRedemption = model<PromoRedemptionDoc>(
   "PromoRedemption",
-  PromoRedemptionSchema
+  PromoRedemptionSchema,
+  "promoredemptions"
 );

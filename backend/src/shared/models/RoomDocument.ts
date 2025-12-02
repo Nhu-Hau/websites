@@ -33,6 +33,6 @@ const RoomDocumentSchema = new Schema<IRoomDocument>(
 );
 
 export const RoomDocument =
-  mongoose.models.RoomDocument || mongoose.model<IRoomDocument>('RoomDocument', RoomDocumentSchema);
+  mongoose.models.RoomDocument || mongoose.model<IRoomDocument>('RoomDocument', RoomDocumentSchema, 'roomdocuments');
 
 

@@ -30,6 +30,6 @@ const RoomCommentSchema = new Schema<IRoomComment>(
 RoomCommentSchema.index({ roomName: 1, userId: 1 });
 
 export const RoomComment =
-  mongoose.models.RoomComment || mongoose.model<IRoomComment>('RoomComment', RoomCommentSchema);
+  mongoose.models.RoomComment || mongoose.model<IRoomComment>('RoomComment', RoomCommentSchema, 'roomcomments');
 
 

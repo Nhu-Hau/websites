@@ -764,12 +764,18 @@ function PartsPageContent() {
                                               <Edit className="h-3 w-3" /> Sửa
                                             </button>
                                             <button
-                                              onClick={async (e) => {
+                                              onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (confirm(`Xóa stimulus ${stimulus.id}?`)) {
-                                                  try {
+                                                const usedByCount = items.filter(i => i.stimulusId === stimulus.id).length;
+                                                setConfirmDialog({
+                                                  title: "Xóa Stimulus",
+                                                  description: `Bạn có chắc muốn xóa stimulus ${stimulus.id}? ${usedByCount > 0 ? `(Đang được dùng bởi ${usedByCount} câu hỏi)` : "(Chưa được dùng bởi câu hỏi nào)"} Hành động này không thể hoàn tác.`,
+                                                  confirmText: "Xóa Stimulus",
+                                                  cancelText: "Hủy",
+                                                  successMessage: "Đã xóa stimulus thành công",
+                                                  errorMessage: "Lỗi xóa stimulus",
+                                                  onConfirm: async () => {
                                                     await adminDeleteStimulus(stimulus.id);
-                                                    toast.success("Đã xóa stimulus thành công");
                                                     // Reload test data
                                                     const [part, level, test] = key.split('-');
                                                     const result = await adminGetTestItems({
@@ -779,10 +785,8 @@ function PartsPageContent() {
                                                     });
                                                     setTestItems({ ...testItems, [key]: result.items });
                                                     setTestStimuli({ ...testStimuli, [key]: result.stimulusMap });
-                                                  } catch (err: any) {
-                                                    toast.error(err?.message || "Lỗi xóa stimulus");
-                                                  }
-                                                }
+                                                  },
+                                                });
                                               }}
                                               className="px-2 py-1 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-1"
                                             >

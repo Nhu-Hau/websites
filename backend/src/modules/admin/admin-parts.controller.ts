@@ -1005,10 +1005,14 @@ export async function exportExcel(req: Request, res: Response) {
     }
 
     // Fetch all stimuli for this test
-    const stimuli = await stimCol
+    const stimuliRaw = await stimCol
       .find({ part: partStr, level: levelNum, test: testNum })
-      .sort({ id: 1 })
       .toArray();
+
+    // Natural sort for stimuli IDs (handles numeric parts correctly)
+    const stimuli = stimuliRaw.sort((a: any, b: any) => {
+      return a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' });
+    });
 
     // Transform items to Excel format
     const itemsData = items.map((item: any) => {
@@ -1168,10 +1172,14 @@ export async function exportBulkExcel(req: Request, res: Response) {
         .toArray();
 
       // Fetch stimuli for this test
-      const stimuli = await stimCol
+      const stimuliRaw = await stimCol
         .find({ part: testPart, level: testLevel, test: testTest })
-        .sort({ id: 1 })
         .toArray();
+
+      // Natural sort for stimuli IDs (handles numeric parts correctly)
+      const stimuli = stimuliRaw.sort((a: any, b: any) => {
+        return a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' });
+      });
 
 
 
@@ -1213,6 +1221,20 @@ export async function exportBulkExcel(req: Request, res: Response) {
         allItemsData.push(row);
       }
 
+      // Transform and add stimuli
+      for (const stim of stimuli) {
+        const stimRow: any = {
+          id: stim.id,
+          part: stim.part,
+          level: stim.level,
+          test: stim.test,
+          image: stim.media?.image || '',
+          audio: stim.media?.audio || '',
+          script: stim.media?.script || '',
+          explain: stim.media?.explain || '',
+        };
+        allStimuliData.push(stimRow);
+      }
 
     }
 

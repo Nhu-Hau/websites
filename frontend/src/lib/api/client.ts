@@ -14,45 +14,45 @@ function resolveUrl(pathOrUrl: string) {
     }
     return pathOrUrl;
   }
-  
+
   // Nếu path bắt đầu với /api/ và đang chạy trong browser, 
   // giữ nguyên để đi qua Next.js rewrite proxy (giống admin login)
   if (typeof window !== 'undefined' && pathOrUrl.startsWith('/api/')) {
     return pathOrUrl;
   }
-  
+
   // Các trường hợp khác: prepend API_BASE
   if (!pathOrUrl.startsWith('/')) pathOrUrl = '/' + pathOrUrl;
   const fullUrl = API_BASE + pathOrUrl;
-  
+
   // Force HTTPS in production (browser environment)
   if (typeof window !== 'undefined' && window.location.protocol === 'https:' && fullUrl.startsWith('http://')) {
     return fullUrl.replace(/^http:/i, 'https:');
   }
-  
+
   return fullUrl;
 }
 
 async function parseMaybeJson(res: Response) {
   const contentType = res.headers.get("content-type");
   const isJson = contentType?.includes("application/json");
-  
+
   // If no content or not JSON, return empty object for successful responses
   if (!isJson || res.status === 204) {
     return { _rawText: "" };
   }
-  
+
   // Clone the response to read text without consuming the original
   // Note: We can't clone after reading, so we'll read it once and store
   const text = await res.text();
-  
+
   // Store raw text for debugging
   const result: any = { _rawText: text };
-  
+
   if (!text || text.trim() === "") {
     return result;
   }
-  
+
   try {
     const parsed = JSON.parse(text);
     // If parsed is an array, return it directly (can't merge with object)
@@ -71,8 +71,8 @@ async function parseMaybeJson(res: Response) {
     }
     // For error responses, try to extract message from text
     // Sometimes backend returns plain text or HTML error pages
-    return { 
-      raw: text, 
+    return {
+      raw: text,
       message: text.substring(0, 200),
       _rawText: text,
       _parseError: String(e)
@@ -117,6 +117,9 @@ async function attemptRefresh(): Promise<boolean> {
       });
 
       clearTimeout(timeout);
+      if (res.ok && typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('auth:updated'));
+      }
       return res.ok;
     } catch (e: any) {
       if (e.name !== "AbortError") {
@@ -312,7 +315,7 @@ export async function postJsonWithAuth<T = any>(
     // Log the full response for debugging
     const contentType = res.headers.get("content-type");
     const rawText = json._rawText || "";
-    
+
     console.error("[postJsonWithAuth] Request failed:", {
       url: pathOrUrl,
       fullUrl: resolveUrl(pathOrUrl),
@@ -327,11 +330,11 @@ export async function postJsonWithAuth<T = any>(
       message: json?.message,
       headers: Object.fromEntries(res.headers.entries()),
     });
-    
+
     // Try to get error message from various possible fields
     // Priority: json.message > json.raw > _rawText (if it looks like JSON or error message) > default
     let errorMessage: string;
-    
+
     if (json?.message) {
       errorMessage = json.message;
     } else if (typeof json?.raw === 'string' && json.raw.trim()) {
@@ -351,7 +354,7 @@ export async function postJsonWithAuth<T = any>(
     } else {
       errorMessage = `POST ${res.status} ${res.statusText}`;
     }
-    
+
     const error = new Error(errorMessage);
     (error as any).code = json?.code;
     (error as any).status = res.status;
@@ -359,7 +362,7 @@ export async function postJsonWithAuth<T = any>(
     (error as any).rawText = rawText; // Store raw text
     throw error;
   }
-  
+
   // Remove internal debugging fields before returning
   const { _rawText, _parseError, ...cleanJson } = json as any;
   return cleanJson as T;
@@ -383,9 +386,9 @@ export async function putJsonWithAuth<T = any>(
   const json = (await parseMaybeJson(res)) as T & { message?: string; code?: string; raw?: string };
   if (!res.ok) {
     // Try to get error message from various possible fields
-    const errorMessage = json?.message || 
-                        (typeof json?.raw === 'string' ? json.raw : undefined) ||
-                        `PUT ${res.status} ${res.statusText}`;
+    const errorMessage = json?.message ||
+      (typeof json?.raw === 'string' ? json.raw : undefined) ||
+      `PUT ${res.status} ${res.statusText}`;
     const error = new Error(errorMessage);
     (error as any).code = json?.code;
     (error as any).status = res.status;
@@ -411,9 +414,9 @@ export async function deleteJsonWithAuth<T = any>(
   const json = (await parseMaybeJson(res)) as T & { message?: string; code?: string; raw?: string };
   if (!res.ok) {
     // Try to get error message from various possible fields
-    const errorMessage = json?.message || 
-                        (typeof json?.raw === 'string' ? json.raw : undefined) ||
-                        `DELETE ${res.status} ${res.statusText}`;
+    const errorMessage = json?.message ||
+      (typeof json?.raw === 'string' ? json.raw : undefined) ||
+      `DELETE ${res.status} ${res.statusText}`;
     const error = new Error(errorMessage);
     (error as any).code = json?.code;
     (error as any).status = res.status;
@@ -454,10 +457,10 @@ export function apiBase() {
 
 // ==================== Study Room Methods ====================
 
-export async function createRoom(roomName: string, user: {id: string; name: string; role: string}): Promise<{ ok: boolean; room: any; reused: boolean }> {
+export async function createRoom(roomName: string, user: { id: string; name: string; role: string }): Promise<{ ok: boolean; room: any; reused: boolean }> {
   const base = apiBase();
   const url = `${base}/api/rooms`;
-  
+
   try {
     const res = await fetch(url, {
       method: 'POST',
@@ -467,11 +470,11 @@ export async function createRoom(roomName: string, user: {id: string; name: stri
       },
       body: JSON.stringify({ roomName }),
     });
-    
+
     if (!res.ok) {
       let errorMessage = `Failed to create room: ${res.status} ${res.statusText}`;
       let errorCode = '';
-      
+
       try {
         const errorData = await res.json();
         errorMessage = errorData.message || errorMessage;
@@ -480,13 +483,13 @@ export async function createRoom(roomName: string, user: {id: string; name: stri
         const text = await res.text().catch(() => '');
         if (text) errorMessage = text;
       }
-      
+
       const error = new Error(errorMessage);
       (error as any).code = errorCode;
       (error as any).status = res.status;
       throw error;
     }
-    
+
     return res.json();
   } catch (error: any) {
     // Re-throw with more context if it's a network error
@@ -497,7 +500,7 @@ export async function createRoom(roomName: string, user: {id: string; name: stri
   }
 }
 
-export async function getJoinToken(roomName: string, user: {id: string; name: string; role: string}) {
+export async function getJoinToken(roomName: string, user: { id: string; name: string; role: string }) {
   const encodedName = encodeNameForHeader(user.name);
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/rooms/${roomName}/token`, {
     method: 'POST',
@@ -570,7 +573,7 @@ export async function createTeacherLead(payload: TeacherLeadPayload) {
 // ==================== Demo/Dev Helpers ====================
 
 /** Demo headers để test nhanh auth qua x-user-* (dev) */
-export function demoUserHeaders(u: { id: string; name?: string; role?: 'admin'|'teacher'|'student' }) {
+export function demoUserHeaders(u: { id: string; name?: string; role?: 'admin' | 'teacher' | 'student' }) {
   const name = u.name ?? 'Guest';
   const encodedName = encodeNameForHeader(name);
   return {

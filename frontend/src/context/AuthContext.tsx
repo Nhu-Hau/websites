@@ -146,7 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Auto-refresh token trước khi hết hạn (mỗi 25 phút, token có 30 phút)
   useEffect(() => {
     if (!user) return;
-    
+
     const interval = setInterval(async () => {
       try {
         // Refresh token trước khi hết hạn
@@ -222,18 +222,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-    } catch {}
-    
+    } catch { }
+
     // Clear user-specific data from localStorage
     if (typeof window !== "undefined") {
       const { clearUserData } = await import("@/lib/utils");
       clearUserData();
-      
+
       // Disconnect socket
       const { disconnectSocket } = await import("@/lib/socket");
       disconnectSocket();
     }
-    
+
     setUser(null);
     announceUserChanged();
   }, []);

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { Users, TrendingUp, BarChart3, FileText, Trash2, Wifi, Trophy } from "lucide-react";
+import { Users, BarChart3, FileText, Trash2, Wifi, Trophy } from "lucide-react";
 import { adminDeleteUserScore, adminOverview, adminUserScores } from "@/lib/apiClient";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -145,7 +145,7 @@ export default function OverviewTab({
                                 <p className="text-emerald-100 text-xs mt-3 opacity-90">Dự đoán vs Thực tế</p>
                             </div>
                             <div className="p-4 bg-white/20 rounded-2xl backdrop-blur">
-                                <TrendingUp className="h-9 w-9" />
+                                <BarChart3 className="h-9 w-9" />
                             </div>
                         </div>
                     </div>
@@ -168,11 +168,11 @@ export default function OverviewTab({
                     </div>
                 </div>
 
-                {/* Comparison Chart - Line Chart */}
+                {/* Comparison Chart - Grouped Bar Chart */}
                 <div className="bg-white/70 backdrop-blur-lg border border-zinc-200/80 rounded-2xl shadow-xl p-6">
                     <div className="flex flex-col items-center gap-2 mb-6">
                         <div className="flex items-center gap-3">
-                            <TrendingUp className="h-6 w-6 text-blue-600" />
+                            <BarChart3 className="h-6 w-6 text-blue-600" />
                             <h3 className="text-xl font-bold text-zinc-800">So sánh điểm TOEIC dự đoán và tự báo cáo theo từng người dùng</h3>
                         </div>
                         <span className="text-xs text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full">
@@ -180,95 +180,145 @@ export default function OverviewTab({
                         </span>
                     </div>
 
-                    <div className="overflow-x-auto pb-4" ref={containerRef}>
-                        <svg width={chartWidth} height={height} viewBox={`0 0 ${chartWidth} ${height}`} className="mx-auto">
-                            {/* Grid lines (Axes) - BOLD */}
-                            <line x1={pad} y1={pad} x2={pad} y2={height - pad} stroke="#a1a1aa" strokeWidth="3" />
-                            <line x1={pad} y1={height - pad} x2={chartWidth - pad} y2={height - pad} stroke="#a1a1aa" strokeWidth="3" />
+                    <div
+                        className="overflow-x-auto overflow-y-hidden pb-4"
+                        ref={containerRef}
+                        style={{
+                            scrollBehavior: 'smooth',
+                            scrollbarWidth: 'thin',
+                            scrollbarColor: '#d4d4d8 #f4f4f5'
+                        }}
+                    >
+                        {(() => {
+                            const validUsers = userScores.filter(u => u.currentToeicScore !== null);
+                            const count = validUsers.length;
 
-                            {/* Axis Labels */}
-                            <text x={chartWidth / 2} y={height - 2} textAnchor="middle" className="text-xs fill-zinc-500 font-medium">Người dùng</text>
-                            <text x={15} y={height / 2} textAnchor="middle" transform={`rotate(-90, 15, ${height / 2})`} className="text-xs fill-zinc-500 font-medium">Điểm TOEIC (0–990)</text>
+                            // Dynamic bar sizing based on user count
+                            const barWidth = count > 20 ? 12 : count > 15 ? 14 : count > 10 ? 16 : 20;
+                            const barGap = 2; // Small gap between bars in same group
+                            const groupGap = count > 20 ? 16 : count > 15 ? 22 : count > 10 ? 28 : 36;
+                            const groupWidth = barWidth * 2 + barGap;
 
-                            {/* Y-axis Labels (Scores) */}
-                            {[0, 200, 400, 600, 800, 990].map((score) => {
-                                const y = height - pad - (score / 990) * (height - pad * 2);
-                                return (
-                                    <g key={score}>
-                                        <line x1={pad} y1={y} x2={chartWidth - pad} y2={y} stroke="#e4e4e7" strokeWidth="1" strokeDasharray="4,4" className="opacity-30" />
-                                        <text x={pad - 10} y={y + 3} textAnchor="end" className="text-[10px] fill-zinc-400">{score}</text>
-                                    </g>
-                                );
-                            })}
+                            // Calculate dynamic chart width
+                            const minChartWidth = Math.max(chartWidth, 600);
+                            const requiredWidth = pad * 2 + 40 + count * groupWidth + (count > 0 ? (count - 1) * groupGap : 0);
+                            const dynamicChartWidth = Math.max(minChartWidth, requiredWidth);
+                            const barChartHeight = 380;
 
-                            {(() => {
-                                const validUsers = userScores.filter(u => u.currentToeicScore !== null);
-                                const count = validUsers.length;
-                                if (count === 0) return <text x={chartWidth / 2} y={height / 2} textAnchor="middle" className="fill-zinc-400">Chưa có dữ liệu so sánh</text>;
+                            return (
+                                <svg width={dynamicChartWidth} height={barChartHeight} viewBox={`0 0 ${dynamicChartWidth} ${barChartHeight}`} style={{ minWidth: dynamicChartWidth }}>
+                                    {/* Grid lines (Axes) - BOLD */}
+                                    <line x1={pad} y1={pad} x2={pad} y2={barChartHeight - pad - 50} stroke="#a1a1aa" strokeWidth="2" />
+                                    <line x1={pad} y1={barChartHeight - pad - 50} x2={dynamicChartWidth - pad} y2={barChartHeight - pad - 50} stroke="#a1a1aa" strokeWidth="2" />
 
-                                const step = (chartWidth - pad * 2) / Math.max(1, count - 1);
+                                    {/* Axis Labels */}
+                                    <text x={dynamicChartWidth / 2} y={barChartHeight - 8} textAnchor="middle" className="text-xs fill-zinc-500 font-medium">Người dùng</text>
+                                    <text x={12} y={(barChartHeight - 50) / 2} textAnchor="middle" transform={`rotate(-90, 12, ${(barChartHeight - 50) / 2})`} className="text-xs fill-zinc-500 font-medium">Điểm TOEIC (0–990)</text>
 
-                                const getPoints = (getter: (u: any) => number) =>
-                                    validUsers.map((u, i) => {
-                                        const x = pad + i * step;
-                                        const y = height - pad - (getter(u) / 990) * (height - pad * 2);
-                                        return `${x},${y}`;
-                                    }).join(" ");
+                                    {/* Y-axis Labels (Scores) */}
+                                    {[0, 200, 400, 600, 800, 990].map((score) => {
+                                        const chartAreaHeight = barChartHeight - pad - 50 - pad;
+                                        const y = barChartHeight - pad - 50 - (score / 990) * chartAreaHeight;
+                                        return (
+                                            <g key={score}>
+                                                <line x1={pad} y1={y} x2={dynamicChartWidth - pad} y2={y} stroke="#e4e4e7" strokeWidth="1" strokeDasharray="4,4" className="opacity-40" />
+                                                <text x={pad - 10} y={y + 3} textAnchor="end" className="text-[10px] fill-zinc-400">{score}</text>
+                                            </g>
+                                        );
+                                    })}
 
-                                const predictedPoints = getPoints(u => u.overall);
-                                const selfReportedPoints = getPoints(u => u.currentToeicScore || 0);
+                                    {count === 0 ? (
+                                        <text x={dynamicChartWidth / 2} y={barChartHeight / 2} textAnchor="middle" className="fill-zinc-400">Chưa có dữ liệu so sánh</text>
+                                    ) : (
+                                        validUsers.map((u, i) => {
+                                            const chartAreaHeight = barChartHeight - pad - 50 - pad;
+                                            const groupStartX = pad + 30 + i * (groupWidth + groupGap);
 
-                                return (
-                                    <>
-                                        {/* Predicted Line */}
-                                        <polyline points={predictedPoints} fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-sm" />
+                                            // Calculate bar heights with minimum height
+                                            const predHeight = Math.max((u.overall / 990) * chartAreaHeight, 2);
+                                            const selfHeight = Math.max(((u.currentToeicScore || 0) / 990) * chartAreaHeight, 2);
 
-                                        {/* Self Reported Line */}
-                                        <polyline points={selfReportedPoints} fill="none" stroke="#f43f5e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="4,4" className="drop-shadow-sm" />
-
-                                        {/* Points and Tooltips */}
-                                        {validUsers.map((u, i) => {
-                                            const x = pad + i * step;
-                                            const yPred = height - pad - (u.overall / 990) * (height - pad * 2);
-                                            const ySelf = height - pad - ((u.currentToeicScore || 0) / 990) * (height - pad * 2);
+                                            // Bar positions
+                                            const predX = groupStartX;
+                                            const selfX = groupStartX + barWidth + barGap;
+                                            const baseY = barChartHeight - pad - 50;
 
                                             return (
-                                                <g key={u._id} className="group/point">
-                                                    {/* Vertical hover line */}
-                                                    <line x1={x} y1={pad} x2={x} y2={height - pad} stroke="#e4e4e7" strokeWidth="1" strokeDasharray="4,4" className="opacity-50" />
+                                                <g key={u._id}>
+                                                    {/* Predicted Score Bar (Indigo) */}
+                                                    <rect
+                                                        x={predX}
+                                                        y={baseY - predHeight}
+                                                        width={barWidth}
+                                                        height={predHeight}
+                                                        fill="#6366f1"
+                                                        rx="2"
+                                                        ry="2"
+                                                        className="hover:fill-indigo-400 transition-colors cursor-pointer"
+                                                    >
+                                                        <title>{`${u.name}\nEmail: ${u.email}\nDự đoán: ${u.overall}`}</title>
+                                                    </rect>
+
+                                                    {/* Self Reported Score Bar (Rose) */}
+                                                    <rect
+                                                        x={selfX}
+                                                        y={baseY - selfHeight}
+                                                        width={barWidth}
+                                                        height={selfHeight}
+                                                        fill="#f43f5e"
+                                                        rx="2"
+                                                        ry="2"
+                                                        className="hover:fill-rose-400 transition-colors cursor-pointer"
+                                                    >
+                                                        <title>{`${u.name}\nEmail: ${u.email}\nTự báo cáo: ${u.currentToeicScore}`}</title>
+                                                    </rect>
+
+                                                    {/* Value labels on top of bars - only show if enough space */}
+                                                    {count <= 15 && (
+                                                        <>
+                                                            <text
+                                                                x={predX + barWidth / 2}
+                                                                y={baseY - predHeight - 4}
+                                                                textAnchor="middle"
+                                                                className="text-[8px] fill-indigo-700 font-bold"
+                                                            >
+                                                                {u.overall}
+                                                            </text>
+                                                            <text
+                                                                x={selfX + barWidth / 2}
+                                                                y={baseY - selfHeight - 4}
+                                                                textAnchor="middle"
+                                                                className="text-[8px] fill-rose-700 font-bold"
+                                                            >
+                                                                {u.currentToeicScore}
+                                                            </text>
+                                                        </>
+                                                    )}
 
                                                     {/* User Name on X-axis */}
                                                     <text
-                                                        x={x}
-                                                        y={height - pad + 20}
+                                                        x={groupStartX + groupWidth / 2}
+                                                        y={baseY + 20}
                                                         textAnchor="end"
-                                                        transform={`rotate(-45, ${x}, ${height - pad + 20})`}
-                                                        className="text-[10px] fill-zinc-500 font-medium cursor-default"
+                                                        transform={`rotate(-45, ${groupStartX + groupWidth / 2}, ${baseY + 20})`}
+                                                        className="text-[9px] fill-zinc-600 font-medium"
                                                     >
-                                                        {u.name.split(' ').pop()}
+                                                        {`User ${i + 1}`}
                                                     </text>
-
-                                                    {/* Predicted Point */}
-                                                    <circle cx={x} cy={yPred} r="4" className="fill-white stroke-indigo-500 stroke-2 hover:r-6 transition-all cursor-pointer z-10 relative" />
-
-                                                    {/* Self Point */}
-                                                    <circle cx={x} cy={ySelf} r="4" className="fill-white stroke-rose-500 stroke-2 hover:r-6 transition-all cursor-pointer z-10 relative" />
-
-                                                    <title>{`${u.name}\nEmail: ${u.email}\nDự đoán: ${u.overall}\nTự báo cáo: ${u.currentToeicScore}`}</title>
                                                 </g>
                                             );
-                                        })}
-                                    </>
-                                );
-                            })()}
-                        </svg>
-                        <div className="flex justify-center gap-6 mt-4 text-xs text-zinc-600">
+                                        })
+                                    )}
+                                </svg>
+                            );
+                        })()}
+                        <div className="flex justify-center gap-8 mt-4 text-xs text-zinc-600">
                             <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-indigo-500"></span>
+                                <span className="w-4 h-3 rounded-sm bg-indigo-500"></span>
                                 <span className="font-medium">Dự đoán</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-rose-500"></span>
+                                <span className="w-4 h-3 rounded-sm bg-rose-500"></span>
                                 <span className="font-medium">Tự báo cáo</span>
                             </div>
                         </div>

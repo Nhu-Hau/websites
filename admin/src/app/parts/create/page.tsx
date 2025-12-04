@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { adminCreateTest, adminUploadStimulusMedia } from "@/lib/apiClient";
-import { Plus, X, ArrowLeft, Upload } from "lucide-react";
+import { Plus, X, ArrowLeft, Upload, FileText, Image as ImageIcon, Mic } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/common/ToastProvider";
 
@@ -275,27 +275,42 @@ export default function CreateTestPage() {
   };
 
   return (
-    <>
-      <div className="p-6 max-w-6xl mx-auto">
-        <div className="mb-6 flex items-center gap-4">
-          <Link href="/parts" className="flex items-center gap-2 text-zinc-600 hover:text-zinc-900">
+    <div className="min-h-screen bg-zinc-50/50 p-6">
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* Header Navigation */}
+        <div className="flex items-center gap-4">
+          <Link
+            href="/parts"
+            className="flex items-center gap-2 text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-2 rounded-lg hover:bg-white hover:shadow-sm"
+          >
             <ArrowLeft className="w-5 h-5" />
-            <span>Quay lại</span>
+            <span className="font-medium">Quay lại</span>
           </Link>
-          <h1 className="text-2xl font-semibold">Tạo Test Mới</h1>
+          <div className="h-6 w-px bg-zinc-300" />
+          <h1 className="text-2xl font-bold text-zinc-900">Tạo Test Mới</h1>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info */}
-          <div className="bg-white border rounded-lg p-6">
-            <h2 className="text-lg font-semibold mb-4">Thông tin cơ bản</h2>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="flex flex-col">
-                <label className="text-sm font-medium text-zinc-600 mb-2">Part</label>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Main Card */}
+          <div className="bg-white rounded-2xl shadow-xl border border-zinc-200 overflow-hidden">
+            {/* Section Header */}
+            <div className="px-8 py-6 border-b border-zinc-100 bg-white">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                </div>
+                <h2 className="text-lg font-bold text-zinc-900">Thông tin cơ bản</h2>
+              </div>
+              <p className="text-zinc-500 text-sm pl-12">Thiết lập thông tin chung cho bài test</p>
+            </div>
+
+            <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-zinc-700">Part</label>
                 <select
                   value={form.part}
                   onChange={(e) => handlePartChange(e.target.value)}
-                  className="border px-3 py-2 rounded"
+                  className="w-full px-4 py-2.5 rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   required
                 >
                   <option value="part.1">Part 1</option>
@@ -307,8 +322,9 @@ export default function CreateTestPage() {
                   <option value="part.7">Part 7</option>
                 </select>
               </div>
-              <div className="flex flex-col">
-                <label className="text-sm font-medium text-zinc-600 mb-2">Level</label>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-zinc-700">Level</label>
                 <select
                   value={form.level}
                   onChange={(e) => {
@@ -316,7 +332,7 @@ export default function CreateTestPage() {
                     const { items, stimuli } = updateIds(undefined, newLevel);
                     setForm({ ...form, level: newLevel, items, stimuli });
                   }}
-                  className="border px-3 py-2 rounded"
+                  className="w-full px-4 py-2.5 rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   required
                 >
                   <option value="1">Level 1</option>
@@ -324,8 +340,9 @@ export default function CreateTestPage() {
                   <option value="3">Level 3</option>
                 </select>
               </div>
-              <div className="flex flex-col">
-                <label className="text-sm font-medium text-zinc-600 mb-2">Test Number</label>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-zinc-700">Test Number</label>
                 <input
                   type="number"
                   value={form.test}
@@ -335,284 +352,430 @@ export default function CreateTestPage() {
                     setForm({ ...form, test: newTest, items, stimuli });
                   }}
                   placeholder="Ví dụ: 1"
-                  className="border px-3 py-2 rounded"
+                  className="w-full px-4 py-2.5 rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   required
                 />
               </div>
             </div>
           </div>
 
-          {/* Items List */}
-          <div className="bg-white border rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Items ({form.items.length})</h2>
+          {/* Items Section */}
+          <div className="bg-white rounded-2xl shadow-xl border border-zinc-200 overflow-hidden">
+            <div className="px-8 py-6 border-b border-zinc-100 bg-white flex items-center justify-between sticky top-0 z-10">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-teal-100 p-2 rounded-lg">
+                    <FileText className="w-5 h-5 text-teal-600" />
+                  </div>
+                  <h2 className="text-lg font-bold text-zinc-900">Danh sách câu hỏi</h2>
+                </div>
+                <p className="text-zinc-500 text-sm pl-12">Quản lý {form.items.length} câu hỏi trong bài test</p>
+              </div>
               <button
                 type="button"
                 onClick={handleAddItem}
-                className="px-4 py-2 rounded bg-teal-600 !text-white flex items-center gap-2 hover:bg-opacity-90"
+                className="px-5 py-2.5 rounded-xl bg-teal-600 text-white font-medium hover:bg-teal-700 shadow-lg shadow-teal-200 transition-all active:scale-[0.98] flex items-center gap-2"
               >
-                <Plus className="w-4 h-4" stroke="currentColor" />
-                Thêm Item
+                <Plus className="w-4 h-4" strokeWidth={2.5} />
+                Thêm Câu Hỏi
               </button>
             </div>
 
-            <div className="space-y-3 max-h-[500px] overflow-auto">
-              {form.items.map((item, idx) => (
-                <div key={idx} className="border rounded-lg p-4 bg-zinc-50">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-zinc-700">Item {idx + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem(idx)}
-                      className="text-red-600 hover:bg-red-50 p-1 rounded"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col">
-                      <label className="text-xs text-zinc-600 mb-1">ID</label>
-                      <input
-                        value={item.id}
-                        onChange={(e) => handleUpdateItem(idx, "id", e.target.value)}
-                        className="border px-3 py-2 rounded text-sm"
-                        required
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <label className="text-xs text-zinc-600 mb-1">Answer</label>
-                      <select
-                        value={item.answer}
-                        onChange={(e) => handleUpdateItem(idx, "answer", e.target.value)}
-                        className="border px-3 py-2 rounded text-sm"
-                        required
+            <div className="p-8 bg-zinc-50/50 min-h-[200px]">
+              <div className="space-y-6">
+                {form.items.map((item, idx) => (
+                  <div key={idx} className="group bg-white rounded-xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                    {/* Item Header */}
+                    <div className="px-6 py-4 bg-zinc-50 border-b border-zinc-100 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-zinc-200 text-sm font-bold text-zinc-700 shadow-sm">
+                          {idx + 1}
+                        </span>
+                        <span className="font-mono text-sm text-zinc-500">{item.id}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItem(idx)}
+                        className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                        title="Xóa câu hỏi"
                       >
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        {form.part !== "part.2" && <option value="D">D</option>}
-                      </select>
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      {/* Left Column: Core Info */}
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">ID</label>
+                            <input
+                              value={item.id}
+                              onChange={(e) => handleUpdateItem(idx, "id", e.target.value)}
+                              className="w-full px-3 py-2 rounded-lg border border-zinc-200 bg-zinc-50 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Đáp án</label>
+                            <select
+                              value={item.answer}
+                              onChange={(e) => handleUpdateItem(idx, "answer", e.target.value)}
+                              className="w-full px-3 py-2 rounded-lg border border-zinc-200 bg-white font-medium text-zinc-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              required
+                            >
+                              <option value="A">A</option>
+                              <option value="B">B</option>
+                              <option value="C">C</option>
+                              {form.part !== "part.2" && <option value="D">D</option>}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Stimulus ID</label>
+                          <input
+                            value={item.stimulusId}
+                            onChange={(e) => handleUpdateItem(idx, "stimulusId", e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-zinc-200 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            placeholder="Liên kết với Stimulus..."
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Tags</label>
+                          <input
+                            value={item.tags || ""}
+                            onChange={(e) => handleUpdateItem(idx, "tags", e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            placeholder="grammar, vocab..."
+                          />
+                        </div>
+                      </div>
+
+                      {/* Right Column: Content */}
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Câu hỏi (Stem)</label>
+                          <textarea
+                            value={item.stem}
+                            onChange={(e) => handleUpdateItem(idx, "stem", e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all min-h-[80px] resize-y"
+                            placeholder="Nội dung câu hỏi..."
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Giải thích</label>
+                          <textarea
+                            value={item.explain || ""}
+                            onChange={(e) => handleUpdateItem(idx, "explain", e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all min-h-[80px] resize-y"
+                            placeholder="Giải thích đáp án..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Choices */}
+                    <div className="px-6 py-4 bg-zinc-50/50 border-t border-zinc-100">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {item.choices.map((choice) => (
+                          <div key={choice.id} className="flex items-center gap-3">
+                            <span className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold border ${item.answer === choice.id
+                              ? 'bg-blue-600 border-blue-600 text-white'
+                              : 'bg-white border-zinc-200 text-zinc-500'
+                              }`}>
+                              {choice.id}
+                            </span>
+                            <input
+                              value={choice.text || ""}
+                              onChange={(e) => handleUpdateChoice(idx, choice.id, e.target.value)}
+                              className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-all ${item.answer === choice.id
+                                ? 'border-blue-200 bg-blue-50/30 focus:ring-blue-500'
+                                : 'border-zinc-200 bg-white focus:ring-blue-500'
+                                } focus:ring-2 focus:border-transparent`}
+                              placeholder={`Lựa chọn ${choice.id} (Optional)`}
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex flex-col mt-3">
-                    <label className="text-xs text-zinc-600 mb-1">Stimulus ID</label>
-                    <input
-                      value={item.stimulusId}
-                      onChange={(e) => handleUpdateItem(idx, "stimulusId", e.target.value)}
-                      className="border px-3 py-2 rounded text-sm"
-                      placeholder="Nhập Stimulus ID"
-                      required
-                    />
-                  </div>
+                ))}
 
-                  <div className="flex flex-col mt-3">
-                    <label className="text-xs text-zinc-600 mb-1">Stem (Câu hỏi)</label>
-                    <textarea
-                      value={item.stem}
-                      onChange={(e) => handleUpdateItem(idx, "stem", e.target.value)}
-                      className="border px-3 py-2 rounded text-sm"
-                      rows={2}
-                      placeholder="Nhập câu hỏi (nếu có)"
-                    />
-                  </div>
-
-                  <div className="flex flex-col mt-3">
-                    <label className="text-xs text-zinc-600 mb-1">Explain (Giải thích)</label>
-                    <textarea
-                      value={item.explain || ""}
-                      onChange={(e) => handleUpdateItem(idx, "explain", e.target.value)}
-                      className="border px-3 py-2 rounded text-sm"
-                      rows={2}
-                      placeholder="Nhập giải thích (nếu có)"
-                    />
-                  </div>
-
-                  <div className="flex flex-col mt-3">
-                    <label className="text-xs text-zinc-600 mb-1">Tags (Optional)</label>
-                    <input
-                      value={item.tags || ""}
-                      onChange={(e) => handleUpdateItem(idx, "tags", e.target.value)}
-                      className="border px-3 py-2 rounded text-sm"
-                      placeholder="Nhập tags, cách nhau bằng dấu phẩy (ví dụ: grammar, vocab)"
-                    />
-                  </div>
-
-                  <div className="mt-3">
-                    <label className="text-xs text-zinc-600 mb-2 block">Choices (Optional)</label>
-                    <div className="space-y-2">
-                      {item.choices.map((choice) => (
-                        <input
-                          key={choice.id}
-                          value={choice.text || ""}
-                          onChange={(e) => handleUpdateChoice(idx, choice.id, e.target.value)}
-                          className="border px-3 py-2 rounded text-sm w-full"
-                          placeholder={`Choice ${choice.id} (Optional)`}
-                        />
-                      ))}
+                {form.items.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16 text-zinc-400 border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50/50">
+                    <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
+                      <FileText className="w-8 h-8 text-zinc-300" />
                     </div>
+                    <p className="font-medium text-zinc-600">Chưa có câu hỏi nào</p>
+                    <p className="text-sm mt-1">Nhấn &quot;Thêm Câu Hỏi&quot; để bắt đầu tạo nội dung</p>
                   </div>
-                </div>
-              ))}
-
-              {form.items.length === 0 && (
-                <div className="text-center py-12 text-zinc-400 border-2 border-dashed rounded-lg">
-                  <p className="mb-3">Chưa có items</p>
-                  <p className="text-sm">Click &quot;Thêm Item&quot; ở trên để bắt đầu</p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Stimuli List */}
-          <div className="bg-white border rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Stimuli ({form.stimuli.length})</h2>
+          {/* Stimuli Section */}
+          <div className="bg-white rounded-2xl shadow-xl border border-zinc-200 overflow-hidden">
+            <div className="px-8 py-6 border-b border-zinc-100 bg-white flex items-center justify-between sticky top-0 z-10">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-purple-100 p-2 rounded-lg">
+                    <ImageIcon className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h2 className="text-lg font-bold text-zinc-900">Danh sách Stimuli</h2>
+                </div>
+                <p className="text-zinc-500 text-sm pl-12">Quản lý {form.stimuli.length} stimuli (hình ảnh/âm thanh)</p>
+              </div>
               <button
                 type="button"
                 onClick={handleAddStimulus}
-                className="px-4 py-2 rounded bg-purple-600 !text-white flex items-center gap-2 hover:bg-opacity-90"
+                className="px-5 py-2.5 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-700 shadow-lg shadow-purple-200 transition-all active:scale-[0.98] flex items-center gap-2"
               >
-                <Plus className="w-4 h-4" stroke="currentColor" />
+                <Plus className="w-4 h-4" strokeWidth={2.5} />
                 Thêm Stimulus
               </button>
             </div>
 
-            <div className="space-y-3 max-h-[500px] overflow-auto">
-              {form.stimuli.map((stimulus, idx) => (
-                <div key={idx} className="border rounded-lg p-4 bg-purple-50">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-purple-700">Stimulus {idx + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveStimulus(idx)}
-                      className="text-red-600 hover:bg-red-50 p-1 rounded"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="flex flex-col mb-3">
-                    <label className="text-xs text-zinc-600 mb-1">ID (Optional)</label>
-                    <input
-                      value={stimulus.id}
-                      onChange={(e) => handleUpdateStimulus(idx, "id", e.target.value)}
-                      className="border px-3 py-2 rounded text-sm"
-                    />
-                  </div>
-
-                  <div className="flex flex-col mb-3">
-                    <label className="text-xs text-zinc-600 mb-1">Audio (Optional)</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="file"
-                        accept="audio/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleFileUpload(idx, 'audio', file);
-                        }}
-                        className="hidden"
-                        id={`audio-upload-${idx}`}
-                        disabled={uploading.type === 'audio' && uploading.index === idx}
-                      />
-                      <label
-                        htmlFor={`audio-upload-${idx}`}
-                        className="flex-1 border border-dashed rounded px-3 py-2 text-sm cursor-pointer hover:bg-zinc-50 flex items-center justify-center gap-2"
+            <div className="p-8 bg-zinc-50/50 min-h-[200px]">
+              <div className="space-y-8">
+                {form.stimuli.map((stimulus, idx) => (
+                  <div key={idx} className="group bg-white rounded-xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                    {/* Stimulus Header */}
+                    <div className="px-6 py-4 bg-purple-50/30 border-b border-purple-100 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-purple-200 text-sm font-bold text-purple-700 shadow-sm">
+                          {idx + 1}
+                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-semibold text-purple-900 uppercase tracking-wider">Stimulus ID</span>
+                          <input
+                            value={stimulus.id}
+                            onChange={(e) => handleUpdateStimulus(idx, "id", e.target.value)}
+                            className="bg-transparent border-none p-0 text-sm font-mono text-purple-700 focus:ring-0 w-[300px]"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveStimulus(idx)}
+                        className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                        title="Xóa stimulus"
                       >
-                        <Upload className="w-4 h-4" />
-                        {uploading.type === 'audio' && uploading.index === idx ? 'Đang upload...' : 'Upload Audio'}
-                      </label>
-                      <input
-                        type="url"
-                        value={stimulus.media.audio || ""}
-                        onChange={(e) => handleUpdateStimulusMedia(idx, "audio", e.target.value || null)}
-                        className="flex-1 border px-3 py-2 rounded text-sm"
-                        placeholder="Hoặc nhập URL..."
-                      />
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      {/* Media Uploads */}
+                      <div className="space-y-6">
+                        {/* Image Upload */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                              <ImageIcon className="w-4 h-4" /> Hình ảnh
+                            </label>
+                            {stimulus.media.image && (
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateStimulusMedia(idx, "image", "")}
+                                className="text-xs text-red-500 hover:text-red-600 hover:underline"
+                              >
+                                Xóa ảnh
+                              </button>
+                            )}
+                          </div>
+
+                          {stimulus.media.image ? (
+                            <div className="relative rounded-xl overflow-hidden border border-zinc-200 bg-zinc-50 group/image aspect-video">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={stimulus.media.image}
+                                alt="Preview"
+                                className="object-contain w-full h-full"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center">
+                                <label
+                                  htmlFor={`image-upload-${idx}`}
+                                  className="px-4 py-2 bg-white/90 rounded-lg text-sm font-medium cursor-pointer hover:bg-white transition-colors shadow-lg"
+                                >
+                                  Thay đổi ảnh
+                                </label>
+                              </div>
+                            </div>
+                          ) : (
+                            <label
+                              htmlFor={`image-upload-${idx}`}
+                              className="border-2 border-dashed border-zinc-200 rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-purple-400 hover:bg-purple-50/30 transition-all group/upload aspect-video"
+                            >
+                              <div className="p-3 bg-zinc-100 rounded-full group-hover/upload:bg-purple-100 transition-colors">
+                                <Upload className="w-6 h-6 text-zinc-400 group-hover/upload:text-purple-500" />
+                              </div>
+                              <div className="text-center">
+                                <p className="text-sm font-medium text-zinc-700 group-hover/upload:text-purple-600">Click to upload image</p>
+                                <p className="text-xs text-zinc-400 mt-1">SVG, PNG, JPG or GIF</p>
+                              </div>
+                            </label>
+                          )}
+
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(idx, 'image', file);
+                            }}
+                            className="hidden"
+                            id={`image-upload-${idx}`}
+                            disabled={uploading.type === 'image' && uploading.index === idx}
+                          />
+
+                          <div className="relative">
+                            <input
+                              type="url"
+                              value={stimulus.media.image || ""}
+                              onChange={(e) => handleUpdateStimulusMedia(idx, "image", e.target.value || null)}
+                              className="w-full pl-3 pr-10 py-2 rounded-lg border border-zinc-200 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                              placeholder="Hoặc nhập URL hình ảnh..."
+                            />
+                            {uploading.type === 'image' && uploading.index === idx && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Audio Upload */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                              <Mic className="w-4 h-4" /> Audio
+                            </label>
+                            {stimulus.media.audio && (
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateStimulusMedia(idx, "audio", "")}
+                                className="text-xs text-red-500 hover:text-red-600 hover:underline"
+                              >
+                                Xóa audio
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200 space-y-4">
+                            {stimulus.media.audio ? (
+                              <audio controls src={stimulus.media.audio} className="w-full h-10" />
+                            ) : (
+                              <div className="text-center py-4 text-sm text-zinc-400 italic">
+                                Chưa có audio
+                              </div>
+                            )}
+
+                            <div className="flex gap-2">
+                              <input
+                                type="file"
+                                accept="audio/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleFileUpload(idx, 'audio', file);
+                                }}
+                                className="hidden"
+                                id={`audio-upload-${idx}`}
+                                disabled={uploading.type === 'audio' && uploading.index === idx}
+                              />
+                              <label
+                                htmlFor={`audio-upload-${idx}`}
+                                className="flex-1 px-4 py-2 bg-white border border-zinc-200 rounded-lg text-sm font-medium text-zinc-700 hover:bg-zinc-50 cursor-pointer transition-all flex items-center justify-center gap-2 shadow-sm"
+                              >
+                                <Upload className="w-4 h-4" />
+                                Upload Audio File
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="relative">
+                            <input
+                              type="url"
+                              value={stimulus.media.audio || ""}
+                              onChange={(e) => handleUpdateStimulusMedia(idx, "audio", e.target.value || null)}
+                              className="w-full pl-3 pr-10 py-2 rounded-lg border border-zinc-200 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                              placeholder="Hoặc nhập URL audio..."
+                            />
+                            {uploading.type === 'audio' && uploading.index === idx && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Text Content */}
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Script (Transcript)</label>
+                          <textarea
+                            value={stimulus.media.script || ""}
+                            onChange={(e) => handleUpdateStimulusMedia(idx, "script", e.target.value || null)}
+                            className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all min-h-[120px] resize-y font-mono"
+                            placeholder="Nhập nội dung script..."
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Giải thích</label>
+                          <textarea
+                            value={stimulus.media.explain || ""}
+                            onChange={(e) => handleUpdateStimulusMedia(idx, "explain", e.target.value || null)}
+                            className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all min-h-[120px] resize-y"
+                            placeholder="Nhập giải thích chi tiết..."
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
+                ))}
 
-                  <div className="flex flex-col mb-3">
-                    <label className="text-xs text-zinc-600 mb-1">Image (Optional)</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleFileUpload(idx, 'image', file);
-                        }}
-                        className="hidden"
-                        id={`image-upload-${idx}`}
-                        disabled={uploading.type === 'image' && uploading.index === idx}
-                      />
-                      <label
-                        htmlFor={`image-upload-${idx}`}
-                        className="flex-1 border border-dashed rounded px-3 py-2 text-sm cursor-pointer hover:bg-zinc-50 flex items-center justify-center gap-2"
-                      >
-                        <Upload className="w-4 h-4" />
-                        {uploading.type === 'image' && uploading.index === idx ? 'Đang upload...' : 'Upload Image'}
-                      </label>
-                      <input
-                        type="url"
-                        value={stimulus.media.image || ""}
-                        onChange={(e) => handleUpdateStimulusMedia(idx, "image", e.target.value || null)}
-                        className="flex-1 border px-3 py-2 rounded text-sm"
-                        placeholder="Hoặc nhập URL..."
-                      />
+                {form.stimuli.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16 text-zinc-400 border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50/50">
+                    <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
+                      <ImageIcon className="w-8 h-8 text-zinc-300" />
                     </div>
-                    {stimulus.media.image && (
-                      <img src={stimulus.media.image} alt="Preview" className="mt-2 max-h-40 rounded border" />
-                    )}
+                    <p className="font-medium text-zinc-600">Chưa có stimuli nào</p>
+                    <p className="text-sm mt-1">Nhấn &quot;Thêm Stimulus&quot; để thêm hình ảnh hoặc âm thanh</p>
                   </div>
-
-                  <div className="flex flex-col mb-3">
-                    <label className="text-xs text-zinc-600 mb-1">Script (Transcript) (Optional)</label>
-                    <textarea
-                      value={stimulus.media.script || ""}
-                      onChange={(e) => handleUpdateStimulusMedia(idx, "script", e.target.value || null)}
-                      className="border px-3 py-2 rounded text-sm"
-                      rows={3}
-                      placeholder="Nhập nội dung audio script..."
-                    />
-                  </div>
-
-                  <div className="flex flex-col">
-                    <label className="text-xs text-zinc-600 mb-1">Explain (Giải thích) (Optional)</label>
-                    <textarea
-                      value={stimulus.media.explain || ""}
-                      onChange={(e) => handleUpdateStimulusMedia(idx, "explain", e.target.value || null)}
-                      className="border px-3 py-2 rounded text-sm"
-                      rows={3}
-                      placeholder="Nhập giải thích tiếng Việt..."
-                    />
-                  </div>
-                </div>
-              ))}
-
-              {form.stimuli.length === 0 && (
-                <div className="text-center py-12 text-zinc-400 border-2 border-dashed rounded-lg">
-                  <p className="mb-3">Chưa có stimuli</p>
-                  <p className="text-sm">Click &quot;Thêm Stimulus&quot; ở trên để bắt đầu</p>
-                </div>
-              )}
-
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-between">
-            <Link href="/parts" className="px-4 py-2 rounded border hover:bg-zinc-50">
-              Hủy
+          {/* Footer Actions */}
+          <div className="flex items-center justify-end gap-4 pt-4 pb-12">
+            <Link
+              href="/parts"
+              className="px-6 py-3 rounded-xl border border-zinc-300 text-zinc-700 font-medium hover:bg-white hover:shadow-sm transition-all active:scale-[0.98]"
+            >
+              Hủy bỏ
             </Link>
             <button
               type="submit"
               disabled={busy || form.items.length === 0}
-              className="px-6 py-2 rounded bg-zinc-900 !text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-3 rounded-xl bg-zinc-900 text-white font-bold hover:bg-zinc-800 shadow-xl shadow-zinc-200 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {busy ? "Đang tạo..." : "Tạo Test"}
+              {busy ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Đang xử lý...</span>
+                </>
+              ) : (
+                <span>Tạo Test Mới</span>
+              )}
             </button>
           </div>
         </form>
       </div>
-    </>
+    </div>
   );
 }

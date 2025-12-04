@@ -71,13 +71,15 @@ export async function adminListPayments(params?: { page?: number; limit?: number
   return res.json() as Promise<{ items: AdminPayment[]; total: number; page: number; limit: number; pages: number }>;
 }
 
-export async function adminListUsers(params?: { page?: number; limit?: number; q?: string; role?: string; access?: string; }) {
+export async function adminListUsers(params?: { page?: number; limit?: number; q?: string; role?: string; access?: string; sortBy?: string; order?: string; }) {
   const usp = new URLSearchParams();
   if (params?.page) usp.set('page', String(params.page));
   if (params?.limit) usp.set('limit', String(params.limit));
   if (params?.q) usp.set('q', params.q);
   if (params?.role) usp.set('role', params.role);
   if (params?.access) usp.set('access', params.access);
+  if (params?.sortBy) usp.set('sortBy', params.sortBy);
+  if (params?.order) usp.set('order', params.order);
   const res = await fetch(`/api/admin/users?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch users failed'); }
   return res.json() as Promise<{ items: AdminUser[]; total: number; page: number; limit: number; pages: number }>;

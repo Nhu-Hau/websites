@@ -26,6 +26,7 @@ export default function UsersPage() {
   const [q, setQ] = React.useState("");
   const [role, setRole] = React.useState("");
   const [access, setAccess] = React.useState("");
+  const [sortBy, setSortBy] = React.useState<"email" | "createdAt">("email");
   const [busy, setBusy] = React.useState(false);
   const [confirmDialog, setConfirmDialog] = React.useState<ConfirmDialogState | null>(null);
   const [confirmLoading, setConfirmLoading] = React.useState(false);
@@ -51,13 +52,14 @@ export default function UsersPage() {
   const load = React.useCallback(async () => {
     setBusy(true);
     try {
-      const data = await adminListUsers({ page, limit, q, role, access });
+      const order = sortBy === "email" ? "asc" : "desc";
+      const data = await adminListUsers({ page, limit, q, role, access, sortBy, order });
       setItems(data.items);
       setTotal(data.total);
     } finally {
       setBusy(false);
     }
-  }, [page, limit, q, role, access]);
+  }, [page, limit, q, role, access, sortBy]);
 
   React.useEffect(() => {
     (async () => {
@@ -229,6 +231,19 @@ export default function UsersPage() {
               <option value="">Tất cả</option>
               <option value="free">Free</option>
               <option value="premium">Premium</option>
+            </select>
+          </div>
+          <div className="flex flex-col min-w-[150px]">
+            <label className="text-xs font-medium text-zinc-700 mb-1.5 flex items-center gap-1.5">
+              <Filter className="h-3.5 w-3.5" /> Sắp xếp
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="border border-zinc-300 px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+            >
+              <option value="email">Email (A-Z)</option>
+              <option value="createdAt">Ngày tạo (Mới nhất)</option>
             </select>
           </div>
           <button

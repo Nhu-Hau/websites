@@ -20,6 +20,12 @@ export default function NotificationsPage() {
     React.useEffect(() => {
         const timer = setTimeout(async () => {
             if (target === "specific" && specificEmail.trim().length >= 2) {
+                // Nếu đã nhập xong đuôi @gmail.com thì ẩn gợi ý
+                if (specificEmail.toLowerCase().endsWith("@gmail.com")) {
+                    setShowSuggestions(false);
+                    return;
+                }
+
                 try {
                     const res = await adminListUsers({ q: specificEmail, limit: 5 });
                     const emails = res.items.map(u => u.email).filter(e => e.toLowerCase().includes(specificEmail.toLowerCase()));

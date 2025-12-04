@@ -9,7 +9,7 @@ import {
   createMyNotification,
   adminSendNotification,
 } from "./notification.controller";
-import { requireAdmin } from "../../shared/middleware/auth.middleware";
+import { requireAdminAuth } from "../../shared/middleware/auth.middleware";
 
 const router = Router();
 router.get("/", requireAuth, listMyNotifications);
@@ -18,6 +18,6 @@ router.post("/mark-read-all", requireAuth, markAllRead);
 router.post("/", requireAuth, createMyNotification);
 
 // Admin routes
-router.post("/admin/send", requireAuth, requireAdmin, adminSendNotification);
+router.post("/admin/send", requireAdminAuth, adminSendNotification);
 
 export default router;

@@ -21,6 +21,9 @@ export async function listUsers(req: Request, res: Response) {
     const role = String(req.query.role || "").trim();
     const access = String(req.query.access || "").trim();
 
+    const sortBy = String(req.query.sortBy || "email");
+    const order = String(req.query.order || "asc") === "desc" ? -1 : 1;
+
     const filter: any = {};
     if (q) {
       filter.$or = [
@@ -31,10 +34,17 @@ export async function listUsers(req: Request, res: Response) {
     if (role) filter.role = role;
     if (access) filter.access = access;
 
+    const sort: any = {};
+    if (sortBy === "createdAt") {
+      sort.createdAt = order;
+    } else {
+      sort.email = order;
+    }
+
     const skip = (page - 1) * limit;
     const [items, total] = await Promise.all([
       User.find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip(skip)
         .limit(limit)
         .select("_id name email role access level picture last_login toeicPred createdAt updatedAt premiumExpiryDate"),

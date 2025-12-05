@@ -394,14 +394,6 @@ export default function OverviewTab({
                                         >
                                             <title>{`${u.name}\nEmail: ${u.email}\nTự báo cáo: ${u.currentToeicScore}\nDự đoán: ${u.overall}\nChênh lệch: ${diff > 0 ? '+' : ''}${diff}`}</title>
                                         </circle>
-                                        {/* User Name Label */}
-                                        <text
-                                            x={x + 8}
-                                            y={y + 3}
-                                            className="text-[9px] fill-zinc-500 font-medium opacity-70 pointer-events-none"
-                                        >
-                                            {u.name.split(' ').pop()}
-                                        </text>
                                     </g>
                                 );
                             })}
@@ -423,6 +415,9 @@ export default function OverviewTab({
                                 <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500 shadow-sm"></span>41–60 điểm</div>
                                 <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-amber-500 shadow-sm"></span>61–80 điểm</div>
                                 <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500 shadow-sm"></span>&gt; 80 điểm</div>
+                            </div>
+                            <div className="text-xs text-zinc-500 italic mt-1">
+                                * Mỗi chấm đại diện cho 1 người dùng
                             </div>
                         </div>
                     </div>

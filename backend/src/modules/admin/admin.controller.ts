@@ -939,7 +939,7 @@ export async function getDatabaseStats(req: Request, res: Response) {
       do {
         const command = new ListObjectsV2Command({
           Bucket: BUCKET,
-          Prefix: PREFIX,
+          // Bỏ Prefix để quét toàn bộ bucket, không chỉ thư mục community/
           ContinuationToken: continuationToken,
         });
         const response: ListObjectsV2CommandOutput = await s3.send(command);

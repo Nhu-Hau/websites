@@ -20,6 +20,7 @@ import { MobileQuickNavSheet } from "../test/MobileQuickNavSheet";
 import { CheckCircle2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { AIInsightSection } from "../test/AIInsightSection";
+import { LevelChangeSection } from "../test/LevelChangeSection";
 
 /* ====== META ====== */
 const PART_META: Record<
@@ -453,11 +454,21 @@ export default function PracticePage() {
                 variant="practice"
               />
 
-              {/* AI Insight Section - chỉ hiện cho premium users */}
-              {resp._id && user?.access === "premium" && (
+              {/* Level Change Section - hiện thông báo thay đổi level */}
+              {resp.recommended && (
+                <LevelChangeSection
+                  partKey={partKey}
+                  previousLevel={level}
+                  newLevel={resp.recommended.newLevelForThisPart}
+                  reason={resp.recommended.reason}
+                />
+              )}
+
+              {/* AI Insight Section - hiện cho tất cả users giống placement test */}
+              {resp._id && (
                 <AIInsightSection
                   attemptId={resp._id}
-                  userAccess={user.access}
+                  userAccess={user?.access}
                   apiEndpoint={`/api/chat/insight/practice/${resp._id}`}
                 />
               )}

@@ -1774,6 +1774,15 @@
       "title": "Lâu rồi bạn chưa luyện Practice",
       "message": "Vào luyện tập ngay để duy trì nhịp học nhé!",
       "dbMessage": "Lâu rồi bạn chưa luyện Practice. Vào luyện tập ngay!"
+    },
+    "levelChange": {
+      "promoteTitle": "🎉 Chúc mừng! Level của bạn đã tăng!",
+      "promoteMessage": "Bạn đã tiến bộ vượt bậc! Hãy tiếp tục chinh phục Level {level} với những thử thách mới.",
+      "demoteTitle": "⚡ Level đã được điều chỉnh",
+      "demoteMessage": "Đừng nản lòng! Việc củng cố lại kiến thức ở Level {level} sẽ giúp bạn vững vàng hơn. Cố lên nhé!",
+      "keepTitle": "✨ Tiếp tục duy trì nhịp học tốt!",
+      "keepMessage": "Bạn đang ở Level {level}. Hãy hoàn thành thêm bài tập để tiến lên level tiếp theo!",
+      "continueButton": "Làm bài tiếp theo"
     }
   },
   "Common": {

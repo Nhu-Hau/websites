@@ -1502,6 +1502,15 @@
       "title": "Haven't practiced in a while",
       "message": "Start practicing to maintain your learning momentum!",
       "dbMessage": "Haven't practiced in a while. Start practicing now!"
+    },
+    "levelChange": {
+      "promoteTitle": "🎉 Congratulations! Your level has increased!",
+      "promoteMessage": "You've made excellent progress! Keep conquering Level {level} with new challenges.",
+      "demoteTitle": "⚡ Level has been adjusted",
+      "demoteMessage": "Don't give up! Reinforcing your knowledge at Level {level} will help you build a stronger foundation. Keep going!",
+      "keepTitle": "✨ Keep up the great work!",
+      "keepMessage": "You're at Level {level}. Complete more exercises to advance to the next level!",
+      "continueButton": "Continue Practice"
     }
   },
   "Common": {
@@ -2265,8 +2274,8 @@
         "fri": "Fri",
         "sat": "Sat"
       },
-        "today": "Today",
-        "tomorrow": "Tomorrow",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
       "pickDate": "Pick Date",
       "minutes": "minutes",
       "plans": {
@@ -2646,10 +2655,10 @@
         "student": {
           "badge": "For Students",
           "title": "Join a Study Room",
-          "description": "You can join open study rooms below. <strong\u003eNote:\u003c/strong\u003e Only teachers can create rooms.",
+          "description": "You can join open study rooms below. <strong>Note:</strong> Only teachers can create rooms.",
           "tips": {
             "link": "Choose a room suitable for your level",
-            "list": "Prepare \u003cb\u003emic & camera\u003c/b\u003e for best interaction"
+            "list": "Prepare <b>mic & camera</b> for best interaction"
           }
         },
         "teacher": {

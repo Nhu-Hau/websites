@@ -19,6 +19,11 @@ export type PracticeTestResp = {
   acc: number;
   timeSec: number;
   answersMap?: Record<string, { correctAnswer: string }>;
+  recommended?: {
+    newLevelForThisPart: 1 | 2 | 3;
+    predicted?: { overall: number; listening: number; reading: number };
+    reason?: { rule: "promote" | "demote" | "keep"; detail: string };
+  };
   [key: string]: any;
 };
 
@@ -174,7 +179,7 @@ export function usePracticeTest(): UsePracticeTestReturn {
 
     try {
       await refresh();
-    } catch {}
+    } catch { }
   }
 
   return {

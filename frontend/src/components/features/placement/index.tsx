@@ -20,6 +20,7 @@ import { TestStartScreen } from "@/components/features/test/TestStartScreen";
 import { MobileQuickNavSheet } from "@/components/features/test/MobileQuickNavSheet";
 import { AIInsightSection } from "@/components/features/test/AIInsightSection";
 import { useTranslations } from "next-intl";
+import BaselineModal from "@/components/features/dashboard/BaselineModal";
 
 function fmtTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
@@ -48,13 +49,18 @@ export default function PlacementPage() {
     setStarted,
   } = usePlacementTest();
 
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
   const isAuthed = !!user;
 
   const [focusMode, setFocusMode] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Baseline modal states
+  const [showBaselineModal, setShowBaselineModal] = useState(false);
+  const [baselineData, setBaselineData] = useState<any>(null);
+  const [baselineChecked, setBaselineChecked] = useState(false);
 
   const durationMin = 35;
   const countdownTotal = durationMin * 60;
@@ -63,6 +69,56 @@ export default function PlacementPage() {
     [countdownTotal, timeSec]
   );
   const progress = total ? Math.round((answered / total) * 100) : 0;
+
+  // Check baseline khi user đã đăng nhập
+  useEffect(() => {
+    if (!isAuthed) return;
+
+    const checkBaseline = async () => {
+      try {
+        const res = await fetch("/api/profile/assessment-baseline", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setBaselineData(data);
+          // Hiển thị modal nếu chưa khai báo (null hoặc undefined)
+          const needsBaseline = data.currentToeicSource === null || data.currentToeicSource === undefined;
+          if (needsBaseline) {
+            setShowBaselineModal(true);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to check baseline", e);
+      } finally {
+        setBaselineChecked(true);
+      }
+    };
+
+    checkBaseline();
+  }, [isAuthed]);
+
+  const handleBaselineClose = () => {
+    setShowBaselineModal(false);
+  };
+
+  const handleBaselineSave = async () => {
+    // Refresh auth context và baseline data
+    await refresh();
+    try {
+      const res = await fetch("/api/profile/assessment-baseline", {
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBaselineData(data);
+      }
+    } catch (e) {
+      console.error("Failed to refresh baseline", e);
+    }
+  };
 
   // Guard: Nếu đã có attempt placement, chặn vào trang này và chuyển sang trang kết quả gần nhất
   // Chỉ redirect nếu chắc chắn có attempt, còn không thì cho phép vào làm bài
@@ -303,6 +359,14 @@ export default function PlacementPage() {
         answers={answers}
         onJump={jumpTo}
         fmtTime={fmtTime}
+      />
+
+      {/* Baseline Modal - hiển thị cho user mới đăng ký chưa điền điểm tự báo cáo */}
+      <BaselineModal
+        open={showBaselineModal}
+        onClose={handleBaselineClose}
+        onSave={handleBaselineSave}
+        initialData={baselineData}
       />
     </TestLayout>
   );

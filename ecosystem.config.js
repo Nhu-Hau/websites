@@ -4,8 +4,8 @@ module.exports = {
       name: "api",
       cwd: "/opt/websites/backend",
       script: "dist/server.js",
-      instances: 2,              // 2 instance API
-      exec_mode: "cluster",
+      instances: 1,
+      exec_mode: "fork",
       env: {
         PORT: 4000,
         NODE_ENV: "production",
@@ -22,8 +22,8 @@ module.exports = {
       cwd: "/opt/websites/frontend",
       script: "node_modules/next/dist/bin/next",
       args: "start",             // ví dụ "next start -p 3000"
-      instances: 2,              // 2 instance web để reload không sập
-      exec_mode: "cluster",
+      instances: 1,
+      exec_mode: "fork",
       env: {
         PORT: 3000,
         NODE_ENV: "production",
@@ -40,8 +40,8 @@ module.exports = {
       cwd: "/opt/websites/admin",
       script: "node_modules/next/dist/bin/next",
       args: "start",
-      instances: 1,              // admin ít user, 1 instance là đủ
-      exec_mode: "cluster",
+      instances: 1,
+      exec_mode: "fork",
       env: {
         PORT: 3001,
         NODE_ENV: "production",

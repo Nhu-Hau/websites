@@ -14,10 +14,10 @@ fi
 
 send_telegram() {
     local MESSAGE="$1"
-    curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+    curl -s --connect-timeout 10 --max-time 15 -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
         -d chat_id="${CHAT_ID}" \
         -d text="$MESSAGE" \
-        -d parse_mode="Markdown" > /dev/null
+        -d parse_mode="Markdown" > /dev/null 2>&1 || true
 }
 
 CURRENT_STAGE="Khoi tao"
@@ -88,10 +88,35 @@ else
 fi
 npm run build
 
-echo ">>> Reload / start PM2 bằng ecosystem"
+echo ">>> Restart PM2 apps từng cái một"
 CURRENT_STAGE="Restart PM2"
 cd "$PROJECT_DIR"
-pm2 startOrReload ecosystem.config.js --update-env
+
+# Kiểm tra nếu apps đã tồn tại thì reload, không thì start
+if pm2 list | grep -q "api"; then
+    echo ">>> Restarting api..."
+    pm2 restart api --update-env
+    sleep 2
+else
+    pm2 start ecosystem.config.js --only api
+fi
+
+if pm2 list | grep -q "frontend"; then
+    echo ">>> Restarting frontend..."
+    pm2 restart frontend --update-env
+    sleep 2
+else
+    pm2 start ecosystem.config.js --only frontend
+fi
+
+if pm2 list | grep -q "admin"; then
+    echo ">>> Restarting admin..."
+    pm2 restart admin --update-env
+    sleep 2
+else
+    pm2 start ecosystem.config.js --only admin
+fi
+
 pm2 save
 
 END_TIME=$(date +%s)

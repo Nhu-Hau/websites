@@ -3,7 +3,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Item, ChoiceId } from "@/types/tests.types";
-import { Eye, EyeOff, Focus as FocusIcon, Clock } from "lucide-react";
+import { Eye, EyeOff, Focus as FocusIcon, Clock, Pause } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 function fmtMMSS(sec: number) {
@@ -35,6 +35,7 @@ export function Sidebar({
   started,
   focusMode,
   onToggleFocus,
+  onPause,
 }: {
   items: Item[];
   answers: Record<string, ChoiceId>;
@@ -55,6 +56,7 @@ export function Sidebar({
   onLoginRequest: () => void;
   focusMode: boolean;
   onToggleFocus: () => void;
+  onPause?: () => void;
 }) {
   const t = useTranslations("test.sidebar");
   const [leftSec, setLeftSec] = useState<number>(
@@ -155,11 +157,10 @@ export function Sidebar({
         type="button"
         onClick={onToggleFocus}
         title={t("focusModeTitle")}
-        className={`group flex w-full items-center justify-center rounded-xl p-2 transition-all duration-300 ${
-          focusMode
+        className={`group flex w-full items-center justify-center rounded-xl p-2 transition-all duration-300 ${focusMode
             ? "bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-200 shadow-sm"
             : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-        }`}
+          }`}
       >
         <FocusIcon className="h-4 w-4 transition-transform group-hover:scale-110" />
         {!focusMode && (
@@ -205,16 +206,29 @@ export function Sidebar({
                 />
               </div>
 
-              <button
-                onClick={() => {
-                  onSubmit();
-                  onSubmitWithLeftSec?.(leftSec);
-                }}
-                disabled={!canSubmit}
-                className="mt-3 w-full rounded-xl bg-zinc-900 px-3 py-2 text-[11px] font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200"
-              >
-                {t("submit")}
-              </button>
+              {/* Action buttons */}
+              <div className="mt-3 flex gap-2">
+                {onPause && (
+                  <button
+                    onClick={onPause}
+                    disabled={!canSubmit}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-2 text-[11px] font-semibold text-zinc-700 transition-all hover:bg-zinc-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  >
+                    <Pause className="h-3.5 w-3.5" />
+                    {t("pause")}
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    onSubmit();
+                    onSubmitWithLeftSec?.(leftSec);
+                  }}
+                  disabled={!canSubmit}
+                  className={`${onPause ? "flex-1" : "w-full"} rounded-xl bg-zinc-900 px-3 py-2 text-[11px] font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200`}
+                >
+                  {t("submit")}
+                </button>
+              </div>
             </>
           ) : (
             <>

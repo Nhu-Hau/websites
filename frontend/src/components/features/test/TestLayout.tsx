@@ -35,6 +35,7 @@ export type TestLayoutProps = {
   progressPercent: number;
   onOpenQuickNav: () => void;
   mobileNavOpen?: boolean; // mobile quick nav sheet đang mở
+  onPause?: () => void; // Tạm dừng và lưu bài
 };
 
 export function TestLayout({
@@ -64,6 +65,7 @@ export function TestLayout({
   progressPercent,
   onOpenQuickNav,
   mobileNavOpen = false,
+  onPause,
 }: TestLayoutProps) {
   return (
     <div className="pt-14 min-h-[calc(100vh-5rem)] bg-slate-50/70 pb-24 dark:bg-zinc-950/70">
@@ -89,13 +91,13 @@ export function TestLayout({
           onLoginRequest={onLoginRequest}
           focusMode={focusMode}
           onToggleFocus={onToggleFocus}
+          onPause={onPause}
         />
 
         {/* Main content */}
         <main
-          className={`flex-1 pb-28 lg:pb-12 pt-6 sm:pt-8 px-5 lg:pl-6 transition-all duration-300 ${
-            focusMode ? "lg:ml-[72px]" : "lg:ml-[260px]"
-          }`}
+          className={`flex-1 pb-28 lg:pb-12 pt-6 sm:pt-8 px-5 lg:pl-6 transition-all duration-300 ${focusMode ? "lg:ml-[72px]" : "lg:ml-[260px]"
+            }`}
         >
           {children}
         </main>
@@ -116,6 +118,7 @@ export function TestLayout({
         onSubmit={onSubmit}
         onOpenQuickNav={onOpenQuickNav}
         onToggleFocus={onToggleFocus}
+        onPause={onPause}
       />
     </div>
   );

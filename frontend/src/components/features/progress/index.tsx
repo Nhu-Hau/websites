@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useProgressTest } from "@/hooks/tests/useProgressTest";
 import { ResultsPanel } from "@/components/features/test/ResultsPanel";
 import { groupByStimulus } from "@/utils/groupByStimulus";
@@ -72,7 +73,10 @@ export default function ProgressPage() {
     started,
     setStarted,
     version,
+    saveNow,
   } = useProgressTest();
+
+  const router = useRouter();
 
   const { user } = useAuth();
   const isAuthed = !!user;
@@ -217,6 +221,13 @@ export default function ProgressPage() {
     }, 100);
   };
 
+  const handlePause = useCallback(async () => {
+    if (!started || resp) return;
+    await saveNow();
+    toast.success("Đã lưu bài làm");
+    router.push(`${basePrefix}/dashboard`);
+  }, [started, resp, saveNow, router, basePrefix]);
+
 
   return (
     <TestLayout
@@ -249,6 +260,7 @@ export default function ProgressPage() {
       progressPercent={progress}
       onOpenQuickNav={() => setMobileNavOpen(true)}
       mobileNavOpen={mobileNavOpen}
+      onPause={handlePause}
     >
       <TestHeader
         badge={{

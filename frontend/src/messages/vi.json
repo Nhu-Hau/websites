@@ -1731,7 +1731,8 @@
       "checking": "Đang kiểm tra...",
       "retakeDesc": "Đây là lần <bold>làm lại</bold> bài của <bold>{part} - Level {level} - Test {test}</bold>. Điểm sẽ không ảnh hưởng đến level của bạn",
       "firstTimeDesc": "Đây là <bold>lần đầu</bold> làm bài <bold>{part} - Level {level} - Test {test}</bold>. Điểm sẽ dùng để đánh giá trình độ và đề xuất level phù hợp",
-      "startButton": "Bắt đầu luyện tập"
+      "startButton": "Bắt đầu luyện tập",
+      "pauseSuccess": "Đã lưu bài làm"
     },
     "result": {
       "notFoundHistory": "Không tìm thấy lịch sử này",
@@ -2256,7 +2257,8 @@
     "test": {
       "label": "Mini TOEIC • 55 câu • 35 phút",
       "title": "Bài kiểm tra xếp trình độ TOEIC",
-      "description": "Bài kiểm tra gồm <strong>{count} câu</strong> trong <strong>{duration} phút</strong>. Sau khi nộp, bạn sẽ nhận"
+      "description": "Bài kiểm tra gồm <strong>{count} câu</strong> trong <strong>{duration} phút</strong>. Sau khi nộp, bạn sẽ nhận",
+      "pauseSuccess": "Đã lưu bài làm"
     },
     "complete": "Bạn đã hoàn thành Placement, chuyển đến trang kết quả.",
     "resultPage": {
@@ -3069,6 +3071,7 @@
       "questions": "câu",
       "start": "Bắt đầu",
       "submit": "Nộp",
+      "pause": "Lưu và thoát",
       "quickNav": "Điều hướng nhanh",
       "toggleSidebar": "Mở/Đóng sidebar (phím F)"
     },
@@ -3078,6 +3081,12 @@
       "questions": "câu",
       "time": "Thời gian",
       "submit": "Nộp bài",
+      "pause": "Lưu và thoát",
+      "pauseConfirmTitle": "Tạm dừng làm bài?",
+      "pauseConfirmMessage": "Bài làm sẽ được lưu. Bạn có thể tiếp tục trên bất kỳ thiết bị nào.",
+      "pauseSuccess": "Đã lưu bài làm",
+      "pauseConfirm": "Tạm dừng",
+      "pauseCancel": "Tiếp tục làm",
       "timeSpent": "Thời gian làm",
       "hideAnswers": "Ẩn đáp án & giải thích",
       "showAnswers": "Hiện đáp án & giải thích",

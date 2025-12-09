@@ -29,6 +29,7 @@ export type UseProgressTestReturn = {
   started: boolean;
   setStarted: React.Dispatch<React.SetStateAction<boolean>>;
   version: number | null;
+  saveNow: () => Promise<void>;
 };
 
 export function useProgressTest(): UseProgressTestReturn {
@@ -165,7 +166,7 @@ export function useProgressTest(): UseProgressTestReturn {
     }
   }, [version, shouldRestore, resp, handleRestore]);
 
-  useAutoSave(
+  const { saveNow } = useAutoSave(
     "progress",
     testId,
     answers,
@@ -173,7 +174,8 @@ export function useProgressTest(): UseProgressTestReturn {
     started,
     resp,
     handleRestore,
-    shouldRestore
+    shouldRestore,
+    items.map((it) => it.id) // allIds for backend sync
   );
 
   // submit
@@ -263,5 +265,6 @@ export function useProgressTest(): UseProgressTestReturn {
     started,
     setStarted,
     version,
+    saveNow,
   };
 }

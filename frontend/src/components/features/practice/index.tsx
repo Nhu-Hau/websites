@@ -127,6 +127,7 @@ export default function PracticePage() {
     partKey,
     level,
     test,
+    saveNow,
   } = usePracticeTest();
 
   const { user, loading: authLoading } = useAuth();
@@ -331,6 +332,13 @@ export default function PracticePage() {
     }, 100);
   };
 
+  const handlePause = useCallback(async () => {
+    if (!started || resp) return;
+    await saveNow();
+    toast.success(t("start.pauseSuccess"));
+    router.push(`${base}/dashboard`);
+  }, [started, resp, saveNow, router, base, t]);
+
   return (
     <TestLayout
       items={items}
@@ -371,6 +379,7 @@ export default function PracticePage() {
       progressPercent={progress}
       onOpenQuickNav={() => setMobileNavOpen(true)}
       mobileNavOpen={mobileNavOpen}
+      onPause={handlePause}
     >
       <TestHeader
         badge={{

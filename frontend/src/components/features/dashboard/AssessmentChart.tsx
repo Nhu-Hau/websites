@@ -72,12 +72,12 @@ type AssessmentData = {
 type ProgressEligibilityInfo = {
   eligible: boolean;
   reason?:
-    | "ok"
-    | "waiting_window"
-    | "no_practice_yet"
-    | "no_practice_after_progress"
-    | "insufficient_practice_tests"
-    | string;
+  | "ok"
+  | "waiting_window"
+  | "no_practice_yet"
+  | "no_practice_after_progress"
+  | "insufficient_practice_tests"
+  | string;
   nextEligibleAt?: string | null;
   remainingMs?: number | null;
   windowMinutes?: number | null;
@@ -186,9 +186,9 @@ function formatDateTime(iso?: string | null) {
   return `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1)
     .toString()
     .padStart(2, "0")} lúc ${date.getHours().toString().padStart(2, "0")}:${date
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")}`;
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
 }
 
 function formatRemainingMs(ms: number | null | undefined, t: any) {
@@ -598,10 +598,10 @@ export default function AssessmentChart() {
                   {progressEligibility.eligible
                     ? t("eligibility.eligible")
                     : progressEligibility.reason === "insufficient_practice_tests"
-                    ? t("eligibility.insufficient")
-                    : nextEligibleText
-                    ? t("eligibility.reopen", { time: nextEligibleText })
-                    : t("eligibility.waiting")}
+                      ? t("eligibility.insufficient")
+                      : nextEligibleText
+                        ? t("eligibility.reopen", { time: nextEligibleText })
+                        : t("eligibility.waiting")}
                 </p>
                 {remainingTime && !progressEligibility.eligible && (
                   <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
@@ -613,14 +613,7 @@ export default function AssessmentChart() {
                     ? t("eligibility.descEligible")
                     : describeEligibilityReason(progressEligibility, t)}
                 </p>
-                {!progressEligibility.eligible &&
-                  progressEligibility.reason === "waiting_window" &&
-                  progressEligibility.remainingMs != null &&
-                  progressEligibility.remainingMs > 0 && (
-                    <p className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
-                      ⏱️ {t("eligibility.remaining", { time: formatRemainingMs(progressEligibility.remainingMs, t) })}
-                    </p>
-                  )}
+
                 {!progressEligibility.eligible && anchorPracticeText && (
                   <p className="text-[11px] text-slate-500 dark:text-slate-500">
                     {t("eligibility.anchor", { time: anchorPracticeText })}
@@ -651,29 +644,29 @@ export default function AssessmentChart() {
       {/* Chart */}
       <div className={CARD_BASE}>
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-500" />
-      {/* Header */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          {/* Icon gradient kiểu planner */}
-          <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
-            <div
-              className="absolute inset-0 rounded-2xl bg-gradient-to-r from-sky-200/60 via-indigo-200/40 to-sky-300/40 blur-xl"
-            />
-            <div
-              className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 shadow-md shadow-[#00000022] sm:h-10 sm:w-10"
-            >
-              <Gauge className="h-5 w-5 text-white" />
+        {/* Header */}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            {/* Icon gradient kiểu planner */}
+            <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
+              <div
+                className="absolute inset-0 rounded-2xl bg-gradient-to-r from-sky-200/60 via-indigo-200/40 to-sky-300/40 blur-xl"
+              />
+              <div
+                className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 shadow-md shadow-[#00000022] sm:h-10 sm:w-10"
+              >
+                <Gauge className="h-5 w-5 text-white" />
+              </div>
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-lg xs:text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                {t("chart.title")}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {t("chart.subtitle")}
+              </p>
             </div>
           </div>
-          <div className="min-w-0">
-            <h3 className="text-lg xs:text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-              {t("chart.title")}
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {t("chart.subtitle")}
-            </p>
-          </div>
-        </div>
 
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200/80 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700/80">
             <span className="text-[10px] uppercase tracking-[0.16em] text-slate-400 dark:text-zinc-500">
@@ -682,60 +675,60 @@ export default function AssessmentChart() {
             <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-zinc-500" />
             <span className="truncate">trend</span>
           </div>
-      </div>
+        </div>
 
-      {/* Chart – height tối ưu cho mobile */}
-      <div className="relative h-52 sm:h-60 md:h-64 lg:h-72">
-        {loading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {t("chart.loading")}
-            </p>
-          </div>
-        ) : assessmentLineData.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={assessmentLineData}
-              margin={{ top: 8, right: 10, left: 0, bottom: 8 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis
-                dataKey="at"
-                interval="preserveStartEnd"
-                tick={{ fill: "#6b7280", fontSize: 10 }}
-                axisLine={{ stroke: "#e5e7eb" }}
-                tickLine={{ stroke: "#e5e7eb" }}
-                minTickGap={18}
-              />
-              <YAxis
-                domain={[0, 990]}
-                ticks={[0, 200, 400, 600, 800, 990]}
-                tick={{ fill: "#6b7280", fontSize: 10 }}
-                axisLine={{ stroke: "#e5e7eb" }}
-                tickLine={{ stroke: "#e5e7eb" }}
-                width={36}
-              />
-              <ChartTooltip
-                contentStyle={{
+        {/* Chart – height tối ưu cho mobile */}
+        <div className="relative h-52 sm:h-60 md:h-64 lg:h-72">
+          {loading ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+              <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {t("chart.loading")}
+              </p>
+            </div>
+          ) : assessmentLineData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={assessmentLineData}
+                margin={{ top: 8, right: 10, left: 0, bottom: 8 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis
+                  dataKey="at"
+                  interval="preserveStartEnd"
+                  tick={{ fill: "#6b7280", fontSize: 10 }}
+                  axisLine={{ stroke: "#e5e7eb" }}
+                  tickLine={{ stroke: "#e5e7eb" }}
+                  minTickGap={18}
+                />
+                <YAxis
+                  domain={[0, 990]}
+                  ticks={[0, 200, 400, 600, 800, 990]}
+                  tick={{ fill: "#6b7280", fontSize: 10 }}
+                  axisLine={{ stroke: "#e5e7eb" }}
+                  tickLine={{ stroke: "#e5e7eb" }}
+                  width={36}
+                />
+                <ChartTooltip
+                  contentStyle={{
                     backgroundColor: "rgba(15,23,42,0.96)",
-                  border: "1px solid rgba(148,163,184,0.6)",
-                  borderRadius: 8,
-                  boxShadow: "0 10px 25px rgba(15,23,42,0.55)",
-                  padding: "8px 10px",
-                }}
-                labelStyle={{
-                  color: "#e5e7eb",
-                  fontWeight: 600,
-                  fontSize: 11,
-                  marginBottom: 4,
-                }}
-                itemStyle={{
-                  fontSize: 11,
-                  fontWeight: 500,
-                  color: "#e5e7eb",
-                }}
-                cursor={{ stroke: "#94a3b8", strokeWidth: 1 }}
+                    border: "1px solid rgba(148,163,184,0.6)",
+                    borderRadius: 8,
+                    boxShadow: "0 10px 25px rgba(15,23,42,0.55)",
+                    padding: "8px 10px",
+                  }}
+                  labelStyle={{
+                    color: "#e5e7eb",
+                    fontWeight: 600,
+                    fontSize: 11,
+                    marginBottom: 4,
+                  }}
+                  itemStyle={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "#e5e7eb",
+                  }}
+                  cursor={{ stroke: "#94a3b8", strokeWidth: 1 }}
                   formatter={(
                     value: string | number,
                     name: string,
@@ -750,12 +743,12 @@ export default function AssessmentChart() {
                     const rounded5 =
                       numeric != null ? Math.round(numeric / 5) * 5 : null;
 
-                  const kind =
+                    const kind =
                       props?.payload?.kind === "baseline"
                         ? t("chart.kindBaseline")
                         : props?.payload?.kind === "progress"
-                      ? t("chart.kindProgress")
-                      : t("chart.kindPlacement");
+                          ? t("chart.kindProgress")
+                          : t("chart.kindPlacement");
 
                     return [
                       rounded5 != null ? t("chart.tooltip", { score: rounded5 }) : "Chưa có dữ liệu",
@@ -765,66 +758,66 @@ export default function AssessmentChart() {
                 />
 
                 {/* Listening */}
-              <Line
-                type="monotone"
-                dataKey="Listening"
-                stroke="#0ea5e9"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{
-                  r: 4,
-                  stroke: "#0ea5e9",
-                  strokeWidth: 2,
-                  fill: "#e0f2fe",
-                }}
-                animationDuration={350}
-                name="Listening"
-              />
+                <Line
+                  type="monotone"
+                  dataKey="Listening"
+                  stroke="#0ea5e9"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{
+                    r: 4,
+                    stroke: "#0ea5e9",
+                    strokeWidth: 2,
+                    fill: "#e0f2fe",
+                  }}
+                  animationDuration={350}
+                  name="Listening"
+                />
 
                 {/* Reading */}
-              <Line
-                type="monotone"
-                dataKey="Reading"
-                stroke="#6366f1"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{
-                  r: 4,
-                  stroke: "#6366f1",
-                  strokeWidth: 2,
-                  fill: "#e0e7ff",
-                }}
-                animationDuration={350}
-                name="Reading"
-              />
+                <Line
+                  type="monotone"
+                  dataKey="Reading"
+                  stroke="#6366f1"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{
+                    r: 4,
+                    stroke: "#6366f1",
+                    strokeWidth: 2,
+                    fill: "#e0e7ff",
+                  }}
+                  animationDuration={350}
+                  name="Reading"
+                />
 
                 {/* Overall */}
-              <Line
-                type="monotone"
-                dataKey="Overall"
-                stroke="#22c55e"
-                strokeWidth={2.4}
-                dot={false}
-                activeDot={{
-                  r: 4,
-                  stroke: "#22c55e",
-                  strokeWidth: 2,
-                  fill: "#dcfce7",
-                }}
-                animationDuration={350}
-                name="Overall"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {t("chart.loading")}
-            </p>
-          </div>
-        )}
-      </div>
+                <Line
+                  type="monotone"
+                  dataKey="Overall"
+                  stroke="#22c55e"
+                  strokeWidth={2.4}
+                  dot={false}
+                  activeDot={{
+                    r: 4,
+                    stroke: "#22c55e",
+                    strokeWidth: 2,
+                    fill: "#dcfce7",
+                  }}
+                  animationDuration={350}
+                  name="Overall"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+              <Loader2 className="h-6 w-6 animate-spin text-slate-400 dark:text-slate-500" />
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {t("chart.loading")}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

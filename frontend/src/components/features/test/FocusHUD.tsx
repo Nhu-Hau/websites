@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Timer, Clock, Focus as FocusIcon, Send, Play } from "lucide-react";
+import { Timer, Clock, Focus as FocusIcon, Send, Play, Pause } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export type FocusHUDProps = {
@@ -21,6 +21,7 @@ export type FocusHUDProps = {
   /** hành động */
   onStart: () => void;
   onSubmit: () => void;
+  onPause?: () => void; // tạm dừng và save
   onOpenQuickNav: () => void; // mở bottom sheet điều hướng nhanh (mobile)
   onToggleFocus: () => void; // toggle focus mode
 };
@@ -49,6 +50,7 @@ export default function FocusHUD({
   progressPercent,
   onStart,
   onSubmit,
+  onPause,
   onOpenQuickNav,
   onToggleFocus,
 }: FocusHUDProps) {
@@ -140,6 +142,22 @@ export default function FocusHUD({
                 <FocusIcon className="w-4 h-4" />
               </button>
 
+              {onPause && (
+                <button
+                  onClick={onPause}
+                  className="
+                    flex items-center gap-1.5 sm:gap-2
+                    px-3 py-1.5 sm:px-4 sm:py-2
+                    rounded-xl border border-zinc-300 dark:border-zinc-600
+                    bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700
+                    text-zinc-700 dark:text-zinc-200 font-semibold text-[11px] sm:text-sm
+                    transition-all hover:scale-105 active:scale-100
+                  "
+                >
+                  <Pause className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{t("pause")}</span>
+                </button>
+              )}
               <button
                 onClick={onSubmit}
                 className="
@@ -222,6 +240,22 @@ export default function FocusHUD({
                   <FocusIcon className="w-4 h-4" />
                 </button>
 
+                {onPause && (
+                  <button
+                    onClick={onPause}
+                    className="
+                      flex items-center gap-1.5
+                      px-3 py-1.5 rounded-xl
+                      border border-zinc-300 dark:border-zinc-600
+                      bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700
+                      text-zinc-700 dark:text-zinc-200 font-semibold
+                      transition-all hover:scale-105 active:scale-100
+                    "
+                  >
+                    <Pause className="w-4 h-4" />
+                    {t("pause")}
+                  </button>
+                )}
                 <button
                   onClick={onSubmit}
                   className="

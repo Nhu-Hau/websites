@@ -47,6 +47,7 @@ export default function PlacementPage() {
     answered,
     started,
     setStarted,
+    saveNow,
   } = usePlacementTest();
 
   const { user, refresh } = useAuth();
@@ -208,6 +209,13 @@ export default function PlacementPage() {
     }, 100);
   };
 
+  const handlePause = useCallback(async () => {
+    if (!started || resp) return;
+    await saveNow();
+    toast.success(t("test.pauseSuccess"));
+    router.push(`${base}/dashboard`);
+  }, [started, resp, saveNow, router, base, t]);
+
   return (
     <TestLayout
       items={items}
@@ -234,6 +242,7 @@ export default function PlacementPage() {
       progressPercent={progress}
       onOpenQuickNav={() => setMobileNavOpen(true)}
       mobileNavOpen={mobileNavOpen}
+      onPause={handlePause}
     >
       <TestHeader
         badge={{

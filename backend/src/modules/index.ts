@@ -23,6 +23,7 @@ import vocabularyRoutes from "./vocabulary/vocabulary.routes";
 import teacherLeadRoutes from "./teacher-lead/teacher-lead.routes";
 import profileRoutes from "./profile/profile.routes";
 import reportRoutes from "./report/report.routes";
+import draftRoutes from "./draft/draft.routes";
 
 export {
   authRoutes,
@@ -47,4 +48,5 @@ export {
   teacherLeadRoutes,
   profileRoutes,
   reportRoutes,
+  draftRoutes,
 };

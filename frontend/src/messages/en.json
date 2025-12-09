@@ -1459,7 +1459,8 @@
       "checking": "Checking...",
       "retakeDesc": "This is a <bold>retake</bold> of <bold>{part} - Level {level} - Test {test}</bold>. Score will not affect your level",
       "firstTimeDesc": "This is your <bold>first time</bold> taking <bold>{part} - Level {level} - Test {test}</bold>. Score will be used to assess level",
-      "startButton": "Start Practice"
+      "startButton": "Start Practice",
+      "pauseSuccess": "Progress saved"
     },
     "result": {
       "notFoundHistory": "History not found",
@@ -1976,7 +1977,8 @@
     "test": {
       "label": "Mini TOEIC • 55 questions • 35 minutes",
       "title": "TOEIC Placement Test",
-      "description": "The test consists of <strong>{count} questions</strong> in <strong>{duration} minutes</strong>. After submission, you will receive"
+      "description": "The test consists of <strong>{count} questions</strong> in <strong>{duration} minutes</strong>. After submission, you will receive",
+      "pauseSuccess": "Progress saved"
     },
     "complete": "You have completed the Placement test. Redirecting to results.",
     "page": {
@@ -2740,6 +2742,7 @@
       "questions": "qs",
       "start": "Start",
       "submit": "Submit",
+      "pause": "Save & Exit",
       "quickNav": "Quick Nav",
       "toggleSidebar": "Toggle Sidebar (F)"
     },
@@ -2749,6 +2752,12 @@
       "questions": "qs",
       "time": "Time",
       "submit": "Submit",
+      "pause": "Save & Exit",
+      "pauseConfirmTitle": "Pause Test?",
+      "pauseConfirmMessage": "Your progress will be saved. You can resume on any device.",
+      "pauseSuccess": "Progress saved",
+      "pauseConfirm": "Pause",
+      "pauseCancel": "Continue",
       "timeSpent": "Time Spent",
       "hideAnswers": "Hide Answers & Explanations",
       "showAnswers": "Show Answers & Explanations",

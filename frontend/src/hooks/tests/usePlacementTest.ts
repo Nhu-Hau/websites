@@ -28,6 +28,7 @@ export type UsePlacementTestReturn = {
   started: boolean;
   setStarted: React.Dispatch<React.SetStateAction<boolean>>;
   test: number | null;
+  saveNow: () => Promise<void>;
 };
 
 export function usePlacementTest(): UsePlacementTestReturn {
@@ -110,7 +111,7 @@ export function usePlacementTest(): UsePlacementTestReturn {
   );
 
   // Auto-save: sử dụng hook (placement test luôn có ID cố định)
-  useAutoSave("placement", "default", answers, timeSec, started, resp, handleRestore);
+  const { saveNow } = useAutoSave("placement", "default", answers, timeSec, started, resp, handleRestore);
 
   async function submit() {
     const res = await fetchWithAuth("/api/placement/submit", {
@@ -159,7 +160,7 @@ export function usePlacementTest(): UsePlacementTestReturn {
       window.dispatchEvent(new CustomEvent("test-submitted", { detail: { type: "placement" } }));
     }
 
-    try { await refresh(); } catch {}
+    try { await refresh(); } catch { }
   }
 
   return {
@@ -175,5 +176,6 @@ export function usePlacementTest(): UsePlacementTestReturn {
     answered,
     started, setStarted,
     test,
+    saveNow,
   };
 }

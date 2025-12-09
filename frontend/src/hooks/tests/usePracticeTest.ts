@@ -47,6 +47,7 @@ export type UsePracticeTestReturn = {
   partKey: string;
   level: number;
   test: number;
+  saveNow: () => Promise<void>;
 };
 
 export function usePracticeTest(): UsePracticeTestReturn {
@@ -137,7 +138,17 @@ export function usePracticeTest(): UsePracticeTestReturn {
 
   // Auto-save: sử dụng hook (key dựa trên partKey, level, test)
   const autoSaveKey = partKey && level && test ? `${partKey}-${level}-${test}` : "practice-default";
-  useAutoSave("practice", autoSaveKey, answers, timeSec, started, resp, handleRestore);
+  const { saveNow } = useAutoSave(
+    "practice",
+    autoSaveKey,
+    answers,
+    timeSec,
+    started,
+    resp,
+    handleRestore,
+    true, // enabled
+    items.map((it) => it.id) // allIds for backend sync
+  );
 
   async function submit() {
     const res = await fetchWithAuth(`/api/practice/parts/${encodeURIComponent(partKey)}/submit`, {
@@ -202,6 +213,7 @@ export function usePracticeTest(): UsePracticeTestReturn {
     partKey,
     level,
     test,
+    saveNow,
   };
 }
 

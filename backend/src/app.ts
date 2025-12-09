@@ -30,6 +30,7 @@ import {
   teacherLeadRoutes,
   profileRoutes,
   reportRoutes,
+  draftRoutes,
 } from "./modules";
 
 import { UPLOADS_DIR, UPLOADS_ROUTE } from "./config/uploads";
@@ -182,6 +183,9 @@ app.use("/api/vocabulary", vocabularyRoutes);
 
 // Teacher leads
 app.use("/api", teacherLeadRoutes);
+
+// Draft (test pause/resume)
+app.use("/api/draft", draftRoutes);
 
 //404 CHO API (tuỳ chọn)
 app.use((req, res, next) => {

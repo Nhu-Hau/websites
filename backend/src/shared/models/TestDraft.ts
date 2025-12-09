@@ -70,6 +70,8 @@ const TestDraftSchema = new Schema<ITestDraft>(
 // Unique index: mỗi user chỉ có 1 draft cho mỗi test
 TestDraftSchema.index({ userId: 1, testType: 1, testKey: 1 }, { unique: true });
 
-export const TestDraft =
+import { Model } from "mongoose";
+
+export const TestDraft: Model<ITestDraft> =
     mongoose.models.TestDraft ||
     mongoose.model<ITestDraft>("TestDraft", TestDraftSchema, "testdrafts");

@@ -176,7 +176,7 @@ export default function OverviewTab({
                             <h3 className="text-xl font-bold text-zinc-800">So sánh điểm TOEIC dự đoán và tự báo cáo theo từng người dùng</h3>
                         </div>
                         <span className="text-xs text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full">
-                            Dữ liệu: {userScores.filter(u => u.currentToeicScore !== null).length} người dùng
+                            Dữ liệu: {userScores.length} người dùng
                         </span>
                     </div>
 
@@ -190,7 +190,7 @@ export default function OverviewTab({
                         }}
                     >
                         {(() => {
-                            const validUsers = userScores.filter(u => u.currentToeicScore !== null);
+                            const validUsers = userScores; // Show all users, even without self-reported score
                             const count = validUsers.length;
 
                             // Dynamic bar sizing based on user count
@@ -259,19 +259,30 @@ export default function OverviewTab({
                                                         <title>{`${u.name}\nEmail: ${u.email}\nDự đoán: ${u.overall}`}</title>
                                                     </rect>
 
-                                                    {/* Self Reported Score Bar (Rose) */}
-                                                    <rect
-                                                        x={selfX}
-                                                        y={baseY - selfHeight}
-                                                        width={barWidth}
-                                                        height={selfHeight}
-                                                        fill="#f43f5e"
-                                                        rx="2"
-                                                        ry="2"
-                                                        className="hover:fill-rose-400 transition-colors cursor-pointer"
-                                                    >
-                                                        <title>{`${u.name}\nEmail: ${u.email}\nTự báo cáo: ${u.currentToeicScore}`}</title>
-                                                    </rect>
+                                                    {/* Self Reported Score Bar (Rose) - only render if score exists */}
+                                                    {u.currentToeicScore !== null && u.currentToeicScore !== undefined ? (
+                                                        <rect
+                                                            x={selfX}
+                                                            y={baseY - selfHeight}
+                                                            width={barWidth}
+                                                            height={selfHeight}
+                                                            fill="#f43f5e"
+                                                            rx="2"
+                                                            ry="2"
+                                                            className="hover:fill-rose-400 transition-colors cursor-pointer"
+                                                        >
+                                                            <title>{`${u.name}\nEmail: ${u.email}\nTự báo cáo: ${u.currentToeicScore}`}</title>
+                                                        </rect>
+                                                    ) : (
+                                                        <text
+                                                            x={selfX + barWidth / 2}
+                                                            y={baseY - 4}
+                                                            textAnchor="middle"
+                                                            className="text-[8px] fill-zinc-400 italic"
+                                                        >
+                                                            N/A
+                                                        </text>
+                                                    )}
 
                                                     {/* Value labels on top of bars - only show if enough space */}
                                                     {count <= 15 && (
@@ -284,14 +295,16 @@ export default function OverviewTab({
                                                             >
                                                                 {u.overall}
                                                             </text>
-                                                            <text
-                                                                x={selfX + barWidth / 2}
-                                                                y={baseY - selfHeight - 4}
-                                                                textAnchor="middle"
-                                                                className="text-[8px] fill-rose-700 font-bold"
-                                                            >
-                                                                {u.currentToeicScore}
-                                                            </text>
+                                                            {u.currentToeicScore !== null && u.currentToeicScore !== undefined && (
+                                                                <text
+                                                                    x={selfX + barWidth / 2}
+                                                                    y={baseY - selfHeight - 4}
+                                                                    textAnchor="middle"
+                                                                    className="text-[8px] fill-rose-700 font-bold"
+                                                                >
+                                                                    {u.currentToeicScore}
+                                                                </text>
+                                                            )}
                                                         </>
                                                     )}
 

@@ -173,9 +173,9 @@ export default function GoalProgressClient({
   const progressPercent =
     currentScore !== null
       ? Math.max(
-          0,
-          Math.min(100, ((currentScore - goal.startScore) / denom) * 100)
-        )
+        0,
+        Math.min(100, ((currentScore - goal.startScore) / denom) * 100)
+      )
       : 0;
 
   const isAchieved = progressPercent >= 100;
@@ -185,11 +185,10 @@ export default function GoalProgressClient({
     <div className={CARD_BASE}>
       {/* top accent */}
       <div
-        className={`pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${
-          isAchieved
-            ? "from-emerald-400 via-emerald-500 to-teal-400"
-            : "from-violet-400 via-violet-500 to-indigo-500"
-        }`}
+        className={`pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${isAchieved
+          ? "from-emerald-400 via-emerald-500 to-teal-400"
+          : "from-violet-400 via-violet-500 to-indigo-500"
+          }`}
       />
 
       {/* Header */}
@@ -198,18 +197,16 @@ export default function GoalProgressClient({
           {/* Icon gradient kiểu planner */}
           <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl sm:h-10 sm:w-10">
             <div
-              className={`absolute inset-0 rounded-2xl bg-gradient-to-r blur-xl ${
-                isAchieved
-                  ? "from-emerald-200/60 via-emerald-200/40 to-teal-300/40"
-                  : "from-violet-200/60 via-violet-200/40 to-indigo-300/40"
-              }`}
+              className={`absolute inset-0 rounded-2xl bg-gradient-to-r blur-xl ${isAchieved
+                ? "from-emerald-200/60 via-emerald-200/40 to-teal-300/40"
+                : "from-violet-200/60 via-violet-200/40 to-indigo-300/40"
+                }`}
             />
             <div
-              className={`relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br shadow-md shadow-[#00000022] sm:h-10 sm:w-10 ${
-                isAchieved
-                  ? "from-emerald-500 to-teal-500"
-                  : "from-violet-500 to-indigo-600"
-              }`}
+              className={`relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br shadow-md shadow-[#00000022] sm:h-10 sm:w-10 ${isAchieved
+                ? "from-emerald-500 to-teal-500"
+                : "from-violet-500 to-indigo-600"
+                }`}
             >
               {isAchieved ? (
                 <Trophy className="h-5 w-5 text-white" />
@@ -273,11 +270,10 @@ export default function GoalProgressClient({
         <div className="relative h-3.5 overflow-hidden rounded-full bg-slate-100/80 dark:bg-zinc-800">
           {/* filled bar */}
           <div
-            className={`absolute inset-y-0 left-0 flex items-center justify-end rounded-full bg-gradient-to-r ${
-              isAchieved
-                ? "from-emerald-500 via-emerald-500 to-teal-400"
-                : "from-violet-500 via-violet-500 to-indigo-400"
-            } transition-all duration-700 ease-out`}
+            className={`absolute inset-y-0 left-0 flex items-center justify-end rounded-full bg-gradient-to-r ${isAchieved
+              ? "from-emerald-500 via-emerald-500 to-teal-400"
+              : "from-violet-500 via-violet-500 to-indigo-400"
+              } transition-all duration-700 ease-out`}
             style={{ width: `${Math.min(progressPercent, 100)}%` }}
           >
             {progressPercent > 12 && (
@@ -306,11 +302,10 @@ export default function GoalProgressClient({
       {/* Summary line */}
       <div className="mt-3 flex items-center justify-center gap-2 text-xs text-slate-600 dark:text-slate-400">
         <TrendingUp
-          className={`h-4 w-4 ${
-            tone === "emerald"
-              ? "text-emerald-500 dark:text-emerald-400"
-              : "text-violet-500 dark:text-violet-400"
-          }`}
+          className={`h-4 w-4 ${tone === "emerald"
+            ? "text-emerald-500 dark:text-emerald-400"
+            : "text-violet-500 dark:text-violet-400"
+            }`}
         />
         <span className="text-center">
           {t("tracking.summary", {
@@ -362,7 +357,7 @@ function GoalDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-3 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={() => {
         if (!isUpdating) {
           setShowDialog(false);
@@ -372,25 +367,25 @@ function GoalDialog({
     >
       <div
         className="
-          w-full max-w-md sm:max-w-lg rounded-2xl sm:rounded-3xl 
-          bg-white/95 dark:bg-zinc-900/95 
-          border border-zinc-200 dark:border-zinc-800
-          shadow-xl ring-1 ring-black/5
-          overflow-hidden
+          w-full max-w-sm rounded-2xl 
+          bg-white dark:bg-zinc-900 
+          border border-zinc-200 dark:border-zinc-700
+          shadow-2xl
+          animate-in zoom-in-95 slide-in-from-bottom-4 duration-300
         "
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-zinc-100 dark:border-zinc-800">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center flex-shrink-0">
-              <Target className="h-5 w-5 sm:h-6 sm:w-6 text-violet-600 dark:text-violet-300" />
+        <div className="flex items-start justify-between p-5 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
+              <Target className="h-5 w-5 text-white" />
             </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-50 leading-tight">
+            <div>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
                 {isEdit ? t("dialog.updateTitle") : t("dialog.setTitle")}
               </h3>
-              <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
                 {t("dialog.desc")}
               </p>
             </div>
@@ -404,21 +399,16 @@ function GoalDialog({
               }
             }}
             disabled={isUpdating}
-            className="h-9 w-9 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-300 disabled:opacity-60 flex-shrink-0"
+            className="h-8 w-8 -mt-1 -mr-1 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition-colors disabled:opacity-60"
           >
-            <X className="h-5 w-5 sm:h-6 sm:w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* BODY */}
-        <div className="px-4 sm:px-5 py-4 sm:py-5 space-y-3 sm:space-y-4">
-          <div
-            className="
-              rounded-xl sm:rounded-2xl border border-violet-200/70 bg-violet-50/40 
-              p-3 sm:p-4 dark:border-violet-500/40 dark:bg-violet-500/5
-            "
-          >
-            <label className="text-sm sm:text-base font-semibold text-violet-700 dark:text-violet-300">
+        <div className="px-5 pb-4">
+          <div className="rounded-xl bg-violet-50 dark:bg-violet-500/10 p-4 border border-violet-100 dark:border-violet-500/20">
+            <label className="text-sm font-semibold text-violet-700 dark:text-violet-300">
               {t("dialog.inputLabel")}
             </label>
 
@@ -429,16 +419,19 @@ function GoalDialog({
               value={targetInput}
               onChange={(e) => setTargetInput(e.target.value)}
               placeholder={t("dialog.placeholder")}
+              autoFocus
               className="
-                mt-2 sm:mt-3 w-full rounded-lg sm:rounded-xl border border-violet-200 bg-white px-4 py-3 sm:py-3.5
-                text-base sm:text-lg font-medium text-zinc-900 shadow-sm 
-                placeholder:text-zinc-400 outline-none
-                focus:border-violet-400 focus:ring-2 focus:ring-violet-300/70
-                dark:bg-zinc-900 dark:text-zinc-50 dark:border-violet-500/60
+                mt-2.5 w-full rounded-xl border-2 border-violet-200 bg-white px-4 py-3
+                text-lg font-semibold text-zinc-900 
+                placeholder:text-zinc-400 placeholder:font-normal outline-none
+                focus:border-violet-500 focus:ring-4 focus:ring-violet-200/50
+                dark:bg-zinc-800 dark:text-zinc-50 dark:border-violet-500/50
+                dark:focus:ring-violet-500/20
+                transition-all
               "
             />
             {currentTarget && isEdit && (
-              <p className="mt-2 sm:mt-2.5 text-sm sm:text-base text-violet-600 dark:text-violet-400">
+              <p className="mt-2 text-sm text-violet-600 dark:text-violet-400">
                 {t("dialog.current", { score: currentTarget })}
               </p>
             )}
@@ -446,7 +439,7 @@ function GoalDialog({
         </div>
 
         {/* FOOTER BUTTONS */}
-        <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-3 sm:pt-4 flex gap-3 sm:gap-4">
+        <div className="px-5 pb-5 pt-2 flex gap-3">
           <button
             onClick={() => {
               if (!isUpdating) {
@@ -456,10 +449,10 @@ function GoalDialog({
             }}
             disabled={isUpdating}
             className="
-              flex-1 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl bg-white border border-zinc-300
-              text-sm sm:text-base font-semibold text-zinc-700 shadow-sm
-              hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-200
-              dark:border-zinc-700 dark:hover:bg-zinc-800
+              flex-1 py-3 rounded-xl bg-zinc-100 border border-zinc-200
+              text-sm font-semibold text-zinc-700
+              hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200
+              dark:border-zinc-700 dark:hover:bg-zinc-700
               disabled:opacity-60 disabled:cursor-not-allowed
               transition-colors
             "
@@ -471,20 +464,19 @@ function GoalDialog({
             onClick={handleSetGoal}
             disabled={isUpdating}
             className="
-              flex-1 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl
+              flex-[1.2] py-3 rounded-xl
               bg-gradient-to-r from-violet-500 to-indigo-600
-              text-sm sm:text-base font-semibold text-white shadow-sm
-              hover:from-violet-400 hover:to-indigo-500
+              text-sm font-semibold text-white shadow-lg shadow-violet-500/30
+              hover:shadow-violet-500/40 hover:brightness-110
               disabled:opacity-60 disabled:cursor-not-allowed
               flex items-center justify-center gap-2
-              transition-colors
+              transition-all
             "
           >
             {isUpdating ? (
               <>
-                <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
-                <span className="hidden sm:inline">{t("dialog.saving")}</span>
-                <span className="sm:hidden">{t("dialog.saving")}</span>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t("dialog.saving")}
               </>
             ) : (
               t("dialog.confirm")

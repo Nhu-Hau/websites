@@ -1,12 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-# Load secrets from backend/.env (safely - only valid KEY=value lines)
-if [ -f backend/.env ]; then
-  echo ">>> Loading secrets from backend/.env..."
+# Load secrets from admin/.env.local
+if [ -f admin/.env.local ]; then
+  echo ">>> Loading secrets from admin/.env.local..."
   set -a
-  # Only source lines matching KEY=value pattern, ignore comments and empty lines
-  eval "$(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' backend/.env | grep -v '^#')"
+  source admin/.env.local
   set +a
 fi
 

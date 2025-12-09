@@ -60,8 +60,22 @@ export function setAuthCookies(res: any, access: string, refresh?: string) {
 }
 
 export function clearAuthCookies(res: any) {
-  res.clearCookie(accessCookieName, { path: accessCookieOpts.path });
-  res.clearCookie(refreshCookieName, { path: refreshCookieOpts.path });
+  // Khi xóa cookie trên production, cần truyền đầy đủ các options như khi set
+  // (sameSite, secure, domain) - nếu không cookie sẽ không bị xóa
+  const clearAccessOpts = {
+    path: accessCookieOpts.path,
+    sameSite: accessCookieOpts.sameSite,
+    secure: accessCookieOpts.secure,
+    ...(accessCookieOpts.domain ? { domain: accessCookieOpts.domain } : {}),
+  };
+  const clearRefreshOpts = {
+    path: refreshCookieOpts.path,
+    sameSite: refreshCookieOpts.sameSite,
+    secure: refreshCookieOpts.secure,
+    ...(refreshCookieOpts.domain ? { domain: refreshCookieOpts.domain } : {}),
+  };
+  res.clearCookie(accessCookieName, clearAccessOpts);
+  res.clearCookie(refreshCookieName, clearRefreshOpts);
 }
 
 export async function refreshAccessToken(rt: string, user: IUser) {

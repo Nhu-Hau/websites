@@ -58,6 +58,13 @@ import {
   uploadNewsImage,
 } from "./admin-news.controller";
 import { listPayments, getPayment, updatePaymentStatus, deletePayment } from "./admin-payment.controller";
+import {
+  adminListTeacherLeads,
+  adminGetTeacherLead,
+  adminApproveTeacherLead,
+  adminRejectTeacherLead,
+  adminDeleteTeacherLead
+} from "./admin-teacher-lead.controller";
 
 const router = Router();
 
@@ -151,6 +158,11 @@ router.get("/news/:id", adminGetNews);
 router.patch("/news/:id", adminUpdateNews);
 router.delete("/news/:id", adminDeleteNews);
 
+// Teacher leads admin routes
+router.get("/teacher-leads", adminListTeacherLeads);
+router.get("/teacher-leads/:id", adminGetTeacherLead);
+router.post("/teacher-leads/:id/approve", adminApproveTeacherLead);
+router.post("/teacher-leads/:id/reject", adminRejectTeacherLead);
+router.delete("/teacher-leads/:id", adminDeleteTeacherLead);
+
 export default router;
-
-

@@ -2,6 +2,7 @@
 import { Router } from "express";
 import { sendMail } from "../../shared/services/email.service";
 import { emailTemplates } from "../../shared/templates/email-templates";
+import { TeacherLead } from "../../shared/models/TeacherLead";
 
 const router = Router();
 
@@ -38,13 +39,29 @@ router.post("/teacher-leads", async (req, res) => {
 
   const leadData: Record<LeadField, string> = {
     fullName: String(payload.fullName).trim(),
-    email: String(payload.email).trim(),
+    email: String(payload.email).trim().toLowerCase(),
     phone: String(payload.phone).trim(),
     scoreOrCert: String(payload.scoreOrCert || "").trim(),
     experience: String(payload.experience || "").trim(),
     availability: String(payload.availability || "").trim(),
     message: String(payload.message || "").trim(),
   };
+
+  // Check if email already registered
+  const existing = await TeacherLead.findOne({ email: leadData.email });
+  if (existing) {
+    return res.status(400).json({
+      message: "Email này đã đăng ký trước đó. Vui lòng chờ phản hồi từ admin.",
+    });
+  }
+
+  // Save to database
+  const teacherLead = await TeacherLead.create({
+    ...leadData,
+    status: "pending",
+  });
+
+  console.log(`📝 New teacher lead registered: ${leadData.email} (ID: ${teacherLead._id})`);
 
   const adminEmailsRaw =
     process.env.TEACHER_LEAD_NOTIFY_TO ||
@@ -55,10 +72,8 @@ router.post("/teacher-leads", async (req, res) => {
   const adminEmails = adminEmailsRaw.trim();
 
   if (!adminEmails) {
-    return res.status(500).json({
-      message:
-        "Không thể gửi email vì thiếu cấu hình ADMIN_EMAIL/SMTP_USER trên server.",
-    });
+    // Still return success since we saved to DB
+    return res.json({ message: "Lead submitted", id: teacherLead._id });
   }
 
   const recipients = adminEmails
@@ -67,10 +82,7 @@ router.post("/teacher-leads", async (req, res) => {
     .filter(Boolean);
 
   if (!recipients.length) {
-    return res.status(500).json({
-      message:
-        "Không thể gửi email vì cấu hình ADMIN_EMAIL/SMTP_USER rỗng. Vui lòng cập nhật lại file .env.",
-    });
+    return res.json({ message: "Lead submitted", id: teacherLead._id });
   }
 
   try {
@@ -103,16 +115,15 @@ router.post("/teacher-leads", async (req, res) => {
       html: userEmailHtml,
     });
 
-    return res.json({ message: "Lead submitted" });
+    return res.json({ message: "Lead submitted", id: teacherLead._id });
   } catch (error: any) {
     console.error("[teacher-leads] sendMail error:", error);
-    return res.status(500).json({
-      message:
-        error?.message ||
-        "Không thể gửi email thông báo. Vui lòng thử lại sau.",
+    // Still return success since we saved to DB
+    return res.json({
+      message: "Lead submitted (email notification failed)",
+      id: teacherLead._id
     });
   }
 });
 
 export default router;
-

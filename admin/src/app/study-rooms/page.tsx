@@ -181,40 +181,6 @@ export default function StudyRoomsPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white border border-zinc-200 rounded-xl p-3 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-zinc-500">Tổng phòng</p>
-              <p className="text-2xl font-semibold text-zinc-900">{total}</p>
-            </div>
-            <Users className="h-8 w-8 text-amber-500" />
-          </div>
-        </div>
-        <div className="bg-white border border-zinc-200 rounded-xl p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-zinc-500">Tài liệu</p>
-              <p className="text-2xl font-semibold text-zinc-900">
-                {items.reduce((sum, room) => sum + room.documentsCount, 0)}
-              </p>
-            </div>
-            <FileText className="h-8 w-8 text-amber-500" />
-          </div>
-        </div>
-        <div className="bg-white border border-zinc-200 rounded-xl p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-zinc-500">Bình luận</p>
-              <p className="text-2xl font-semibold text-zinc-900">
-                {items.reduce((sum, room) => sum + room.commentsCount, 0)}
-              </p>
-            </div>
-            <MessageSquare className="h-8 w-8 text-amber-500" />
-          </div>
-        </div>
-      </div>
-
       <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm p-4 space-y-3">
         <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
           <div className="flex-1">

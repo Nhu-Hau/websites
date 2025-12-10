@@ -1038,3 +1038,75 @@ export async function adminUpdateReportStatus(
   }
   return res.json();
 }
+
+// Teacher Leads
+export type AdminTeacherLead = {
+  _id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  scoreOrCert: string;
+  experience: string;
+  availability: string;
+  message?: string;
+  status: "pending" | "approved" | "rejected";
+  reviewedBy?: string;
+  reviewedAt?: string;
+  adminNote?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function adminListTeacherLeads(params?: { page?: number; limit?: number; status?: string; q?: string }) {
+  const usp = new URLSearchParams();
+  if (params?.page) usp.set("page", String(params.page));
+  if (params?.limit) usp.set("limit", String(params.limit));
+  if (params?.status) usp.set("status", params.status);
+  if (params?.q) usp.set("q", params.q);
+  const res = await fetch(`/api/admin/teacher-leads?${usp.toString()}`, { credentials: "include", cache: "no-store" });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch teacher leads failed");
+  }
+  return res.json() as Promise<{ items: AdminTeacherLead[]; total: number; page: number; limit: number; pages: number }>;
+}
+
+export async function adminApproveTeacherLead(id: string, adminNote?: string) {
+  const res = await fetch(`/api/admin/teacher-leads/${encodeURIComponent(id)}/approve`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ adminNote }),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Approve failed");
+  }
+  return res.json();
+}
+
+export async function adminRejectTeacherLead(id: string, adminNote?: string) {
+  const res = await fetch(`/api/admin/teacher-leads/${encodeURIComponent(id)}/reject`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ adminNote }),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Reject failed");
+  }
+  return res.json();
+}
+
+export async function adminDeleteTeacherLead(id: string) {
+  const res = await fetch(`/api/admin/teacher-leads/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete failed");
+  }
+  return res.json();
+}

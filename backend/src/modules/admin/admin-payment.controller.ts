@@ -1,6 +1,42 @@
 import { Request, Response } from "express";
-import { Payment, IPayment, PaymentStatus } from "../../shared/models/Payment";
+import { Payment, IPayment, PaymentStatus, PaymentPlan } from "../../shared/models/Payment";
+import { User } from "../../shared/models/User";
 import { FilterQuery } from "mongoose";
+
+// Thời hạn các gói
+const PLAN_DURATIONS: Record<PaymentPlan, number> = {
+    monthly_79: 1,   // 1 tháng
+    monthly_159: 3,  // 3 tháng
+};
+
+/** Nâng cấp user lên premium */
+async function upgradeUserToPremium(
+    userId: string,
+    plan: PaymentPlan,
+    paymentDate: Date = new Date()
+) {
+    const user = await User.findById(userId);
+    if (!user) return;
+
+    const durationMonths = PLAN_DURATIONS[plan];
+    const expiryDate = new Date(paymentDate);
+    expiryDate.setMonth(expiryDate.getMonth() + durationMonths);
+
+    // Nếu user đã có premium và expiryDate > paymentDate, cộng thêm thời gian
+    if (user.access === "premium" && user.premiumExpiryDate) {
+        const currentExpiry = new Date(user.premiumExpiryDate);
+        if (currentExpiry > paymentDate) {
+            expiryDate.setMonth(currentExpiry.getMonth() + durationMonths);
+        }
+    }
+
+    user.access = "premium";
+    user.premiumExpiryDate = expiryDate;
+    await user.save();
+    console.log(
+        `✅ User ${user.email} (${user._id}) upgraded to premium until ${expiryDate.toISOString()}`
+    );
+}
 
 export async function listPayments(req: Request, res: Response) {
     try {
@@ -91,6 +127,9 @@ export async function updatePaymentStatus(req: Request, res: Response) {
         }
 
         const oldStatus = payment.status;
+        const isBecomingPaid = oldStatus !== PaymentStatus.PAID && status === PaymentStatus.PAID;
+        const isRevokingPaid = oldStatus === PaymentStatus.PAID && status !== PaymentStatus.PAID;
+
         payment.status = status;
 
         // If marking as paid, set paidAt
@@ -100,7 +139,27 @@ export async function updatePaymentStatus(req: Request, res: Response) {
 
         await payment.save();
 
-        console.log(`✅ Payment ${payment.orderCode} status changed: ${oldStatus} → ${status}`);
+        // Nâng cấp user lên premium nếu chuyển sang PAID
+        if (isBecomingPaid && payment.userId) {
+            const plan = (payment.plan as PaymentPlan) || "monthly_79";
+            await upgradeUserToPremium(
+                payment.userId.toString(),
+                plan,
+                payment.paidAt || new Date()
+            );
+            console.log(`✅ Payment ${payment.orderCode} status changed: ${oldStatus} → ${status} (User upgraded to premium)`);
+        } else if (isRevokingPaid && payment.userId) {
+            // Nếu hủy trạng thái paid, hạ cấp user về free
+            const user = await User.findById(payment.userId);
+            if (user && user.access === "premium") {
+                user.access = "free";
+                user.premiumExpiryDate = null;
+                await user.save();
+                console.log(`⚠️ Payment ${payment.orderCode} status revoked: ${oldStatus} → ${status} (User downgraded to free)`);
+            }
+        } else {
+            console.log(`✅ Payment ${payment.orderCode} status changed: ${oldStatus} → ${status}`);
+        }
 
         return res.json({
             message: "Status updated successfully",

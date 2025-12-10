@@ -21,6 +21,7 @@ export const adminNavItems: AdminNavItem[] = [
     label: "Học tập",
     children: [
       { label: "Phòng học trực tuyến", href: "/study-rooms" },
+      { label: "Đăng ký giáo viên", href: "/teacher-leads" },
       { label: "Học qua tin tức", href: "/news" },
       { label: "Ngân hàng Parts", href: "/parts" },
     ],

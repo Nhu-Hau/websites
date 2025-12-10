@@ -92,6 +92,13 @@ echo ">>> Restart PM2 apps từng cái một"
 CURRENT_STAGE="Restart PM2"
 cd "$PROJECT_DIR"
 
+# Giải phóng ports trước khi restart (tránh EADDRINUSE)
+echo ">>> Giải phóng ports..."
+fuser -k 4000/tcp 2>/dev/null || true
+fuser -k 3000/tcp 2>/dev/null || true
+fuser -k 3001/tcp 2>/dev/null || true
+sleep 1
+
 # Kiểm tra nếu apps đã tồn tại thì reload, không thì start
 if pm2 list | grep -q "api"; then
     echo ">>> Restarting api..."

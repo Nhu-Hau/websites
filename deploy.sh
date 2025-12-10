@@ -1,10 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 
-# Load secrets from admin/.env.local
+# CẤU HÌNH CƠ BẢN
+PROJECT_DIR="/opt/websites"
+
+echo ">>> Vào thư mục dự án: $PROJECT_DIR"
+cd "$PROJECT_DIR"
+
+# Load secrets từ admin/.env.local (nếu có)
 if [ -f admin/.env.local ]; then
-  echo ">>> Loading secrets from admin/.env.local..."
+  echo ">>> Loading secrets từ admin/.env.local..."
   set -a
+  # shellcheck disable=SC1091
   source admin/.env.local
   set +a
 fi
@@ -12,16 +19,20 @@ fi
 : "${BOT_TOKEN:?Chua set BOT_TOKEN}"
 : "${CHAT_ID:?Chua set CHAT_ID}"
 
+# HÀM GỬI TELEGRAM
+
 send_telegram() {
     local MESSAGE="$1"
     curl -s --connect-timeout 10 --max-time 15 -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
         -d chat_id="${CHAT_ID}" \
         -d text="$MESSAGE" \
-        -d parse_mode="Markdown" > /dev/null 2>&1 || true
+        -d parse_mode="Markdown" >/dev/null 2>&1 || true
 }
 
 CURRENT_STAGE="Khoi tao"
 START_TIME=$(date +%s)
+
+# XỬ LÝ LỖI TOÀN CỤC
 
 handle_error() {
     local EXIT_CODE=$?
@@ -30,105 +41,131 @@ handle_error() {
     # Tắt trap để tránh loop nếu send_telegram bị lỗi
     trap - ERR
 
-    send_telegram "❌ *Deploy THẤT BẠI*%0A*Bước:* ${CURRENT_STAGE}%0A*Lệnh lỗi:* \`${FAILED_CMD}\`%0A*Mã lỗi:* ${EXIT_CODE}"
+    send_telegram "❌ *Deploy THẤT BẠI*
+*Bước:* ${CURRENT_STAGE}
+*Lệnh lỗi:* \`${FAILED_CMD}\`
+*Mã lỗi:* ${EXIT_CODE}"
+
     exit "$EXIT_CODE"
 }
 trap 'handle_error' ERR
 
-# ==============================================================================
 # BẮT ĐẦU DEPLOY
-# ==============================================================================
 
-HOSTNAME_SHORT=$(hostname)
-send_telegram "🚀 *Bắt đầu Deploy trên ${HOSTNAME_SHORT}*%0AĐang cập nhật code mới..."
+HOSTNAME_SHORT=$(hostname -s 2>/dev/null || hostname)
 
-PROJECT_DIR="/opt/websites"
-
-echo ">>> Vào thư mục dự án"
-cd "$PROJECT_DIR"
-# git restore deploy.sh
+send_telegram "🚀 *Bắt đầu Deploy trên ${HOSTNAME_SHORT}*
+Đang cập nhật code mới..."
 
 echo ">>> Git fetch + reset về origin/main"
 CURRENT_STAGE="Git Fetch & Reset"
 git fetch origin main
 git reset --hard origin/main
 
+echo ">>> Đảm bảo deploy.sh có quyền thực thi"
+chmod +x deploy.sh || true
 
-
-chmod +x deploy.sh
+# BACKEND
 
 echo ">>> Backend: install + build"
 CURRENT_STAGE="Build Backend"
-cd backend
-# Nếu có package-lock.json thì dùng npm ci cho chắc
+cd "${PROJECT_DIR}/backend"
+
 if [ -f package-lock.json ]; then
+    echo ">>> Dùng npm ci cho backend"
     npm_config_production=false npm ci
 else
+    echo ">>> Dùng npm install cho backend"
     npm_config_production=false npm install
 fi
+
 npm run build
+
+# FRONTEND
 
 echo ">>> Frontend: install + build"
 CURRENT_STAGE="Build Frontend"
-cd ../frontend
+cd "${PROJECT_DIR}/frontend"
+
 if [ -f package-lock.json ]; then
+    echo ">>> Dùng npm ci cho frontend"
     npm_config_production=false npm ci
 else
+    echo ">>> Dùng npm install cho frontend"
     npm_config_production=false npm install
 fi
+
 npm run build
+
+# ADMIN
 
 echo ">>> Admin: install + build"
 CURRENT_STAGE="Build Admin"
-cd ../admin
+cd "${PROJECT_DIR}/admin"
+
 if [ -f package-lock.json ]; then
+    echo ">>> Dùng npm ci cho admin"
     npm_config_production=false npm ci
 else
+    echo ">>> Dùng npm install cho admin"
     npm_config_production=false npm install
 fi
+
 npm run build
+
+# PM2: GIẢI PHÓNG PORT + RESTART / START
 
 echo ">>> Restart PM2 apps từng cái một"
 CURRENT_STAGE="Restart PM2"
 cd "$PROJECT_DIR"
 
-# Giải phóng ports trước khi restart (tránh EADDRINUSE)
-echo ">>> Giải phóng ports..."
+echo ">>> Giải phóng ports (cần psmisc/fuser)..."
 fuser -k 4000/tcp 2>/dev/null || true
 fuser -k 3000/tcp 2>/dev/null || true
 fuser -k 3001/tcp 2>/dev/null || true
 sleep 1
 
-# Kiểm tra nếu apps đã tồn tại thì reload, không thì start
-if pm2 list | grep -q "api"; then
+echo ">>> Xử lý PM2 app: api"
+if pm2 describe api >/dev/null 2>&1; then
     echo ">>> Restarting api..."
     pm2 restart api --update-env
     sleep 2
 else
+    echo ">>> Starting api..."
     pm2 start ecosystem.config.js --only api
 fi
 
-if pm2 list | grep -q "frontend"; then
+echo ">>> Xử lý PM2 app: frontend"
+if pm2 describe frontend >/dev/null 2>&1; then
     echo ">>> Restarting frontend..."
     pm2 restart frontend --update-env
     sleep 2
 else
+    echo ">>> Starting frontend..."
     pm2 start ecosystem.config.js --only frontend
 fi
 
-if pm2 list | grep -q "admin"; then
+echo ">>> Xử lý PM2 app: admin"
+if pm2 describe admin >/dev/null 2>&1; then
     echo ">>> Restarting admin..."
     pm2 restart admin --update-env
     sleep 2
 else
+    echo ">>> Starting admin..."
     pm2 start ecosystem.config.js --only admin
 fi
 
 pm2 save
 
+# HOÀN TẤT
+
 END_TIME=$(date +%s)
 DURATION=$((END_TIME - START_TIME))
+MIN=$((DURATION / 60))
+SEC=$((DURATION % 60))
 
-echo ">>> Deploy xong!"
-send_telegram "✅ *Deploy THÀNH CÔNG*%0AWebsite đã được cập nhật trên ${HOSTNAME_SHORT}!%0A*Thời gian:* ${DURATION}s"
+echo ">>> Deploy xong trong ${MIN}m ${SEC}s!"
 
+send_telegram "✅ *Deploy THÀNH CÔNG*
+Website đã được cập nhật trên ${HOSTNAME_SHORT}!
+*Thời gian:* ${MIN}m ${SEC}s"

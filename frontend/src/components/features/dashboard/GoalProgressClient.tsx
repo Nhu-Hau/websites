@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
 import { Target, TrendingUp, Trophy, Loader2, X } from "lucide-react";
 import { toast } from "@/lib/toast";
 
@@ -355,9 +356,12 @@ function GoalDialog({
   const t = useTranslations("dashboard.goal");
   if (!showDialog) return null;
 
-  return (
+  // Use portal to render modal outside of parent overflow:hidden containers
+  if (typeof document === "undefined") return null;
+
+  return ReactDOM.createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-4 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={() => {
         if (!isUpdating) {
           setShowDialog(false);
@@ -367,7 +371,7 @@ function GoalDialog({
     >
       <div
         className="
-          w-full max-w-sm rounded-2xl 
+          w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-2xl 
           bg-white dark:bg-zinc-900 
           border border-zinc-200 dark:border-zinc-700
           shadow-2xl
@@ -484,6 +488,7 @@ function GoalDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

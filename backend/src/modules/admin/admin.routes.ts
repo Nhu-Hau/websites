@@ -57,7 +57,7 @@ import {
   adminDeleteNews,
   uploadNewsImage,
 } from "./admin-news.controller";
-import { listPayments } from "./admin-payment.controller";
+import { listPayments, getPayment, updatePaymentStatus, deletePayment } from "./admin-payment.controller";
 
 const router = Router();
 
@@ -83,6 +83,9 @@ router.post("/vps/processes/:name/:action", controlPm2Process);
 
 // Payment admin routes
 router.get("/payments", listPayments);
+router.get("/payments/:id", getPayment);
+router.patch("/payments/:id/status", updatePaymentStatus);
+router.delete("/payments/:id", deletePayment);
 
 // Attempts admin routes
 router.get("/attempts/placement", listPlacementAttempts);

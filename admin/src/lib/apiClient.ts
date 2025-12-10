@@ -71,6 +71,41 @@ export async function adminListPayments(params?: { page?: number; limit?: number
   return res.json() as Promise<{ items: AdminPayment[]; total: number; page: number; limit: number; pages: number }>;
 }
 
+export async function adminGetPayment(id: string) {
+  const res = await fetch(`/api/admin/payments/${encodeURIComponent(id)}`, { credentials: "include", cache: "no-store" });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Fetch payment failed");
+  }
+  return res.json() as Promise<{ item: AdminPayment }>;
+}
+
+export async function adminUpdatePaymentStatus(id: string, status: string) {
+  const res = await fetch(`/api/admin/payments/${encodeURIComponent(id)}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Update payment status failed");
+  }
+  return res.json() as Promise<{ message: string; item: AdminPayment }>;
+}
+
+export async function adminDeletePayment(id: string) {
+  const res = await fetch(`/api/admin/payments/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || "Delete payment failed");
+  }
+  return res.json() as Promise<{ message: string }>;
+}
+
 export async function adminListUsers(params?: { page?: number; limit?: number; q?: string; role?: string; access?: string; sortBy?: string; order?: string; }) {
   const usp = new URLSearchParams();
   if (params?.page) usp.set('page', String(params.page));

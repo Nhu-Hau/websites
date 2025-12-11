@@ -15,7 +15,7 @@ module.exports = {
 
       merge_logs: true,
       autorestart: true,
-      max_memory_restart: "512M",   // đổi xuống 512MB
+      max_memory_restart: "1G",
     },
     {
       name: "frontend",
@@ -33,7 +33,7 @@ module.exports = {
 
       merge_logs: true,
       autorestart: true,
-      max_memory_restart: "512M",
+      max_memory_restart: "1G",
     },
     {
       name: "admin",
@@ -51,7 +51,7 @@ module.exports = {
 
       merge_logs: true,
       autorestart: true,
-      max_memory_restart: "512M",
+      max_memory_restart: "1G",
     },
   ],
 };

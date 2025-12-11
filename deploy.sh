@@ -115,45 +115,25 @@ npm run build
 
 # PM2: GIẢI PHÓNG PORT + RESTART / START
 
-echo ">>> Restart PM2 apps từng cái một"
+echo ">>> Khởi động lại PM2 apps (xóa cache cũ)"
 CURRENT_STAGE="Restart PM2"
 cd "$PROJECT_DIR"
 
-echo ">>> Giải phóng ports (cần psmisc/fuser)..."
+echo ">>> Dừng và xóa tất cả PM2 apps để load config mới..."
+pm2 delete all 2>/dev/null || true
+sleep 1
+
+echo ">>> Giải phóng ports..."
 fuser -k 4000/tcp 2>/dev/null || true
 fuser -k 3000/tcp 2>/dev/null || true
 fuser -k 3001/tcp 2>/dev/null || true
 sleep 1
 
-echo ">>> Xử lý PM2 app: api"
-if pm2 describe api >/dev/null 2>&1; then
-    echo ">>> Restarting api..."
-    pm2 restart api --update-env
-    sleep 2
-else
-    echo ">>> Starting api..."
-    pm2 start ecosystem.config.js --only api
-fi
+echo ">>> Khởi động tất cả apps từ ecosystem.config.js..."
+pm2 start ecosystem.config.js
 
-echo ">>> Xử lý PM2 app: frontend"
-if pm2 describe frontend >/dev/null 2>&1; then
-    echo ">>> Restarting frontend..."
-    pm2 restart frontend --update-env
-    sleep 2
-else
-    echo ">>> Starting frontend..."
-    pm2 start ecosystem.config.js --only frontend
-fi
-
-echo ">>> Xử lý PM2 app: admin"
-if pm2 describe admin >/dev/null 2>&1; then
-    echo ">>> Restarting admin..."
-    pm2 restart admin --update-env
-    sleep 2
-else
-    echo ">>> Starting admin..."
-    pm2 start ecosystem.config.js --only admin
-fi
+echo ">>> Đợi apps khởi động..."
+sleep 3
 
 pm2 save
 

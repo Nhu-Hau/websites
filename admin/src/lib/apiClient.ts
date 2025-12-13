@@ -979,6 +979,7 @@ export async function adminExportBulkExcel(params?: { part?: string; level?: num
 
 export async function adminSendNotification(body: {
   emails?: string[];
+  usernames?: string[];
   sendToAll?: boolean;
   message: string;
   link?: string;

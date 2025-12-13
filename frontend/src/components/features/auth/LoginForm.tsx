@@ -70,23 +70,23 @@ export default function LoginForm() {
       }
     >
       <form onSubmit={onSubmit} className="mt-8 space-y-6" noValidate>
-        {/* Email Field */}
+        {/* Email / Username Field */}
         <div className="space-y-2">
           <label
             htmlFor="email"
             className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
           >
-            {t("email")}
+            {t("emailOrUsername")}
           </label>
           <Input
             id="email"
             name="email"
-            type="email"
+            type="text"
             required
-            autoComplete="email"
+            autoComplete="username"
             aria-invalid={!!errors.email}
             error={!!errors.email}
-            placeholder={t("emailPlaceholder")}
+            placeholder={t("emailOrUsernamePlaceholder")}
             onChange={() =>
               errors.email && setErrors((e) => ({ ...e, email: undefined }))
             }

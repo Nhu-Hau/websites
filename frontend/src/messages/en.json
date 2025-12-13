@@ -1114,7 +1114,10 @@
         "emailInvalid": "Invalid email",
         "passwordRequired": "Please enter password",
         "passwordLen": "Password must be at least 8 characters"
-      }
+      },
+      "emailOrUsername": "Email or Username",
+      "emailOrUsernamePlaceholder": "Enter email or username",
+      "errorIdentifierRequired": "Please enter email or username"
     },
     "register": {
       "title": "Create Account",
@@ -1155,6 +1158,35 @@
         "passwordWeak": "Password must be at least 8 characters, with letters and numbers, no leading/trailing spaces",
         "confirmRequired": "Please re-enter password",
         "confirmMismatch": "Passwords do not match"
+      }
+    },
+    "anonymousRegister": {
+      "title": "Anonymous Registration",
+      "tabLabel": "Anonymous",
+      "alreadyAccount": "Already have an account?",
+      "login": "Login",
+      "username": "Username",
+      "placeholderUsername": "Enter username (e.g., user123)",
+      "name": "Display Name",
+      "placeholderName": "Enter display name",
+      "optional": "Optional",
+      "password": "Password",
+      "placeholderPassword": "Minimum 6 characters",
+      "submitting": "Creating account...",
+      "submit": "Register Anonymously",
+      "success": "Registration successful!",
+      "successTitle": "Account created!",
+      "successSubtitle": "Please save your recovery code below.",
+      "recoveryCodeLabel": "Account Recovery Code",
+      "recoveryWarning": "IMPORTANT: This is the only way to recover your account if you forget your password. We do not store this code.",
+      "copy": "Copy",
+      "copied": "Code copied!",
+      "continue": "Continue to homepage",
+      "errors": {
+        "usernameRequired": "Please enter username",
+        "usernameInvalid": "Username must be 3-20 characters, letters, numbers and underscore only, start with letter",
+        "passwordRequired": "Please enter password",
+        "passwordLen": "Password must be at least 6 characters"
       }
     },
     "changePassword": {

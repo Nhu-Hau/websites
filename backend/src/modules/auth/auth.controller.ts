@@ -410,14 +410,25 @@ export async function register(req: Request, res: Response) {
 // POST /auth/login
 export async function login(req: Request, res: Response) {
   try {
-    const { email, password } = req.body;
+    const { email, username, password } = req.body;
 
-    // Kiểm tra nếu người dùng có tồn tại trong database
-    const user: IUser | null = await User.findOne({ email });
+    // Cho phép đăng nhập bằng email hoặc username
+    const identifier = email || username;
+    if (!identifier) {
+      return res.status(400).json({ message: "Vui lòng nhập email hoặc tên tài khoản" });
+    }
+
+    // Tìm user theo email hoặc username
+    const user = await User.findOne({
+      $or: [
+        { email: identifier },
+        { username: identifier }
+      ]
+    });
 
     // Nếu không có người dùng, trả về thông báo "Chưa có tài khoản"
     if (!user) {
-      return res.status(404).json({ message: "Bạn chưa có tài khoản" });
+      return res.status(404).json({ message: "Tài khoản không tồn tại" });
     }
 
     // Kiểm tra tài khoản có bị khóa không
@@ -462,7 +473,7 @@ export async function login(req: Request, res: Response) {
 
       await user.save();
       return res.status(401).json({
-        message: `Email hoặc mật khẩu không chính xác. Bạn còn ${MAX_ATTEMPTS - user.loginAttempts
+        message: `Mật khẩu không chính xác. Bạn còn ${MAX_ATTEMPTS - user.loginAttempts
           } lần thử.`,
       });
     }
@@ -481,14 +492,105 @@ export async function login(req: Request, res: Response) {
     return res.status(200).json({
       user: toSafeUser(user),
       message: "Đăng nhập thành công",
-      // Always return tokens in response body for mobile apps compatibility
-      // Web clients can ignore these and use cookies instead
       accessToken: access,
       refreshToken: refresh,
     });
   } catch (e) {
     console.error("[login] ERROR", e);
     return res.status(500).json({ message: "Lỗi khi đăng nhập" });
+  }
+}
+
+// POST /auth/register-anonymous
+export async function registerAnonymous(req: Request, res: Response) {
+  try {
+    const username = String(req.body?.username || "").trim();
+    const password = req.body?.password as string;
+    const name = String(req.body?.name || "").trim() || username; // Default name to username if not provided
+
+    if (!username || !password) {
+      return res.status(400).json({ message: "Vui lòng nhập tên tài khoản và mật khẩu" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Mật khẩu phải có ít nhất 6 ký tự" });
+    }
+
+    // Check existing username
+    if (await User.findOne({ username })) {
+      return res.status(409).json({ message: "Tên tài khoản đã tồn tại" });
+    }
+
+    // Generate recovery code
+    const recoveryCode = crypto.randomBytes(6).toString('hex').toUpperCase(); // 12 chars
+    const recoveryCodeHash = await bcrypt.hash(recoveryCode, 10);
+
+    const user = new User({
+      name,
+      username,
+      password,
+      role: "user",
+      access: "free",
+      provider: "anonymous",
+      recoveryCodeHash,
+      last_login: new Date(),
+      emailVerified: false,
+    });
+    // Ensure email is not set (undefined) so it doesn't get saved as null
+    // Mongoose with sparse index requires the field to be absent, not null
+
+    await user.save();
+
+    const { access, refresh } = await issueAndStoreTokens(user);
+    setAuthCookies(res, access, refresh);
+
+    return res.status(201).json({
+      user: toSafeUser(user),
+      message: "Đăng ký ẩn danh thành công",
+      recoveryCode, // IMPORTANT: Return this only once
+      accessToken: access,
+      refreshToken: refresh,
+    });
+  } catch (e) {
+    console.error("[registerAnonymous] ERROR", e);
+    return res.status(500).json({ message: "Lỗi khi đăng ký tài khoản ẩn danh" });
+  }
+}
+
+// POST /auth/recover-account
+export async function recoverAccount(req: Request, res: Response) {
+  try {
+    const { username, recoveryCode, newPassword } = req.body;
+
+    if (!username || !recoveryCode || !newPassword) {
+      return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "Tài khoản không tồn tại" });
+    }
+
+    if (!user.recoveryCodeHash) {
+      return res.status(400).json({ message: "Tài khoản này không hỗ trợ khôi phục bằng mã" });
+    }
+
+    const isMatch = await bcrypt.compare(recoveryCode, user.recoveryCodeHash);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Mã khôi phục không chính xác" });
+    }
+
+    user.password = newPassword;
+    // Optional: Generate new recovery code? For now, keep the old one or maybe invalidate it?
+    // Requirement says "chỉ hiển thị 1 lần", implies it's static or generated once.
+    // Let's keep it for now.
+
+    await user.save();
+
+    return res.status(200).json({ message: "Khôi phục tài khoản thành công. Vui lòng đăng nhập lại." });
+  } catch (e) {
+    console.error("[recoverAccount] ERROR", e);
+    return res.status(500).json({ message: "Lỗi khi khôi phục tài khoản" });
   }
 }
 

@@ -14,6 +14,8 @@ router.post("/refresh", auth.refresh);
 
 router.post("/send-verification-code", auth.sendVerificationCode);
 router.post("/register", auth.register);
+router.post("/register-anonymous", auth.registerAnonymous);
+router.post("/recover-account", auth.recoverAccount);
 router.post("/login", auth.login);
 
 router.get("/google", auth.google);

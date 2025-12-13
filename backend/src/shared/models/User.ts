@@ -40,18 +40,20 @@ export interface IToeicGoal {
 export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
-  email: string;
+  email?: string;
+  username?: string;
   password: string;
   role: Role;
   access: Access;
   partLevels?: Record<string, Lvl>;
   toeicPred: IToeicPred | null;
   googleId?: string;
-  provider?: "local" | "google";
+  provider?: "local" | "google" | "anonymous";
   picture?: string;
   purchases: IPurchase[];
   refreshTokenHash?: string | null;
   refreshTokenExp?: Date | null;
+  recoveryCodeHash?: string | null;
   levelUpdatedAt?: Date | null;
   levelSource?: "manual" | "placement" | null;
   lastPlacementAttemptId?: Types.ObjectId | null;
@@ -120,11 +122,22 @@ const userSchema = new Schema<IUser>(
 
     email: {
       type: String,
-      required: true,
+      required: false, // Email không bắt buộc cho tài khoản ẩn danh
       unique: true,
       lowercase: true,
       trim: true,
       index: true,
+      sparse: true, // Cho phép nhiều user có email null
+      default: undefined,
+    },
+
+    username: {
+      type: String,
+      unique: true,
+      sparse: true, // Cho phép null nếu user cũ chưa có
+      trim: true,
+      index: true,
+      default: undefined,
     },
 
     password: { type: String, required: true },
@@ -145,7 +158,7 @@ const userSchema = new Schema<IUser>(
 
     googleId: { type: String, index: true, sparse: true },
 
-    provider: { type: String, enum: ["local", "google"], default: "local" },
+    provider: { type: String, enum: ["local", "google", "anonymous"], default: "local" },
 
     picture: { type: String },
 
@@ -154,6 +167,8 @@ const userSchema = new Schema<IUser>(
     refreshTokenHash: { type: String, default: null },
 
     refreshTokenExp: { type: Date, default: null },
+
+    recoveryCodeHash: { type: String, default: null }, // Mã khôi phục cho tài khoản ẩn danh
 
     levelUpdatedAt: { type: Date, default: null },
 

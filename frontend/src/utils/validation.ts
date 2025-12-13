@@ -1,14 +1,21 @@
-export type AuthMode = "login" | "register" | "forgot";
+export type AuthMode = "login" | "register" | "forgot" | "register-anonymous";
 
 export type AuthErrors = Partial<{
   email: string;
   name: string;
   password: string;
   confirm: string;
+  username: string;
 }>;
 
 export const MIN_PASSWORD = 8;
 export const MAX_PASSWORD = 72;
+export const MIN_PASSWORD_ANONYMOUS = 6;
+export const MIN_USERNAME = 3;
+export const MAX_USERNAME = 20;
+
+// Username: 3-20 chars, alphanumeric and underscore, must start with letter
+const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
 
 // Email đơn giản, đủ dùng cho client-side
 const EMAIL_RE =
@@ -42,6 +49,12 @@ export function validatePassword(v: string) {
   return hasLetter && hasDigit;
 }
 
+export function validateUsername(v: string) {
+  const u = v.trim();
+  if (u.length < MIN_USERNAME || u.length > MAX_USERNAME) return false;
+  return USERNAME_RE.test(u);
+}
+
 export function validateAuth(
   mode: AuthMode,
   data: Record<string, string>,
@@ -52,49 +65,68 @@ export function validateAuth(
   const email = String(data.email ?? "");
   const password = String(data.password ?? "");
   const confirm = String(data.confirm ?? "");
+  const username = String(data.username ?? "");
 
-  // email
-  if (!email) {
-    errors.email = t("errorEmailRequired"); // "Vui lòng nhập email"
-  } else if (!validateEmail(email)) {
-    errors.email = t("errorEmailInvalid"); // "Email không hợp lệ"
+  // Common email validation for non-anonymous modes
+  if (mode !== "register-anonymous") {
+    if (!email) {
+      errors.email = t("errorEmailRequired");
+    } else if (!validateEmail(email)) {
+      errors.email = t("errorEmailInvalid");
+    }
   }
 
   if (mode === "register") {
     // name
     if (!name) {
-      errors.name = t("errorNameRequired"); // "Vui lòng nhập họ tên"
+      errors.name = t("errorNameRequired");
     } else if (!validateName(name)) {
-      errors.name = t("errorNameInvalid"); // "Tên chỉ gồm chữ, khoảng trắng, '-', ''', '.' (2–50 ký tự)"
+      errors.name = t("errorNameInvalid");
     }
 
     // password
     if (!password) {
-      errors.password = t("errorPasswordRequired"); // "Vui lòng nhập mật khẩu"
+      errors.password = t("errorPasswordRequired");
     } else if (!validatePassword(password)) {
-      errors.password = t("errorPasswordWeak"); // "Tối thiểu 8 ký tự, có chữ và số, không khoảng trắng đầu/cuối"
+      errors.password = t("errorPasswordWeak");
     }
 
     // confirm
     if (!confirm) {
-      errors.confirm = t("errorConfirmRequired"); // "Vui lòng nhập lại mật khẩu"
+      errors.confirm = t("errorConfirmRequired");
     } else if (password !== confirm) {
-      errors.confirm = t("errorConfirmMismatch"); // "Mật khẩu xác nhận không khớp"
+      errors.confirm = t("errorConfirmMismatch");
     }
   }
 
   if (mode === "login") {
+    // For login, we accept either email or username
+    if (!email) {
+      errors.email = t("errorIdentifierRequired");
+    }
+    // Don't validate email format - could be username
+
     if (!password) {
       errors.password = t("errorPasswordRequired");
-    } else if (!validatePassword(password)) {
-      // ở login có thể nương tay hơn: chỉ check min length
-      if (password.length < MIN_PASSWORD) {
-        errors.password = t("errorPasswordLen");
-      }
     }
+    // Don't validate password format at login - just check if provided
   }
 
-  // forgot: chỉ email phía trên
+  if (mode === "register-anonymous") {
+    if (!username) {
+      errors.username = t("errors.usernameRequired");
+    } else if (!validateUsername(username)) {
+      errors.username = t("errors.usernameInvalid");
+    }
+
+    if (!password) {
+      errors.password = t("errors.passwordRequired");
+    } else if (password.length < MIN_PASSWORD_ANONYMOUS) {
+      errors.password = t("errors.passwordLen");
+    }
+
+    // Name is optional for anonymous
+  }
 
   return errors;
 }

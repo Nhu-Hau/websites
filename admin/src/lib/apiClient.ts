@@ -5,7 +5,8 @@ const API_BASE = '';
 export type AdminUser = {
   _id: string;
   name: string;
-  email: string;
+  email?: string;
+  username?: string;
   role: 'user' | 'teacher' | 'admin';
   access: 'free' | 'premium';
   level: 1 | 2 | 3;
@@ -15,6 +16,7 @@ export type AdminUser = {
   createdAt?: string;
   updatedAt?: string;
   premiumExpiryDate?: string | null;
+  provider?: 'local' | 'google' | 'anonymous';
 };
 
 export type AdminPromoCode = {
@@ -106,7 +108,7 @@ export async function adminDeletePayment(id: string) {
   return res.json() as Promise<{ message: string }>;
 }
 
-export async function adminListUsers(params?: { page?: number; limit?: number; q?: string; role?: string; access?: string; sortBy?: string; order?: string; }) {
+export async function adminListUsers(params?: { page?: number; limit?: number; q?: string; role?: string; access?: string; sortBy?: string; order?: string; provider?: string }) {
   const usp = new URLSearchParams();
   if (params?.page) usp.set('page', String(params.page));
   if (params?.limit) usp.set('limit', String(params.limit));
@@ -115,6 +117,7 @@ export async function adminListUsers(params?: { page?: number; limit?: number; q
   if (params?.access) usp.set('access', params.access);
   if (params?.sortBy) usp.set('sortBy', params.sortBy);
   if (params?.order) usp.set('order', params.order);
+  if (params?.provider) usp.set('provider', params.provider);
   const res = await fetch(`/api/admin/users?${usp.toString()}`, { credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'Fetch users failed'); }
   return res.json() as Promise<{ items: AdminUser[]; total: number; page: number; limit: number; pages: number }>;

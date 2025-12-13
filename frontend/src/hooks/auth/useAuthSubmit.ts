@@ -8,7 +8,7 @@ import { toast } from "@/lib/toast";
 import { postJson } from "@/lib/api/client";
 import { validateAuth, hasAuthErrors, AuthErrors } from "@/utils/validation";
 
-type Kind = "login" | "register" | "forgot";
+type Kind = "login" | "register" | "forgot" | "register-anonymous";
 
 type SubmitOpts = {
   kind: Kind;

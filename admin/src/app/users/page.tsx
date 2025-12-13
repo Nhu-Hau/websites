@@ -26,6 +26,7 @@ export default function UsersPage() {
   const [q, setQ] = React.useState("");
   const [role, setRole] = React.useState("");
   const [access, setAccess] = React.useState("");
+  const [provider, setProvider] = React.useState<"" | "email" | "anonymous">("");
   const [sortBy, setSortBy] = React.useState<"email" | "createdAt">("email");
   const [busy, setBusy] = React.useState(false);
   const [confirmDialog, setConfirmDialog] = React.useState<ConfirmDialogState | null>(null);
@@ -53,13 +54,13 @@ export default function UsersPage() {
     setBusy(true);
     try {
       const order = sortBy === "email" ? "asc" : "desc";
-      const data = await adminListUsers({ page, limit, q, role, access, sortBy, order });
+      const data = await adminListUsers({ page, limit, q, role, access, sortBy, order, provider: provider || undefined });
       setItems(data.items);
       setTotal(data.total);
     } finally {
       setBusy(false);
     }
-  }, [page, limit, q, role, access, sortBy]);
+  }, [page, limit, q, role, access, sortBy, provider]);
 
   React.useEffect(() => {
     (async () => {
@@ -191,6 +192,39 @@ export default function UsersPage() {
         </div>
       </header>
 
+      {/* Provider Tabs */}
+      <div className="bg-white rounded-lg shadow-md p-2 border border-zinc-200">
+        <div className="flex gap-2">
+          <button
+            onClick={() => { setProvider(""); setPage(1); }}
+            className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-all duration-200 ${provider === ""
+              ? "bg-gradient-to-r from-teal-500 to-blue-600 text-white shadow-md"
+              : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              }`}
+          >
+            Tất cả
+          </button>
+          <button
+            onClick={() => { setProvider("email"); setPage(1); }}
+            className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-all duration-200 ${provider === "email"
+              ? "bg-gradient-to-r from-teal-500 to-blue-600 text-white shadow-md"
+              : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              }`}
+          >
+            📧 Đăng ký Email
+          </button>
+          <button
+            onClick={() => { setProvider("anonymous"); setPage(1); }}
+            className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg transition-all duration-200 ${provider === "anonymous"
+              ? "bg-gradient-to-r from-teal-500 to-blue-600 text-white shadow-md"
+              : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              }`}
+          >
+            👤 Ẩn danh
+          </button>
+        </div>
+      </div>
+
       <div className="bg-white rounded-lg shadow-md p-4 border border-zinc-200">
         <div className="flex flex-wrap gap-3 items-end">
           <div className="flex flex-col flex-1 min-w-[180px]">
@@ -242,8 +276,8 @@ export default function UsersPage() {
               onChange={(e) => setSortBy(e.target.value as any)}
               className="border border-zinc-300 px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
             >
-              <option value="email">Email (A-Z)</option>
-              <option value="createdAt">Ngày tạo (Mới nhất)</option>
+              <option value="email">A-Z</option>
+              <option value="createdAt">Mới nhất</option>
             </select>
           </div>
           <button
@@ -261,8 +295,9 @@ export default function UsersPage() {
           <table className="min-w-[800px] w-full">
             <thead className="bg-gradient-to-r from-zinc-100 to-zinc-50 border-b border-zinc-200">
               <tr className="text-left">
-                <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Email</th>
+                <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Email / Username</th>
                 <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Tên</th>
+                <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Loại</th>
                 <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Role</th>
                 <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Gói</th>
                 <th className="px-3 py-2 text-xs font-semibold text-zinc-700">Hành động</th>
@@ -271,8 +306,24 @@ export default function UsersPage() {
             <tbody>
               {items.map((u) => (
                 <tr key={u._id} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
-                  <td className="px-3 py-2 font-mono text-xs text-zinc-700">{u.email}</td>
+                  <td className="px-3 py-2 font-mono text-xs text-zinc-700">
+                    {u.provider === 'anonymous' ? (
+                      <span className="text-purple-600">@{u.username || 'unknown'}</span>
+                    ) : (
+                      u.email || '-'
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-sm font-medium text-zinc-900">{u.name}</td>
+                  <td className="px-3 py-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${u.provider === 'anonymous'
+                      ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                      : u.provider === 'google'
+                        ? 'bg-red-100 text-red-700 border border-red-200'
+                        : 'bg-blue-100 text-blue-700 border border-blue-200'
+                      }`}>
+                      {u.provider === 'anonymous' ? '👤 Ẩn danh' : u.provider === 'google' ? '🔴 Google' : '📧 Email'}
+                    </span>
+                  </td>
                   <td className="px-3 py-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleClassByRole[u.role]}`}>
                       {roleLabelByRole[u.role]}
@@ -306,7 +357,7 @@ export default function UsersPage() {
               ))}
               {items.length === 0 && (
                 <tr>
-                  <td className="p-8 text-center text-zinc-500" colSpan={5}>
+                  <td className="p-8 text-center text-zinc-500" colSpan={6}>
                     <div className="flex flex-col items-center gap-2">
                       <Users className="h-10 w-10 text-zinc-300" />
                       <p className="text-sm font-medium">Không có dữ liệu</p>

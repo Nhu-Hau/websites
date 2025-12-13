@@ -20,6 +20,7 @@ export async function listUsers(req: Request, res: Response) {
     const q = String(req.query.q || "").trim();
     const role = String(req.query.role || "").trim();
     const access = String(req.query.access || "").trim();
+    const provider = String(req.query.provider || "").trim();
 
     const sortBy = String(req.query.sortBy || "email");
     const order = String(req.query.order || "asc") === "desc" ? -1 : 1;
@@ -29,16 +30,25 @@ export async function listUsers(req: Request, res: Response) {
       filter.$or = [
         { email: { $regex: q, $options: "i" } },
         { name: { $regex: q, $options: "i" } },
+        { username: { $regex: q, $options: "i" } },
       ];
     }
     if (role) filter.role = role;
     if (access) filter.access = access;
 
+    // Provider filter: "anonymous" or "email" (local/google)
+    if (provider === "anonymous") {
+      filter.provider = "anonymous";
+    } else if (provider === "email") {
+      filter.provider = { $in: ["local", "google"] };
+    }
+
     const sort: any = {};
     if (sortBy === "createdAt") {
       sort.createdAt = order;
     } else {
-      sort.email = order;
+      // Sort A-Z by name (works for both email and anonymous users)
+      sort.name = order;
     }
 
     const skip = (page - 1) * limit;
@@ -47,7 +57,7 @@ export async function listUsers(req: Request, res: Response) {
         .sort(sort)
         .skip(skip)
         .limit(limit)
-        .select("_id name email role access level picture last_login toeicPred createdAt updatedAt premiumExpiryDate"),
+        .select("_id name email username role access level picture last_login toeicPred createdAt updatedAt premiumExpiryDate provider"),
       User.countDocuments(filter),
     ]);
 

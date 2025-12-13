@@ -1167,11 +1167,11 @@
       "login": "Login",
       "username": "Username",
       "placeholderUsername": "Enter username (e.g., user123)",
-      "name": "Display Name",
-      "placeholderName": "Enter display name",
+      "name": "Full Name",
+      "placeholderName": "Enter your full name",
       "optional": "Optional",
       "password": "Password",
-      "placeholderPassword": "Minimum 6 characters",
+      "placeholderPassword": "Minimum 8 characters",
       "confirmPassword": "Confirm Password",
       "confirmPlaceholder": "Re-enter password",
       "submitting": "Creating account...",
@@ -1194,7 +1194,7 @@
         "usernameRequired": "Please enter username",
         "usernameInvalid": "Username must be 6-20 characters, letters, numbers and underscore only, start with letter",
         "passwordRequired": "Please enter password",
-        "passwordLen": "Password must be at least 6 characters",
+        "passwordLen": "Password must be at least 8 characters",
         "confirmRequired": "Please confirm your password",
         "confirmMismatch": "Passwords do not match"
       }

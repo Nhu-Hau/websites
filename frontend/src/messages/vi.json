@@ -1439,11 +1439,11 @@
       "login": "Đăng nhập",
       "username": "Tên đăng nhập",
       "placeholderUsername": "Nhập tên đăng nhập (ví dụ: user123)",
-      "name": "Tên hiển thị",
-      "placeholderName": "Nhập tên hiển thị",
+      "name": "Họ và tên",
+      "placeholderName": "Nhập họ và tên của bạn",
       "optional": "Tùy chọn",
       "password": "Mật khẩu",
-      "placeholderPassword": "Tối thiểu 6 ký tự",
+      "placeholderPassword": "Tối thiểu 8 ký tự",
       "confirmPassword": "Xác nhận mật khẩu",
       "confirmPlaceholder": "Nhập lại mật khẩu",
       "submitting": "Đang tạo tài khoản...",
@@ -1466,7 +1466,7 @@
         "usernameRequired": "Vui lòng nhập tên đăng nhập",
         "usernameInvalid": "Tên đăng nhập phải có 6-20 ký tự, chỉ chữ cái, số và dấu gạch dưới, bắt đầu bằng chữ",
         "passwordRequired": "Vui lòng nhập mật khẩu",
-        "passwordLen": "Mật khẩu phải có tối thiểu 6 ký tự",
+        "passwordLen": "Mật khẩu phải có tối thiểu 8 ký tự",
         "confirmRequired": "Vui lòng nhập lại mật khẩu",
         "confirmMismatch": "Mật khẩu không khớp"
       }

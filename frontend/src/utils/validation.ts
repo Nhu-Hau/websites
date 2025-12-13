@@ -10,7 +10,7 @@ export type AuthErrors = Partial<{
 
 export const MIN_PASSWORD = 8;
 export const MAX_PASSWORD = 72;
-export const MIN_PASSWORD_ANONYMOUS = 6;
+export const MIN_PASSWORD_ANONYMOUS = 8;
 export const MIN_USERNAME = 6;
 export const MAX_USERNAME = 20;
 

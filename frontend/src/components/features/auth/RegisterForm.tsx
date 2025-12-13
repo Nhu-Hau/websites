@@ -604,10 +604,7 @@ export default function RegisterForm() {
                 htmlFor="name"
                 className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
               >
-                {tAnon("name")}{" "}
-                <span className="text-zinc-400 font-normal">
-                  ({tAnon("optional")})
-                </span>
+                {tAnon("name")}
               </label>
               <Input
                 id="name"

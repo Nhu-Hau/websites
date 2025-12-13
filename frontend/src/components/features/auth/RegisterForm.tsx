@@ -41,6 +41,13 @@ export default function RegisterForm() {
 
   // Recovery code state for anonymous registration
   const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
+  const [savedUsername, setSavedUsername] = useState<string | null>(null);
+
+  // Mask username: abcdef -> a***ef
+  const maskUsername = (username: string) => {
+    if (username.length <= 4) return username[0] + "***";
+    return username[0] + "***" + username.slice(-2);
+  };
 
   // Auth Submit Hook
   const { onSubmit, loading, errors, setErrors } = useAuthSubmit({
@@ -53,8 +60,15 @@ export default function RegisterForm() {
         toast.success(tAnon("success"));
         if (data.recoveryCode) {
           setRecoveryCode(data.recoveryCode);
+          // Get username from form input
+          const usernameInput = document.getElementById("username") as HTMLInputElement;
+          if (usernameInput?.value) {
+            setSavedUsername(usernameInput.value);
+          }
         }
-        if (data.user) login(data.user);
+        if (data.user) {
+          login(data.user);
+        }
         // Don't redirect yet, let user see recovery code
       } else {
         toast.success(t("success"));
@@ -188,6 +202,72 @@ export default function RegisterForm() {
     router.push(basePrefix || "/");
   };
 
+  // Download recovery code as image with QR and text
+  const handleDownloadRecovery = () => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx || !recoveryCode) return;
+
+    canvas.width = 400;
+    canvas.height = 500;
+
+    // Background
+    ctx.fillStyle = "#FFFBEB";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Title
+    ctx.fillStyle = "#92400E";
+    ctx.font = "bold 18px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("ToeicPrep - Mã khôi phục tài khoản", canvas.width / 2, 40);
+
+    // Get QR code SVG and draw
+    const svgElement = document.getElementById("recovery-qr");
+    if (svgElement) {
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, (canvas.width - 200) / 2, 60, 200, 200);
+
+        // Recovery code text
+        ctx.fillStyle = "#1F2937";
+        ctx.font = "bold 24px monospace";
+        ctx.fillText(recoveryCode!, canvas.width / 2, 300);
+
+        // Warning
+        ctx.fillStyle = "#92400E";
+        ctx.font = "12px Arial";
+        const warning = "QUAN TRỌNG: Đây là cách duy nhất để khôi phục";
+        const warning2 = "tài khoản nếu bạn quên mật khẩu.";
+        ctx.fillText(warning, canvas.width / 2, 340);
+        ctx.fillText(warning2, canvas.width / 2, 360);
+
+        // Date
+        ctx.fillStyle = "#6B7280";
+        ctx.font = "10px Arial";
+        ctx.fillText(`Tạo ngày: ${new Date().toLocaleDateString("vi-VN")}`, canvas.width / 2, 400);
+
+        // Username (masked)
+        if (savedUsername) {
+          ctx.fillStyle = "#4B5563";
+          ctx.font = "12px Arial";
+          ctx.fillText(`Tài khoản: ${maskUsername(savedUsername)}`, canvas.width / 2, 430);
+        }
+
+        // Download
+        const link = document.createElement("a");
+        link.download = `toeicprep-recovery-${recoveryCode}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        toast.success(tAnon("downloadSuccess"));
+      };
+      img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+    }
+  };
+
+  // Confirmation modal state
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
   // Render Success State for Anonymous Registration
   if (mode === "anonymous" && recoveryCode) {
     return (
@@ -205,6 +285,7 @@ export default function RegisterForm() {
             <div className="flex justify-center mb-4">
               <div className="p-3 bg-white rounded-lg">
                 <QRCodeSVG
+                  id="recovery-qr"
                   value={recoveryCode}
                   size={150}
                   level="H"
@@ -235,8 +316,19 @@ export default function RegisterForm() {
             </p>
           </div>
 
+          {/* Download Button */}
           <Button
-            onClick={handleContinue}
+            type="button"
+            variant="secondary"
+            size="md"
+            className="w-full"
+            onClick={handleDownloadRecovery}
+          >
+            📥 {tAnon("download")}
+          </Button>
+
+          <Button
+            onClick={() => setShowConfirmModal(true)}
             variant="primary"
             size="md"
             className="w-full"
@@ -244,6 +336,54 @@ export default function RegisterForm() {
             {tAnon("continue")}
           </Button>
         </div>
+
+        {/* Confirmation Modal */}
+        {showConfirmModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-4">
+                ⚠️ {tAnon("confirmTitle")}
+              </h3>
+
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl mb-4">
+                {/* QR Code in modal */}
+                <div className="flex justify-center mb-3">
+                  <div className="p-2 bg-white rounded-lg">
+                    <QRCodeSVG value={recoveryCode} size={100} level="H" />
+                  </div>
+                </div>
+                <code className="block text-center text-lg font-mono font-bold text-zinc-900 dark:text-zinc-100 tracking-wider mb-2">
+                  {recoveryCode}
+                </code>
+                <p className="text-xs text-yellow-700 dark:text-yellow-300 text-center">
+                  {tAnon("confirmWarning")}
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  className="flex-1"
+                  onClick={() => {
+                    handleDownloadRecovery();
+                    setShowConfirmModal(false);
+                  }}
+                >
+                  📥 {tAnon("downloadAndContinue")}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="flex-1"
+                  onClick={handleContinue}
+                >
+                  {tAnon("confirmContinue")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </AuthLayout>
     );
   }
@@ -501,6 +641,26 @@ export default function RegisterForm() {
                 aria-invalid={!!errors.password}
               />
               <FieldError message={errors.password} />
+            </div>
+
+            <div className="space-y-2">
+              <PasswordField
+                id="confirm"
+                name="confirm"
+                label={tAnon("confirmPassword")}
+                placeholder={tAnon("confirmPlaceholder")}
+                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200"
+                minLength={6}
+                autoComplete="new-password"
+                show={cpw.show}
+                onToggle={cpw.toggle}
+                onChange={() =>
+                  errors.confirm &&
+                  setErrors((e) => ({ ...e, confirm: undefined }))
+                }
+                aria-invalid={!!errors.confirm}
+              />
+              <FieldError message={errors.confirm} />
             </div>
           </>
         )}

@@ -1172,6 +1172,8 @@
       "optional": "Optional",
       "password": "Password",
       "placeholderPassword": "Minimum 6 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPlaceholder": "Re-enter password",
       "submitting": "Creating account...",
       "submit": "Register Anonymously",
       "success": "Registration successful!",
@@ -1182,11 +1184,19 @@
       "copy": "Copy",
       "copied": "Code copied!",
       "continue": "Continue to homepage",
+      "download": "Download recovery code",
+      "downloadSuccess": "Recovery code downloaded!",
+      "confirmTitle": "Have you saved your recovery code?",
+      "confirmWarning": "Make sure you have saved this code. If you lose it, you cannot recover your account!",
+      "downloadAndContinue": "Download",
+      "confirmContinue": "I've saved it",
       "errors": {
         "usernameRequired": "Please enter username",
-        "usernameInvalid": "Username must be 3-20 characters, letters, numbers and underscore only, start with letter",
+        "usernameInvalid": "Username must be 6-20 characters, letters, numbers and underscore only, start with letter",
         "passwordRequired": "Please enter password",
-        "passwordLen": "Password must be at least 6 characters"
+        "passwordLen": "Password must be at least 6 characters",
+        "confirmRequired": "Please confirm your password",
+        "confirmMismatch": "Passwords do not match"
       }
     },
     "changePassword": {
@@ -1250,7 +1260,22 @@
       "submitStep2": "Update password",
       "sendCodeError": "Couldn't send the code. Please try again.",
       "missingEmail": "Missing email address.",
-      "resetCodeError": "Invalid or expired code. Please try again."
+      "resetCodeError": "Invalid or expired code. Please try again.",
+      "tabAnonymous": "Anonymous",
+      "titleAnonymous": "Recover Anonymous Account",
+      "subtitleAnonymous": "Enter your username and recovery code to reset your password.",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Enter username",
+      "recoveryCodeLabel": "Recovery Code",
+      "recoveryCodePlaceholder": "Enter 12-character code",
+      "recoveryCodeHint": "The recovery code you saved when registering your anonymous account",
+      "newPasswordPlaceholderAnonymous": "Minimum 6 characters",
+      "submitAnonymous": "Recover Account",
+      "submitAnonymousLoading": "Recovering...",
+      "successAnonymous": "Account recovered successfully!",
+      "errorUsernameRequired": "Please enter username",
+      "errorRecoveryCodeRequired": "Please enter recovery code",
+      "errorRecoveryFailed": "Invalid recovery code or account does not exist"
     }
   },
   "UserMenu": {

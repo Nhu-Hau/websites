@@ -11,11 +11,11 @@ export type AuthErrors = Partial<{
 export const MIN_PASSWORD = 8;
 export const MAX_PASSWORD = 72;
 export const MIN_PASSWORD_ANONYMOUS = 6;
-export const MIN_USERNAME = 3;
+export const MIN_USERNAME = 6;
 export const MAX_USERNAME = 20;
 
-// Username: 3-20 chars, alphanumeric and underscore, must start with letter
-const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/;
+// Username: 6-20 chars, alphanumeric and underscore, must start with letter
+const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]{5,19}$/;
 
 // Email đơn giản, đủ dùng cho client-side
 const EMAIL_RE =
@@ -67,8 +67,8 @@ export function validateAuth(
   const confirm = String(data.confirm ?? "");
   const username = String(data.username ?? "");
 
-  // Common email validation for non-anonymous modes
-  if (mode !== "register-anonymous") {
+  // Common email validation for register and forgot modes only
+  if (mode !== "register-anonymous" && mode !== "login") {
     if (!email) {
       errors.email = t("errorEmailRequired");
     } else if (!validateEmail(email)) {
@@ -123,6 +123,13 @@ export function validateAuth(
       errors.password = t("errors.passwordRequired");
     } else if (password.length < MIN_PASSWORD_ANONYMOUS) {
       errors.password = t("errors.passwordLen");
+    }
+
+    // Confirm password validation
+    if (!confirm) {
+      errors.confirm = t("errors.confirmRequired");
+    } else if (password !== confirm) {
+      errors.confirm = t("errors.confirmMismatch");
     }
 
     // Name is optional for anonymous

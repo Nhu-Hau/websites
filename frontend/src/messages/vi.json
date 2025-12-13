@@ -1444,6 +1444,8 @@
       "optional": "Tùy chọn",
       "password": "Mật khẩu",
       "placeholderPassword": "Tối thiểu 6 ký tự",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "confirmPlaceholder": "Nhập lại mật khẩu",
       "submitting": "Đang tạo tài khoản...",
       "submit": "Đăng ký ẩn danh",
       "success": "Đăng ký thành công!",
@@ -1454,11 +1456,19 @@
       "copy": "Sao chép",
       "copied": "Đã sao chép mã!",
       "continue": "Tiếp tục vào trang chủ",
+      "download": "Tải mã khôi phục",
+      "downloadSuccess": "Đã tải mã khôi phục!",
+      "confirmTitle": "Bạn đã lưu mã khôi phục chưa?",
+      "confirmWarning": "Hãy chắc chắn bạn đã lưu mã này. Nếu mất mã, bạn sẽ không thể khôi phục tài khoản!",
+      "downloadAndContinue": "Tải về",
+      "confirmContinue": "Đã lưu",
       "errors": {
         "usernameRequired": "Vui lòng nhập tên đăng nhập",
-        "usernameInvalid": "Tên đăng nhập phải có 3-20 ký tự, chỉ chữ cái, số và dấu gạch dưới, bắt đầu bằng chữ",
+        "usernameInvalid": "Tên đăng nhập phải có 6-20 ký tự, chỉ chữ cái, số và dấu gạch dưới, bắt đầu bằng chữ",
         "passwordRequired": "Vui lòng nhập mật khẩu",
-        "passwordLen": "Mật khẩu phải có tối thiểu 6 ký tự"
+        "passwordLen": "Mật khẩu phải có tối thiểu 6 ký tự",
+        "confirmRequired": "Vui lòng nhập lại mật khẩu",
+        "confirmMismatch": "Mật khẩu không khớp"
       }
     },
     "changePassword": {
@@ -1522,7 +1532,22 @@
       "submitStep2": "Cập nhật mật khẩu",
       "sendCodeError": "Không thể gửi mã. Vui lòng thử lại.",
       "missingEmail": "Thiếu email.",
-      "resetCodeError": "Mã không hợp lệ hoặc đã hết hạn. Vui lòng thử lại."
+      "resetCodeError": "Mã không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.",
+      "tabAnonymous": "Ẩn danh",
+      "titleAnonymous": "Khôi phục tài khoản ẩn danh",
+      "subtitleAnonymous": "Nhập tên đăng nhập và mã khôi phục để đặt lại mật khẩu.",
+      "usernameLabel": "Tên đăng nhập",
+      "usernamePlaceholder": "Nhập tên đăng nhập",
+      "recoveryCodeLabel": "Mã khôi phục",
+      "recoveryCodePlaceholder": "Nhập mã 12 ký tự",
+      "recoveryCodeHint": "Mã khôi phục bạn đã lưu khi đăng ký tài khoản ẩn danh",
+      "newPasswordPlaceholderAnonymous": "Tối thiểu 6 ký tự",
+      "submitAnonymous": "Khôi phục tài khoản",
+      "submitAnonymousLoading": "Đang khôi phục...",
+      "successAnonymous": "Khôi phục tài khoản thành công!",
+      "errorUsernameRequired": "Vui lòng nhập tên đăng nhập",
+      "errorRecoveryCodeRequired": "Vui lòng nhập mã khôi phục",
+      "errorRecoveryFailed": "Mã khôi phục không chính xác hoặc tài khoản không tồn tại"
     }
   },
   "UserMenu": {

@@ -92,7 +92,7 @@ export async function createMyNotification(req: Request, res: Response) {
 }
 
 export async function adminSendNotification(req: Request, res: Response) {
-  const { emails, sendToAll, message, link, type } = req.body;
+  const { emails, usernames, sendToAll, message, link, type } = req.body;
 
   if (!message) {
     return res.status(400).json({ message: "Message is required" });
@@ -129,8 +129,22 @@ export async function adminSendNotification(req: Request, res: Response) {
         }));
         count++;
       }
+    } else if (Array.isArray(usernames) && usernames.length > 0) {
+      // Gửi cho danh sách username cụ thể
+      const User = await import("../../shared/models/User").then(m => m.User);
+      const users = await User.find({ username: { $in: usernames } }).select("_id username");
+
+      for (const user of users) {
+        await import("./notification.service").then(s => s.notifyUser(io, {
+          userId: String(user._id),
+          message,
+          link,
+          type: type || "system",
+        }));
+        count++;
+      }
     } else {
-      return res.status(400).json({ message: "Must specify emails or sendToAll" });
+      return res.status(400).json({ message: "Must specify emails, usernames, or sendToAll" });
     }
 
     res.json({ ok: true, count, message: `Sent to ${count} users` });

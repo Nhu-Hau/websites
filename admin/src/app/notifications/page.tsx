@@ -10,28 +10,27 @@ export default function NotificationsPage() {
     const [link, setLink] = React.useState("");
     const [type, setType] = React.useState<"system" | "like" | "comment">("system");
     const [target, setTarget] = React.useState<"all" | "specific">("all");
-    const [specificEmail, setSpecificEmail] = React.useState("");
-    const [suggestions, setSuggestions] = React.useState<string[]>([]);
+    const [specificUser, setSpecificUser] = React.useState(""); // Changed from specificEmail
+    const [suggestions, setSuggestions] = React.useState<{ email?: string; username?: string }[]>([]);
     const [showSuggestions, setShowSuggestions] = React.useState(false);
     const [busy, setBusy] = React.useState(false);
     const toast = useToast();
 
-    // Debounce search for email suggestions
+    // Debounce search for user suggestions
     React.useEffect(() => {
         const timer = setTimeout(async () => {
-            if (target === "specific" && specificEmail.trim().length >= 2) {
+            if (target === "specific" && specificUser.trim().length >= 2) {
                 // Nếu đã nhập xong đuôi @gmail.com thì ẩn gợi ý
-                if (specificEmail.toLowerCase().endsWith("@gmail.com")) {
+                if (specificUser.toLowerCase().endsWith("@gmail.com")) {
                     setShowSuggestions(false);
                     return;
                 }
 
                 try {
-                    const res = await adminListUsers({ q: specificEmail, limit: 5 });
-                    const emails = res.items
-                        .map(u => u.email)
-                        .filter((e): e is string => !!e && e.toLowerCase().includes(specificEmail.toLowerCase()));
-                    setSuggestions(emails);
+                    const res = await adminListUsers({ q: specificUser, limit: 5 });
+                    // Map to object with email and username
+                    const users = res.items.map(u => ({ email: u.email, username: u.username }));
+                    setSuggestions(users);
                     setShowSuggestions(true);
                 } catch (error) {
                     console.error("Failed to fetch suggestions", error);
@@ -43,7 +42,7 @@ export default function NotificationsPage() {
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [specificEmail, target]);
+    }, [specificUser, target]);
 
     const handleSend = async () => {
         if (!message.trim()) {
@@ -51,18 +50,30 @@ export default function NotificationsPage() {
             return;
         }
 
-        if (target === "specific" && !specificEmail.trim()) {
-            toast.error("Vui lòng nhập Email người nhận");
+        if (target === "specific" && !specificUser.trim()) {
+            toast.error("Vui lòng nhập Email hoặc Tên đăng nhập người nhận");
             return;
         }
 
         try {
             setBusy(true);
-            const emails = target === "specific" ? [specificEmail.trim()] : [];
             const sendToAll = target === "all";
+            let emails: string[] = [];
+            let usernames: string[] = [];
+
+            if (target === "specific") {
+                const input = specificUser.trim();
+                // Simple check: if it contains @, treat as email, otherwise username
+                if (input.includes("@")) {
+                    emails = [input];
+                } else {
+                    usernames = [input];
+                }
+            }
 
             const res = await adminSendNotification({
                 emails,
+                usernames,
                 sendToAll,
                 message,
                 link,
@@ -72,7 +83,7 @@ export default function NotificationsPage() {
             toast.success(`Đã gửi thành công cho ${res.count} người dùng`);
             setMessage("");
             setLink("");
-            setSpecificEmail("");
+            setSpecificUser("");
             setSuggestions([]);
         } catch (error: any) {
             toast.error(error.message || "Lỗi khi gửi thông báo");
@@ -143,7 +154,7 @@ export default function NotificationsPage() {
                                         </div>
                                         <div className="text-left">
                                             <div className="font-semibold">Người dùng cụ thể</div>
-                                            <div className="text-xs opacity-70">Gửi theo Email</div>
+                                            <div className="text-xs opacity-70">Gửi theo Email hoặc Username</div>
                                         </div>
                                         {target === "specific" && (
                                             <div className="absolute top-3 right-3 text-indigo-600">
@@ -154,21 +165,21 @@ export default function NotificationsPage() {
                                 </div>
                             </div>
 
-                            {/* Specific Email Input with Autocomplete */}
+                            {/* Specific User Input with Autocomplete */}
                             {target === "specific" && (
                                 <div className="space-y-2 animate-in fade-in slide-in-from-top-2 relative">
-                                    <label className="text-sm font-medium text-zinc-700">Email người nhận</label>
+                                    <label className="text-sm font-medium text-zinc-700">Email hoặc Tên đăng nhập</label>
                                     <div className="relative">
                                         <input
-                                            type="email"
-                                            value={specificEmail}
+                                            type="text"
+                                            value={specificUser}
                                             onChange={(e) => {
-                                                setSpecificEmail(e.target.value);
+                                                setSpecificUser(e.target.value);
                                                 setShowSuggestions(true);
                                             }}
                                             onFocus={() => setShowSuggestions(true)}
                                             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay to allow click
-                                            placeholder="Nhập email (ví dụ: user@example.com)"
+                                            placeholder="Nhập email hoặc username..."
                                             className="w-full px-4 py-2.5 rounded-lg border border-zinc-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-mono text-sm"
                                         />
                                         <div className="absolute right-3 top-2.5 text-zinc-400">
@@ -179,19 +190,26 @@ export default function NotificationsPage() {
                                     {/* Suggestions Dropdown */}
                                     {showSuggestions && suggestions.length > 0 && (
                                         <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-xl border border-zinc-200 max-h-60 overflow-auto">
-                                            {suggestions.map((email, index) => (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => {
-                                                        setSpecificEmail(email);
-                                                        setShowSuggestions(false);
-                                                    }}
-                                                    className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 text-sm text-zinc-700 transition-colors flex items-center gap-2"
-                                                >
-                                                    <User className="w-4 h-4 text-zinc-400" />
-                                                    {email}
-                                                </button>
-                                            ))}
+                                            {suggestions.map((u, index) => {
+                                                const display = u.email || u.username || "Unknown";
+                                                const sub = u.email && u.username ? u.username : "";
+                                                return (
+                                                    <button
+                                                        key={index}
+                                                        onClick={() => {
+                                                            setSpecificUser(u.email || u.username || "");
+                                                            setShowSuggestions(false);
+                                                        }}
+                                                        className="w-full text-left px-4 py-2.5 hover:bg-indigo-50 text-sm text-zinc-700 transition-colors flex items-center gap-2"
+                                                    >
+                                                        <User className="w-4 h-4 text-zinc-400" />
+                                                        <div>
+                                                            <div>{display}</div>
+                                                            {sub && <div className="text-xs text-zinc-400">{sub}</div>}
+                                                        </div>
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
@@ -241,7 +259,7 @@ export default function NotificationsPage() {
                                     onClick={() => {
                                         setMessage("");
                                         setLink("");
-                                        setSpecificEmail("");
+                                        setSpecificUser("");
                                         setSuggestions([]);
                                     }}
                                     disabled={busy}

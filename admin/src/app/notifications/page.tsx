@@ -28,7 +28,9 @@ export default function NotificationsPage() {
 
                 try {
                     const res = await adminListUsers({ q: specificEmail, limit: 5 });
-                    const emails = res.items.map(u => u.email).filter(e => e.toLowerCase().includes(specificEmail.toLowerCase()));
+                    const emails = res.items
+                        .map(u => u.email)
+                        .filter((e): e is string => !!e && e.toLowerCase().includes(specificEmail.toLowerCase()));
                     setSuggestions(emails);
                     setShowSuggestions(true);
                 } catch (error) {

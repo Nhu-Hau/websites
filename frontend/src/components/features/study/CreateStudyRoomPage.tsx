@@ -259,8 +259,8 @@ function CreateStudyRoom({ onCreated, onCancel }: CreateStudyRoomProps = {}) {
                 isValid
                   ? "border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/60 dark:border-emerald-700/60"
                   : errorMsg
-                  ? "border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-500/60 dark:border-red-700/70"
-                  : "border-zinc-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-500/60 dark:border-zinc-700"
+                    ? "border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-500/60 dark:border-red-700/70"
+                    : "border-zinc-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-500/60 dark:border-zinc-700"
               )}
               autoComplete="off"
               aria-invalid={!isValid}
@@ -618,13 +618,23 @@ export default function CreateStudyRoomPage() {
                       {pageT("notice.teacher.description")}
                     </p>
 
-                    <Link
-                      href={`${basePrefix}/study/teacher-register`}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 hover:shadow-md dark:bg-amber-500 dark:hover:bg-amber-400"
-                    >
-                      <Users className="h-4 w-4" />
-                      {pageT("notice.teacher.cta")}
-                    </Link>
+                    {user?.provider === "anonymous" ? (
+                      <button
+                        onClick={() => toast.error(pageT("notice.teacher.anonymousError"))}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 hover:shadow-md dark:bg-amber-500 dark:hover:bg-amber-400"
+                      >
+                        <Users className="h-4 w-4" />
+                        {pageT("notice.teacher.cta")}
+                      </button>
+                    ) : (
+                      <Link
+                        href={`${basePrefix}/study/teacher-register`}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 hover:shadow-md dark:bg-amber-500 dark:hover:bg-amber-400"
+                      >
+                        <Users className="h-4 w-4" />
+                        {pageT("notice.teacher.cta")}
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

@@ -3045,7 +3045,8 @@
         "teacher": {
           "title": "Bạn là giáo viên?",
           "description": "Đăng ký để trở thành giáo viên và tạo phòng học riêng.",
-          "cta": "Đăng ký giáo viên"
+          "cta": "Đăng ký giáo viên",
+          "anonymousError": "Tài khoản ẩn danh không thể đăng ký giáo viên. Vui lòng đăng ký tài khoản chính thức."
         }
       },
       "errors": {

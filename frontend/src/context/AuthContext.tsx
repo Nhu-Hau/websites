@@ -19,6 +19,7 @@ export type User = {
   partLevels?: any;
   picture?: string | null;
   avatarUrl?: string | null;
+  provider?: "local" | "google" | "anonymous";
 } | null;
 
 type AuthContextType = {

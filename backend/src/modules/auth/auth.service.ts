@@ -37,6 +37,7 @@ export function toSafeUser(u: IUser) {
       )
       : {},
     toeicPred: u.toeicPred || { overall: 0, listening: 0, reading: 0 },
+    provider: u.provider,
   };
 }
 

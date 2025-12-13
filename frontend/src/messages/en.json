@@ -2723,7 +2723,8 @@
         "teacher": {
           "title": "Are you a teacher?",
           "description": "Register to become a teacher and create your own study rooms.",
-          "cta": "Register as Teacher"
+          "cta": "Register as Teacher",
+          "anonymousError": "Anonymous accounts cannot register as teachers. Please register a formal account."
         }
       },
       "errors": {
